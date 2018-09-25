@@ -44,7 +44,6 @@
 		},
 
 		translateQueryExpression: function(query, asRoot) {
-//debugger
 
             var sqlSource = '';
             if (typeof query === 'string') {
@@ -106,11 +105,11 @@
             return sql;
 		},
 
-		_getProvider: function(id) {
-		    var provider = $this.cube.getProviderById(id);
-		    QueryUtils.throwError(provider, 'Data provider with id "{}" is undefined', id);
-		    return provider;
-		},
+//		_getProvider: function(id) {
+//		    var provider = $this.cube.getProviderById(id);
+//		    QueryUtils.throwError(provider, 'Data provider with id "{}" is undefined', id);
+//		    return provider;
+//		},
 
         _translatePart: function(prefix, valueCallback, suffix) {
             var value = valueCallback();
@@ -139,7 +138,7 @@
 		_translateQueryProvider: function(query, asRoot){
 		    var sql = '';
             /// поля датапровайдеров/таблиц без запроса отображаются напрямую
-            sql += $this._printTableName($this._getProvider(query.$provider).getTableFullName());
+            sql += $this._printTableName(QueryUtils.getQueryDataProvider(query.$provider, $this.cube).getTableFullName());
             sql +=  ' AS ' + $this._quotedName($this._translateContext(query.$context));
             return sql;
 		},
@@ -272,7 +271,7 @@
                 return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
             } else if (query.$provider) {
 
-                var provider = $this._getProvider(query.$provider);
+                var provider = QueryUtils.getQueryDataProvider(query.$provider, $this.cube);
 
                 /// is source field (of provider)
                 var providerField = provider.extractFields()[field];

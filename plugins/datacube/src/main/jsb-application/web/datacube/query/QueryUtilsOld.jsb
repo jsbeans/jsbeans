@@ -1975,7 +1975,7 @@ debugger
             $this.walkQueries(dcQuery, {},
                 function enterCallback(query){
                     if(query.$provider && !provs[query.$provider]) {
-                        provs[query.$provider] = cube.getProviderById(query.$provider);
+                        provs[query.$provider] = QueryUtils.getQueryDataProvider(query.$provider, cube);
                     }
                 }
             );

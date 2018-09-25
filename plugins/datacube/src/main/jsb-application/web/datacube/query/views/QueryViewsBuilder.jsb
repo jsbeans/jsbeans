@@ -67,7 +67,7 @@
 
 		_buildContextView: function(query, isValueQuery, isViewQuery) {
             if (query.$provider) {
-                var dataProvider = $this._getProviderById(query.$provider);
+                var dataProvider = QueryUtils._getQueryProvider(query.$provider, $this.cube);
                 QueryUtils.throwError(dataProvider, 'Undefined data provider {}', query.$provider);
 
                 var resultView = $this._buildDataProviderQuery(query.$context, dataProvider, query);

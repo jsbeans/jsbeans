@@ -254,7 +254,8 @@
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 		            '$if', '$coalesce',
 		            '$recursiveSelect',
-		            '$macros'
+		            '$macros',
+		            '$const'
 		        ]
 		    });
 

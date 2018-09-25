@@ -24,16 +24,17 @@
 		        function(query){
                     if (query.$cube || !query.$from && !query.$provider && !query.$join && !query.$union) {
                         try {
+                            var queryCube = query.$cube ? QueryUtils.getQueryCube(query.$cube, cube) : cube;
 
-                            var usedFields = QueryUtils.extractInputFields(query, cube, getView);
+                            var usedFields = QueryUtils.extractInputFields(query, queryCube, getView);
 
                             if (Object.keys(usedFields).length == 0) {
                                 query.$from = {};
                                 return;
                             }
 
-                            var providers = QueryUtils.extractCubeProvidersInQuery(query, cube, getView);
-                            var builder = new CubeViewsBuilder(cube, providers);
+                            var providers = QueryUtils.extractCubeProvidersInQuery(query, queryCube, getView);
+                            var builder = new CubeViewsBuilder(queryCube, providers);
                             var view = builder.build(query.$context, usedFields);
                             query.$from = view.getFromBody();
                         } finally {

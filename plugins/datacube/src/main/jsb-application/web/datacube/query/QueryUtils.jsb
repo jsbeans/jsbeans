@@ -53,6 +53,46 @@
 
         },
 
+        /** Cube id in $cube:
+        *  a) 'cubeId' - in workspace of defaultCube
+        *  b) 'wsId/cubeId' - in custom workspace
+        */
+        getQueryCube: function(cubeId, defaultCube) {
+            var ids = cubeId.split('/');
+            if (ids.length == 2) {
+                var wid = ids[0];
+                var cid = ids[1];
+                var ws = WorkspaceController.getWorkspace(wid);
+                var cube = ws.entry(cid);
+            } else {
+                var cid = ids[0];
+                var ws = defaultCube.getWorkspace();
+                var cube = ws.entry(cid);
+            }
+            $this.throwError(cube, 'Cube with id "{}" is undefined', cubeId);
+            return cube;
+
+        },
+
+        /** Provider id in $provider:
+        *  a) 'providerId' - in defaultCube
+        *  b) 'wsId/providerId' - in custom workspace
+        */
+        getQueryDataProvider: function(providerId, defaultCube) {
+            var ids = providerId.split('/');
+             if (ids.length == 2) {
+                var wid = ids[0];
+                var pid = ids[1];
+                var ws = WorkspaceController.getWorkspace(wid);
+                var provider = ws.entry(pid);
+            } else {
+                var pid = ids[0];
+                var provider = defaultCube.getProviderById(pid);
+            }
+            $this.throwError(provider, 'Data provider with id "{}" is undefined', providerId);
+            return provider;
+        },
+
         walkQueries: function (dcQuery, options, enterCallback, leaveCallback/**false=break: callback(q) and this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}*/) {
             options = options || {depth:0, findView: null};
             var queryDepth = -1;
@@ -310,7 +350,7 @@
 		    if (query.$cube) {
 		        var sourceFields = cube.getManagedFields();
 		    } else if (query.$provider){
-		        var provider = cube.getProviderById(query.$provider);
+		        var provider = $this.getQueryDataProvider(query.$provider, cube);
 		        var sourceFields = provider.extractFields();
 		    } else if (query.$from) {
                 if (JSB.isString(query.$from)) {
@@ -785,7 +825,7 @@
             var providers = [];
             $this.walkQueries(query, {}, null, function(q) {
                 if (q.$provider) {
-                    var provider = cube.getProviderById(q.$provider);
+		            var provider = $this.getQueryDataProvider(q.$provider, cube);
                     if (providers.indexOf(provider) == -1) {
                         providers.push(provider);
                     }
@@ -809,7 +849,7 @@
                     var type = $this.extractType(sourceQuery.$select[field], sourceQuery, cube, getQuery);
                     return type;
                 } else if (query.$provider) {
-                    var provider = cube.getProviderById(query.$provider);
+		            var provider = $this.getQueryDataProvider(query.$provider, cube);
                     var desc = provider.extractFields()[field];
                     $this.throwError(desc, 'Undefined field "{}" in data provider "{}"', field, query.$provider);
                     return desc.nativeType || desc.type;
@@ -889,8 +929,8 @@ throw 'TODO';
         },
 
         queryHasBody: function(query) {
-		    if (query.$filter && Object.keys(query.$filter) > 0){
-		        if (Object.keys(query.$filter) != 1 || !query.$filter.$and || query.$filter.$and.length > 0) {
+		    if (query.$filter && Object.keys(query.$filter).length > 0){
+		        if (Object.keys(query.$filter).length != 1 || !query.$filter.$and || query.$filter.$and.length > 0) {
 		            return true;
                 }
 		    }

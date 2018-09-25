@@ -76,7 +76,7 @@
 		},
 
 		tryTranslateQuery: function(query, params) {
-		    var providers = $this._extractProviders(query);
+		    var providers = QueryUtils.extractProviders(query, $this.cube);
 		    var providersGroups = $this._groupSameProviders(providers);
             if (providers.length == 1 || providersGroups.length == 1) {
                 if (TranslatorRegistry.hasTranslator(providers[0])) {
@@ -115,31 +115,31 @@
             return provider.id;
         },
 
-        _extractProviders: function(query){
-
-            if (query.$context == $this.query.$context) {
-                return $this.providers;
-            }
-
-            var allProvidersMap = {};
-            for(var i = 0; i < $this.providers.length; i++) {
-                var provider = $this.providers[i];
-                allProvidersMap[provider.id] = provider;
-            }
-
-            var providers = [];
-            var providersMap = {};
-            QueryUtils.walkSubQueries(query, function(q){
-                if (q.$provider) {
-                    if(!providersMap[q.$provider]) {
-                        var provider = allProvidersMap[q.$provider];
-                        providersMap[q.$provider] = provider;
-                        providers.push(provider);
-                    }
-                }
-            });
-            return providers;
-        },
+//        _extractProviders: function(query){
+//
+//            if (query.$context == $this.query.$context) {
+//                return $this.providers;
+//            }
+//
+//            var allProvidersMap = {};
+//            for(var i = 0; i < $this.providers.length; i++) {
+//                var provider = $this.providers[i];
+//                allProvidersMap[QueryUtils.getQueryProviderId(provider)] = provider;
+//            }
+//
+//            var providers = [];
+//            var providersMap = {};
+//            QueryUtils.walkSubQueries(query, function(q){
+//                if (q.$provider) {
+//                    if(!providersMap[q.$provider]) {
+//                        var provider = allProvidersMap[q.$provider];
+//                        providersMap[q.$provider] = provider;
+//                        providers.push(provider);
+//                    }
+//                }
+//            });
+//            return providers;
+//        },
 
         /** Объединяет провайдеры в группы по типам
         */
