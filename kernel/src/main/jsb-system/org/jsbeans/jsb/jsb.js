@@ -1148,6 +1148,10 @@ if(!(function(){return this;}).call(null).JSB){
 			return Number(n) === n && n % 1 !== 0;
 		},
 		
+		isDouble: function(n){
+			return Number(n) === n && n % 1 !== 0;
+		},
+		
 		isInteger: function(n){
 			return Number(n) === n && n % 1 === 0;
 		},
