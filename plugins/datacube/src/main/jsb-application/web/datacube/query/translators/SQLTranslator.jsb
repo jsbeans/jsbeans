@@ -906,6 +906,7 @@
                         return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
                     case '$nin':
                         sqlOp = JSB.isArray(operands[1]) ? ' IN ' : ' = ANY';
+                        sqlOp = JSB.isArray(operands[1]) ? ' NOT IN ' : ' != ANY';
                         return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
                     default:
                         throw new Error('Unsupported condition expression ' + op);
