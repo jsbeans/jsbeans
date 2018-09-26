@@ -1116,10 +1116,10 @@
                     case '$ilike':
                         sqlOp = ' ~~* '; break;
                     case '$in':
-                        sqlOp = ' = ANY';
+                        sqlOp = JSB.isArray(operands[1]) ? ' IN ' : ' = ANY';
                         return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
                     case '$nin':
-                        sqlOp = ' != ANY';
+                        sqlOp = JSB.isArray(operands[1]) ? ' IN ' : ' = ANY';
                         return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
                     default:
                         throw new Error('Unsupported condition expression ' + op);
