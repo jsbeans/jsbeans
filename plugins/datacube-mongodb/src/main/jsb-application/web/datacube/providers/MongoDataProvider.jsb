@@ -159,7 +159,7 @@
 			    isIdProps = opts && opts.idProps;
 			var collectionName = desc.name;
 			
-			var scheme = this.getStore().asMongodb().connected(function(conn){
+			var scheme = (function(conn){
 				// extract columns by querying contents
 				var fieldTree = {};
 				var it = this.asMongodb().iteratedQuery({find:collectionName});
@@ -182,9 +182,9 @@
 					}
 					return fieldTree;
 				} finally {
-					it.close();	
+					it.close();
 				}
-			});
+			})();
 			
 			// transform fieldTree into plain fields
 			function transformTreeEntry(treeFields, parent){

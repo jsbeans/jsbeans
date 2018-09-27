@@ -36,7 +36,11 @@
             QueryUtils.logDebug('Executing mongodb translated query: {}', JSON.stringify(translatedQuery));
 
 		    var store = this.providers[0].getStore();
-		    var iterator = store.asMongodb().runCommand(translatedQuery);
+
+//		    var iterator = store.asMongodb().runCommand(translatedQuery);
+            var iterator = store.asMongodb().iterateAggregate(translatedQuery.aggregate, translatedQuery.pipeline);
+
+
 //		    var oldClose = iterator.close;
 //		    iterator.close = function() {
 //		        oldClose.call(this);

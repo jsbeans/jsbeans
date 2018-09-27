@@ -101,6 +101,17 @@
                         throw e;
                     }
                 },
+
+                iterateAggregate: function(collection, pipeline, opts){
+                    var conn = $this.getConnection(false);
+                    try {
+                        var opts = prepareClose(conn, opts);
+                        return Mongodb.iterateAggregate(conn.get(), $this.config.dbName, collection, pipeline, opts);
+                    } catch(e) {
+                        conn.close();
+                        throw e;
+                    }
+                },
                 
                 iterateCollectionNames: function(opts){
                     var conn = $this.getConnection(false);

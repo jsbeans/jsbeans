@@ -143,6 +143,11 @@ debugger;
         	var indexes = $this.getDB(client, dbName).getCollection(collectionName).listIndexes​();
         	return $this.createIterator(indexes, opts);
         },
+
+        iterateAggregate: function(client, dbName, collectionName, pipeline, opts){
+        	var cursor = $this.getDB(client, dbName).getCollection(collectionName).aggregate($this.toDBObject(pipeline));
+        	return $this.createIterator(cursor, opts);
+        },
         
         iteratedQuery: function(client, dbName, query, opts) {
             if (!JSB.isArray(query)) {
