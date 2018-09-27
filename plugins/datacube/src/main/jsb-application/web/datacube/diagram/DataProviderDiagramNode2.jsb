@@ -15,7 +15,14 @@
 			},
 			onRemove: function(){},
 			onPositionChanged: function(x, y){
-			    //
+			    var self = this;
+
+				if(this.editor.ignoreHandlers){
+					return;
+				}
+				JSB.defer(function(){
+					self.editor.cubeEntry.server().updateDataProviderNodePosition(self.provider.getId(), {x: x, y: y});
+				}, 500, 'dataProviderResize_' + this.getId());
 			}
 		},
 
@@ -24,6 +31,7 @@
 
 	        this.provider = opts.provider;
 	        this.editor = opts.editor;
+	        this.fields = opts.fields;
 
 			this.loadCss('DataProviderDiagramNode.css');
 			this.addClass('dataProviderDiagramNode');
@@ -41,7 +49,10 @@
 				hasIcon: true,
 				hasCaption: false,
 				onClick: function(evt){
-					//evt.stopPropagation();
+					evt.stopPropagation();
+
+					// todo: refresh scheme
+
 					//$this.refreshScheme();
 				}
 			});
@@ -90,18 +101,6 @@
 			this.toolbar = this.$('<div class="toolbar"></div>');
             this.append(this.toolbar);
 
-/*
-                        <div class="selectAll" title="Выделить все"></div>
-                        <div class="deselectAll" title="Снять выделение со всех"></div>
-                        <div class="useComments hidden" title="Использовать содержимое комментариев для формирования названий полей куба"></div>
-*/
-            /*
-            var selectAllBtn = new Button({
-                //
-            });
-            this.toolbar.append(selectAllBtn.getElement());
-            */
-
             /*
 			// search
             this.body.append(`#dot
@@ -135,6 +134,14 @@
 			this.installResizeHandle('rightBottomGripper',{
 				selector: rightBottomGripper,
 				resize: {right: true}
+			});
+
+			this.getElement().resize(function(){
+			    if($this.editor.cubeEntry){
+                    JSB.defer(function(){
+                        $this.editor.cubeEntry.server().updateDataProviderNodePosition($this.provider.getId(), null, {width: $this.getElement().width()});
+                    }, 300, 'dataProviderResize_' + $this.getId());
+			    }
 			});
 
 			this.refresh();
@@ -200,29 +207,10 @@
 	            return;
 	        }
 
-	        var fields = [];
-	        for(var i in this.fields.fields){
-	            var el = this.fields.fields[i];
-	            el.key = i;
-	            fields.push(el);
-	        }
-
-	        // todo: field sort
-
 	        var fieldsElements = d3.select(this.fieldList.getElement().get(0));
 	        // enter
-	        fieldsElements.selectAll('div.field').data(fields).enter().append('div').classed('field', true);
-	        fieldsElements.selectAll('div.field')
-	            // checkbox
-	            .append(function(){
-	                return new Checkbox({
-	                    checked: false,
-	                    onchange: function(isCheck){
-	                        // todo
-	                        //this.setLoading(true);
-	                    }
-	                }).getElement().get(0);
-	            })
+	        fieldsElements.selectAll('div.field').data(this.fields.fields).enter().append('div').classed('field', true);
+
             fieldsElements.selectAll('div.field')
 	            // name
 	            .append('div').classed('cell name', true);
@@ -231,18 +219,18 @@
 	            .append('div').classed('cell type', true);
 
 	        // update
-	        fieldsElements.selectAll('div.field').data(fields).attr('key', function(d){
+	        fieldsElements.selectAll('div.field').data(this.fields.fields).attr('key', function(d){
 	                return d.key;
 	            })
 	            .select('.name').text(function(d){
-	                return d.alias || d.key;
-	            })
-	            .select('.type').text(function(d){
+	                return d.name;
+	            });
+            fieldsElements.selectAll('div.field').data(this.fields.fields).select('.type').text(function(d){
 	                return d.type;
 	            });
 
 	        // exit
-	        fieldsElements.selectAll('div.field').data(fields).exit().remove();
+	        fieldsElements.selectAll('div.field').data(this.fields.fields).exit().remove();
 	    }
 	}
 }

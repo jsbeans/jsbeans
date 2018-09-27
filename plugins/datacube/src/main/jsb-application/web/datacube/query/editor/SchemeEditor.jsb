@@ -22,6 +22,8 @@
 		hoverEntries: {},
 		hoverValues: {},
 		sourceFields: null,
+
+		fromContext: ['$from', '$join', '$union', '$cube', '$provider'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -38,11 +40,10 @@
 			$this.handle = $this.getElement();
 
 			// 'from' query
-			/*
-			if(this.options.editorType === 'queryDataProvider'){
-			    // todo: 'from' query
-			}
-			*/
+			this.fromLabel = this.$('<span class="fromLabel">Источник запроса</span>');
+			this.append(this.fromLabel);
+			this.fromContainer = this.$('<div class="container fromContainer"></div>');
+			$this.append(this.fromContainer);
 			
 			$this.container = $this.$('<div class="container"></div>');
 			$this.append($this.container);
@@ -266,7 +267,7 @@
 				}
 				var entryKey = keyElt.attr('key');
 				var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
-				
+
 				JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + entryId);
 				JSB.defer(function(){
 					$this.selectHover(entryType, entryKey, false);
@@ -485,7 +486,7 @@
 					}
 				}
 			}
-			
+
 			var schemeDesc = QuerySyntax.getSchema()[schemeName];
 			if(schemeDesc.expressionType == 'ComplexObject' || schemeDesc.expressionType == 'SingleObject'){
 				value = {};
@@ -710,8 +711,9 @@
 			} else if(schemeDesc.expressionType == 'EConstNull'){
 				value = null;
 			} else if(schemeDesc.expressionType == 'Group'){
-				debugger;
 				return $this.constructEmptyValue(schemeDesc.values[0], subValues);
+			} else if(schemeDesc.expressionType == 'DropContainer'){
+			    value = null;
 			} else {
 				throw new Error('Unexpected empty value type: ' + schemeDesc.expressionType);
 			}
@@ -901,6 +903,7 @@
 			if(entryType == 'entry' && $this.scheme.name != '$filter' && $this.scheme.name != '$cubeFilter' && $this.scheme.name != '$postFilter'){
 				return;
 			}
+
 			var acceptedSchemes = null;
 			var existedSchemeDesc = null;
 			var existedObj = null;
@@ -1053,6 +1056,10 @@
 				}
 				
 				entryElt.remove();
+
+				if(this.fromContext.indexOf(entryKey) > -1 && this.fromContainer.is(':empty')){
+				    this.removeClass('hasFrom');
+				}
 			}
 			
 			// fixup array keys
@@ -1507,9 +1514,13 @@
 				});
 				return;
 			}
-			
+
 			this.destroyNestedEditors();
 			$this.container.empty();
+
+			$this.fromContainer.empty();
+			this.removeClass('hasFrom');
+
 			$this.scheme = QuerySyntax.getSchema()[$this.schemeName];
 			$this.construct();
 		},
@@ -1530,12 +1541,20 @@
 		
 		drawObjectEntry: function(valName, valScheme, opts){
 			opts = opts || {};
+
+			var container = this.container;
+
+			if(this.fromContext.indexOf(valName) > -1){
+			    container = this.fromContainer;
+			    this.addClass('hasFrom');
+			}
+
 			// draw value entry
-			var entryElt = $this.container.find('> .entry[key="'+valName+'"]');
+			var entryElt = container.find('> .entry[key="'+valName+'"]');
 			if(entryElt.length == 0){
 				entryElt = $this.$('<div class="entry"></div>');
 				entryElt.attr('key', valName);
-				$this.container.append(entryElt);
+				container.append(entryElt);
 			} 
 			
 			// add key
@@ -1666,7 +1685,7 @@
 			// remove previously created value
 			entryElt.find('> .value').remove();
 			entryElt.find('> .collapsedBox').remove();
-			
+
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
 				parent: $this,
 				acceptedSchemes: acceptedSchemes,
@@ -1715,6 +1734,8 @@
 			} else if(valScheme.expressionType == 'SingleObject'){
 				var handle = valueEditor.getHandle();
 				$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
+			} else if(valScheme.expressionType == 'DropContainer'){
+			    return;
 			} else {
 				$this.installHoverHandlers('value', valName, null, {acceptedSchemes: acceptedSchemes});
 			}
@@ -1860,8 +1881,8 @@
 					var usedFields = {};
 					
 					if($this.scheme.name == '$query'){
-						schemeValues = ['$views', '$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$limit', '$sql'];
-						
+						schemeValues = ['$views', '$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$limit', '$sql', '$join', '$union', '$cube', '$provider'];
+
 						// perform $context
 						var ctxName = $this.value['$context'];
 						if(!JSB.isDefined(ctxName)){
@@ -2010,7 +2031,77 @@
 					valElt.text($this.value);
 					$this.container.append(valElt);
 				}
-			}  else {
+			}  else if($this.scheme.expressionType == 'DropContainer'){
+			    this.dropContainer = this.$('<div class="dropContainer"></div>');
+			    this.container.append(this.dropContainer);
+
+			    function createValue(value, entry){
+			        $this.dropContainer.empty();
+
+			        function drawValue(entry){
+			            $this.dropContainer.append(RendererRepository.createRendererFor(entry).getElement());
+			        }
+
+			        if(!entry){
+			            $this.server().getDPEntry(value, function(entry){
+			                drawValue(entry);
+			            })
+			        } else {
+			            drawValue(entry);
+			        }
+			    }
+
+			    this.dropContainer.droppable({
+                    accept: function(d){
+                        if(d && d.length > 0 && d.get(0).draggingItems){
+                            for(var i in d.get(0).draggingItems){
+                                var obj = d.get(0).draggingItems[i].obj;
+
+                                if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+                                    continue;
+                                }
+
+                                for(var j = 0; j < $this.scheme.allowValues.length; j++){
+                                    if(JSB.isInstanceOf(obj.getTargetEntry(), $this.scheme.allowValues[j])){
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                        return false;
+                    },
+                    tolerance: 'pointer',
+                    greedy: true,
+                    activeClass : 'acceptDraggable',
+                    hoverClass: 'hoverDraggable',
+                    drop: function(evt, ui){
+                        var d = ui.draggable;
+
+                        for(var i in d.get(0).draggingItems){
+                            var entry = d.get(0).draggingItems[i].obj.getEntry(),
+                                newVal = {};
+
+                            // dataprovider
+                            if(JSB.isInstanceOf(entry, 'DataCube.Model.DatabaseTable')){
+                                newVal = {
+                                    $provider: entry.getWorkspace().getId() + '|' + entry.getId()
+                                }
+                            }
+
+                            // todo: cube
+
+                            createValue(newVal, entry);
+
+                            $this.changeConstValue(newVal);
+                            break;
+                        }
+                    }
+			    });
+
+			    if(this.value){
+			        createValue(this.value);
+			    }
+			} else {
 				throw new Error('Unknown expression type: ' + $this.scheme.expressionType);
 			}
 		},
@@ -2133,7 +2224,7 @@
 				}
 				return w;
 			}
-			
+
 			switch(scheme.expressionType){
 			case 'EConstNull':
 				if(JSB.isNull(value)){
@@ -2159,6 +2250,7 @@
 				return {w: 0.5, scheme: schemeName};
 				break;
 			case 'EConstString':
+			//case 'DropContainer':
 				if(JSB.isObject(value) || JSB.isArray(value)){
 					return {w: 0, scheme: schemeName};
 				}
@@ -2294,9 +2386,21 @@
 				}
 				
 				return curDesc;
+            case 'DropContainer':
+                return {w: 1, scheme: schemeName};
 			default:
 				throw new Error('Unexpected expression type: ' + scheme.expressionType);
 			}
 		}
-	}
+	},
+
+	$server: {
+	    $require: ['JSB.Workspace.WorkspaceController'],
+
+	    getDPEntry: function(value){
+	        var desc = value.$provider.split('|');
+
+	        return WorkspaceController.getWorkspace(desc[0]).entry(desc[1]);
+	    }
+    }
 }

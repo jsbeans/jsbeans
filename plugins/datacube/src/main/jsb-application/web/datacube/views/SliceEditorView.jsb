@@ -29,6 +29,7 @@
                 cssClass: "btnOk",
                 caption: "Сохранить",
                 onClick: function(){
+debugger;
                 	$this.getElement().loader({message:'Сохранение...', onShow: function(){
                         $this.slice.cube.server().updateSliceSettings($this.slice.getId(), {
                             name: $this.titleEditor.getData().getValue(),
@@ -112,13 +113,13 @@
 			vSplitBox.addToPane(0, scrollBox);
 			
 			this.queryEditor = new QueryEditor({
+			    editorType: 'queryDataProvider',
 				onChange: function(){
 					$this.updateTextQuery();
 				}
 			});
 			this.queryEditor.addClass('queryEditor');
 			scrollBox.append(this.queryEditor);
-
 			
 			this.textQueryEditor = new MultiEditor({
 				valueType: "org.jsbeans.types.JsonObject",
@@ -132,7 +133,6 @@
 						$this.query = q;
 						$this.updateQuery();
 					}, 600, 'textQueryChanged_' + $this.getId());
-					
 				}
 			});
 			vSplitBox.addToPane(1, this.textQueryEditor);
@@ -145,6 +145,7 @@
 		},
 		
 		refresh: function(){
+		    // todo: one request
 			this.slice = this.getCurrentNode().getTargetEntry();
 			this.titleEditor.setData(this.slice.getName());
 			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
@@ -162,7 +163,6 @@
 					$this.updateTextQuery();
 					$this.updateGrid();
 				});
-				
 			});
 		},
 		

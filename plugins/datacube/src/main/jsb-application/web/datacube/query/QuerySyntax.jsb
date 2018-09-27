@@ -143,7 +143,14 @@
 		        desc.expressionType = desc.expressionType || 'ComplexObject';
 		        var _super = installSuper(this, new $this.EObject(desc));
 		    };
-		
+
+		    /** Dropdown object
+		    */
+		    this.DropContainer = function(desc){
+		        desc.expressionType = desc.expressionType || 'DropContainer';
+
+		        var _super = installSuper(this, new $this.EObject(desc));
+		    }
 		
 		    new this.ComplexObject({
 		        name: '$query',
@@ -167,7 +174,7 @@
 		            '$join':'$join',
 		            '$union':'$union',
 		            '$cube':'$cube',
-		            '$provider':'$provider',
+		            '$provider':'$provider'
 		        },
 		        optional: ['$context', '$filter', '$groupBy', '$distinct',
 		                '$postFilter', '$cubeFilter', '$sort', '$finalize',
@@ -176,15 +183,6 @@
 		        incompatible: [
 		            ['$from', '$join', '$union', '$cube', '$provider']
 		        ]
-		        /*
-		        incompatible: {
-		            $from:     ['$join', '$union', '$cube', '$provider'],
-		            $cube:     ['$from', '$join', '$union', '$provider'],
-		            $provider: ['$from', '$join', '$union', '$cube'],
-		            $join:     ['$from', '$union', '$cube', '$provider'],
-		            $union:    ['$from', '$join', '$cube', '$provider'],
-		        }
-		        */
 		    });
 
 		    new this.ComplexObject({
@@ -214,7 +212,7 @@
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query', '$viewName'],
 		    });
-
+		    /*
 		    new this.SingleObject({
 		        name: '$join',
 		        category: 'Источник запроса',
@@ -222,15 +220,31 @@
 		        desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
 		        values: ['$joinExpr']
 		    });
-
+		    */
 		    new this.ComplexObject({
-		        name: '$joinExpr',
+		        name: '$join',
+		        category: 'Источник запроса',
+		        displayName: 'Пересечение',
+		        desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
 		        values: {
 		            '$joinType': '$joinType',
 		            '$filter': '$joinFilter',
-		            '$left': '$query',
+		            //'$left': '$query',
+		            '$left': '$fromSelect',
 		            '$right': '$query',
 		        }
+		    });
+
+		    new this.Group({
+		    	name: '$fromSelect',
+		        values: ['$provider', '$query']
+		    });
+
+		    new this.DropContainer({
+		        name: '$provider',
+		        allowValues: ['DataCube.Model.DatabaseTable'],
+		        desc: 'Идентификатор первичного источника данных',
+		        values: []
 		    });
 
 		    new this.Group({
@@ -1325,12 +1339,13 @@
 		        category: 'Источник запроса',
 		        desc: 'Идентификатор куба'
 		    });
-
+		    /*
 		    new this.EConstString({
 		        name: '$provider',
 		        category: 'Источник запроса',
 		        desc: 'Идентификатор первичного источника данных'
 		    });
+		    */
 
 		    new this.EConstNumber({
 		    	displayName: 'Число',

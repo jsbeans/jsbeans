@@ -297,7 +297,7 @@
 		
 		addDataProvider: function(dpEntry, pt){
 			this.cubeEntry.server().addDataProvider(dpEntry, function(provider){
-				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:provider, editor: $this});
+				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider: provider, editor: $this});
 				pNode.setPosition(pt.x, pt.y);
 				$this.providersNodes[provider.getId()] = pNode;
 			});

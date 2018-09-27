@@ -61,7 +61,7 @@
 			}
 		}
 	},
-	
+/*
 	$server: {
 		$require: 'JSB.Workspace.WorkspaceController',
 		$bootstrap: function(){
@@ -73,4 +73,5 @@
 			});
 		},
 	}
+*/
 }

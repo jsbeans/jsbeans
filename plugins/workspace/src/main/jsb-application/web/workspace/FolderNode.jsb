@@ -19,7 +19,6 @@
 				}
 			});
 			$this.toolbox.append(createEntryBtn.getElement());
-
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender){
 				if(sender != $this.getTargetEntry()){
@@ -41,5 +40,4 @@
 			}
 		}
 	}
-	
 }

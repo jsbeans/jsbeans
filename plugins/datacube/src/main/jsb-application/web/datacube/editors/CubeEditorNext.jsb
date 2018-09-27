@@ -28,7 +28,6 @@
 							}
 						}
 					},
-					/*
 					sliceDiagramNode: {
 						jsb: 'DataCube.SliceDiagramNode',
 						layout: {
@@ -39,7 +38,6 @@
 							}
 						}
 					}
-					*/
 				},
 
 				connectors: {
@@ -142,21 +140,46 @@
 					}
 				}
 			});
+
+            this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
+                if(slice.cube === $this.cubeEntry){
+                    $this.addSlice(slice);
+                }
+            });
 	    },
 
 	    addDataProvider: function(entry, position){
-			this.cubeEntry.server().addDataProvider(entry, function(provider){
-				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider: provider, editor: $this});
+			this.cubeEntry.server().addDataProvider(entry, {position: position }, function(result){
+				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider: result.provider, fields: result.fields, editor: $this});
 				pNode.setPosition(position.x, position.y);
-				//$this.providersNodes[provider.getId()] = pNode;
 			});
 	    },
+
+		addSlice: function(slice){
+            var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this});
+            /*
+            var cubeRect = $this.cubeNode.getRect();
+            sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
+
+            $this.diagram.select($this.diagram.getNodes(), false);
+            $this.diagram.select($this.diagram.getLinks(), false);
+            sNode.select(true);
+            */
+		},
 
 	    constructCube: function(desc){
 	        // create providers' nodes
 	        for(var i = 0; i < desc.providers.length; i++){
-	            var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider: desc.providers[i].provider, editor: $this});
-	            pNode.setPosition(desc.providers[i].position.x, desc.providers[i].position.y);
+	            var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider: desc.providers[i].provider, editor: $this}),
+	                diagramOpts = desc.providers[i].provider.getOption('diagramOpts');
+
+	            pNode.setPosition(diagramOpts.position.x, diagramOpts.position.y);
+	            pNode.getElement().width(diagramOpts.size);
+	        }
+
+	        // create slices' nodes
+	        for(var i = 0; i < desc.slices.length; i++){
+	            var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: desc.slices[i].slice, editor: $this});
 	        }
 	    },
 

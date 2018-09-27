@@ -30,7 +30,8 @@
 				nodeType:'DataCube.SliceNode',
 				create: false,
 				move: false,
-				remove: true
+				remove: true,
+				title: 'Срез'
 			});
 		},
 		

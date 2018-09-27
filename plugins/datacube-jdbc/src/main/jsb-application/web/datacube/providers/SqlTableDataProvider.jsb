@@ -80,10 +80,13 @@
 			    isIdProps = opts && opts.idProps;
 
 			for(var colName in desc.columns){
-				var nativeType = desc.columns[colName].datatypeName;
-				var type = JDBC.toJsonType(nativeType);
+				var nativeType = desc.columns[colName].datatypeName,
+				    type = JDBC.toJsonType(nativeType),
+				    colId = desc.id + '_' + colName;
+
 				var fDesc = {
-				    id: desc.id + '.' + colName
+				    id: colId,
+				    name: colName
 				};
 				if(opts && Object.keys(opts).length > 0){
 					if(opts.type){
@@ -113,7 +116,7 @@
 					fDesc.type = type;
 					fDesc.nativeType = nativeType;
 				}
-				fields[isIdProps ? desc.id : colName] = fDesc;
+				fields[isIdProps ? colId : colName] = fDesc;
 			}
 			return fields;
 		}

@@ -4,6 +4,8 @@
 	$require: 'JSB.Widgets.Button',
 	
 	$client: {
+	    $require: ['JSB.Widgets.ToolManager'],
+
 		childrenLoaded: false,
 		
 		$constructor: function(opts){
@@ -16,9 +18,10 @@
 			
 			var createSliceBtn = new Button({
 				cssClass: 'roundButton btnCreate btn10',
-				tooltip: 'Создать срез',
+				tooltip: 'Создать',
 				onClick: function(evt){
-					evt.stopPropagation();
+				    evt.stopPropagation();
+					//$this.showCreateMenu(evt, true, this);
 					$this.createSlice();
 				}
 			});
@@ -39,7 +42,6 @@
 			});
 			
 			this.update();
-			
 		},
 		
 		createSlice: function(){
@@ -50,10 +52,68 @@
                         hasEntryChildren: 0,
                         name: slice.getName()
                     }, $this.treeNode.key, false, {collapsed:true});
+
+                    $this.publish('Datacube.CubeNode.createSlice', slice);
+
 					$this.explorer.publish('JSB.Workspace.nodeOpen', node);
 				});
 			});
 		},
+		/*
+		createNewEntry: function(key){
+			$this.explorer.expandNode($this.treeNode.key, function(){
+			    switch(key){
+			        case 'DataCube.Model.Slice':
+                        $this.getTargetEntry().server().addSlice(function(slice){
+                            var node = $this.explorer.addTreeItem({
+                                entry: slice,
+                                hasEntryChildren: 0,
+                                name: slice.getName()
+                            }, $this.treeNode.key, false, {collapsed:true});
+                            $this.explorer.publish('JSB.Workspace.nodeOpen', node);
+                        });
+                        break;
+                    case 'DataCube.Model.QueryDataProvider':
+                        //
+                        break;
+				}
+			});
+		},
+
+		showCreateMenu: function(evt){
+		    var explorerNodes = $this.explorer.explorerNodeTypes,
+		        nodesNames = ['DataCube.Model.Slice', 'DataCube.Model.QueryDataProvider'],
+		        items = [];
+
+            for(var i = 0; i < nodesNames.length; i++){
+                var elt = this.$('<div><img class="icon"></img><div class="info"><div class="title"></div><div class="desc"></div></div></div>');
+
+				elt.find('.title').text(explorerNodes[nodesNames[i]].title);
+				elt.find('.desc').text(explorerNodes[nodesNames[i]].description);
+				elt.find('.icon').attr('src', explorerNodes[nodesNames[i]].icon);
+
+				items.push({
+				    key: nodesNames[i],
+                    element: elt,
+				    order: i
+				})
+            }
+
+			ToolManager.activate({
+				id: '_dwp_droplistTool',
+				cmd: 'show',
+				data: items,
+				key: 'createMenu',
+				target: {
+					selector: this.$(evt.currentTarget),
+					dock: 'bottom'
+				},
+				callback: function(key){
+				    $this.createNewEntry(key);
+				}
+			});
+		},
+		*/
 		
 		update: function(status, bFail){
 			var statusElt = this.find('.status');
@@ -74,7 +134,5 @@
 				`);
 			}
 		}
-		
 	}
-	
 }

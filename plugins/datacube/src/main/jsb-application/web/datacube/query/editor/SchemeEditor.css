@@ -7,6 +7,28 @@
 	
 }
 
+.schemeEditor > .fromLabel {
+    display: none;
+    padding: 5px;
+    background: #e6e1d9;
+    color: #7b4500;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.schemeEditor > .fromContainer {
+    display: none;
+    background: #f0ede9;
+    border-bottom: 1px solid #7b4500;
+    margin-bottom: 2px;
+}
+
+.schemeEditor.hasFrom > .fromLabel,
+.schemeEditor.hasFrom > .fromContainer {
+    display: block;
+}
+
 /* substrate */
 .schemeEditor > .container > .entry > .substrate,
 .schemeEditor > .container > .entry > .value > .substrate {
@@ -686,3 +708,29 @@
 	vertical-align: middle;
 }
 
+/* drop container */
+.schemeEditor > .container > .dropContainer {
+	height: 26px;
+    min-width: 150px;
+    background: rgba(24, 108, 138, 0.2);
+
+    border: 1px dotted rgba(2, 47, 78, 0.2);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 15px;
+    text-align: center;
+	color: #000;
+}
+
+.schemeEditor > .container > .dropContainer.acceptDraggable {
+    background: rgba(98, 208, 0, 0.33) !important;
+}
+
+.schemeEditor > .container > .dropContainer.hoverDraggable {
+	background: rgba(156, 92, 29, 0.3) !important;
+    border-color: rgba(105, 45, 0, 0.5) !important;
+}
+
+.schemeEditor > .container > .dropContainer > .renderer {
+    vertical-align: middle;
+}

@@ -14,20 +14,17 @@
 	box-shadow: 0 0 1px 3px #3c6192;
 }
 
-
 .dataProviderDiagramNode > .caption {
 	background: -webkit-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
 	background: -moz-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
     background: linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
 	background: -o-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
 	background: -ms-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
-	
-	
+
     padding: 2px 4px;
 	cursor: move;
     border-bottom: 1px solid #988e5f;
     position: relative;
-	
 }
 
 .dataProviderDiagramNode.selected > .caption,
@@ -59,19 +56,12 @@
     background-color: #a5a17b;
 }
 
-.dataProviderDiagramNode > .caption > .providerMode .jsb-switch > input + label:after {
-}
-
 .dataProviderDiagramNode > .caption > .renderer {
 	white-space: nowrap;
 	overflow: hidden;
     display: block;
     padding: 1px 40px 1px 0;
 }
-
-.dataProviderDiagramNode > .caption > .renderer > .icon {}
-
-.dataProviderDiagramNode > .caption > .renderer > .title {}
 
 .dataProviderDiagramNode > .caption > .renderer > .leftParen,
 .dataProviderDiagramNode > .caption > .renderer > .rightParen,
@@ -88,12 +78,6 @@
 
 .dataProviderDiagramNode > .caption > .renderer > .renderer > .title {
 	padding-left: 20px;
-}
-
-.dataProviderDiagramNode > .caption > .roundButton {
-	position: absolute;
-	top: 12px;
-	margin-top: -8px; 
 }
 
 .dataProviderDiagramNode > .caption > .roundButton.btnRefresh {
@@ -121,7 +105,6 @@
 	cursor: se-resize;
 	background-position: -16px -16px;
 }
-
 
 .dataProviderDiagramNode > .body {
     background: #e8e8e8;
@@ -228,7 +211,6 @@
     font-size: 10px;
     color: #555;
 }
-
 
 .dataProviderDiagramNode > .body > .fields {
 	list-style: none;

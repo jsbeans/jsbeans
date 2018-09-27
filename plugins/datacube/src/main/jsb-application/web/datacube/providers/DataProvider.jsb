@@ -23,7 +23,7 @@
 	getCube: function(){
 		return this.cube;
 	},
-	
+
 	getOption: function(opt){
 		return this.options[opt];
 	},
@@ -38,6 +38,7 @@
 			if(opts){
 				this.setOptions(opts)
 			}
+
 			$base();
 		},
 		
@@ -51,6 +52,16 @@
 		
 		getOptions: function(){
 			return JSB.clone(this.options);
+		},
+
+		setDiagramOpts: function(opts){
+		    if(opts.position){
+		        this.options.diagramOpts.position = opts.position;
+		    }
+
+		    if(opts.size){
+		        this.options.diagramOpts.size = opts.size;
+		    }
 		},
 		
 		setOptions: function(opts){
