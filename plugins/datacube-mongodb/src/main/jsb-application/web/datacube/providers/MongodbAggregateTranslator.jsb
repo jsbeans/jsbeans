@@ -37,11 +37,10 @@
 
 		    var store = this.providers[0].getStore();
 		    var iterator = store.asMongodb().runCommand(translatedQuery);
-		    var oldClose = iterator.close;
-		    iterator.close = function() {
-                $this._removeStoredViews();
-		        oldClose.call(this);
-		    };
+//		    var oldClose = iterator.close;
+//		    iterator.close = function() {
+//		        oldClose.call(this);
+//		    };
 		    return iterator;
         },
 
@@ -186,9 +185,7 @@ debugger
 		_getProviderCollection: function (providerId){
             for(var i = 0; i < $this.providers.length; i++) {
                 if ($this.providers[i].id == providerId) {
-                    // TODO: test
-                    return $this.providers[i].id;
-//                    return $this.providers[i].getCollectionName();
+                    return $this.providers[i].getCollectionName();
                 }
             }
             QueryUtils.throwError(0, 'Unknown data provider {}', providerId);
@@ -279,10 +276,6 @@ debugger
 
 		_buildGroupBy: function(aggregate, query){
 		    var group = {_id:{}};
-            for (var i = 0; i < query.$groupBy.length; i++) {
-                var e = query.$groupBy[i];
-                group._id['_'+i] = $this._translateExpression(aggregate, query, e);
-            }
 
             for(var alias in query.$select) {
                 var e = query.$select[alias];
@@ -290,6 +283,22 @@ debugger
                     group[alias] = $this._translateExpression(aggregate, query, e);
                 } else {
                     group._id[alias] = $this._translateExpression(aggregate, query, e);
+                }
+            }
+
+            for (var i = 0; i < query.$groupBy.length; i++) {
+                var e = query.$groupBy[i];
+                var exp = $this._translateExpression(aggregate, query, e);
+
+                var exists = false;
+                for(var name in group._id) {
+                    if (JSB.isEqual(exp, group._id[name])) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    group._id['_'+i] = exp;
                 }
             }
 
@@ -365,7 +374,7 @@ debugger
                 }
             }
 
-            project._queryContext = query.$context;
+            project._queryContext = {$literal: query.$context };
 
 		    for(var val in project) {
                 aggregate.pipeline.push({
@@ -388,7 +397,7 @@ debugger
 		    QueryUtils.throwError(!exp.$select, 'Sub-query expression not supported');
 //debugger
 		    if (exp.$const) {
-		        return exp.$const;
+		        return { $literal: exp.$const };
 		    }
 		    if (exp.$field) {
                 return $this._translateField(aggregate, query, exp.$field, exp.$context || query.$context);
@@ -465,9 +474,9 @@ debugger
                         return {
                             $sum: {
                                 $cond: {
-                                    $if: {$eq: [$this._translateExpression(aggregate, query, exp[op]), null]},
-                                    $then: 0,
-                                    $else: 1,
+                                    if: {$eq: [$this._translateExpression(aggregate, query, exp[op]), null]},
+                                    then: 0,
+                                    else: 1,
                                 }
                             }
                         };

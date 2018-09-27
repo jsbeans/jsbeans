@@ -59,6 +59,10 @@
 			var sourceEntry = this.getEntry().getWorkspace().entry(this.getEntry().getParentId());
 			return sourceEntry.getStore();
 		},
+
+		getCollectionName: function(){
+		    return this.getDescriptor().name;
+		},
 		
 		prepareName: function(name){
 			name = name.trim();

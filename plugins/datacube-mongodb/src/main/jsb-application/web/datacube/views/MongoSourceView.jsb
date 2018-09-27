@@ -32,6 +32,12 @@
 						
 						<div class="option useAuth" jsb="JSB.Widgets.CheckBox" label="Использовать аутентификацию" checked="false" content="true" 
 								onchange="{{=this.callbackAttr(function(){$this.updateSettings()})}}">
+							<div class="option authDb" title="БД авторизации">
+								<div class="icon"></div>
+								<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="БД авторизации"
+									onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}">
+								</div>
+							</div>
 							<div class="option user" title="Имя пользователя">
 								<div class="icon"></div>
 								<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Имя пользователя"
@@ -103,6 +109,8 @@
 				properties: {
 					user: this.find('.user > .editor').jsb().getData().getValue(),
 					password: this.find('.password > .editor').jsb().getData().getValue(),
+					db: this.find('.database > .editor').jsb().getData().getValue(),
+					authDb: this.find('.authDb > .editor').jsb().getData().getValue(),
 					authenticationMechanism: this.find('.authMechanism > .combo').jsb().getData().key
 				},
 				filter: this.find('.filter > .editor').jsb().getData().getValue()
@@ -125,6 +133,7 @@
 			
 			this.find('.user > .editor').jsb().setData(settings && settings.properties && settings.properties.user ? settings.properties.user : '');
 			this.find('.password > .editor').jsb().setData(settings && settings.properties && settings.properties.password ? settings.properties.password : '');
+			this.find('.authDb > .editor').jsb().setData(settings && settings.properties && settings.properties.authDb ? settings.properties.authDb : '');
 			this.find('.authMechanism > .combo').jsb().setData(settings && settings.properties && settings.properties.authenticationMechanism || 'MONGODB_CR');
 			
 			this.find('.filter > .editor').jsb().setData(settings && settings.filter ? settings.filter : '');
