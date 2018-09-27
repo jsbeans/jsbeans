@@ -41,6 +41,15 @@
             var iterator = store.asMongodb().iterateAggregate(translatedQuery.aggregate, translatedQuery.pipeline);
 
 
+            if (!$this.dcQuery.$select._id) {
+                var oldNext = iterator.next;
+                iterator.next = function() {
+                    var obj = oldNext.call(this);
+                    delete obj._id;
+                    return obj;
+                };
+            }
+
 //		    var oldClose = iterator.close;
 //		    iterator.close = function() {
 //		        oldClose.call(this);
@@ -74,6 +83,8 @@
                 cursor: { }
 		    };
 		    $this._buildQuery(aggregate, $this.dcQuery);
+
+		    $this._fixupResultFields($this.dcQuery, aggregate.pipeline);
 
 		    return aggregate;
 		},
@@ -357,6 +368,7 @@ debugger
 		    var project = {};
 		    var hasGroupBy = query.$groupBy && query.$groupBy.length > 0;
             for(var alias in query.$select) {
+//                QueryUtils.throwError(alias !== '_id', 'Rename alias "_id", it is internal name');
                 var e = query.$select[alias];
 
                 if (e.$select || query.$join) {
@@ -522,6 +534,14 @@ debugger
 
 		_getContextFieldName: function(context){
 		    return MD5.md5(context);
+		},
+
+		_fixupResultFields: function(query, pipeline){
+		    var project = {};
+            for(var alias in query.$select) {
+                project[alias] = 1;
+            }
+		    pipeline.push({$project:project});
 		},
 	}
 }
