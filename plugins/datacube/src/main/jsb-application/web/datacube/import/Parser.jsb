@@ -125,8 +125,8 @@
 	    	    	        										value: 'integer',
 	    	    	        									},
 	    	    	        									ctFloat: {
-	    	    	        										name: 'float',
-	    	    	        										value: 'float',
+	    	    	        										name: 'double',
+	    	    	        										value: 'double',
 	    	    	        									},
 	    	    	        									ctBoolean: {
 	    	    	        										name: 'boolean',
@@ -374,7 +374,7 @@
 			'null':0,
 			'boolean': 1,
 			'integer': 2,
-			'float': 3,
+			'double': 3,
 			'string': 4,
 			'object': 5,
 			'array': 6
@@ -385,7 +385,6 @@
 			this.entry = entry;
 			this.values = values;
 			
-			this.fileSize = entry.getFileSize();
 			this.lastProgress = -1;
 			
 			this.context = new ValueSelector({
@@ -418,9 +417,6 @@
 			});
 		},
 		
-		getFileSize: function(){
-			return this.fileSize;
-		},
 		
 		getParserScheme: function(jsb){
 			if(!jsb || !jsb.getDescriptor() || !jsb.isSubclassOf('DataCube.Parser')){
@@ -525,7 +521,7 @@
 						valDesc.value = 0;
 					}
 					break;
-				case 'float':
+				case 'double':
 					valDesc.value = Math.floor(valDesc.value);
 					break;
 				case 'string':
@@ -539,7 +535,7 @@
 					break;
 				}
 				break;
-			case 'float':
+			case 'double':
 				switch(currentType){
 				case 'null':
 					break;
@@ -611,7 +607,7 @@
 					valDesc.value = new Date();
 					break;
 				case 'integer':
-				case 'float':
+				case 'double':
 					valDesc.value = new Date(parseInt(valDesc.value));
 					break;
 				case 'string':
@@ -1046,8 +1042,8 @@
 				type = 'boolean';
 			} else if(JSB.isString(value)){
 				type = 'string';
-			} else if(JSB.isFloat(value)){
-				type = 'float';
+			} else if(JSB.isDouble(value)){
+				type = 'double';
 			} else if(JSB.isInteger(value)){
 				type = 'integer';
 			} else if(JSB.isArray(value)) {
@@ -1105,6 +1101,10 @@
 		
 		execute: function(){
 			throw new Error('This method should be overriden');
+		},
+		
+		getSourcePreview: function(){
+			return null;
 		},
 		
 		analyze: function(){
@@ -1360,7 +1360,7 @@
 								transformDesc.targetType = {
 									'ctString': 'string',
 									'ctInteger': 'integer',
-									'ctFloat': 'float',
+									'ctFloat': 'double',
 									'ctBoolean': 'boolean',
 									'ctArray': 'array',
 									'ctDate': 'date'
@@ -1499,9 +1499,6 @@
 				
 				entry.lastTimestamp = Date.now();
 				entry.property('lastTimestamp', entry.lastTimestamp);
-				
-				entry.fileSize = $this.getFileSize();
-				entry.property('fileSize', entry.fileSize);
 				
 				dbSource.extractScheme();
 			} finally {

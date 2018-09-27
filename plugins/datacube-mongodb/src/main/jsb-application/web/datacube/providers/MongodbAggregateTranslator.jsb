@@ -437,7 +437,7 @@ debugger
                         }
                     };
                 case '$substring':
-                    return {$substr: [translateArguments(exp[op].$field), 0, exp[op].$length]};
+                    return {$substr: [translateArguments(exp[op].$value), 0, exp[op].$length]};
 		    }
 
 		    // aggregate accumulators

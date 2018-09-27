@@ -93,7 +93,7 @@
 			this.widgetEntry = widgetEntry;
 			this.owner = owner;
 			
-			this.filterManager = this.owner && this.owner.getFilterManager();
+			this.filterManager = (opts && opts.filterManager) || (this.owner && this.owner.getFilterManager());
 
 			this.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
@@ -334,7 +334,7 @@
 		},
 		
 		getWidget: function(){
-			return this.mainWidget;
+			return $this.currentWidget;
 		},
 
 		setWidgetInitialized: function(){

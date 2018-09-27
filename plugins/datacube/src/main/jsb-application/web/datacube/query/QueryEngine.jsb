@@ -11,9 +11,9 @@
 		    this.paramTypes = {};
 		},
 
-		query: function(dcQuery, params, dataProvider){
+		query: function(dcQuery, params){
 		    $this.cube.load();
-			var executor = new QueryExecutor($this, dataProvider || $this.cube, dcQuery, params);
+			var executor = new QueryExecutor($this, $this.cube, dcQuery, params);
             try {
                 var it = executor.execute();
                 var oldClose = it.close;

@@ -24,7 +24,9 @@
 				nodeType:'DataCube.ExcelFileNode',
 				create: false,
 				move: true,
-				remove: true
+				remove: true,
+				share: true,
+				rename: true
 			});
 			
 		},

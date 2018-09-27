@@ -268,7 +268,8 @@
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 		            '$if', '$coalesce',
 		            '$recursiveSelect',
-		            '$macros'
+		            '$macros',
+		            '$const'
 		        ]
 		    });
 
@@ -416,7 +417,7 @@
 		    new this.ComplexObject({
 		        name: '$splitStringExpr',
 		        values: {
-		            '$field': '$valueDefinition',
+		            '$value': '$valueDefinition',
 		            '$separator': '$constString'
 		        }
 		    });
@@ -468,7 +469,7 @@
 		    new this.ComplexObject({
 		        name: '$substringExpr',
 		        values: {
-		            '$field': '$valueDefinition',
+		            '$value': '$valueDefinition',
 		            '$length': '$constNumber'
 		        }
 		    });
@@ -483,7 +484,7 @@
 		    new this.ComplexObject({
 		        name: '$regexpReplaceExpr',
 		        values: {
-		            '$field': '$valueDefinition',
+		            '$value': '$valueDefinition',
 		            '$pattern': '$constString',
 		            '$replacementString': '$constString',
 		            '$flags': '$constString',
@@ -599,7 +600,7 @@
 		        category: 'Функции',
 		        desc: 'Разбить дату (date/timestamp) на равные интервалы в секундах и вернуть порядковый номер',
 		        values: {
-		            '$field': '$valueDefinition',
+		            '$value': '$valueDefinition',
 		            '$seconds': '$constNumber'
 		        }
 		    });
@@ -1427,7 +1428,19 @@
 		    $grmax: {},
 		    $grmin: {},
 		},
-		
+
+		constValueOperators: {
+		    $id: true,
+		    $analyze: true,
+		    $context: true,
+		    $const: true,
+		    $type: true,
+		    $joinType: true,
+		    $length: true,
+		    $pattern: true,
+		    $replacementString: true,
+		    $flags: true,
+		},
 		
 		registerMacros: function(def, structure, objectGenerator) {
 		    var name = def.name;
@@ -1481,7 +1494,7 @@
 //		    JSB.getLogger().debug('Registered DataCube query macro ' + name);
 		},
 		
-		unwrapMacros: function(dcQuery) {
+		unwrapMacrosCurrentQuery: function(dcQuery) {
 		    function validateMacro(exp, macro){
 		        var structure = macro.structure;
 		        for (var f in structure) if(structure.hasOwnProperty(f)) {

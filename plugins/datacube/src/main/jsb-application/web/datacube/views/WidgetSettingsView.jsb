@@ -8,7 +8,8 @@
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
-                   'JSB.Widgets.Button'
+                   'JSB.Widgets.Button',
+                   'DataCube.Widgets.FilterManager'
         ],
 
 		$constructor: function(opts){
@@ -58,6 +59,8 @@
 
 	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
 	        splitBox.append(this.widgetBlock);
+	        
+	        this.filterManager = new FilterManager(this);
 		},
 
 		refresh: function(){
@@ -66,8 +69,10 @@
             if(this.wrapper) {
                 this.wrapper.destroy();
             }
+            
+            this.filterManager.clear();
 
-            this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true, designMode: true });
+            this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true, designMode: true, filterManager: this.filterManager });
             this.widgetBlock.append(this.wrapper.getElement());
 
             if(this.widgetSchemeRenderer){

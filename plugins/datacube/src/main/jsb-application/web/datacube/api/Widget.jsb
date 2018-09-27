@@ -208,7 +208,7 @@
 		},
 		
 		getWidget: function(){
-			return $this.mainWidget;
+			return $this.currentWidget;
 		},
 		
 		updateSizes: function(){

@@ -13,9 +13,10 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
-		$constructor: function(executor){
+		$constructor: function(executor, dcQuery){
 		    $this.executor = executor;
 		    $this.tracer = $this.executor.tracer;
+		    $this.query = dcQuery;
 
             $this._translatorSkipQueries =
                     Config.has('query.translator.skipQueries.enabled')
@@ -108,9 +109,14 @@
         buildQueryCursor: function(query, params, parent, caller){
             try {
                 var cursor = new QueryCursor($this.executor, query, params, parent, caller);
-                QueryUtils.throwError(query.$from, 'Query source/$from is undefined in context {}', query.$context);
+                if (typeof query.$from === 'string') {
+                    var sourceQuery = $this.query.$views[query.$from];
+                } else {
+                    var sourceQuery = query.$from;
+                }
+                QueryUtils.throwError(sourceQuery, 'Query source/$from is undefined in context {}', query.$context);
 
-                cursor.source = $this.buildAnyCursor(query.$from, params, parent, cursor);
+                cursor.source = $this.buildAnyCursor(sourceQuery, params, parent, cursor);
 
                 QueryUtils.walkQueries(
                     JSB.merge({},query,{$from:null}),

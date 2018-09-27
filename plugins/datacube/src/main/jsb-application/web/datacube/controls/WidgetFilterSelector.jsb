@@ -44,7 +44,9 @@
 		
 		updateVisibility: function(){
 			var filtersCount = Object.keys(this.filters).length;
-			if(filtersCount > 0){
+			var bFiltersEnabled = this.getOwner() && this.getOwner().getWidget() && this.getOwner().getWidget().getContext().find('common > showFilters').checked();
+			
+			if(filtersCount > 0 && bFiltersEnabled){
 				if(!this.visible){
 					this.getElement().css('height', 18);
 					this.visible = true;
@@ -140,6 +142,7 @@
 					var fTag = _constructTag(fId);
 					$this.append(fTag);
 					fTag.click(function(){
+						fTag.remove();
 						$this.filterManager.removeFilter(fId);
 						JSB.defer(function(){
                             $this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'changeFilterType', fItemIds: [fId]});

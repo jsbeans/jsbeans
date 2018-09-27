@@ -70,6 +70,8 @@
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="float"],
 ._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="float"] > .field,
+.schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="double"],
+._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="double"] > .field,
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="number"],
 ._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="number"] > .field {
 	color: #004c9c;

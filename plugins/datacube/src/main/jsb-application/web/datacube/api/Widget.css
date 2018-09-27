@@ -2,7 +2,10 @@
 
 @import "/fonts/roboto/roboto.css";
 
-.apiWidget {}
+.apiWidget {
+	height: 100%;
+	max-height: 100%;
+}
 
 .apiWidget > .jsb-navigator {
 	margin-bottom: 2px;

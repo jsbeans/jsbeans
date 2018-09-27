@@ -16,6 +16,7 @@
 		    if (cubeOrDataProvider.getJsb().$name != 'DataCube.Model.Cube') {
 		        return dcQuery;
 		    }
+
 		    var slicesById = cubeOrDataProvider.getSlices();
 		    var slicesByName = {};
 		    for (var id in slicesById) if (slicesById.hasOwnProperty(id)) {
@@ -51,7 +52,8 @@
                             if (slice) {
                                 subQuery.$from = $this.sliceLocalId(slice);
                                 if (!dcQuery.$views[subQuery.$from]) {
-                                    dcQuery.$views[subQuery.$from] = $this._rebuildQuery(slice.getQuery(), subQuery.$from);
+                                    var subQuery = dcQuery.$views[subQuery.$from] = $this._rebuildQuery(slice.getQuery(), subQuery.$from);
+                                    walk(subQuery);
                                 }
                             }
                         } else if (!dcQuery.$views || !dcQuery.$views[subQuery.$from]){

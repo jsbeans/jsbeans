@@ -31,7 +31,8 @@
 				create: false,
 				move: false,
 				remove: true,
-				title: 'Срез'
+				rename: true,
+				share: false
 			});
 		},
 		

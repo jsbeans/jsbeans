@@ -567,6 +567,18 @@
 			if(name[name.length - 1] == '\"' || name[name.length - 1] == '\''){
 				name = name.substr(0, name.length - 1);
 			}
+			
+			if(name.indexOf('.') >= 0){
+				var parts = name.split(/[\.\s]/i);
+				name = '';
+				for(var i = 0; i < parts.length; i++){
+					var pName = parts[i];
+					if(i > 0){
+						pName = pName[0].toUpperCase() + pName.substr(1);
+					}
+					name += pName;
+				}
+			}
 
 			return name;
 		},
@@ -1130,7 +1142,9 @@
 		},
 		
 		invalidate: function(){
+			$this.publish('DataCube.Model.Cube.status', {status: 'Очистка кэша', success: true}, {session: true});
 			JSB.defer(function(){
+				$this.load();
 				// invalidate slices
 				for(var slId in $this.slices){
 					var slice = $this.slices[slId];
@@ -1141,11 +1155,13 @@
 				if($this.queryCache){
 					$this.queryCache.clear();
 				}
+				$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
 			}, 300, 'invalidate_' + this.getId());
 		},
 		
 		updateCache: function(){
 			JSB.defer(function(){
+				$this.load();
 				$this.lock('DataCube.Model.Cube.updateCache');
 				$this.updatingCache = true;
 				try {

@@ -34,6 +34,10 @@
 			});
 			this.enable(this.options.enabled);
 			
+			if(this.options.content){
+				this.ensureContent();
+			}
+			
 			if(this.options.check){
 				this.setChecked(this.options.checked, true);
 			}
@@ -44,6 +48,7 @@
 			check: true,
 			checked: false,
 			enabled: true,
+			content: false,
 			
 			onClick: null,
 			onChange: null
@@ -97,11 +102,15 @@
 			}
 		},
 		
-		append: function(c){
-			// ensure contents
+		ensureContent: function(){
 			if(this.find('> .contents').length == 0){
 				this.getElement().append('<div class="contents"><div class="shadowPanel"></div></div>');
 			}
+		},
+		
+		append: function(c){
+			// ensure contents
+			this.ensureContent();
 			return this.find('> .contents').append(this.resolveElement(c));
 		}
 	}

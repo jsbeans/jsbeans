@@ -15,13 +15,12 @@
         ],
 
 		$constructor: function(query, cube, providers){
+		    QueryUtils.assert(cube, 'Cube is undefined');
 		    $this.query = query;
 		    $this.providers = providers;
 		    $this.cube = cube;
-		    $this.directProvider = !cube ? providers[0] : null;
 		    $this.cubeViewsBuilder = new CubeViewsBuilder(cube, providers);
-            $this.contextQueries = QueryUtils.defineContextQueries(query);
-
+            $this.contextQueries = QueryUtils.indexContextQueries(query);
 		    // для каждого запроса/констекста формируется:
 		    $this.contextSourceViews = {};  // - вьюха источника любого типа
 		    $this.contextViews = {};  // - вьюха текущего запроса/контекста (типа QueryView)
@@ -60,20 +59,20 @@
 //            }
 //        },
 
-        _buildQueryViews: function(query) {
-            QueryUtils.walkAllSubQueries(query, function(subQuery, isFromQuery, isValueQuery, isViewQuery){
+        _buildQueryViews: function(dcQuery) {
+            QueryUtils.walkQueries(dcQuery, {}, null, function(subQuery, isFromQuery, isValueQuery, isViewQuery){
                 $this._buildContextView(subQuery, isValueQuery, isViewQuery);
             });
 		},
 
 		_buildContextView: function(query, isValueQuery, isViewQuery) {
             if (query.$provider) {
-                var dataProvider = $this._getProviderById(query.$provider);
+                var dataProvider = QueryUtils._getQueryProvider(query.$provider, $this.cube);
                 QueryUtils.throwError(dataProvider, 'Undefined data provider {}', query.$provider);
 
                 var resultView = $this._buildDataProviderQuery(query.$context, dataProvider, query);
             } else if (query.$union) {
-                var resultView = new UnionsView("unions_"+name);
+                var resultView = new UnionsView("unions_"+query.$context);
                 resultView.usedFields = query.$select;
                 for(var i = 0; i < query.$union.length; i++) {
                     var innerView = $this.contextViews[query.$union[i].$context];
@@ -146,7 +145,7 @@
             } else {
                 // check if query without source or build cube
                 var query2 = JSB.merge({}, query, {$views: $this.query.$views});
-                var usedFields = /**{field:usages};*/ QueryUtils.extractUsedFields(query2, $this.cube || $this.directProvider);
+                var usedFields = /**{field:usages};*/ QueryUtils.extractUsedFields(query2, $this.cube);
 
                 if (Object.keys(usedFields).length == 0) {
                     // is NothingView
@@ -167,13 +166,13 @@
                     field: alias,
                     nativeType: QueryUtils.extractType(
                             query.$select[alias], query,
-                            $this.cube || $this.directProvider, function(ctx){
+                            $this.cube, function(ctx){
                                 return $this.contextQueries[ctx];
                             }),
                     type: // TODO replace with cube types
                         QueryUtils.extractType(
                             query.$select[alias], query,
-                            $this.cube || $this.directProvider, function(ctx){
+                            $this.cube, function(ctx){
                                 return $this.contextQueries[ctx];
                             }),
                     expr: query.$select[alias],
@@ -189,23 +188,23 @@
             );
 
             //collect subquery Views
-            var query2 = JSB.merge({}, query, {$views:$this.query.$views});
-            QueryUtils.walkSubQueries(query2, function(subQuery, isFromQuery, isValueQuery){
-                if (subQuery != query2) {
-                    var subView = $this.contextViews[subQuery.$context];
-                    if (!subView) throw new Error('Internal error: unknown view context ' + subQuery.$context);
-                    view.addSubView(subView);
+            QueryUtils.walkQueries(query, {
+                    findView: function(name) {
+                        return $this.query.$views[name];
+                    }
+                }, null, function(subQuery){
+                    if (subQuery != query) {
+                        var subView = $this.contextViews[subQuery.$context];
+                        if (!subView) throw new Error('Internal error: unknown view context ' + subQuery.$context);
+                        view.addSubView(subView);
+                    }
                 }
-            });
+            );
 
             return view;
 		},
 
 		_getProviderById: function(id) {
-		    if ($this.directProvider && $this.directProvider.id === id) {
-		        return $this.directProvider;
-		    }
-
 		    for(var i = 0; i < $this.providers.length; i++) {
 		        if ($this.providers[i].id === id) {
 		            return $this.providers[i];

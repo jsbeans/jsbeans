@@ -4,7 +4,6 @@
 	
 	$client: {
 		$require: 'JSB.Widgets.SplitLayoutManager',
-		ready: false,
 		ignoreHandlers: false,
 		
 		$constructor: function(opts){
@@ -17,23 +16,42 @@
 			this.append(`#dot
 				<div jsb="JSB.Widgets.ScrollBox">
 					<div jsb="JSB.Widgets.GroupBox" caption="Настройки соединения" class="connectionSettings">
-						<div class="option connectionString">
-							<div class="icon"></div>
-							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Адрес"
-								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+						<div class="option connectionString" title="Адрес сервера БД">
+							<div class="icon" ></div>
+							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Адрес сервера БД"
+								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}">
+							</div>
 						</div>
 						
-						<div class="option useAuth" jsb="JSB.Widgets.CheckBox" label="Использовать аутентификацию" checked="false">
-							<div class="option user">
+						<div class="option database" title="База данных">
+							<div class="icon"></div>
+							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="База данных"
+								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}">
+							</div>
+						</div>
+						
+						<div class="option useAuth" jsb="JSB.Widgets.CheckBox" label="Использовать аутентификацию" checked="false" content="true" 
+								onchange="{{=this.callbackAttr(function(){$this.updateSettings()})}}">
+							<div class="option user" title="Имя пользователя">
 								<div class="icon"></div>
 								<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Имя пользователя"
-									onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+									onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}">
+								</div>
 							</div>
 							
-							<div class="option password">
+							<div class="option password" title="Пароль">
 								<div class="icon"></div>
 								<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Пароль" password="true"
-									onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+									onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}">
+								</div>
+							</div>
+							
+							<div class="option authMechanism" title="Механизм аутентификации">
+								<div class="icon"></div>
+								<div class="combo" jsb="JSB.Widgets.ComboBox" 
+									options="{items:['MONGODB_CR','MONGODB_X509','GSSAPI','PLAIN','SCRAM_SHA_1','SCRAM_SHA_256'], value:'MONGODB_CR'}"
+									onchange="{{=this.callbackAttr(function(){$this.updateSettings()})}}">
+								</div>
 							</div>
 						</div>
 						
@@ -63,7 +81,7 @@
 				</div>
 			`);
 			
-			this.subscribe('DataCube.Model.SqlSource.extractScheme', {session: true}, function(sender, msg, params){
+			this.subscribe('DataCube.Model.MongoSource.extractScheme', {session: true}, function(sender, msg, params){
 				if(sender != $this.node.getTargetEntry()){
 					return;
 				}
@@ -71,7 +89,7 @@
 			});
 			
 			JSB.deferUntil(function(){
-				$this.ready = true;
+				$this.setTrigger('ready');
 			}, function(){
 				return $this.isContentReady();
 			});
@@ -80,9 +98,12 @@
 		collectSettings: function(){
 		    var settings = {
 				url: this.find('.connectionString > .editor').jsb().getData().getValue(),
+				dbName: this.find('.database > .editor').jsb().getData().getValue(),
+				useAuth: this.find('.useAuth').jsb().isChecked(),
 				properties: {
 					user: this.find('.user > .editor').jsb().getData().getValue(),
-					password: this.find('.password > .editor').jsb().getData().getValue()
+					password: this.find('.password > .editor').jsb().getData().getValue(),
+					authenticationMechanism: this.find('.authMechanism > .combo').jsb().getData().key
 				},
 				filter: this.find('.filter > .editor').jsb().getData().getValue()
 			};
@@ -99,8 +120,13 @@
 		fillSettings: function(settings){
 			$this.ignoreHandlers = true;
 			this.find('.connectionString > .editor').jsb().setData(settings && settings.url ? settings.url : '');
+			this.find('.database > .editor').jsb().setData(settings && settings.dbName ? settings.dbName : '');
+			this.find('.useAuth').jsb().setChecked(settings && settings.useAuth ? true: false);
+			
 			this.find('.user > .editor').jsb().setData(settings && settings.properties && settings.properties.user ? settings.properties.user : '');
 			this.find('.password > .editor').jsb().setData(settings && settings.properties && settings.properties.password ? settings.properties.password : '');
+			this.find('.authMechanism > .combo').jsb().setData(settings && settings.properties && settings.properties.authenticationMechanism || 'MONGODB_CR');
+			
 			this.find('.filter > .editor').jsb().setData(settings && settings.filter ? settings.filter : '');
 			this.find('.connectionSettings .message').text('');
 			$this.ignoreHandlers = false;
@@ -120,7 +146,13 @@
 		},
 		
 		updateButtons: function(){
-			var bEnable = this.find('.connectionString > .editor').jsb().getData().getValue().trim().length > 0;
+			var bEnable = this.find('.connectionString > .editor').jsb().getData().getValue().trim().length > 0
+							&& this.find('.database > .editor').jsb().getData().getValue().trim().length > 0;
+			if(bEnable && this.find('.useAuth').jsb().isChecked()){
+				bEnable = this.find('.user > .editor').jsb().getData().getValue().trim().length > 0
+						&& this.find('.password > .editor').jsb().getData().getValue().trim().length > 0
+						&& this.find('.authMechanism > .combo').jsb().getData()
+			}
 			this.find('.btnOk').jsb().enable(bEnable);
 			this.find('.btnLoadScheme').jsb().enable(bEnable);
 		},
@@ -149,7 +181,7 @@
 			$this.find('.btnLoadScheme > ._dwp_caption').text('Обновить схему');
 			
 			$this.find('.scheme .status > .message').text('Обновлено: ' + new Date(details.updated).toLocaleString());
-			$this.find('.scheme .details').append('Схем: <span class="count">' + details.schemes + '</span>; таблиц: <span class="count">' + details.tables + '</span>; столбцов: <span class="count">' + details.columns + '</span>');
+			$this.find('.scheme .details').append('Коллекций: <span class="count">' + details.collections + '</span>; индексов: <span class="count">' + details.indexes + '</span>; записей: <span class="count">' + details.items + '</span>');
 		},
 		
 		extractScheme: function(){
@@ -170,21 +202,15 @@
 		},
 		
 		refresh: function(){
-			if(!this.ready){
-				JSB.deferUntil(function(){
-					$this.refresh();
-				}, function(){
-					return $this.ready;
+			$this.ensureTrigger('ready', function(){
+				var entry = $this.node.getTargetEntry();
+				entry.server().getSettings(function(settings){
+					$this.fillSettings(settings);
+					$this.updateButtons();
 				});
-				return;
-			}
-			var entry = this.node.getTargetEntry();
-			entry.server().getSettings(function(settings){
-				$this.fillSettings(settings);
-				$this.updateButtons();
-			});
-			entry.server().getDetails(function(details){
-				$this.fillDetails(details);
+				entry.server().getDetails(function(details){
+					$this.fillDetails(details);
+				});
 			});
 		}
 		

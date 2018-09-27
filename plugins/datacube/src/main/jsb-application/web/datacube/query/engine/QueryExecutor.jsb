@@ -12,11 +12,12 @@
 
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
+		    'JSB.Crypt.MD5'
         ],
 
         traceEnabled: true,
 
-		$constructor: function(queryEngine, cubeOrDataProvider, dcQuery, params){
+		$constructor: function(queryEngine, cube, dcQuery, params){
 		    $this.query = JSB.clone(dcQuery);
 			$this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
 			$this.queryEngine = queryEngine;
@@ -28,14 +29,8 @@
                 params: params
             });
 
-            if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
-                $this.cube = cubeOrDataProvider;
-                $this.tracer && $this.tracer.profile('cube query', $this.cube.id);
-            } else {
-                $this.providers = [cubeOrDataProvider];
-            }
-
-            $this.builder = new CursorBuilder($this);
+            $this.cube = cube;
+            $this.tracer && $this.tracer.profile('cube query', $this.cube.id);
 		},
 
 		execute: function(){
@@ -43,13 +38,14 @@
 		        $this.tracer && $this.tracer.profile('execute query started');
 
                 $this._prepareQuery();
-                if ($this.cube) {
-                    $this.providers = QueryUtils.extractQueryProviders($this.query, $this.cube);
-                    $this.tracer && $this.tracer.profile('query providers extracted', Object.keys($this.providers).length);
-                }
-		        $this.contextQueries = QueryUtils.defineContextQueries($this.query);
+
+                $this.providers = QueryUtils.extractProviders($this.query, $this.cube);
+                $this.tracer && $this.tracer.profile('query providers extracted', Object.keys($this.providers).length);
+
+		        $this.contextQueries = QueryUtils.indexContextQueries($this.query);
                 $this.tracer && $this.tracer.profile('query prepared', $this.preparedQuery);
 
+                $this.builder = new CursorBuilder($this, $this.query);
                 var rootCursor = $this.builder.buildAnyCursor($this.query, $this.params, null);
                 $this.tracer && $this.tracer.profile('root cursor created');
 //                rootCursor.analyze();
@@ -61,6 +57,7 @@
                     }catch(e){
                         $this.tracer && $this.tracer.failed('execute query next failed', e);
                         this.close();
+                        throw e;
                     }
                 };
                 return it;
@@ -72,25 +69,21 @@
 		},
 
 		destroy: function() {
-		    $this.builder.destroy();
-            $this.tracer && $this.tracer.complete('builder destroyed');
-		    $this.tracer && $this.tracer.destroy();
+		    $this.builder && $this.builder.destroy();
+            $this.tracer  && $this.tracer.complete('builder destroyed');
+		    $this.tracer  && $this.tracer.destroy();
 		    $base();
 		},
 
-		getCubeOrDataProvider: function(){
-		    return $this.cube || $this.providers[0];
-		},
-
 		tryTranslateQuery: function(query, params) {
-		    var providers = $this._extractProviders(query);
+		    var providers = QueryUtils.extractProviders(query, $this.cube);
 		    var providersGroups = $this._groupSameProviders(providers);
             if (providers.length == 1 || providersGroups.length == 1) {
                 if (TranslatorRegistry.hasTranslator(providers[0])) {
                     try {
                         var translator = TranslatorRegistry.newTranslator(
                                 providers,
-                                $this.queryEngine
+                                $this.cube
                         );
                         var it = translator.translatedQueryIterator(query, params);
                         if (it) {
@@ -122,30 +115,31 @@
             return provider.id;
         },
 
-        _extractProviders: function(query){
-            if (query.$context == $this.query.$context) {
-                return $this.providers;
-            }
-
-            var allProvidersMap = {};
-            for(var i = 0; i < $this.providers.length; i++) {
-                var provider = $this.providers[i];
-                allProvidersMap[provider.id] = provider;
-            }
-
-            var providers = [];
-            var providersMap = {};
-            QueryUtils.walkSubQueries(query, function(query){
-                if (query.$provider) {
-                    if(!providersMap[query.$provider]) {
-                        var provider = allProvidersMap[query.$provider];
-                        providersMap[query.$provider] = provider;
-                        providers.push(provider);
-                    }
-                }
-            });
-            return providers;
-        },
+//        _extractProviders: function(query){
+//
+//            if (query.$context == $this.query.$context) {
+//                return $this.providers;
+//            }
+//
+//            var allProvidersMap = {};
+//            for(var i = 0; i < $this.providers.length; i++) {
+//                var provider = $this.providers[i];
+//                allProvidersMap[QueryUtils.getQueryProviderId(provider)] = provider;
+//            }
+//
+//            var providers = [];
+//            var providersMap = {};
+//            QueryUtils.walkSubQueries(query, function(q){
+//                if (q.$provider) {
+//                    if(!providersMap[q.$provider]) {
+//                        var provider = allProvidersMap[q.$provider];
+//                        providersMap[q.$provider] = provider;
+//                        providers.push(provider);
+//                    }
+//                }
+//            });
+//            return providers;
+//        },
 
         /** Объединяет провайдеры в группы по типам
         */
@@ -179,7 +173,7 @@
                 ctx.fields[id].usages++;
                 ctx.fields[id].type = QueryUtils.extractType(
                         field, query,
-                        $this.getCubeOrDataProvider(),
+                        $this.cube,
                         function (c) {
                             return $this.contextQueries[c];
                         }

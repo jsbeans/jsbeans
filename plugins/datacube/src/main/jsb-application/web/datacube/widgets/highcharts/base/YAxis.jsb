@@ -319,8 +319,8 @@
                         gridLineColor: yAxisContext[i].find('gridLineColor').value(),
                         gridLineDashStyle: yAxisContext[i].find('gridLineDashStyle').value(),
                         gridLineWidth: yAxisContext[i].find('gridLineWidth').value(),
-                        minY: yAxisContext[i].find('minY').value(),
-                        maxY: yAxisContext[i].find('maxY').value()
+                        min: yAxisContext[i].find('minY').value(),
+                        max: yAxisContext[i].find('maxY').value()
                     });
 
                     chartOpts.yAxisNames.push(yAxisContext[i].find('item').getName());

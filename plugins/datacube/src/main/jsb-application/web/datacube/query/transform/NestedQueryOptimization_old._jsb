@@ -8,6 +8,8 @@
 	        'DataCube.Query.QueryUtils',
 		    'JSB.Crypt.MD5'
         ],
+
+        $deprecated: 'код устарел относительно текущей версии движка',
         
         $bootstrap: function(){
         	QueryTransformer.register(this);
