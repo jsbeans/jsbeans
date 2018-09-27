@@ -71,6 +71,16 @@
 
 
 		asMongodb: function() {
+		    function prepareClose(conn, opts){
+		        var opts = opts || {};
+                var extClose = opts.onClose;
+                opts.onClose = function(){
+                    if (extClose) {
+                        extClose.call(this);
+                        conn.close();
+                    }
+                };
+		    }
             return {
             	connected: function(func){
             		var conn = $this.getConnection(false);
@@ -84,14 +94,41 @@
                 iteratedQuery: function(query, opts) {
                     var conn = $this.getConnection(false);
                     try {
-                        var extClose = opts.onClose;
-                        opts.onClose = function(){
-                            if (extClose) {
-                                extClose.call(this);
-                                conn.close();
-                            }
-                        };
+                        var opts = prepareClose(conn, opts);
                         return Mongodb.iteratedQuery(conn.get(), $this.config.dbName, query, opts);
+                    } catch(e) {
+                        conn.close();
+                        throw e;
+                    }
+                },
+                
+                iterateCollectionNames: function(opts){
+                    var conn = $this.getConnection(false);
+                    try {
+                        var opts = prepareClose(conn, opts);
+                        return Mongodb.iterateCollectionNames(conn.get(), $this.config.dbName, opts);
+                    } catch(e) {
+                        conn.close();
+                        throw e;
+                    }
+                },
+                
+                iterateCollections: function(opts){
+                    var conn = $this.getConnection(false);
+                    try {
+                        var opts = prepareClose(conn, opts);
+                        return Mongodb.iterateCollections(conn.get(), $this.config.dbName, opts);
+                    } catch(e) {
+                        conn.close();
+                        throw e;
+                    }
+                },
+                
+                iterateIndexes: function(collection, opts){
+                    var conn = $this.getConnection(false);
+                    try {
+                        var opts = prepareClose(conn, opts);
+                        return Mongodb.iterateIndexes(conn.get(), $this.config.dbName, collection, opts);
                     } catch(e) {
                         conn.close();
                         throw e;
@@ -107,48 +144,22 @@
                     }
                 },
 
-                dropCollection: function(collection) {
-                    var conn = $this.getConnection(false);
-                    try {
-                        return Mongodb.dropCollection(conn.get(), $this.config.dbName, collection);
-                    } finally {
-                        conn.close();
-                    }
-                },
-                
-                listCollectionNames: function(opts){
-                    var conn = $this.getConnection(false);
-                    try {
-                        return Mongodb.listCollectionNames(conn.get(), $this.config.dbName, opts);
-                    } finally {
-                        conn.close();
-                    }
-                },
-                
-                listCollections: function(opts){
-                    var conn = $this.getConnection(false);
-                    try {
-                        return Mongodb.listCollectionNames(conn.get(), $this.config.dbName, opts);
-                    } finally {
-                        conn.close();
-                    }
-                },
-                
-                listIndexes: function(collection, opts){
-                    var conn = $this.getConnection(false);
-                    try {
-                        return Mongodb.listIndexes(conn.get(), $this.config.dbName, collection, opts);
-                    } finally {
-                        conn.close();
-                    }
-                },
-
                 dropDatabase: function(){
                     var conn = $this.getConnection(false);
                     try {
                         return Mongodb.dropDatabase(conn.get(), $this.config.dbName);
                     } finally {
                         conn.close();
+                    }
+                },
+
+                dropCollection: function(collection) {
+                    var conn = $this.getConnection(false);
+                    try {
+                        return Mongodb.dropCollection(conn.get(), $this.config.dbName, collection);
+                    } catch(e) {
+                        conn.close();
+                        throw e;
                     }
                 },
                 
@@ -184,7 +195,7 @@
 
             // obtain collections
             var colls = [];
-            var collIt = this.asMongodb().listCollections();
+            var collIt = this.asMongodb().iterateCollections();
             while(collIt.hasNext()){
                 colls.push(collIt.next());
             }
@@ -217,7 +228,7 @@
 
                 // extract indexes
                 var indexes = {};
-                var indexIt = this.asMongodb().listIndexes(collectionName);
+                var indexIt = this.asMongodb().iterateIndexes(collectionName);
                 while(indexIt.hasNext()){
                     var idxDesc = indexIt.next();
                     indexes[idxDesc.name] = idxDesc;

@@ -129,17 +129,17 @@ debugger;
             return $this.createIterator(names, opts);
         },
 
-        listCollectionNames: function(client, dbName, opts){
-            var names = $this.getDB(client, dbName).listCollectionNames();
+        iterateCollectionNames: function(client, dbName, opts){
+            var names = $this.getDB(client, dbName).iterateCollectionNames();
             return $this.createIterator(names, opts);
         },
         
-        listCollections: function(client, dbName, opts){
+        iterateCollections: function(client, dbName, opts){
         	var collections = $this.getDB(client, dbName).listCollections​();
         	return $this.createIterator(collections, opts);
         },
         
-        listIndexes: function(client, dbName, collectionName, opts){
+        iterateIndexes: function(client, dbName, collectionName, opts){
         	var indexes = $this.getDB(client, dbName).getCollection(collectionName).listIndexes​();
         	return $this.createIterator(indexes, opts);
         },
