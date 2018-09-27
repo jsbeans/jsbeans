@@ -299,16 +299,6 @@
 		    $this.walkQueries(query, {findView:getView}, null, function (q){
                 (function walkExpression(exp){
                     if (JSB.isObject(exp)) {
-                        if (!exp.$select || exp == q) {
-                            for(var i in exp) if (exp[i] != null) {
-                                if (typeof exp[i] !== "string" || !QuerySyntax.constValueOperators[i]) {
-                                    var resultField = walkExpression(exp[i]);
-                                    if (resultField) {
-                                        exp[i] = resultField;
-                                    }
-                                }
-                            }
-                        }
                         if (exp.$field) {
                             var context = exp.$context || q.$context;
                             if (context == query.$context) {
@@ -321,6 +311,15 @@
                                         exp.$context = resultField.$context;
                                     }
                                     return;
+                                }
+                            }
+                        } else if (!exp.$select || exp == q) {
+                            for(var i in exp) if (exp[i] != null) {
+                                if (typeof exp[i] !== "string" || !QuerySyntax.constValueOperators[i]) {
+                                    var resultField = walkExpression(exp[i]);
+                                    if (resultField) {
+                                        exp[i] = resultField;
+                                    }
                                 }
                             }
                         }

@@ -221,7 +221,88 @@
 		},
 
         _translateRecursiveSelect: function (exp, dcQuery) {
-            throw 'TODO';
+
+            function translateRecursive(){
+                var startQuery = {
+                    $context: 'start:' + dcQuery.$context,
+                    $select: {
+                        id: exp.$idField.$field||exp.$idField,
+                        parentId: exp.$parentIdField.$field||exp.$parentIdField,
+                        value: exp.$aggregateExpr[aggFunc],
+                    },
+                    $filter: {
+                        $eq: [
+                            exp.$idField.$field||exp.$idField,
+                            {$field:exp.$idField.$field||exp.$idField, $context: dcQuery.$context}
+                        ]
+                    }
+                };
+                var recursiveQuery = {
+                    $context: 'recursive:' + dcQuery.$context,
+                    $select: {
+                        id: exp.$idField.$field||exp.$idField,
+                        parentId: exp.$parentIdField.$field||exp.$parentIdField,
+                        value: exp.$aggregateExpr[aggFunc],
+                    }
+                };
+                if (dcQuery.$from) {
+                    startQuery.$from = dcQuery.$from;
+                    startQuery.$views = $this.dcQuery.$views;
+                    recursiveQuery.$from = dcQuery.$from;
+                    recursiveQuery.$views = $this.dcQuery.$views;
+                }
+
+                var sql = '';
+                try {
+                    $this.contextQueries[startQuery.$context] = startQuery;
+                    $this.contextQueries[recursiveQuery.$context] = recursiveQuery;
+
+                    sql += $this.translateQueryExpression(startQuery, true);
+                    sql += ' UNION ALL ';
+                    sql += $this.translateQueryExpression(recursiveQuery, true);
+                } finally {
+                    delete $this.contextQueries[startQuery.$context];
+                    delete $this.contextQueries[recursiveQuery.$context];
+                }
+                if(sql.endsWith(')')) {
+                    // HACK: paste join on before ')'
+                    sql = sql.substring(0, sql.length-1);
+                    sql += ' JOIN ' + $this._quotedName(treeContext);
+                    sql += ' ON ' + $this._translateField(exp.$parentIdField.$field||exp.$parentIdField, recursiveQuery.$context, false, recursiveQuery.$context)
+                        + ' = '
+                        + $this._quotedName(treeContext) + '.id';
+                    sql += ')';
+                } else {
+                    throw new Error('Internal error: Invalid query format, unexpected end');
+                }
+                return sql;
+            }
+
+            var aggFunc = Object.keys(exp.$aggregateExpr)[0];
+            $this.throwError(QuerySyntax.schemaAggregateOperators[aggFunc], 'Operator $recursiveSelect supports only aggregate function in $aggregateExpr');
+
+            var view = $this._findQueryView(dcQuery.$context);
+            $this.throwError(view, 'Query view not found: ' + dcQuery.$context);
+
+            if (!(JSB.isString(exp.$idField) || exp.$idField.$field)
+                && !(JSB.isString(exp.$parentIdField) || exp.$parentIdField.$field)
+                ) {
+                $this.throwError(0, 'Operator $recursiveSelect supports only fields in $idField and $parentIdField');
+            }
+
+            var treeContext = 'tree:' + dcQuery.$context;
+            var sql = '';
+            sql += 'WITH RECURSIVE ' +  $this._quotedName(treeContext) + ' AS (';
+            sql += translateRecursive();
+            sql += ')';
+            sql += ' SELECT ' + $this._translateExpression((function(){
+                var val = {};
+                val[aggFunc] = "value";
+                return val;
+            })(), dcQuery);
+            sql += ' FROM ' + $this._quotedName(treeContext);
+
+            return '(' + sql + ')';
         },
 
         _translateField: function(field, context, useAlias, callerContext) {
@@ -243,6 +324,14 @@
         _translateFieldInternal: function(field, context, useAlias, callerContext) {
             var query = $this.contextQueries[context];
             QueryUtils.throwError(query, 'Query context is undefined: {}', context);
+
+            if (useAlias) {
+                for(var alias in query.$select) {
+                    if (alias == field) {
+                        return $this._quotedName(field);
+                    }
+                }
+            }
 
             if (query.$from) {
 
@@ -290,10 +379,6 @@
                 if (callerQuery.$join && (query == callerQuery.$join.$left || query == callerQuery.$join.$right)) {
                     return $this._translateExpression(query.$select[field], query);
                 }
-            }
-
-            if (useAlias) {
-                return $this._quotedName(field);
             }
 
             /// is export alias
