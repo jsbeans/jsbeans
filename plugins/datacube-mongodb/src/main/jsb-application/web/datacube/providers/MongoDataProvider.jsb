@@ -184,7 +184,7 @@
 				} finally {
 					it.close();
 				}
-			})();
+			}).call(this.getStore());
 			
 			// transform fieldTree into plain fields
 			function transformTreeEntry(treeFields, parent){
