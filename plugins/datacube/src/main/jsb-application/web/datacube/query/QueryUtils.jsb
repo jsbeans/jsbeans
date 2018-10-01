@@ -956,6 +956,23 @@ throw 'TODO';
 		    return false;
 		},
 
+		likeToRegex: function (like) {
+             function escape(s) {
+                 return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+             }
+
+             var pattern = like.replace(/[%_]|[^%_]/g, function(m) {
+                 if (m == "%") {
+                     return ".*";
+                 } else if (m == "_") {
+                     return ".";
+                 } else {
+                     return escape(m);
+                 }
+             });
+             return (like.startsWith('%') ? '' : '^') + pattern + (like.endsWith('%') ? '' : '$');
+        },
+
 
 	}
 }

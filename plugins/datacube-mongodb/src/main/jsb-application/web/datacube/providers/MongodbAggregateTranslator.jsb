@@ -45,7 +45,7 @@
                 var oldNext = iterator.next;
                 iterator.next = function() {
                     var obj = oldNext.call(this);
-                    delete obj._id;
+                    if (obj) delete obj._id;
                     return obj;
                 };
             }
@@ -144,8 +144,11 @@
             $this._buildProject(aggregate, query);
 
 		    if (query.$sort && query.$sort.length > 0) {
-debugger
 		        $this._buildSort(aggregate, query);
+		    }
+
+		    if (query.$distinct) {
+		        $this._buildDistinct(aggregate, query);
 		    }
 
 		    if (query.$offset && query.$offset > 0) {
@@ -208,10 +211,6 @@ debugger
 
 		_buildMatch: function(aggregate, query, filter){
 
-            aggregate.pipeline.push({
-                $match: translateFilter(query.$filter),
-            });
-
 		    function translateFilter(exp){
 		        var and = [];
 		        for(var op in exp) {
@@ -241,24 +240,95 @@ debugger
 		        return res;
 		    }
 
+		    function isField(e) {
+		        return !!e.$field || JSB.isString(e);
+		    }
+
 		    function translateOperator(op, exp) {
-		        switch(op){
+                function declareConditionField(){
+                    var field = '_cond_' + JSB.generateUid();
+                    var project = aggregate.pipeline[aggregate.pipeline.length - 1];
+                    QueryUtils.throwError(project.$project, 'Last pipeline stage is not $project');
+                    var cond = project.$project[field] = {};
+                    switch(op) {
+                        case '$eq':
+                        case '$ne':
+                        case '$lt':
+                        case '$gt':
+                        case '$lte':
+                        case '$gte':
+                        case '$like':
+                        case '$ilike':
+                        case '$in':
+                        case '$nin':
+                            cond[op] = [
+                                $this._translateExpression(exp[0], {aggregate:aggregate, query:query}),
+                                $this._translateExpression(exp[1], {aggregate:aggregate, query:query})
+                            ];
+                            break;
+                        default:
+                            QueryUtils.throwError(0, 'Invalid or unsupported operator {} for expression condition', op);
+                    } // end switch
+                    return field;
+                }
+
+		        switch(op) {
 		            case '$eq':
 		            case '$ne':
 		            case '$lt':
 		            case '$gt':
 		            case '$lte':
 		            case '$gte':
-		                var res = {};
-		                res[op] = [];
-		                for(var i = 0; i < exp.length; i++) {
-		                    res[op][i] = $this._translateExpression(aggregate, query, exp[i]);
-		                }
-		                return res;
-                    // TODO other operators
-		        }
-		        QueryUtils.throwError(0, 'Invalid or unsupported operator {}', op);
+                    case '$like':
+                    case '$ilike':
+                    case '$in':
+                    case '$nin':
+                    {
+                        /**Логика примерно такая:
+                            - если сравнивается поле с константой, то условие вставляется в $match
+                            - если любой из операндов выражение, то сначала в $project создаетсяя поле с результатом проверки, а потом в $match выполняется проверка
+                        */
+                        if (isField(exp[0]) && exp[1].hasOwnProperty('$const')
+                            || isField(exp[1]) && exp[0].hasOwnProperty('$const')
+                            ) {
+                            var key =   $this._translateExpression(isField(exp[0]) ? exp[0] : exp[1], {aggregate:aggregate, query:query, asKey:true});
+                            var value = $this._translateExpression(exp[1].hasOwnProperty('$const') ? exp[1] : exp[0], {aggregate:aggregate, query:query, notLiteral:true});
+
+
+                            var cond = {};
+                            cond[key] = {};
+                            if (op == '$like') {
+                                cond[key].$regex = QueryUtils.likeToRegex(value);
+                                cond[key].$options = 's';
+                            } else if (op == '$ilike') {
+                                cond[key].$regex = QueryUtils.likeToRegex(value);
+                                cond[key].$options = 'si';
+                            } else if (op == '$in') {
+                                // TODO: $in (and [] in right side)
+                                throw 'TODO';
+                            } else if (op == '$nin') {
+                                // TODO: $nin (and [] in right side)
+                                throw 'TODO';
+                            } else {
+                                cond[key][op] = value;
+                            }
+                            return cond;
+                        } else {
+                            var cond = {};
+                            var key = declareConditionField();
+                            cond[key] = true;
+                            return cond;
+                        }
+                    }
+                    default:
+                        QueryUtils.throwError(0, 'Invalid or unsupported operator {}', op);
+                } // end switch
+
 		    }
+
+            aggregate.pipeline.push({
+                $match: translateFilter(query.$filter),
+            });
 		},
 
 		_buildSort: function(aggregate, query){
@@ -274,7 +344,11 @@ debugger
 
             function buildSortExpression(exp, type){
                 if (JSB.isString(exp) || exp.$field) {
-                    var name = $this._translateExpression(aggregate, query, exp);
+                    var name = $this._translateField(
+                                    exp.$field || exp, exp.$context || query.$context,
+                                    {aggregate:aggregate, query:query, asKey: true}
+                                );
+
                 } else {
                     var projectStage = aggregate.pipeline[aggregate.pipeline.length - 1];
                     if (!projectStage.$project) {
@@ -282,7 +356,7 @@ debugger
                     }
 
                     var  name = '_sort' + MD5.md5(JSB.stringify(exp));
-                    projectStage.$project[name] = $this._translateExpression(aggregate, query, exp);
+                    projectStage.$project[name] = $this._translateExpression(exp, {aggregate:aggregate, query:query});
                 }
 
                 sort[name] = type;
@@ -295,15 +369,15 @@ debugger
             for(var alias in query.$select) {
                 var e = query.$select[alias];
                 if (QueryUtils.isAggregatedExpression(e)) {
-                    group[alias] = $this._translateExpression(aggregate, query, e);
+                    group[alias] = $this._translateExpression(e, {aggregate:aggregate, query:query});
                 } else {
-                    group._id[alias] = $this._translateExpression(aggregate, query, e);
+                    group._id[alias] = $this._translateExpression(e, {aggregate:aggregate, query:query});
                 }
             }
 
             for (var i = 0; i < query.$groupBy.length; i++) {
                 var e = query.$groupBy[i];
-                var exp = $this._translateExpression(aggregate, query, e);
+                var exp = $this._translateExpression(e, {aggregate:aggregate, query:query});
 
                 var exists = false;
                 for(var name in group._id) {
@@ -320,6 +394,21 @@ debugger
             aggregate.pipeline.push({
                 $group: group
             });
+		},
+
+		_buildDistinct: function(aggregate, query){
+            var prevProject = aggregate.pipeline[aggregate.pipeline.length - 1];
+            QueryUtils.throwError(prevProject.$project, 'Last pipeline stage is not $project');
+
+		    var group = {_id:{}};
+		    var project = {};
+            for(var alias in prevProject.$project) if (alias !== '_queryContext') {
+                group._id[alias] = '$' + alias;
+                project[alias] =  '$_id.' + alias;
+            }
+
+            aggregate.pipeline.push({$group: group});
+            aggregate.pipeline.push({$project: project});
 		},
 
 		_buildJoinedSubQueries: function(aggregate, query){
@@ -373,7 +462,7 @@ debugger
 
                 if (e.$select || query.$join) {
 //debugger
-                    project[alias] = $this._translateExpression(aggregate, query, e);
+                    project[alias] = $this._translateExpression(e, {aggregate:aggregate, query:query});
 
                 } else if (hasGroupBy) {
 
@@ -385,7 +474,7 @@ debugger
 
                 } else {
 
-                    project[alias] = $this._translateExpression(aggregate, query, e);
+                    project[alias] = $this._translateExpression(e, {aggregate:aggregate, query:query});
 
                 }
             }
@@ -400,7 +489,7 @@ debugger
             }
 		},
 
-		_translateExpression: function(aggregate, query, exp){
+		_translateExpression: function(exp, opts){
 		    if (JSB.isString(exp)) {
 		        exp = {$field:exp};
 		    }
@@ -413,21 +502,25 @@ debugger
 		    QueryUtils.throwError(!exp.$select, 'Sub-query expression not supported');
 //debugger
 		    if (exp.$const) {
-		        return { $literal: exp.$const };
+		        if (opts.notLiteral){
+		            return exp.$const;
+		        } else {
+		            return { $literal: exp.$const };
+		        }
 		    }
 		    if (exp.$field) {
-                return $this._translateField(aggregate, query, exp.$field, exp.$context || query.$context);
+                return $this._translateField(exp.$field, exp.$context || opts.query.$context, opts);
 		    }
 
 		    var op = Object.keys(exp)[0];
 		    switch(op){
                 case '$coalesce':
-                    var firstIfNull = ifNull = [$this._translateExpression(aggregate, query, exp[op][0])];
+                    var firstIfNull = ifNull = [$this._translateExpression(exp[op][0], opts)];
                     for(var i = 1; i < exp[op].length; i++) {
                         if (i == exp[op].length -1) {
-                            ifNull.push($this._translateExpression(aggregate, query, exp[op][i]));
+                            ifNull.push($this._translateExpression(exp[op][i], opts));
                         } else {
-                            ifNull.push({$ifNull: [$this._translateExpression(aggregate, query, exp[op][i])]});
+                            ifNull.push({$ifNull: [$this._translateExpression(exp[op][i], opts)]});
                             ifNull = ifNull[1].$ifNull;
                         }
                     }
@@ -446,12 +539,12 @@ debugger
                 case '$mul':
                     return {$mul: translateArguments(exp[op])};
                 case '$sqrt':
-                    return {$sqrt: $this._translateExpression(aggregate, query, exp[op])};
+                    return {$sqrt: $this._translateExpression(exp[op], opts)};
                 case '$pow2':
-                    return {$pow: [$this._translateExpression(aggregate, query, exp[op]), 2]};
+                    return {$pow: [$this._translateExpression(exp[op], opts), 2]};
 
                 case '$concat':
-                    return {$concatArrays: translateArguments(exp[op])};
+                    return {$concat: translateArguments(exp[op])};
 
                 case '$if':
                     return {
@@ -468,21 +561,21 @@ debugger
 		    // aggregate accumulators
 		    switch(op){
                 case '$sum':
-                    return {$sum:   $this._translateExpression(aggregate, query, exp[op])};
+                    return {$sum:   $this._translateExpression(exp[op], opts)};
                 case '$avg':
-                    return {$avg:   $this._translateExpression(aggregate, query, exp[op])};
+                    return {$avg:   $this._translateExpression(exp[op], opts)};
                 case '$first':
-                    return {$first: $this._translateExpression(aggregate, query, exp[op])};
+                    return {$first: $this._translateExpression(exp[op], opts)};
                 case '$last':
-                    return {$last:  $this._translateExpression(aggregate, query, exp[op])};
+                    return {$last:  $this._translateExpression(exp[op], opts)};
                 case '$any':
-                    return {$first: $this._translateExpression(aggregate, query, exp[op])};
+                    return {$first: $this._translateExpression(exp[op], opts)};
                 case '$max':
-                    return {$max:   $this._translateExpression(aggregate, query, exp[op])};
+                    return {$max:   $this._translateExpression(exp[op], opts)};
                 case '$min':
-                    return {$min:   $this._translateExpression(aggregate, query, exp[op])};
+                    return {$min:   $this._translateExpression(exp[op], opts)};
                 case '$array':
-                    return {$push:  $this._translateExpression(aggregate, query, exp[op])};
+                    return {$push:  $this._translateExpression(exp[op], opts)};
                 case '$count':
                     if (exp[op] == 1) {
                         return {$sum: 1};
@@ -490,7 +583,7 @@ debugger
                         return {
                             $sum: {
                                 $cond: {
-                                    if: {$eq: [$this._translateExpression(aggregate, query, exp[op]), null]},
+                                    if: {$eq: [$this._translateExpression(exp[op], opts), null]},
                                     then: 0,
                                     else: 1,
                                 }
@@ -504,30 +597,33 @@ debugger
             function translateArguments(args){
                 var res = [];
                 for(var i = 0; i < args.length; i++){
-                    res[i] = $this._translateExpression(aggregate, query, args[i]);
+                    res[i] = $this._translateExpression(args[i], opts);
                 }
                 return res;
             }
 		},
 
-		_translateField: function(aggregate, query, field, context) {
+		_translateField: function(field, context, opts) {
 
-		    if (query.$context != context){
-                if (query.$join) {
-                    if (query.$join.$left.$context == context) {
-                        return '$' + field;
+		    if (opts.query.$context != context){
+                if (opts.query.$join) {
+                    if (opts.query.$join.$left.$context == context) {
+                        return opts.asKey ? field : '$' + field;
                     }
-                    if (query.$join.$right.$context == context) {
-                        return '$' + $this._getContextFieldName(context) + '.' + field;
+                    if (opts.query.$join.$right.$context == context) {
+                        return opts.asKey
+                                ? $this._getContextFieldName(context) + '.' + field
+                                : '$' + $this._getContextFieldName(context) + '.' + field;
                     }
                 }
                 return declareVar();
             }
-            return '$' + field;
+            return opts.asKey ? field : '$' + field;
 
             function declareVar(){
-                QueryUtils.throwError(aggregate.let, 'Unexpected external field {} in {}', field, query.$context);
-                aggregate.let[field] ='$' + field;
+                QueryUtils.throwError(!opts.asKey, 'Invalid field for key value');
+                QueryUtils.throwError(opts.aggregate.let, 'Unexpected external field {} in {}', field, opts.query.$context);
+                opts.aggregate.let[field] ='$' + field;
                 return '$$' + field;
             }
 		},
@@ -537,11 +633,17 @@ debugger
 		},
 
 		_fixupResultFields: function(query, pipeline){
+            var prevProject = pipeline[pipeline.length - 1];
+            QueryUtils.throwError(prevProject.$project, 'Last pipeline stage is not $project');
+
 		    var project = {};
+
             for(var alias in query.$select) {
                 project[alias] = 1;
             }
-		    pipeline.push({$project:project});
+            if (Object.keys(prevProject).length > Object.keys(project).length) {
+		        pipeline.push({$project:project});
+            }
 		},
 	}
 }
