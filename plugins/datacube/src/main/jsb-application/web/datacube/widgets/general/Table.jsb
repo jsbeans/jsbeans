@@ -157,6 +157,24 @@
 					optional: 'checked',
 					editor: 'none'
 	            },
+	            useGroupOperations: {
+	            	render: 'item',
+	                name: 'Разрешить групповые операции',
+					optional: 'checked',
+					editor: 'none'
+	            },
+	    	    usePrefetch: {
+	    	    	render: 'item',
+	                name: 'Использовать упреждающую загрузку данных',
+	                optional: true,
+	                editor: 'none'
+	    	    },
+	    	    useAnimation: {
+	    	    	render: 'item',
+	                name: 'Анимация',
+	                optional: 'checked',
+	                editor: 'none'
+	    	    }
 			}
 		},
 	    rows: {
@@ -293,18 +311,6 @@
 	    	            }
 	            	}
 	            },
-	    	    usePrefetch: {
-	    	    	render: 'item',
-	                name: 'Использовать упреждающую загрузку данных',
-	                optional: true,
-	                editor: 'none'
-	    	    },
-	    	    useAnimation: {
-	    	    	render: 'item',
-	                name: 'Анимация',
-	                optional: 'checked',
-	                editor: 'none'
-	    	    }
 
 	        }
 	    },
@@ -757,9 +763,10 @@
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.scroll.ensureTrigger('ready', function(){
-					$this.scroll.append('<table class="rows" cellpadding="0" cellspacing="0"><colgroup></colgroup><tbody></tbody></table>');
+					$this.rowsTable = $this.$('<table class="rows" cellpadding="0" cellspacing="0"><colgroup></colgroup><tbody></tbody></table>');
+					$this.scroll.append($this.rowsTable);
 
-					$this.rowFilterTool = this.$('<div class="rowFilterTool hidden"><div class="and">И</div><div class="or">ИЛИ</div><div class="not">НЕ</div></div>');
+					$this.rowFilterTool = this.$('<div class="rowFilterTool hidden"><div class="mark">&#10004;</div><div class="and">И</div><div class="or">ИЛИ</div><div class="not">НЕ</div></div>');
 					$this.scroll.append($this.rowFilterTool);
 					$this.rowFilterTool.on({
 						'mouseover': function(evt){
@@ -779,7 +786,11 @@
 					});
 
 					$this.rowFilterTool.find('> div.not').click(function(){
-						$this.onFilterClick($this.highlightedRowData, '$and', '$ne');
+						$this.onFilterClick($this.highlightedRowData, '$not', '$eq');
+					});
+					
+					$this.rowFilterTool.find('> div.mark').click(function(){
+						$this.toggleRowSelection($this.highlightedRowData.key);
 					});
 
 					$this.header.resize(function(){
@@ -820,6 +831,20 @@
 						if($this.refreshOrdered){
 							$this.refresh($this.refreshOrderedOpts);
 						}
+					});
+					
+					$this.subscribe('DataCube.Widgets.Widget.toolbar', function(sender, msg, bEnabled){
+						if(sender != $this){
+							return;
+						}
+						$this.enableMultiselect(bEnabled);
+					});
+					
+					$this.subscribe('DataCube.Widgets.Widget.selection', function(sender, msg, params){
+						if(sender != $this){
+							return;
+						}
+						$this.synchronizeSelection(params);
 					});
 					
 /*					
@@ -884,7 +909,7 @@
 					rowElt.addClass('expanded');
 				}
 				
-				this.refresh();
+				this.refresh({preserveSelection:true});
 			}
 		},
 		
@@ -913,61 +938,82 @@
 		
 		drawRows: function(){
 			function updateColl(d){
-				if(!$this.useTree){
-					return;
-				}
-				var collEl = $this.$(this);
-				if(d.colIdx > 0){
-					// remove toggle if existed
-					var toggleElt = collEl.find('> .toggle');
-					collEl.css('padding-left', 0);
-					if(toggleElt.length > 0){
-						toggleElt.remove();
-					}
-				} else {
-					// add toggle if not existed
-					var toggleElt = collEl.find('> .toggle');
-					var rowDesc = $this.rowKeyMap[d.rowKey];
-					collEl.css('padding-left', 'calc('+$this.childIdent+' * '+rowDesc.depth+')');
-					if(toggleElt.length == 0){
-						toggleElt = $this.$('<div class="toggle"></div>');
-						collEl.prepend(toggleElt);
-						toggleElt.click(function(evt){
-							evt.stopPropagation();
-							$this.toggleRowExpansion(d.rowKey);
-						});
-
-					}
-					
-					var childCountElt = collEl.find('.childCount');
-					if($this.showChildCount){
-						if(childCountElt.length == 0){
-							childCountElt = $this.$('<div class="childCount"></div>');
-							collEl.append(childCountElt);
+				if($this.useTree){
+					var collEl = $this.$(this);
+					if(d.colIdx > 0){
+						// remove toggle if existed
+						var toggleElt = collEl.find('> .toggle');
+						collEl.css('padding-left', 0);
+						if(toggleElt.length > 0){
+							toggleElt.remove();
 						}
 					} else {
-						if(childCountElt.length > 0){
-							// remove
-							childCountElt.remove();
+						// add toggle if not existed
+						var toggleElt = collEl.find('> .toggle');
+						var rowDesc = $this.rowKeyMap[d.rowKey];
+						collEl.css('padding-left', 'calc('+$this.childIdent+' * '+rowDesc.depth+')');
+						if(toggleElt.length == 0){
+							toggleElt = $this.$('<div class="toggle"></div>');
+							collEl.prepend(toggleElt);
+							toggleElt.click(function(evt){
+								evt.stopPropagation();
+								$this.toggleRowExpansion(d.rowKey);
+							});
+	
 						}
-					}
-					
-					toggleElt.addClass('resolvingDescendants');
-					$this.resolveDescendants(rowDesc, function(descendantsCount){
-						toggleElt.removeClass('resolvingDescendants');
-						if(descendantsCount > 0){
-							toggleElt.addClass('hasDescendants');
-							collEl.addClass('hasDescendants');
-							if($this.showChildCount){
-								childCountElt.text(descendantsCount);
+						
+						var childCountElt = collEl.find('.childCount');
+						if($this.showChildCount){
+							if(childCountElt.length == 0){
+								childCountElt = $this.$('<div class="childCount"></div>');
+								collEl.append(childCountElt);
 							}
 						} else {
-							toggleElt.removeClass('hasDescendants');
-							collEl.removeClass('hasDescendants');
+							if(childCountElt.length > 0){
+								// remove
+								childCountElt.remove();
+							}
 						}
-					});
-					
+						
+						toggleElt.addClass('resolvingDescendants');
+						$this.resolveDescendants(rowDesc, function(descendantsCount){
+							toggleElt.removeClass('resolvingDescendants');
+							if(descendantsCount > 0){
+								toggleElt.addClass('hasDescendants');
+								collEl.addClass('hasDescendants');
+								if($this.showChildCount){
+									childCountElt.text(descendantsCount);
+								}
+							} else {
+								toggleElt.removeClass('hasDescendants');
+								collEl.removeClass('hasDescendants');
+							}
+						});
+						
+					}
 				}
+				
+				if($this.useGroupOperations){
+					var collEl = $this.$(this);
+					var selectElt = collEl.find('> .select');
+					if(d.colIdx > 0){
+						// remove select if existed
+						if(selectElt.length > 0){
+							selectElt.remove();
+						}
+					} else {
+						if(selectElt.length == 0){
+							selectElt = $this.$('<div class="select"></div>');
+							collEl.prepend(selectElt);
+							
+							selectElt.click(function(evt){
+								evt.stopPropagation();
+								$this.toggleRowSelection(d.rowKey);
+							});
+						}	
+					}
+				}
+
 			}
 			
 			function updateCell(d){
@@ -1114,6 +1160,15 @@
 			function _removeRows(){
 				var removedRowsSel = rowsSelData.exit();
 				
+				// destroy highlights
+				removedRowsSel
+					.each(function(d){
+						if($this.highlightedRowKey == d.key){
+							$this.highlightedRowKey = null;
+							$this.rowFilterTool.addClass('hidden');
+						}
+					});
+				
 				// destroy widgets
 				removedRowsSel
 					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
@@ -1154,13 +1209,13 @@
 						.style('transform', function(d){return $this.useAnimation ? (d.depth > 0 ? 'scale(0,0)':'translate(-'+$this.getElement().width()+'px,0)') : null;})
 						.style('opacity', function(d){return $this.useAnimation ? 0 : null;})
 						.on('click',function(d){
-							$this.onRowClick(d);
+							$this.onRowClick(d, $this.$(this), d3.event);
 						})
 						.on('mouseover', function(d){
-							$this.onRowHover(d, $this.$(this));
+							$this.onRowHover(d, $this.$(this), d3.event);
 						})
 						.on('mouseout', function(d){
-							$this.onRowOut(d, $this.$(this));
+							$this.onRowOut(d, $this.$(this), d3.event);
 						})
 						.attr('key', function(d){ return d.key;})
 						.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
@@ -1416,6 +1471,9 @@
 				}
 				
 				$this.drawRows();
+				if($this.useGroupOperations){
+					$this.synchronizeSelection();
+				}
 				
 				$this.rowAppending = false;
 				if(!$this.useTree && pRows.length > 0){
@@ -1683,6 +1741,18 @@
 			iterateRows();
 		},
 		
+		enableMultiselect: function(bEnabled){
+			if(!this.useGroupOperations){
+				return;
+			}
+			$this.multiselect = bEnabled;
+			if(bEnabled){
+				$this.addClass('multiselect');	
+			} else {
+				$this.removeClass('multiselect');
+			}
+		},
+		
 		setDeferredLoader: function(){
 			JSB.defer(function(){
 				$this.getElement().loader();
@@ -1699,54 +1769,123 @@
 			}
 		},
 		
-		onRowClick: function(d){
-			if(this.useFilterOnClick && d.filter && d.filter.length > 0){
-				// remove all filters with
-				var filters = this.getFilters();
-				var idsToRemove = [];
-				for(var i = 0; i < d.filter.length; i++){
-					var fName = d.filter[i].field;
-					for(var fId in filters){
-						if(filters[fId].field == fName){
-							idsToRemove.push(fId);
-						}
-					}
-				}
-				for(var i = 0; i < idsToRemove.length; i++){
-					this.removeFilter(idsToRemove[i], true);
-				}
-				$this.onFilterClick(d, '$and', '$eq');
+		constructRowSelection: function(rowKey){
+			var binding = this.getContext().find('rows').binding();
+			var rowDesc = $this.rowKeyMap[rowKey];
+			
+			var filters = [];
+			
+			for(var i = 0; i < rowDesc.filter.length; i++){
+				var fDesc = {
+					sourceId: binding.source,
+					op: '$eq',
+					field: rowDesc.filter[i].field,
+					value: rowDesc.filter[i].value
+				};
+				filters.push(fDesc);
 			}
-			if(this.callApiOnClick){
-				// construct param object
-				var p = {};
-				if(d.clickParams && d.clickParams.length > 0){
-					for(var i = 0; i < d.clickParams.length; i++){
-						var col = d.clickParams[i].field;
-						var val = d.clickParams[i].value;
-						p[col] = val;
-					}
+			
+			return {
+				filter: filters
+			};
+		},
+		
+		combineRowsBetweenKeys: function(sourceKey, targetKey){
+			var sourceElt = $this.scroll.find('tr.row[key="'+sourceKey+'"]');
+			var upElt = sourceElt, downElt = sourceElt;
+			var upKeys = [], downKeys = [], resKeys = [];
+			while(upElt.length > 0 || downElt.length > 0){
+				if(upElt.length > 0){
+					upElt = upElt.prev();
 				}
-				$this.publish('DataCube.Widget.eventFired', {
-					message: 'DataCube.Widgets.Table.rowClick',
-					data: p
-				});
+				if(downElt.length > 0){
+					downElt = downElt.next();
+				}
+				if(upElt.length > 0){
+					var upKey = upElt.attr('key');
+					if(upKey == targetKey){
+						resKeys = upKeys;
+						break;
+					}
+					upKeys.push(upKey);
+				}
+				if(downElt.length > 0){
+					var downKey = downElt.attr('key');
+					if(downKey == targetKey){
+						resKeys = downKeys;
+						break;
+					}
+					downKeys.push(downKey);
+				}
 			}
-			if(this.useDrillDownOnClick){
-				var widget = this.getContext().find('drillDownWidget').value();
-				var filterOpts = {};
-				if(!this.useFilterOnClick && d.filter && d.filter.length > 0){
+			return resKeys;
+		},
+		
+		onRowClick: function(d, rowElt, evt){
+			if($this.multiselect || ($this.useGroupOperations && evt.ctrlKey)){
+				if(evt.ctrlKey){
+					// toggle
+					$this.toggleRowSelection(d.key);
+				} else if(evt.shiftKey && $this.getSelection().getLastSelectedKey()){
+					var keys = $this.combineRowsBetweenKeys(d.key, $this.getSelection().getLastSelectedKey());
+					for(var i = 0; i < keys.length; i++){
+						$this.getSelection().add(keys[i], $this.constructRowSelection(keys[i]));
+					}
+					$this.getSelection().add(d.key, $this.constructRowSelection(d.key));
+				} else  {
+					// change
+					$this.getSelection().clear();
+					$this.getSelection().add(d.key, $this.constructRowSelection(d.key));
+				}
+			} else {
+				if(this.useFilterOnClick && d.filter && d.filter.length > 0){
+					// remove all filters with
+					var filters = this.getFilters();
+					var idsToRemove = [];
 					for(var i = 0; i < d.filter.length; i++){
-						var cubeField = this.getCubeField(d.filter[i].field);
-						if(cubeField){
-							filterOpts[cubeField] = {$eq:{$const:d.filter[i].value}};
+						var fName = d.filter[i].field;
+						for(var fId in filters){
+							if(filters[fId].field == fName){
+								idsToRemove.push(fId);
+							}
 						}
 					}
+					for(var i = 0; i < idsToRemove.length; i++){
+						this.removeFilter(idsToRemove[i], true);
+					}
+					$this.onFilterClick(d, '$and', '$eq');
 				}
-				$this.addDrilldownElement({
-                    filterOpts: filterOpts,
-                    widget: widget
-                });
+				if(this.callApiOnClick){
+					// construct param object
+					var p = {};
+					if(d.clickParams && d.clickParams.length > 0){
+						for(var i = 0; i < d.clickParams.length; i++){
+							var col = d.clickParams[i].field;
+							var val = d.clickParams[i].value;
+							p[col] = val;
+						}
+					}
+					$this.publish('DataCube.Widget.eventFired', {
+						message: 'DataCube.Widgets.Table.rowClick',
+						data: p
+					});
+				}
+				if(this.useDrillDownOnClick){
+					var widget = this.getContext().find('drillDownWidget').value();
+					var filterOpts = {};
+					if(!this.useFilterOnClick && d.filter && d.filter.length > 0){
+						for(var i = 0; i < d.filter.length; i++){
+							var cubeField = this.getCubeField(d.filter[i].field);
+							if(cubeField){
+								filterOpts[cubeField] = {$eq:{$const:d.filter[i].value}};
+							}
+						}
+					}
+					$this.addDrilldownElement({
+	                    filterOpts: filterOpts,
+	                    widget: widget
+	                });
+				}
 			}
 		},
 		
@@ -1756,21 +1895,91 @@
 				return;
 			}
 			var bNeedRefresh = false;
-			for(var i = 0; i < d.filter.length; i++){
-				var fDesc = {
-					sourceId: binding.source,
-					type: type,
-					op: op,
-					field: d.filter[i].field,
-					value: d.filter[i].value
-				};
-				if(!this.hasFilter(fDesc)){
-					this.addFilter(fDesc);
-					bNeedRefresh = true;
+			if(d.filter.length > 0){
+				if(d.filter.length == 1){
+					var fDesc = {
+						sourceId: binding.source,
+						type: type,
+						op: op,
+						field: d.filter[0].field,
+						value: d.filter[0].value
+					};
+					if(type == '$not' && op == '$eq'){
+						fDesc.type = '$and';
+						fDesc.op = '$ne';
+					}
+					if(!this.hasFilter(fDesc)){
+						this.addFilter(fDesc);
+						bNeedRefresh = true;
+					}
+				} else {
+					var fDesc = {
+						sourceId: binding.source,
+						type: type,
+						op: '$group',
+						items: []
+					}
+					for(var i = 0; i < d.filter.length; i++){
+						var cDesc = {
+							type: '$and',
+							op: op,
+							field: d.filter[i].field,
+							value: d.filter[i].value
+						};
+						fDesc.items.push(cDesc);
+					}
+					if(!this.hasFilter(fDesc)){
+						this.addFilter(fDesc);
+						bNeedRefresh = true;
+					}
 				}
 			}
 			if(bNeedRefresh){
 				this.refreshAll();
+			}
+		},
+		
+		toggleRowSelection: function(rowKey){
+			if(this.getSelection().isSelected(rowKey)){
+				this.getSelection().remove(rowKey);
+			} else {
+				this.getSelection().add(rowKey, $this.constructRowSelection(rowKey));
+			}
+		},
+		
+		synchronizeSelection: function(params){
+			if(params && params.type == 'add'){
+				var rowElt = $this.scroll.find('tr.row[key="'+params.item+'"]');
+				if(rowElt && rowElt.length > 0){
+					rowElt.addClass('select');
+				}
+			} else if(params && params.type == 'remove'){
+				var rowElt = $this.scroll.find('tr.row[key="'+params.item+'"]');
+				if(rowElt && rowElt.length > 0){
+					rowElt.removeClass('select');
+				}
+			} else {
+				// synchronize add
+				if(this.selection.count() > 0){
+					var rowElts = $this.scroll.find('table.rows > tbody > tr.row:not(.select)');
+					for(var i = 0; i < rowElts.length; i++){
+						var rowElt = $this.$(rowElts[i]);
+						var rowKey = rowElt.attr('key');
+						if(this.selection.isSelected(rowKey)){
+							rowElt.addClass('select');
+						}
+					}
+				}
+				
+				// synchronize remove
+				var rowElts = $this.scroll.find('table.rows > tbody > tr.row.select');
+				for(var i = 0; i < rowElts.length; i++){
+					var rowElt = $this.$(rowElts[i]);
+					var rowKey = rowElt.attr('key');
+					if(!this.selection.isSelected(rowKey)){
+						rowElt.removeClass('select');
+					}
+				}
 			}
 		},
 		
@@ -1791,8 +2000,8 @@
 			}, 100, deferRowKey);
 		},
 		
-		onRowOut: function(d, rowElt){
-			if((!d.filter || d.filter.length == 0) && !this.callApiOnClick && !this.useDrillDownOnClick){
+		onRowOut: function(d, rowElt, evt){
+			if((!d.filter || d.filter.length == 0) && !this.callApiOnClick && !this.useDrillDownOnClick && !$this.useGroupOperations){
 				return;
 			}
 
@@ -1808,8 +2017,8 @@
 			}, 100, deferRowKey);
 		},
 		
-		onRowHover: function(d, rowElt){
-			if((!d.filter || d.filter.length == 0) && !this.callApiOnClick && !this.useDrillDownOnClick){
+		onRowHover: function(d, rowElt, evt){
+			if((!d.filter || d.filter.length == 0) && !this.callApiOnClick && !this.useDrillDownOnClick && !$this.useGroupOperations){
 				return;
 			}
 			
@@ -1836,6 +2045,11 @@
 			$this.highlightedRowData = d;
 			
 			// prepare tool buttons
+			var bAnd = false;
+			var bOr = false;
+			var bNot = false;
+			var bMark = $this.useGroupOperations;
+			
 			if(d.filter && d.filter.length > 0){
 				var bRowExisted = !!d.flags.main;
 				
@@ -1860,44 +2074,46 @@
 				var bSameApplied = (Object.keys(sameFieldMap).length == 0);
 				var bOtherApplied = (Object.keys(otherFieldMap).length == 0);
 				
-				var bAnd = /*bOtherApplied &&*/ !bSameApplied && (bOtherApplied || bRowExisted) /*&& bRowExisted*/;
-				var bOr = !bRowExisted && !bSameApplied;
-				var bNot = bRowExisted && !bSameApplied;
-				
-				if(!bAnd && !bOr && !bNot){
-					$this.rowFilterTool.addClass('hidden');
-					return;
-				}
-				
-				$this.rowFilterTool.attr('and', bAnd);
-				$this.rowFilterTool.attr('or', bOr);
-				$this.rowFilterTool.attr('not', bNot);
-				
-				var scrollPane = $this.scroll.find('> ._dwp_scrollPane');
-				var offset = scrollPane.css('padding-top');
-				if(offset && offset.length > 0){
-					offset = parseInt(offset);
-					if(JSB.isNaN(offset)){
-						offset = 0;
-					}
-				}
-				var paneRc = scrollPane.get(0).getBoundingClientRect();
-				var rowRc = rowElt.get(0).getBoundingClientRect();
-				var scrollRc = $this.scroll.getElement().get(0).getBoundingClientRect();
-				var pX = rowRc.left - paneRc.left;
-				var pY = rowRc.top - paneRc.top;
-				var vAlign = 'top';
-				
-				if(rowRc.top - scrollRc.top < offset + 20){
-					pY = rowRc.bottom - paneRc.top - 1;
-					vAlign = 'bottom';
-				}
-				
-				$this.rowFilterTool.removeClass('hidden');
-				$this.rowFilterTool.attr('valign', vAlign);
-	
-				$this.rowFilterTool.css({left: pX, top: pY});
+				bAnd = /*bOtherApplied &&*/ !bSameApplied && (bOtherApplied || bRowExisted) /*&& bRowExisted*/;
+				bOr = !bRowExisted && !bSameApplied;
+				bNot = bRowExisted && !bSameApplied;
 			}
+			
+			if(!bAnd && !bOr && !bNot && !bMark){
+				$this.rowFilterTool.addClass('hidden');
+				return;
+			}
+			
+			$this.rowFilterTool.attr('and', bAnd);
+			$this.rowFilterTool.attr('or', bOr);
+			$this.rowFilterTool.attr('not', bNot);
+			$this.rowFilterTool.attr('mark', bMark);
+			
+			var scrollPane = $this.scroll.find('> ._dwp_scrollPane');
+			var offset = scrollPane.css('padding-top');
+			if(offset && offset.length > 0){
+				offset = parseInt(offset);
+				if(JSB.isNaN(offset)){
+					offset = 0;
+				}
+			}
+			var paneRc = scrollPane.get(0).getBoundingClientRect();
+			var rowRc = rowElt.get(0).getBoundingClientRect();
+			var scrollRc = $this.scroll.getElement().get(0).getBoundingClientRect();
+			var pX = rowRc.left - paneRc.left;
+			var pY = rowRc.top - paneRc.top;
+			var vAlign = 'top';
+			
+			if(rowRc.top - scrollRc.top < offset + 20){
+				pY = rowRc.bottom - paneRc.top - 1;
+				vAlign = 'bottom';
+			}
+			
+			$this.rowFilterTool.removeClass('hidden');
+			$this.rowFilterTool.attr('valign', vAlign);
+
+			$this.rowFilterTool.css({left: pX, top: pY});
+			
 		},
 		
 		updateRows: function(){
@@ -2258,7 +2474,7 @@
 				}
 			});
 			this.setSort(sortQuery);
-			this.refresh();
+			this.refresh({preserveSelection:true});
 		},
 		
 		updateContextFilter: function(q, dontRefresh){
@@ -2278,7 +2494,7 @@
 			if(bChanged){
 				this.setContextFilter(curFilter);
 				if(!dontRefresh){
-					this.refresh();
+					this.refresh({preserveSelection:true});
 				}
 			}
 		},
@@ -2339,7 +2555,12 @@
                 return;
             }
 
-			$base();
+			$base(opts);
+			
+			if(!opts || !opts.preserveSelection){
+				this.getSelection().clear();
+			}
+			
 			this.hideMessage();
 			$this.rowFilterTool.addClass('hidden');
 			$this.highlightedRowKey = null;
@@ -2392,6 +2613,13 @@
 			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
 			this.usePrefetch = this.getContext().find('usePrefetch').checked();
 			this.useAnimation = this.getContext().find('useAnimation').checked();
+			this.useGroupOperations = this.getContext().find('useGroupOperations').checked();
+			
+			if(this.useGroupOperations){
+				this.addClass('useGroup');
+			} else {
+				this.removeClass('useGroup');
+			}
 			
 			this.rowClickParamsSelector = this.callApiOnClick ? this.getContext().find('rowClickParams') : null;
 

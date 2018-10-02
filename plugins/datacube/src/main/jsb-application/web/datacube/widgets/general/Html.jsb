@@ -148,6 +148,12 @@
 	    	name: 'Пробрасывать события мыши контейнеру',
             optional: true,
             editor: 'none'
+	    },
+	    userSelect: {
+	    	render: 'item',
+	    	name: 'Разрешать выделять текст',
+            optional: true,
+            editor: 'none'
 	    }
 	},
 	$client: {
@@ -406,29 +412,33 @@
 		},
 		
 		setSimpleMode: function(callback){
-			if(this.currentRender == 'simple'){
-				callback(this.simpleContainer);
-				return;
-			}
-			this.currentRender = 'simple';
-			var propagateSelector = this.getContext().find('propagateMouseEvents');
-			if(JSB.isNull(this.simpleContainer)){
-				this.simpleContainer = this.$('<div class="simpleContainer"></div>');
-				this.getElement().append(this.simpleContainer);
-				this.simpleContainer.on({
-					mousedown: function(evt){
-						if(!propagateSelector.checked()){
-							evt.stopPropagation();
+			if(this.currentRender != 'simple'){
+				this.currentRender = 'simple';
+				if(JSB.isNull(this.simpleContainer)){
+					this.simpleContainer = this.$('<div class="simpleContainer"></div>');
+					this.getElement().append(this.simpleContainer);
+					this.simpleContainer.on({
+						mousedown: function(evt){
+							if(!$this.getContext().find('propagateMouseEvents').checked()){
+								evt.stopPropagation();
+							}
+						},
+						mouseup: function(evt){
+							if(!$this.getContext().find('propagateMouseEvents').checked()){
+								evt.stopPropagation();
+							}
 						}
-					},
-					mouseup: function(evt){
-						if(!propagateSelector.checked()){
-							evt.stopPropagation();
-						}
-					}
-				});
+					});
+				}
+				this.attr('mode', this.currentRender);
 			}
-			this.attr('mode', this.currentRender);
+			
+			if(this.getContext().find('userSelect').checked()){
+				this.simpleContainer.addClass('userSelect');
+			} else {
+				this.simpleContainer.removeClass('userSelect');
+			}
+
 			callback(this.simpleContainer);
 		},
 		
