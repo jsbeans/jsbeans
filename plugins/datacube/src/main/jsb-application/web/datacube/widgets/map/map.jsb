@@ -612,6 +612,12 @@
                                 }
                             }
                         },
+                        useCluster: {
+                            render: 'item',
+                            name: 'Использовать группировку',
+                            optional: true,
+                            editor: 'none'
+                        },
                         displayContent: {
                             render: 'formatter',
                             name: 'Контент',
@@ -799,9 +805,14 @@
             this.addClass('mapWidget');
             this.loadCss('map.css');
 
+            JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.css');
+            JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.Default.css');
+
             JSB.loadCss('tpl/leaflet/leaflet.css');
             JSB.loadScript(['tpl/leaflet/leaflet-src.js', 'tpl/topojson/topojson-client.js'], function(){    // tpl/leaflet/leaflet.js
-                $this.setInitialized();
+                JSB.loadScript(['tpl/leaflet.markercluster/leaflet.markercluster.js'], function(){
+                    $this.setInitialized();
+                });
             });
 
             this.getElement().resize(function(){
@@ -1084,11 +1095,19 @@
                     for(var i = 0; i < markersContext.length; i++){
                         this._styles.markers[i] = {};
 
-                        var markerType = markersContext[i].find('markerType').value();
+                        var markerType = markersContext[i].find('markerType').value(),
+                            useCluster = markersContext[i].find('useCluster').checked();
+
                         this._styles.markers[i].markerType = markerType;
 
                         this._styles.markers[i].coordinatesX = markersContext[i].find('coordinatesX');
                         this._styles.markers[i].coordinatesY = markersContext[i].find('coordinatesY');
+
+                        this._styles.markers[i].useCluster = useCluster;
+
+                        if(useCluster){
+                            // todo
+                        }
 
                         this._styles.contentBindings = this._styles.contentBindings.concat(markersContext[i].find('displayContent').getBindingFields());
                         this._styles.markers[i].displayContent = markersContext[i].find('displayContent').value();
@@ -1862,7 +1881,17 @@
 
                 this._layers.markers = [];
                 for(var i = 0; i < markersGroups.length; i++){
-                    this._layers.markers.push(L.layerGroup(markersGroups[i], {pane: 'markerPane', layerType: 'markersGroup'}).addTo(this.map));
+                    if(this._styles.markers[i].useCluster){
+                        var layer = L.markerClusterGroup();
+
+                        for(var j = 0; j < markersGroups[i].length; j++){
+                            layer.addLayer(markersGroups[i][j]);
+                        }
+
+                        this.map.addLayer(layer);
+                    } else {
+                        this._layers.markers.push(L.layerGroup(markersGroups[i], {pane: 'markerPane', layerType: 'markersGroup'}).addTo(this.map));
+                    }
                 }
                 /*********/
             } catch(ex){
