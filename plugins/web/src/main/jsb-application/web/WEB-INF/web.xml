@@ -31,12 +31,17 @@
     </welcome-file-list>
     
     <filter>
-        <filter-name>AuthFilter</filter-name>
+        <filter-name>BaseAuthFilter</filter-name>
         <filter-class>org.jsbeans.web.AuthFilter</filter-class>
         <async-supported>true</async-supported>
     </filter>
+    <filter>
+        <filter-name>BasicPassAuthFilter</filter-name>
+        <filter-class>org.jsbeans.web.BasicPassAuthFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
+        <filter-name>BaseAuthFilter</filter-name>
         <servlet-name>JsbServlet</servlet-name>
         <servlet-name>HttpJsbServlet</servlet-name>
         <servlet-name>ApiServlet</servlet-name>
