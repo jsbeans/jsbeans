@@ -724,20 +724,20 @@
                  render: 'select',
                  name: 'Сервер карт',
                  items: {
-                     avicomp: {
-                         name: 'OGCServer'
+                     openstreetmap: {
+                         name: 'Openstreetmap.org'
                      },
                      sputnik: {
                          name: 'Спутник.ру'
-                     },
-                     openstreetmap: {
-                         name: 'Openstreetmap.org'
                      },
                      cartocdn: {
                          name: 'Cartocdn.com'
                      },
                      stamen: {
                          name: 'Stamen.com'
+                     },
+                     avicomp: {
+                         name: 'OGCServer'
                      },
                      custom: {
                          name: 'Свой',
@@ -916,6 +916,7 @@
                 }
 
                 if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash && this.map){
+                    this.ready();
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
