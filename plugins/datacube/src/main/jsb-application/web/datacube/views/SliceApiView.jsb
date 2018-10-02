@@ -149,6 +149,7 @@
 			resultsTab.switchTab(jsonTab);
 			
 			splitBox.addToPane(1, resultsTab);
+			this.resultsTab = resultsTab;
 		},
 
 		enableGroupBy: function(bChecked){
@@ -209,7 +210,10 @@
 		
 		sendRequest: function(){
 			var url = this.find('.requestEditor').jsb().getData().getValue();
+			$this.resultsTab.getElement().loader();
+			$this.updateResults({});
 			this.ajax(url, {}, function(result, obj){
+				$this.resultsTab.getElement().loader('hide');
 				if(JSB.isString(obj)){
 					obj = eval('(' + obj + ')');
 				}

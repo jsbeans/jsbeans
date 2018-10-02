@@ -1518,6 +1518,15 @@
 
         _buildChart: function(data){
             try {
+            	if(JSB.isNull(this._styles.settings.startPosition.latitude)){
+            		this._styles.settings.startPosition.latitude = 40.5;
+            	}
+            	if(JSB.isNull(this._styles.settings.startPosition.longitude)){
+            		this._styles.settings.startPosition.longitude = 40.5;
+            	}
+            	if(JSB.isNull(this._styles.settings.startPosition.zoom)){
+            		this._styles.settings.startPosition.zoom = 2;
+            	}
                 var mapOpts = {
                     center: [this._styles.settings.startPosition.latitude, this._styles.settings.startPosition.longitude],
                     zoom: this._styles.settings.startPosition.zoom

@@ -126,13 +126,8 @@
 				
 				var cnt = 0;
 				while(true){
-					var el = null;
-					try {
-						el = it.next();
-						cnt++;
-					}catch(e){
-						el = null;
-					}
+					var el = it.next();
+					cnt++;
 					if(!el){
 						break;
 					}

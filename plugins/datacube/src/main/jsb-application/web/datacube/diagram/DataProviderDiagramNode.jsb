@@ -274,7 +274,6 @@
 			this.keyFieldList.empty();
 
 			var isUseComments = this.provider.getOption('useComments');
-
 			if(isUseComments){
 			    var aliases = [];
 

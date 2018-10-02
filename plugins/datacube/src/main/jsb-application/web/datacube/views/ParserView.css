@@ -161,6 +161,7 @@
 }
 
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="float"],
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="double"],
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="number"] {
 	color: #004c9c;
 }
