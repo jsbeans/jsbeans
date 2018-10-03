@@ -78,30 +78,32 @@
 				}
 				this.loaded = true;
 				if(this.owner.existsArtifact('.querycache')){
-					var snapshot = this.owner.loadArtifact('.querycache');
-					// parse snapshot
-					for(var qId in snapshot){
-						$this.lock('cache_' + qId);
-						var qDesc = snapshot[qId];
-						if(qDesc){
-							var restoredBuffer = [];
-							for(var k = 0; k < qDesc.buffer.length; k++){
-								restoredBuffer.push(_prepareLoad(qDesc.buffer[k]));
+					var snapshot = this.owner.loadArtifact('.querycache', {silent:true});
+					if(snapshot){
+						// parse snapshot
+						for(var qId in snapshot){
+							$this.lock('cache_' + qId);
+							var qDesc = snapshot[qId];
+							if(qDesc){
+								var restoredBuffer = [];
+								for(var k = 0; k < qDesc.buffer.length; k++){
+									restoredBuffer.push(_prepareLoad(qDesc.buffer[k]));
+								}
+								$this.cacheMap[qId] = {
+									qId: qId,
+									query: qDesc.query,
+									params: qDesc.params,
+									complete: qDesc.complete,
+									lastUpdated: qDesc.lastUpdated,
+									lastUsed: qDesc.lastUsed,
+									buffer: restoredBuffer,
+									cells: qDesc.cells,
+									it: null,
+									provider: null
+								}
 							}
-							$this.cacheMap[qId] = {
-								qId: qId,
-								query: qDesc.query,
-								params: qDesc.params,
-								complete: qDesc.complete,
-								lastUpdated: qDesc.lastUpdated,
-								lastUsed: qDesc.lastUsed,
-								buffer: restoredBuffer,
-								cells: qDesc.cells,
-								it: null,
-								provider: null
-							}
+							$this.unlock('cache_' + qId);
 						}
-						$this.unlock('cache_' + qId);
 					}
 				}
 				
@@ -180,10 +182,10 @@
 						}
 					}
 					if(Object.keys(art).length > 0){
-						$this.owner.storeArtifact('.querycache', art);
+						$this.owner.storeArtifact('.querycache', art, {silent:true});
 					} else {
 						if($this.owner.existsArtifact('.querycache')){
-							$this.owner.removeArtifact('.querycache');
+							$this.owner.removeArtifact('.querycache', {silent:true});
 						}
 					}
 				} catch(e){

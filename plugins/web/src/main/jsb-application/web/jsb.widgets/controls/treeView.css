@@ -17,7 +17,7 @@
 
 /* top nodes */
 ._dwp_treeViewContainer > ._dwp_treeViewNode {
-	margin-left: 8px;
+	margin-left: 10px;
 }
 
 ._dwp_treeViewContainer > ._dwp_treeViewNode:first-child {
@@ -95,8 +95,8 @@
 	transform: rotate(90deg);
 	transition: transform 300ms;
 	opacity: 0.6;
-	margin-left: -12px;
-	margin-right: 4px;
+	margin-left: -10px;
+	margin-right: 2px;
 }
 
 ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_expandCollapseToggle.hidden {
