@@ -21,6 +21,10 @@
 				var tag = opts.tag || 'div';
 				this.element = this.$('<'+tag+' _id="'+this.getId()+'" class="_dwp_control"></'+tag+'>');
 			}
+			// options class
+            if(this.options.cssClass){
+                this.addClass(this.options.cssClass);
+            }
 			this._init();
 		},
 		

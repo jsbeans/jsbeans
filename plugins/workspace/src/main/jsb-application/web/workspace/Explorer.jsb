@@ -955,6 +955,11 @@
 			var node = null;
 			var nodeSlice = this.explorerNodeTypes;
 			var viewSlice = this.browserViewTypes;
+			
+			if(this.wTreeMap[itemDesc.entry.getId()]){
+				return this.wTreeMap[itemDesc.entry.getId()].node;
+			}
+			
 			var targetEntry = itemDesc.entry;
 			if(targetEntry.isLink()){
 				targetEntry = targetEntry.getTargetEntry();
