@@ -320,15 +320,31 @@
                 }
 			} else {
 			    if(recordContext.hasBinding && recordContext.hasBinding()){
-                    this.fetch(recordContext, {batchSize: 1, reset:true}, function(data, fail){
+/*			    	
+			    	var loaderShown = false;
+			    	JSB.defer(function(){
+			    		$this.getElement().loader();
+			    		loaderShown = true;
+			    	}, 100, 'fetchDefer_' + $this.getId());
+*/			    	
+                    $this.fetch(recordContext, {batchSize: 1, reset:true}, function(data, fail){
+/*                    	JSB.cancelDefer('fetchDefer_' + $this.getId());
+                    	if(loaderShown){
+	                    	try {
+	                    		$this.getElement().loader('hide');
+	                    	} catch(e){}
+                    	}
+*/                    	
                     	if(fail){
                     		return;
                     	}
                         recordContext.next();
                         $this.draw(opts ? opts.isCacheMod : false);
+                        $this.ready();
                     });
 			    } else {
-			        this.draw(opts ? opts.isCacheMod : false, true);
+			        $this.draw(opts ? opts.isCacheMod : false, true);
+			        $this.ready();
 			    }
 			}
 		},
