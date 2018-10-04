@@ -1639,7 +1639,6 @@
 					}
 					
 					// construct row filter
-					debugger;
 					var rowFilter = [];
 					for(var i = 0; i < $this.rowFilters.length; i++){
 						var fDesc = $this.rowFilters[i];
@@ -1685,7 +1684,6 @@
 						
 						rowFilter.push(fEntry);
 					}
-					debugger;
 					
 					// construct rowClickParams
 					var rowClickParams = [];

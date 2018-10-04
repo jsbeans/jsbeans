@@ -16,8 +16,13 @@
 			this.loadCss('FilterSelector.css');
 			this.addClass('filterSelector');
 			
-			this.append('<div class="icon"></div>');
+			var iconElt = this.$('<div class="icon"></div>');
+			this.append(iconElt);
 			this.append('<div class="filterContainer"></div>');
+			
+			iconElt.click(function(){
+				$this.clear();
+			});
 			
 			$this.updateVisibility();
 			
@@ -34,6 +39,12 @@
 			return this.owner;
 		},
 		
+		clear: function(){
+			var fIds = Object.keys($this.filterTags);
+			$this.filterManager.clear();
+			$this.redraw();
+			$this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'removeFilter', fItemIds: fIds});
+		},
 		
 		updateVisibility: function(){
 			var filterArr = this.filterManager.getFilterArray();
