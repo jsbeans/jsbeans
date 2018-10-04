@@ -385,32 +385,31 @@
 		    }
 
 
-            var op = Object.keys(exp)[0];
-            // const or field
-            switch(op) {
-                case '$const':
-                    if (JSB.isString(exp[op])) {
-                        return "'" + exp[op] + "'"
-                    } else if (JSB.isNumber(exp[op])) {
-                        return '' + exp[op];
-                    } else if (JSB.isBoolean(exp[op])) {
-                        return ('' + exp[op]).toUpperCase();
-                    } else if (exp[op] == null) {
-                        return 'NULL';
-                    }
-                    throw new Error('Unsupported $const type ' + typeof exp[op]);
-                case '$field':
-                case '$context':
-                    if (!exp.$field) throw new Error('Field $field is not defined:' + JSON.stringify(exp));
-                    return this._translateField(
-                            exp.$field,
-                            // if context is not defined then use current
-                            exp.$context || dcQuery.$context,
-                            // if foreign context force use table field not alias
-                            useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context
-                    );
+            if (exp.hasOwnProperty('$const')) {
+                var value;
+                if (JSB.isString(exp.$const)) {
+                    value = "'" + exp.$const + "'"
+                } else if (JSB.isNumber(exp.$const)) {
+                    value = '' + exp.$const;
+                } else if (JSB.isBoolean(exp.$const)) {
+                    value =  ('' + exp.$const).toUpperCase();
+                } else if (exp.$const == null) {
+                    value = 'NULL';
+                } else {
+                    throw new Error('Unsupported $const type ' + typeof exp.$const);
+                }
+                return exp.$type ? value + '::' + JDBC.translateType(exp.$type, $this.vendor): value;
+            } else if (exp.$field){
+                return this._translateField(
+                        exp.$field,
+                        // if context is not defined then use current
+                        exp.$context || dcQuery.$context,
+                        // if foreign context force use table field not alias
+                        useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context
+                );
             }
 
+            var op = Object.keys(exp)[0];
             // n-operators
             switch(op) {
                 case '$coalesce':

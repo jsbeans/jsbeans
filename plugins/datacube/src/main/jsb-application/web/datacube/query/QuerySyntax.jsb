@@ -369,9 +369,27 @@
 		    new this.ComplexObject({
 		        name: '$recursiveSelectExpr',
 		        values: {
-		            '$aggregateExpr': '$valueDefinition',
-		            '$idField': '$valueDefinition',
-		            '$parentIdField': '$valueDefinition',
+		            '$aggregateExpr':   '$valueDefinition',
+		            '$idField':         '$valueDefinition',
+		            '$parentIdField':   '$valueDefinition',
+		            '$depth':           '$recursiveDepth',
+		            '$onlyLeafs':       '$recursiveOnlyLeafs',
+		        },
+		        optional: ['$depth', '$onlyLeafs']
+		    });
+
+		    new this.Group({
+		    	name: '$recursiveOnlyLeafs',
+		        desc: 'Добавляет дополнительную проверку элементов, оставляя только листья',
+		    	values: ['$constBooleanTrue', '$constBooleanFalse'],
+		    });
+
+		    new this.SingleObject({
+		        name: '$recursiveDepth',
+		        desc: 'Задает условие на глубину вложенности элементов',
+		        values: {
+		            '$max': '$constNumber',
+		            '$min': '$constNumber',
 		        }
 		    });
 
