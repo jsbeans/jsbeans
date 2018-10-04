@@ -100,7 +100,6 @@
                                         variables: [
                                             {
                                                 alias: 'Процентное соотношение',
-                                                title: 'Только для круговой диаграммы и стеков',
                                                 type: 'number',
                                                 value: 'percentage'
                                             },

@@ -141,7 +141,7 @@
 						_translate(newDesc.items[i]);
 					}
 				} else {
-					var cubeField = $this.extractCubeField(source, newDesc.field);
+					var cubeField = newDesc.cubeField || $this.extractCubeField(source, newDesc.field);
 					if(cubeField){
 						newDesc.cubeField = cubeField;
 						newDesc.cubeId = source.getCube().getId();

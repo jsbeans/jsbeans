@@ -95,6 +95,10 @@
     box-sizing: border-box;
 }
 
+.dataCubeDashboard > ._jsb_dashboard {
+	height: calc(100% - 32px);
+}
+
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_splitbox > ._dwp_splitter {
 	background: transparent;
     border: 1px solid rgba(0,0,0,0);

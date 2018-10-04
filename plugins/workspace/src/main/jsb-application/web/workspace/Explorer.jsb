@@ -20,13 +20,13 @@
 	},
 	
 	currentWorkspace: null,
-	wTreeMap: {},
-	mCollapseKeys: {},
-	mExpandKeys: {},
 	
 	$client: {
 		_isReady: false,
 		ignoreSync: 0,
+		wTreeMap: {},
+		mCollapseKeys: {},
+		mExpandKeys: {},
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -1309,6 +1309,9 @@
 		
 		redrawTree: function(nTree, bExpanded){
 			this.tree.clear();
+			this.wTreeMap = {};
+			this.mCollapseKeys = {};
+			this.mExpandKeys = {};
 			for(var eId in nTree){
 				var desc = nTree[eId];
 				this.addTreeItem(desc, null, false, {collapsed:bExpanded ? false:true});
