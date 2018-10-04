@@ -9,7 +9,7 @@
             var res = this._values[0].advancedValue.match(/{binding\$[^}]+/g);
 
             for(var i = 0; i < res.length; i++){
-                result.push(res[i].replace('{binding$', ''));
+                result.push(res[i].replace('{binding$', '').replace(/:.+/, ""));
             }
         }
 

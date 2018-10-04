@@ -2,12 +2,7 @@
 
 .dashboardEditor {
 	position: relative;
-	background: -webkit-linear-gradient(top, #d8e2e4, #a6b9bd 20%, #d6dee0 100%);
-	background: -moz-linear-gradient(top, #d8e2e4, #a6b9bd 20%, #d6dee0 100%);
-    background: linear-gradient(top, #d8e2e4, #a6b9bd 20%, #d6dee0 100%);
-    background: -o-linear-gradient(top, #d8e2e4, #a6b9bd 20%, #d6dee0 100%);
-    background: -ms-linear-gradient(top, #d8e2e4, #a6b9bd 20%, #d6dee0 100%);
-	
+	background: url(../images/background.png);
 	padding: 6px;
 }
 
@@ -84,7 +79,7 @@
 	top: 0;
 	bottom: 0;
 	z-index: 9999;
-    background: #a6b9bd;
+    background: url(../images/background.png);
     
     opacity: 0;
 	visibility: hidden;

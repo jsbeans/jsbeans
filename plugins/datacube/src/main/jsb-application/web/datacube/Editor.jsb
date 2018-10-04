@@ -10,7 +10,7 @@
 	],
 	
 	$html: {
-		title: 'DataCube',
+		title: `#dot {{=Config.get('datacube.title')}}`,
 		favicon: '/datacube/images/datacube.png'
 	},
 	
@@ -32,7 +32,7 @@
 				<div class="dcHeader">
 					<div class="dcLogo"></div>
 					<div class="dcTitle">
-						<div class="caption">DataCube</div>
+						<div class="caption">{{=$this.getJsb().$html.title}}</div>
 						<div class="version">{{=$this.dcVersion}}</div>
 					</div>
 					

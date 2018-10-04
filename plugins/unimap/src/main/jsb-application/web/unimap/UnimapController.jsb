@@ -227,7 +227,11 @@
 	    },
 
 	    getLinkedRenders: function(key){
-	        return this._linksMap[key].linkedRenders;
+	        if(this._linksMap[key]){
+	            return this._linksMap[key].linkedRenders;
+	        } else {
+	            return [];
+	        }
 	    },
 
 	    getRenderByName: function(name){

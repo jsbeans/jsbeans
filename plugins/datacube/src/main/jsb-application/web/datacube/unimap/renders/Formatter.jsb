@@ -344,44 +344,11 @@
                     variable.value = val.key;
 
                     if(variable.type){
-                        var typeSettings = $this.createTypeSettings(variable)
-                        if(typeSettings){
-                            varItem.append(typeSettings);
-                        }
+                        var typeSettings = $this.createTypeSettings(varItem, variable);
                     }
                 }
             });
 
-	        /*
-	        var select = new Select({
-                options: this._basicVariablesList,
-                value: variable.value,
-                onchange: function(val){
-                    if(editor.getValue() === ''){
-                        createDefaultAlias(val);
-                    } else {
-                        var itemIndex = $this._findInArray($this._formatterVariablesList, 'value', variable.alias);
-
-                        if(itemIndex > -1){
-                            $this._formatterVariablesList[itemIndex].value = val.key;
-                            $this._formatterVariablesList[itemIndex].innerValue = val.options.innerValue;
-                            $this._formatterVariablesList[itemIndex].type = val.options.type;
-                        }
-                    }
-
-                    variable.innerValue = val.options.innerValue;
-                    variable.type = val.options.type;
-                    variable.value = val.key;
-
-                    if(variable.type){
-                        var typeSettings = $this.createTypeSettings(variable)
-                        if(typeSettings){
-                            varItem.append(typeSettings);
-                        }
-                    }
-                }
-	        });
-	        */
 	        selectLabel.append(select.getElement());
 	        this._selectors.push(select);
             /*********/
@@ -435,10 +402,7 @@
             // type settings
             /*********/
             if(variable.type){
-                var typeSettings = this.createTypeSettings(variable)
-                if(typeSettings){
-                    varItem.append(typeSettings);
-                }
+                this.createTypeSettings(varItem, variable);
             }
             /*********/
 
@@ -453,8 +417,7 @@
 	            }
 	        }
 
-	        var typeSettings = this.createTypeSettings(this._values.values[0].basicSettings);
-	        this._basicSettings.append(typeSettings);
+	        this.createTypeSettings(this._basicSettings, this._values.values[0].basicSettings);
 	    },
 
 	    createAdvancedSettings: function(){
@@ -541,37 +504,48 @@
 	        }
 	    },
 
-	    createTypeSettings: function(variable){
-            var settingsItem = this.$('<div class="typeSettings"></div>');
-
+	    createTypeSettings: function(item, variable){
             if(!variable.typeSettings){
                 variable.typeSettings = {}
             }
 
-	        switch(variable.type){
-	            case 'number':
-	            case 'integer':
-	            case 'float':
-	                if(!variable.typeSettings.formatPart){
-	                    variable.typeSettings.formatPart = variable.type === 'float' ? ',.2f' : ',.0f';
-	                }
+            var settingsItem = item.find('.typeSettings');
 
-	                var separator = new Checkbox({
-	                    label: 'Разделение тысячных',
-	                    checked: JSB.isDefined(variable.typeSettings.separator) ? variable.typeSettings.separator : true,
-	                    onchange: function(b){
-	                        variable.typeSettings.separator = b;
+            if(settingsItem.length === 0){
+                settingsItem = this.$('<div class="typeSettings"></div>');
+                item.append(settingsItem);
+            } else {
+                var oldControls = settingsItem.find('.jsb-control');
 
-	                        variable.typeSettings.formatPart = variable.typeSettings.formatPart.replace(b ? /./ : /,/, b ? ',.' : '');
+                for(var i = 0; i < oldControls.length; i++){
+                    this.$(oldControls[i]).jsb().destroy();
+                }
 
-	                        $this.changeValue();
-	                    }
-	                });
-	                settingsItem.append(separator.getElement());
-	                this._beans.push(separator);
+                settingsItem.empty();
+            }
 
-	                var decimalsLabel = this.$('<label class="label decimalsLabel">Число знаков после запятой</label>');
-	                var decimals = new Editor({
+            switch(variable.type){
+                case 'number':
+                case 'integer':
+                case 'float':
+                    variable.typeSettings.formatPart = variable.type === 'float' ? ',.2f' : ',.0f';
+
+                    var separator = new Checkbox({
+                        label: 'Разделение тысячных',
+                        checked: JSB.isDefined(variable.typeSettings.separator) ? variable.typeSettings.separator : true,
+                        onchange: function(b){
+                            variable.typeSettings.separator = b;
+
+                            variable.typeSettings.formatPart = variable.typeSettings.formatPart.replace(b ? /./ : /,/, b ? ',.' : '');
+
+                            $this.changeValue();
+                        }
+                    });
+                    settingsItem.append(separator.getElement());
+                    this._beans.push(separator);
+
+                    var decimalsLabel = this.$('<label class="label decimalsLabel">Число знаков после запятой</label>');
+                    var decimals = new Editor({
                         value: JSB.isDefined(variable.typeSettings.decimals) ? variable.typeSettings.decimals : (variable.type === 'float' ? 2 : 0),
                         onchange: function(val){
                             if(val === ''){
@@ -584,11 +558,11 @@
 
                             $this.changeValue();
                         }
-	                });
-	                decimalsLabel.append(decimals.getElement());
-	                settingsItem.append(decimalsLabel);
-	                this._beans.push(decimals);
-	                break;
+                    });
+                    decimalsLabel.append(decimals.getElement());
+                    settingsItem.append(decimalsLabel);
+                    this._beans.push(decimals);
+                    break;
                 case 'date':
                     var desc = '<b>Форматирование даты</b><br/>%Y - год<br/>%m - месяц<br/>%d - день<br/><a href="http://php.net/manual/en/function.strftime.php" target="_blank">Больше форматов</a>',
                         description = this.$('<div class="description hidden">' + desc + '</div>'),
@@ -615,16 +589,14 @@
                         }
                     });
                     dateLabel.append(dateFormat.getElement());
-	                settingsItem.append(dateLabel);
-	                settingsItem.append(description);
-	                this._beans.push(dateFormat);
+                    settingsItem.append(dateLabel);
+                    settingsItem.append(description);
+                    this._beans.push(dateFormat);
                     break;
                 default:
                     delete variable.typeSettings;
                     return;
-	        }
-
-	        return settingsItem;
+            }
 	    },
 
 	    destroy: function(){
@@ -640,33 +612,9 @@
 	    },
 
 	    restoreValue: function(str){
-	        var splitter = '<span',
-                isInside = false,
-                segment,
-                index;
+	        str = str.replace(/<br>$|^<br>/g, '');
 
-	        while (str) {
-	            index = str.indexOf(splitter);
-
-                if (index === -1) {
-                    break;
-                }
-
-                segment = str.slice(0, index);
-
-                if (isInside) { // we're on the closing bracket looking back
-                    this._editBlock.append(this.$(segment + '</span>'));
-                    str = str.slice(index + 7);
-                } else {
-                    this._editBlock.append(document.createTextNode(segment));
-                    str = str.slice(index);
-                }
-
-                isInside = !isInside; // toggle
-                splitter = isInside ? '</span>' : '<span'; // now look for next matching bracket
-	        }
-
-	        this._editBlock.append(document.createTextNode(str));
+	        this._editBlock.append(str);
 	    },
 
 	    _findInArray: function(arr, key, value){

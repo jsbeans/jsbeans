@@ -3,7 +3,8 @@
 @import "Editor.css";
 
 .dataCubeDashboard {
-	background-color: #95b4bf;
+	background: url(images/background.png);
+	/*background-color: #95b4bf;*/
     padding: 6px;
     position: relative;
 }
@@ -15,7 +16,7 @@
 	top: 0;
 	bottom: 0;
 	z-index: 9999;
-    background: #a6b9bd;
+    background: url(images/background.png);
     
     opacity: 0;
 	visibility: hidden;
@@ -87,9 +88,9 @@
 
 .dataCubeDashboard > .header > .title {
     float: left;
-    color: #fff;
+    color: #717171;
     font-size: 20px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+	text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
     padding: 2px;
     box-sizing: border-box;
 }

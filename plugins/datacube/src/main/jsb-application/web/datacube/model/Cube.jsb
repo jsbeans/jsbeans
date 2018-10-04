@@ -671,13 +671,17 @@
             };
 
             var isUseComments = provider.getOption('useComments'),
-                alias = provider.getOption('commentField');
+                aliasField = provider.getOption('commentField');
 
             for(var i in fields){
+            	var alias = isUseComments ? (aliasField ? fields[i].comment[aliasField] : fields[i].comment) : undefined;
+            	if(!JSB.isString(alias)){
+            		alias = undefined;
+            	}
                 res.fields[i] = {
                     type: fields[i].type,
                     nativeType: fields[i].nativeType,
-                    alias: isUseComments ? (alias ? fields[i].comment[alias] : fields[i].comment) : undefined
+                    alias: alias
                 }
             }
 
