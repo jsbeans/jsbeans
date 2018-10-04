@@ -89,7 +89,7 @@
             values = this._values;
 
             if(!schemePath){
-                schemePath = this._schemePath || '';
+                schemePath = this._schemePath;
             }
         }
 
@@ -116,6 +116,8 @@
                     } else {
                         schemePath += i;
                     }
+                } else {
+                    schemePath = i;
                 }
 
                 res = this.getRenderByName(values[i].render).getInstance({ key: i, selector: values[i], schemePath: schemePath });
@@ -136,7 +138,7 @@
         } else {
             for(var i in values){
                 var r = this.getRenderByName(values[i] && values[i].render),
-                    res = r.find ? r.find(curKey[0], values[i].values, isFindAll, schemePath) : undefined;
+                    res = r.find ? r.find(curKey[0], values[i].values, isFindAll, schemePath ? (schemePath + '.' + i) : i) : undefined;
 
                 if(res){
                     if(key.length > 0){
