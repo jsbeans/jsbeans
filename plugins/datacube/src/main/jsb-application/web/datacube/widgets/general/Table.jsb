@@ -1639,6 +1639,7 @@
 					}
 					
 					// construct row filter
+					debugger;
 					var rowFilter = [];
 					for(var i = 0; i < $this.rowFilters.length; i++){
 						var fDesc = $this.rowFilters[i];
@@ -1684,6 +1685,7 @@
 						
 						rowFilter.push(fEntry);
 					}
+					debugger;
 					
 					// construct rowClickParams
 					var rowClickParams = [];
@@ -2648,6 +2650,7 @@
 			var rowKeyFields = rowKeySelector.bindings();
 			this.rowsContext = dataSource;
 			
+			// filters
 			this.rowFilters = [];
 			var rowFilters = this.getContext().find('rowFilter').values();
 			for(var i = 0; i < rowFilters.length; i++){
