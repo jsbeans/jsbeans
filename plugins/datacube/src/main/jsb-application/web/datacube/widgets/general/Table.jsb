@@ -194,10 +194,24 @@
 	                multiple: true
 	            },
 	            rowFilter: {
-	                render: 'dataBinding',
-	                name: 'Фильтрующие поля',
-	                linkTo: 'rows',
-	                multiple: true
+	            	render: 'group',
+	            	name: 'Фильтрация',
+	            	multiple: true,
+	            	items: {
+	            		filterField: {
+	    	                render: 'dataBinding',
+	    	                name: 'Фильтрующее значение',
+	    	                linkTo: 'rows'
+	            		},
+	            		cubeField: {
+	            			render: 'dataBinding',
+	            			name: 'Задать поле куба',
+	            			cubeFields: true,
+	            			linkTo: 'rows',
+	            			optional: true
+	            		}
+	            	}
+	                
 	            },
 	            
 	            preserveFilteredRows: {
@@ -1507,9 +1521,7 @@
 			var cols = [];
 			var rowsContext = this.rowsContext;
 			var rowKeySelector = this.rowKeySelector;
-			var rowFilterSelector = this.rowFilterSelector;
 			var rowClickParamsSelector = this.rowClickParamsSelector;
-			var rowFilterBinding = rowFilterSelector.bindings(true);
 			var rowClickParamsBinding = rowClickParamsSelector && rowClickParamsSelector.bindings(true);
 
 			var gArr = this.columnsSelector.values();
@@ -1628,28 +1640,49 @@
 					
 					// construct row filter
 					var rowFilter = [];
-					var rowFilterValsMain = rowFilterSelector.values('main', true);
-					var rowFilterValsBack = rowFilterSelector.values('back', true);
-					var rowFilterValsHover = rowFilterSelector.values('hover', true);
-					
-					if(rowFilterValsMain.length > 0){
-						rowFlags.main = true;
-					}
-					if(rowFilterValsBack.length > 0){
-						rowFlags.back = true;
-					}
-					if(rowFilterValsHover.length > 0){
-						rowFlags.hover = true;
-					}
-					
-					for(var i = 0; i < rowFilterBinding.length; i++){
-						if(rowFilterBinding[i]){
-							var val = rowFilterValsMain[i];
-							if(!JSB.isDefined(val)){
-								val = rowFilterValsBack[i];
-							}
-							rowFilter.push({field: rowFilterBinding[i], value: val});
+					for(var i = 0; i < $this.rowFilters.length; i++){
+						var fDesc = $this.rowFilters[i];
+						var filterFieldValMain = fDesc.filterFieldSelector.value('main');
+						var filterFieldValBack = fDesc.filterFieldSelector.value('back');
+						var filterFieldValHover = fDesc.filterFieldSelector.value('hover');
+						
+						var val = filterFieldValMain;
+
+						if(filterFieldValMain !== undefined){
+							rowFlags.main = true;
 						}
+						if(filterFieldValBack !== undefined){
+							rowFlags.back = true;
+						}
+						if(filterFieldValHover !== undefined){
+							rowFlags.hover = true;
+						}
+
+						if(val === undefined){
+							val = filterFieldValBack;
+						}
+						
+						var fEntry = {
+							value: val,
+							field: fDesc.filterFieldName
+						};
+						
+						if(fDesc.cubeFieldName){
+							fEntry.cubeField = fDesc.cubeFieldName;
+						} else if(fDesc.cubeFieldSelector){
+							var cubeFieldValMain = fDesc.cubeFieldSelector.value('main');
+							var cubeFieldValBack = fDesc.cubeFieldSelector.value('back');
+							var cubeFieldValHover = fDesc.cubeFieldSelector.value('hover');
+							if(cubeFieldValMain !== undefined){
+								fEntry.cubeField = cubeFieldValMain;
+							} else if(cubeFieldValBack !== undefined){
+								fEntry.cubeField = cubeFieldValBack;
+							} else if(cubeFieldValHover !== undefined){
+								fEntry.cubeField = cubeFieldValHover;
+							}
+						}
+						
+						rowFilter.push(fEntry);
 					}
 					
 					// construct rowClickParams
@@ -1782,6 +1815,9 @@
 					field: rowDesc.filter[i].field,
 					value: rowDesc.filter[i].value
 				};
+				if(rowDesc.filter[i].cubeField){
+					fDesc.cubeField = rowDesc.filter[i].cubeField;
+				}
 				filters.push(fDesc);
 			}
 			
@@ -1904,6 +1940,9 @@
 						field: d.filter[0].field,
 						value: d.filter[0].value
 					};
+					if(d.filter[0].cubeField){
+						fDesc.cubeField = d.filter[0].cubeField;
+					}
 					if(type == '$not' && op == '$eq'){
 						fDesc.type = '$and';
 						fDesc.op = '$ne';
@@ -1926,6 +1965,9 @@
 							field: d.filter[i].field,
 							value: d.filter[i].value
 						};
+						if(d.filter[i].cubeField){
+							cDesc.cubeField = d.filter[i].cubeField;
+						}
 						fDesc.items.push(cDesc);
 					}
 					if(!this.hasFilter(fDesc)){
@@ -2057,18 +2099,18 @@
 				var sameFieldMap = {};
 				var otherFieldMap = {};
 				for(var i = 0; i < d.filter.length; i++){
-					sameFieldMap[d.filter[i].field] = d.filter[i].value;
-					otherFieldMap[d.filter[i].field] = d.filter[i].value;
+					sameFieldMap[d.filter[i].cubeField || d.filter[i].field] = d.filter[i].value;
+					otherFieldMap[d.filter[i].cubeField || d.filter[i].field] = d.filter[i].value;
 				}
 				var filters = this.getFilters();
 				for(var fId in filters){
 					var fDesc = filters[fId];
 					
-					if(JSB.isDefined(sameFieldMap[fDesc.field]) && sameFieldMap[fDesc.field] == fDesc.value){
-						delete sameFieldMap[fDesc.field];
+					if(JSB.isDefined(sameFieldMap[fDesc.cubeField || fDesc.field]) && sameFieldMap[fDesc.cubeField || fDesc.field] == fDesc.value){
+						delete sameFieldMap[fDesc.cubeField || fDesc.field];
 					}
-					if(JSB.isDefined(otherFieldMap[fDesc.field]) && otherFieldMap[fDesc.field] != fDesc.value){
-						delete otherFieldMap[fDesc.field];
+					if(JSB.isDefined(otherFieldMap[fDesc.cubeField || fDesc.field]) && otherFieldMap[fDesc.cubeField || fDesc.field] != fDesc.value){
+						delete otherFieldMap[fDesc.cubeField || fDesc.field];
 					}
 				}
 				var bSameApplied = (Object.keys(sameFieldMap).length == 0);
@@ -2605,7 +2647,30 @@
 			this.rowKeySelector = rowKeySelector;
 			var rowKeyFields = rowKeySelector.bindings();
 			this.rowsContext = dataSource;
-			this.rowFilterSelector = this.getContext().find('rowFilter');
+			
+			this.rowFilters = [];
+			var rowFilters = this.getContext().find('rowFilter').values();
+			for(var i = 0; i < rowFilters.length; i++){
+				var filterFieldSelector = rowFilters[i].find('filterField');
+				var fieldName = filterFieldSelector.binding();
+				if(!fieldName || fieldName.length == 0){
+					continue;
+				}
+				var fDesc = {
+					filterFieldSelector: filterFieldSelector,
+					filterFieldName: fieldName
+				};
+				var cubeFieldSelector = rowFilters[i].find('cubeField');
+				if(cubeFieldSelector.checked() && cubeFieldSelector.binding()){
+					fDesc.cubeFieldSelector = cubeFieldSelector;
+					var bInfo = cubeFieldSelector.bindingInfo();
+					if(bInfo && bInfo.cubeField){
+						fDesc.cubeFieldName = bInfo.field;
+					}
+				}
+				
+				this.rowFilters.push(fDesc);
+			}
 			
 			this.useFilterOnClick = this.getContext().find('useFilterOnClick').checked();
 			this.showSortIcon = this.getContext().find('showSortIcon').checked();

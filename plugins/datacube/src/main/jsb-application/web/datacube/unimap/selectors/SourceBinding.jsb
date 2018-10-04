@@ -110,9 +110,13 @@
 
         for(var i = 0; i < this._linkedValues.length; i++){
             var values = [],
-                bindings = this._linkedValues[i].bindings(true);
+                bindings = this._linkedValues[i].bindings(true),
+                infos = this._linkedValues[i].bindingInfos(true);
 
             for(var k = 0; k < bindings.length; k++){
+            	if(infos[k] && infos[k].cubeField){
+            		continue;
+            	}
                 values.push(dataEl[bindings[k]]);
             }
 

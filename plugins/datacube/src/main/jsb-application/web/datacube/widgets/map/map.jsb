@@ -361,17 +361,38 @@
                     render: 'group',
                     name: 'Группа маркеров',
                     items: {
-                        coordinatesX: {
-                            render: 'dataBinding',
-                            name: 'Широта',
-                            linkTo: 'dataSource',
-                            valueType: 'number'
-                        },
-                        coordinatesY: {
-                            render: 'dataBinding',
-                            name: 'Долгота',
-                            linkTo: 'dataSource',
-                            valueType: 'number'
+                        coordinatesType: {
+                            render: 'select',
+                            name: 'Тип координат',
+                            items: {
+                                simple: {
+                                    name: 'Отдельные координаты',
+                                    items: {
+                                        coordinatesX: {
+                                            render: 'dataBinding',
+                                            name: 'Широта',
+                                            linkTo: 'dataSource',
+                                            valueType: 'number'
+                                        },
+                                        coordinatesY: {
+                                            render: 'dataBinding',
+                                            name: 'Долгота',
+                                            linkTo: 'dataSource',
+                                            valueType: 'number'
+                                        }
+                                    }
+                                },
+                                array: {
+                                    name: 'Массив координат',
+                                    items: {
+                                        coordinatesArray: {
+                                            render: 'dataBinding',
+                                            name: 'Массив',
+                                            linkTo: 'dataSource'
+                                        }
+                                    }
+                                }
+                            }
                         },
                         markerType: {
                             render: 'select',
@@ -1101,8 +1122,13 @@
 
                         this._styles.markers[i].markerType = markerType;
 
-                        this._styles.markers[i].coordinatesX = markersContext[i].find('coordinatesX');
-                        this._styles.markers[i].coordinatesY = markersContext[i].find('coordinatesY');
+                        this._styles.markers[i].coordinatesType = markersContext[i].find('coordinatesType').value();
+                        if(this._styles.markers[i].coordinatesType === 'array'){
+                            this._styles.markers[i].coordinatesArray = markersContext[i].find('coordinatesArray');
+                        } else {
+                            this._styles.markers[i].coordinatesX = markersContext[i].find('coordinatesX');
+                            this._styles.markers[i].coordinatesY = markersContext[i].find('coordinatesY');
+                        }
 
                         this._styles.markers[i].useCluster = useCluster;
 
@@ -1301,6 +1327,7 @@
 
                             // load markers
                             /*********/
+
                             for(var i = 0; i < markersContext.length; i++){
                                 if(!markers[i]){
                                     markers[i] = {
@@ -1308,7 +1335,17 @@
                                     }
                                 }
 
-                                markers[i].coordinates.push([$this._styles.markers[i].coordinatesX.value(), $this._styles.markers[i].coordinatesY.value()]);
+                                if($this._styles.markers[i].coordinatesType === 'array'){
+                                    var val = $this._styles.markers[i].coordinatesArray.value();
+
+                                    if(!val || !val[0] || !val[1]){
+                                        continue;
+                                    }
+
+                                    markers[i].coordinates.push([parseFloat(val[1]), parseFloat(val[0])]);
+                                } else {
+                                    markers[i].coordinates.push([$this._styles.markers[i].coordinatesX.value(), $this._styles.markers[i].coordinatesY.value()]);
+                                }
 
                                 if($this._styles.markers[i].markerValueBinding){
                                     if(!markers[i].markerValues){
@@ -1400,7 +1437,7 @@
             }
 
             function resultProcessing(){
-                try{
+                //try{
                     // processing regions
                     /*********/
                     if(regions.length > 0){
@@ -1494,10 +1531,12 @@
                         regions: regions,
                         markers: markers
                     });
+                /*
                 } catch(ex){
                     console.log('Processing data exception!');
                     console.log(ex);
                 }
+                */
             }
 
             fetch(true);
@@ -1518,7 +1557,7 @@
         },
 
         _buildChart: function(data){
-            try {
+            //try {
             	if(JSB.isNull(this._styles.settings.startPosition.latitude)){
             		this._styles.settings.startPosition.latitude = 40.5;
             	}
@@ -1904,10 +1943,12 @@
                     }
                 }
                 /*********/
+            /*
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
             }
+            */
         },
 
         ensureDataLoaded: function(callback){
