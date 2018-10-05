@@ -45,11 +45,14 @@
 		createSlice: function(){
 			$this.explorer.expandNode($this.treeNode.key, function(){
 				$this.getTargetEntry().server().addSlice(function(slice){
-					var node = $this.explorer.addTreeItem({
-                        entry: slice,
-                        hasEntryChildren: 0,
-                        name: slice.getName()
-                    }, $this.treeNode.key, false, {collapsed:true});
+					var node = $this.explorer.getEntryNode(slice);
+					if(!node){
+						node = $this.explorer.addTreeItem({
+	                        entry: slice,
+	                        hasEntryChildren: 0,
+	                        name: slice.getName()
+	                    }, $this.treeNode.key, false, {collapsed:true});
+					}
 					$this.explorer.publish('JSB.Workspace.nodeOpen', node);
 				});
 			});
