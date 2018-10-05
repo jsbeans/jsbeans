@@ -232,7 +232,7 @@
 
             if (exp.$select) {
                 // sub query expression
-                var subSql = $this.translateQueryExpression(exp) ;
+                var subSql = $this.translateQueryExpression(exp, true) ;
                 return subSql.startsWith('(') ?  subSql : '(' + subSql + ')';
             }
 
@@ -261,7 +261,8 @@
                         // if context is not defined then use current
                         exp.$context || dcQuery.$context,
                         // if foreign context force use table field not alias
-                        useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context
+                        useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context,
+                        dcQuery.$context
                 );
             }
 

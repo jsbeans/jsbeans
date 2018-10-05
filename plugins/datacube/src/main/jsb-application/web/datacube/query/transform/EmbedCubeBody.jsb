@@ -22,7 +22,7 @@
 		    QueryUtils.walkQueries(dcQuery, {},
 		        function() { },
 		        function(query){
-                    if (query.$cube || !query.$from && !query.$provider && !query.$join && !query.$union) {
+                    if (QueryUtils.hasDeclaredSource(query)) {
                         try {
                             var queryCube = query.$cube ? QueryUtils.getQueryCube(query.$cube, cube) : cube;
 

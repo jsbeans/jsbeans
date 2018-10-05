@@ -166,15 +166,16 @@
 		            '$from':'$from',
 		            '$join':'$join',
 		            '$union':'$union',
+		            '$recursive':'$recursive',
 		            '$cube':'$cube',
 		            '$provider':'$provider',
 		        },
 		        optional: ['$context', '$filter', '$groupBy', '$distinct',
 		                '$postFilter', '$cubeFilter', '$sort', '$finalize',
 		                '$sql','$limit', '$offset', '$views',
-		                '$from', '$join', '$union', '$cube', '$provider'],
+		                '$from', '$join', '$union', , '$recursive', '$cube', '$provider'],
 		        incompatible: [
-		            ['$from', '$join', '$union', '$cube', '$provider']
+		            ['$from', '$join', '$union', '$recursive', '$cube', '$provider']
 		        ]
 		        /*
 		        incompatible: {
@@ -253,7 +254,6 @@
 		            '$gsum', '$gcount', '$gmin', '$gmax', '$gavg',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 		            '$if', '$coalesce',
-		            '$recursiveSelect',
 		            '$macros',
 		            '$const'
 		        ]
@@ -408,23 +408,41 @@
 		        }
 		    });
 
+//		    new this.SingleObject({
+//		        name: '$recursiveSelect',
+//		        category: 'Разное',
+//		        desc: 'Выполнить рекурсивный аггрегируюий подзапрос',
+//		        values: ['$recursiveSelectExpr']
+//		    });
+//
+//		    new this.ComplexObject({
+//		        name: '$recursiveSelectExpr',
+//		        values: {
+//		            '$aggregateExpr':   '$valueDefinition',
+//		            '$idField':         '$valueDefinition',
+//		            '$parentIdField':   '$valueDefinition',
+//		            '$depth':           '$recursiveDepth',
+//		            '$onlyLeafs':       '$recursiveOnlyLeafs',
+//		        },
+//		        optional: ['$depth', '$onlyLeafs']
+//		    });
+
 		    new this.SingleObject({
-		        name: '$recursiveSelect',
-		        category: 'Разное',
-		        desc: 'Выполнить рекурсивный аггрегируюий подзапрос',
-		        values: ['$recursiveSelectExpr']
+		        name: '$recursive',
+		        category: 'Рекурсивный запрос',
+		        displayName: 'Рекурсивный запрос',
+		        desc: 'Позволяет сформировать рекурсивный запрос',
+		        values: ['$recursiveExpr']
 		    });
 
 		    new this.ComplexObject({
-		        name: '$recursiveSelectExpr',
+		        name: '$recursiveExpr',
 		        values: {
-		            '$aggregateExpr':   '$valueDefinition',
-		            '$idField':         '$valueDefinition',
-		            '$parentIdField':   '$valueDefinition',
-		            '$depth':           '$recursiveDepth',
-		            '$onlyLeafs':       '$recursiveOnlyLeafs',
-		        },
-		        optional: ['$depth', '$onlyLeafs']
+		            '$start': '$query',
+		            '$joinedNext': '$query',
+		            '$filter': '$joinFilter',
+		            '$onlyLeafs': '$recursiveOnlyLeafs',
+		        }
 		    });
 
 		    new this.Group({

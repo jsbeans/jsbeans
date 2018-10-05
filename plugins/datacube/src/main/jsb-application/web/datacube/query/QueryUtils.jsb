@@ -93,6 +93,13 @@
             return provider;
         },
 
+        hasDeclaredSource: function(query) {
+            return query.$cube || !query.$provider
+                && !query.$from
+                && !query.$join && !query.$union
+                && !query.$recursive;
+        },
+
         walkQueries: function (dcQuery, options, enterCallback, leaveCallback/**false=break: callback(q) and this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}*/) {
             options = options || {depth:0, findView: null};
             var queryDepth = -1;
@@ -178,8 +185,8 @@
                         if (res === false) return false;
                     }
 
-                    // values
-                    var keys = ['$union', '$join', '$select', '$filter', '$globalFilter', '$groupBy', '$sort', '$postFilter'];
+                    // query operators
+                    var keys = ['$union', '$join', '$recursive', '$select', '$filter', '$globalFilter', '$groupBy', '$sort', '$postFilter'];
                     for (var i = 0; i < keys.length; i++) if (query[keys[i]] != null) {
                         var res = walkExpression.call(
                             {
@@ -187,6 +194,7 @@
                                 fromPath: this.fromPath,
                                 inJoin: keys[i] == '$join',
                                 inUnion: keys[i] == '$union',
+                                inRecursive: keys[i] == '$recursive',
                                 path: path
                             },
                             query[keys[i]],
@@ -222,6 +230,7 @@
                                 inFrom : false,
                                 inJoin: this.inJoin,
                                 inUnion: this.inUnion,
+                                inRecursive: this.inRecursive,
                                 path: path
                             },
                             exp
@@ -363,8 +372,12 @@
                 }
 		    } else if (query.$join) {
 		        var sourceFields = $this.extractOutputFields(query.$join);
+		        // TODO
 		    } else if (query.$union) {
-		        var sourceFields = $this.extractOutputFields(query.$join);
+		        var sourceFields = $this.extractOutputFields(query.$union);
+		        // TODO
+            } else if (query.$recursive) {
+                var sourceFields = $this.extractOutputFields(query.$recursive.$start);
             } else {
                 var sourceFields = cube.getManagedFields();
             }
@@ -553,7 +566,7 @@
 
         extractCubeProvidersInQuery: function(query, cube, getView) {
             $this.throwError(
-                !query.$cube || query.$from || query.$provider || query.$join || query.$union,
+                !query.$cube || query.$from || query.$provider || query.$join || query.$union || query.$recursive,
                 'Query "{}" has not cube source', query.$context);
 
 
@@ -563,6 +576,10 @@
                 var cubeField = cubeFields[field];
                 if (!cubeField && query.$select[field]) {
                     // skip alias
+                    return;
+                }
+                if (!cubeField) {
+                    // TODO check and skip input fields
                     return;
                 }
                 var binding = cubeField.binding;
@@ -599,7 +616,7 @@
             return queries;
         },
 
-        defineContextQueries: function(dcQuery, getContextName){
+        defineContextQueries: function(dcQuery, getContextName) {
             /// первым делом обойти и при встрече дублирующегося контекста (если один запрос - колонровать) переименовать
             /// считается, что при встрече неуникального контекста, то на него "сверху", кробе юниона и джоина, никто не ссылается
             /// следовательно переименовать надо все вложенное
@@ -632,6 +649,8 @@
                         var name = (name||'') + 'JoinQuery';
                     } else if (this.query.$union) {
                         var name = (name||'') + 'UnionQuery';
+                    } else if (this.query.$recursive) {
+                        var name = (name||'') + 'RecursiveQuery';
                     } else if (!name) {
                         var name = 'Query';
                     }
@@ -655,8 +674,8 @@
                         var sourceQuery = JSB.isString(exp.$from) ? dcQuery.$views[exp.$from] : exp.$from;
                         walkExpression(sourceQuery, oldContext, newContext);
                     }
-                    if (exp.$join || exp.$union) {
-                        walkExpression(exp.$join || exp.$union, oldContext, newContext);
+                    if (exp.$join || exp.$union || exp.$recursive) {
+                        walkExpression(exp.$join || exp.$union || exp.$recursive, oldContext, newContext);
                     }
                     for(var i in exp) {
                         if (i !=='$from' && i !=='$join' && i !=='$union'
@@ -726,7 +745,7 @@
             );
 
 
-            var names = Object.keys(dcQuery.$views);
+            var names = Object.keys(dcQuery.$views||{});
             for(var i = 0; i < names.length; i++) {
                 var query = dcQuery.$views[names[i]];
                 delete dcQuery.$views[names[i]];
@@ -856,6 +875,10 @@
 debugger;
 throw 'TODO';
 
+                } else if (query.$recursive) {
+debugger;
+throw 'TODO';
+
                 } else if (query.$union) {
                     for(var i = 0; i < query.$union.length; i++){
                         var unionQuery = query.$union[i];
@@ -895,7 +918,8 @@ throw 'TODO';
                         || exp.$dateTotalSeconds || exp.$dateIntervalOrder
                         || exp.$timeHour || exp.$timeMinute || exp.$timeSecond
                         ) return 'int';
-                    if (exp.$const) {
+                    if (exp.hasOwnProperty('$const')) {
+                        if (exp.$type) return exp.$type;
                         if (JSB.isString(exp.$const)) return 'string';
                         if (JSB.isInteger(exp.$const)) return 'int';
                         if (JSB.isFloat(exp.$const)) return 'double';
@@ -908,6 +932,9 @@ throw 'TODO';
                             return extractFieldType(exp.$field);
                         } else {
                             var outerQuery = getQuery(exp.$context);
+                            if (outerQuery.$recursive) {
+                                outerQuery = outerQuery.$recursive.$start;
+                            }
                             $this.throwError(outerQuery, 'Unknown query context "{}"', exp.$context);
                             $this.throwError(outerQuery.$select[exp.$field], 'Undefined result field "{}" in outer query "{}"', exp.$field, outerQuery.$context);
                             var fieldType = $this.extractType(outerQuery.$select[exp.$field], outerQuery, cube, getQuery);
