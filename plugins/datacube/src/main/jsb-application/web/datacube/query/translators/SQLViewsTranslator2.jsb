@@ -97,7 +97,9 @@
                     return $this._translateGroup(query);
                 });
                 sql += $this._translatePart(' HAVING ', function(){
-                    return $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, false));
+                    return query.$groupBy && query.$groupBy.length > 0
+                        ? $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, false))
+                        : null;
                 });
                 sql += $this._translatePart(' ORDER BY ', function(){
                     return $this._translateOrder(query);
@@ -229,8 +231,8 @@
 		},
 
 		_translateRecursive: function(query) {
-		    var sql = '';
 
+		    var sql = '';
 		    sql += 'WITH RECURSIVE ' + $this._quotedName($this._translateContext(query.$context)) + ' AS (';
 		    sql += $this.translateQueryExpression(query.$recursive.$start, true);
 		    sql += ' UNION ALL ';
@@ -241,21 +243,7 @@
 		    sql += ') ';
 		    sql += 'SELECT * FROM ' + $this._quotedName($this._translateContext(query.$context));
 
-//            sql += 'SELECT ' + (function(){
-//                    var selectSql = '';
-//                    for(var alias in query.$select) {
-//                        var exp = query.$select[alias];
-//                        if (selectSql.length > 0) selectSql += ', ';
-//                        selectSql += $this._translateExpression(exp, query);
-//                        selectSql += ' AS ' + $this._quotedName(alias);
-//                    }
-//                    return selectSql;
-//                })() + ' FROM ' + $this._quotedName($this._translateContext(query.$context)) + ' AS ' +  $this._quotedName($this._translateContext(query.$context));
-//            // TODO query.$recursive.$onlyLeafs
-//            sql += $this._translatePart(' WHERE ', function(){
-//                return $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, true));
-//            });
-		    return '(' + sql + ')';// AS ' + $this._quotedName($this._translateContext(query.$context));
+		    return '(' + sql + ')';
 		},
 
         _translateRecursiveSelect: function (exp, dcQuery) {
@@ -266,17 +254,18 @@
 //        _translateRecursiveSelect: function (exp, dcQuery) {
 //
 //            function translateRecursive(){
-//                var startQuery = {
+//                var firstQuery = {
 //                    $context: 'start:' + dcQuery.$context,
 //                    $select: {
 //                        id: exp.$idField.$field||exp.$idField,
 //                        parentId: exp.$parentIdField.$field||exp.$parentIdField,
 //                        value: exp.$aggregateExpr[aggFunc],
+//                        depth: {$const: 0, $type: 'double'},
 //                    },
 //                    $filter: {
 //                        $eq: [
 //                            exp.$idField.$field||exp.$idField,
-//                            {$field:exp.$idField.$field||exp.$idField, $context: dcQuery.$context}
+//                            {$field:exp.$idField.$field||exp.$idField, $context: dcQuery.$context},
 //                        ]
 //                    }
 //                };
@@ -286,32 +275,39 @@
 //                        id: exp.$idField.$field||exp.$idField,
 //                        parentId: exp.$parentIdField.$field||exp.$parentIdField,
 //                        value: exp.$aggregateExpr[aggFunc],
+//                        depth: {$add: [{$field:"depth"}, {$const:1}]}
 //                    }
 //                };
 //                if (dcQuery.$from) {
-//                    startQuery.$from = dcQuery.$from;
-//                    startQuery.$views = $this.dcQuery.$views;
+//                    firstQuery.$from = dcQuery.$from;
+//                    firstQuery.$views = $this.dcQuery.$views;
 //                    recursiveQuery.$from = dcQuery.$from;
 //                    recursiveQuery.$views = $this.dcQuery.$views;
 //                }
+//                try {
+//                    var builder1 = new QueryViewsBuilder(firstQuery, $this.cube, $this.providers);
+//                    var startView = builder1.build();
+//
+//                    var builder2 = new QueryViewsBuilder(recursiveQuery, $this.cube, $this.providers);
+//                    var recursiveView = builder2.build();
+//
+//                    JSB.merge($this.contextQueryViews, builder1.getContextQueryViews());
+//                    JSB.merge($this.contextQueryViews, builder2.getContextQueryViews());
+//
+//                } finally {
+//                    builder1 && builder1.destroy();
+//                    builder2 && builder2.destroy();
+//                }
 //
 //                var sql = '';
-//                try {
-//                    $this.contextQueries[startQuery.$context] = startQuery;
-//                    $this.contextQueries[recursiveQuery.$context] = recursiveQuery;
-//
-//                    sql += $this.translateQueryExpression(startQuery, true);
-//                    sql += ' UNION ALL ';
-//                    sql += $this.translateQueryExpression(recursiveQuery, true);
-//                } finally {
-//                    delete $this.contextQueries[startQuery.$context];
-//                    delete $this.contextQueries[recursiveQuery.$context];
-//                }
+//                sql += $this._translateAnyView(startView);
+//                sql += ' UNION ALL ';
+//                sql += $this._translateAnyView(recursiveView);
 //                if(sql.endsWith(')')) {
-//                    // HACK: paste join on before ')'
+//                    // HACK: remove ')'
 //                    sql = sql.substring(0, sql.length-1);
 //                    sql += ' JOIN ' + $this._quotedName(treeContext);
-//                    sql += ' ON ' + $this._translateField(exp.$parentIdField.$field||exp.$parentIdField, recursiveQuery.$context, false, recursiveQuery.$context)
+//                    sql += ' ON ' + $this._translateField(exp.$parentIdField.$field||exp.$parentIdField, recursiveView.name)
 //                        + ' = '
 //                        + $this._quotedName(treeContext) + '.id';
 //                    sql += ')';
@@ -322,15 +318,19 @@
 //            }
 //
 //            var aggFunc = Object.keys(exp.$aggregateExpr)[0];
-//            $this.throwError(QuerySyntax.schemaAggregateOperators[aggFunc], 'Operator $recursiveSelect supports only aggregate function in $aggregateExpr');
+//            if (!QuerySyntax.schemaAggregateOperators[aggFunc]) {
+//                throw new Error('Operator $recursiveSelect supports only aggregate function in $aggregateExpr');
+//            }
 //
 //            var view = $this._findQueryView(dcQuery.$context);
-//            $this.throwError(view, 'Query view not found: ' + dcQuery.$context);
+//            if (!view) {
+//                throw new Error('Query view not found: ' + dcQuery.$context);
+//            }
 //
 //            if (!(JSB.isString(exp.$idField) || exp.$idField.$field)
 //                && !(JSB.isString(exp.$parentIdField) || exp.$parentIdField.$field)
 //                ) {
-//                $this.throwError(0, 'Operator $recursiveSelect supports only fields in $idField and $parentIdField');
+//                throw new Error('Operator $recursiveSelect supports only fields in $idField and $parentIdField');
 //            }
 //
 //            var treeContext = 'tree:' + dcQuery.$context;
@@ -340,10 +340,34 @@
 //            sql += ')';
 //            sql += ' SELECT ' + $this._translateExpression((function(){
 //                var val = {};
-//                val[aggFunc] = "value";
+//                val[aggFunc] = {$const:'#####'}; // HACK
 //                return val;
-//            })(), dcQuery);
-//            sql += ' FROM ' + $this._quotedName(treeContext);
+//            })(), dcQuery).replace("'#####'", '"Q".value');
+//            sql += ' FROM ' + $this._quotedName(treeContext) + ' AS "Q"';
+////            if (exp.$onlyLeafs) {
+////                throw 'TODO';
+////                sql += ' INNER JOIN ' + $this._translateFrom(dcQuery) + ' AS ' + $this._quotedName(dcQuery.$context);
+////                sql += ' ON "Q".id = ' + $this._translateExpression(exp.$parentIdField.$field||exp.$parentIdField, dcQuery);
+////            }
+//            if (exp.$onlyLeafs || exp.$depth && (exp.$depth.$max >= 0 || exp.$depth.$min >= 0)) {
+//                sql += ' WHERE' ;
+//                if (exp.$onlyLeafs) {
+//                    sql += ' "Q".id NOT IN (';
+//                    sql += 'SELECT ' + $this._translateExpression(exp.$parentIdField.$field||exp.$parentIdField, dcQuery);
+//                    sql += ' FROM ' + $this._translateFrom(dcQuery) + ' AS ' + $this._quotedName(dcQuery.$context);
+//                    var where = $this._translateWhere(dcQuery, $this._extractWhereOrHavingFilter(dcQuery, true));
+//                    if (where) sql += 'WHERE ' + where;
+//                    sql += ')';
+//                }
+//                if (exp.$depth && exp.$depth.$max >= 0 ) {
+//                    if (exp.$onlyLeafs) sql += ' AND ';
+//                    sql += ' "Q".depth <= ' + exp.$depth.$max;
+//                }
+//                if (exp.$depth && exp.$depth.$min >= 0) {
+//                    if (exp.$onlyLeafs || exp.$depth.$max >= 0 ) sql += ' AND ';
+//                    sql += ' "Q".depth >= ' + exp.$depth.$min;
+//                }
+//            }
 //
 //            return '(' + sql + ')';
 //        },
