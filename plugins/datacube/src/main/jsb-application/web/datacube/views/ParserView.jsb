@@ -22,7 +22,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('ParserView.css');
+			$jsb.loadCss('ParserView.css');
 			this.addClass('parserView');
 
             this.titleBlock = this.$('<div class="titleBlock"></div>');

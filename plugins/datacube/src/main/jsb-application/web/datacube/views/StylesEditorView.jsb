@@ -15,7 +15,7 @@
 		$constructor: function(opts){
 			$base(opts);
 
-			this.loadCss('StylesEditorView.css');
+			$jsb.loadCss('StylesEditorView.css');
 			this.addClass('stylesEditorView');
 
             this.titleBlock = this.$('<div class="titleBlock"></div>');

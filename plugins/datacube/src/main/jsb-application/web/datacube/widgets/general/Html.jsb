@@ -296,7 +296,7 @@
 			$base(opts);
 			
 			this.addClass('htmlWidget');
-			this.loadCss('Html.css');
+			$jsb.loadCss('Html.css');
 			$this.setInitialized();
 		},
 

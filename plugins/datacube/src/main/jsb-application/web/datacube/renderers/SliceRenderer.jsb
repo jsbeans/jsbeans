@@ -9,7 +9,7 @@
 			//opts.editable = false;
 			$base(entry, opts);
 			this.addClass('sliceRenderer');
-			this.loadCss('SliceRenderer.css');
+			$jsb.loadCss('SliceRenderer.css');
 			
 			if(opts.showCube){
 				this.addClass('showCube');

@@ -72,7 +72,8 @@
 		           'JSB.Widgets.PrimitiveEditor',
 		           'JSB.Widgets.ToolManager',
 		           'JSB.Controls.Navigator',
-		           'DataCube.Controls.WidgetFilterSelector'],
+		           'DataCube.Controls.WidgetFilterSelector',
+		           'JSB.Widgets.RendererRepository'],
 
 		attached: false,
 		childWidgets: [],
@@ -95,7 +96,7 @@
 			
 			this.filterManager = (opts && opts.filterManager) || (this.owner && this.owner.getFilterManager());
 
-			this.loadCss('WidgetWrapper.css');
+			$jsb.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
 			
 			this.setTitle(this.getWidgetEntry().getName());
@@ -408,17 +409,36 @@
 					    $this.publish('JSB.Workspace.Entry.open', $this.widgetEntry);
 					}
 				});
+				
+				function removeLocalWidget(){
+					// remove from dashboard container
+					var container = $this.getContainer();
+					if(container){
+						var dashboardContainer = container.getElement().closest('._jsb_dashboardContainer').jsb();
+						dashboardContainer.placeholders['center'].enable(true);
+						dashboardContainer.removeWidget($this);
+						if($this.getOwner().wrappers[$this.getId()]){
+							delete $this.getOwner().wrappers[$this.getId()];
+						}
+						$this.destroy();
+					}
+				}
 
 				var closeBtn = new Button({
 					cssClass: 'roundButton btnDelete btn10',
 					tooltip: 'Удалить',
 					onClick: function(evt){
 						var elt = $this.$(evt.currentTarget);
+						var entryRenderer = RendererRepository.createRendererFor($this.getWidgetEntry(), {editable:false});
+						var msgElt = $this.$('<div><span>Вы уверены что хотите удалить виджет </span></div>');
+						msgElt.append(entryRenderer.getElement());
+						msgElt.append('<span> ?</span>')
 						ToolManager.showMessage({
 							icon: 'removeDialogIcon',
-							text: 'Вы уверены что хотите удалить виджет "' + $this.getWidgetEntry().getName() + '" ?',
-							buttons: [{text: 'Удалить', value: true},
-							          {text: 'Нет', value: false}],
+							text: msgElt,
+							buttons: [{text: 'Удалить безвозвратно', value: 'remove'},
+							          {text: 'Убрать с визуализации', value: 'hide'},
+							          {text: 'Отмена', value: false}],
 							target: {
 								selector: elt
 							},
@@ -430,23 +450,19 @@
 								weight: 10.0
 							}],
 							callback: function(bDel){
-								if(bDel){
+								if(!bDel){
+									return;
+								}
+								if(bDel == 'remove'){
 									$this.getDashboard().server().removeWidgetWrapper($this.getWidgetEntry().getId(), function(res, fail){
 										if(res){
-											// remove from dashboard container
-											var container = $this.getContainer();
-											if(container){
-												var dashboardContainer = container.getElement().closest('._jsb_dashboardContainer').jsb();
-												dashboardContainer.placeholders['center'].enable(true);
-												dashboardContainer.removeWidget($this);
-												if($this.getOwner().wrappers[$this.getId()]){
-													delete $this.getOwner().wrappers[$this.getId()];
-												}
-												$this.destroy();
-											}
+											removeLocalWidget();
 										}
 									});
+								} else if(bDel == 'hide'){
+									removeLocalWidget();
 								}
+								
 							}
 						});
 					}

@@ -8,7 +8,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('itemList.css');
+			$jsb.loadCss('itemList.css');
 			this.addClass('_dwp_itemList');
 			
 			if(!this.options.views.basic){
@@ -114,7 +114,7 @@
 		},
 		
 		addSeparator: function(id){
-			this.getSuperClass().addItem.call(this, {
+			$super.addItem({
 				allowHover: false,
 				allowSelect: false,
 				key: id,
@@ -124,7 +124,7 @@
 		},
 		
 		insertSeparator: function(key, id){
-			this.getSuperClass().insertItem.call(this, key, {
+			$super.insertItem(key, {
 				allowHover: false,
 				allowSelect: false,
 				key: id,

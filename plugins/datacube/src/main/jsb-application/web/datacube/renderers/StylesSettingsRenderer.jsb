@@ -9,7 +9,7 @@
 
 			$base(entry, opts);
 			this.addClass('styleSettingsRenderer');
-			this.loadCss('StyleSettingsRenderer.css');
+			$jsb.loadCss('StyleSettingsRenderer.css');
 		}
 	},
 

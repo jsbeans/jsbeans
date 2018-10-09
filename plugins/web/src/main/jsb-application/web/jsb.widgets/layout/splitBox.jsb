@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('splitBox.css');
+			$jsb.loadCss('splitBox.css');
 			this.addClass('_dwp_splitbox');
 			self.init();
 		},

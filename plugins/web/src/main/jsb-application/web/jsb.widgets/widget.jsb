@@ -9,7 +9,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('widget.css');
+			$jsb.loadCss('widget.css');
 			this.element.addClass('_dwp_widget');
 			if(opts){
 				if(!JSB().isNull(opts.container)){

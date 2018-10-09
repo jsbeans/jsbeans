@@ -16,7 +16,7 @@
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('userBlock');
-			this.loadCss('userBlock.css');
+			$jsb.loadCss('userBlock.css');
 
 			this.append(`#dot
 				<div class="loggedPanel">

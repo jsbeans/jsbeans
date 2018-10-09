@@ -7,7 +7,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('listBox.css');
+			$jsb.loadCss('listBox.css');
 			var self = this;
 			var elt = this.getElement();
 			elt.addClass('_dwp_listBox');

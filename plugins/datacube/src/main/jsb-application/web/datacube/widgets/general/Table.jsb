@@ -747,7 +747,7 @@
 			$base(opts);
 			
 			this.addClass('tableWidget');
-			this.loadCss('Table.css');
+			$jsb.loadCss('Table.css');
 /*			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);

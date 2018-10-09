@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('sqlSourceRenderer');
-			this.loadCss('SqlSourceRenderer.css');
+			$jsb.loadCss('SqlSourceRenderer.css');
 		}
 	},
 	

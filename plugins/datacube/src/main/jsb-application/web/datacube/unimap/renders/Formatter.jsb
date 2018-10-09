@@ -13,7 +13,7 @@
 
 	    construct: function(){
 	        this.addClass('formatter');
-	        this.loadCss('Formatter.css');
+	        $jsb.loadCss('Formatter.css');
 
 	        this._scheme.formatterOpts = this._scheme.formatterOpts || {};
 

@@ -24,7 +24,7 @@
 			var self = this;
 			$base(opts);
 			
-			this.loadCss('datepicker.css');
+			$jsb.loadCss('datepicker.css');
 			this.addClass('_jsb_DatePicker');
 			
 			var pickerOpts = {

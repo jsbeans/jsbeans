@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('csvFileRenderer');
-			this.loadCss('CsvFileRenderer.css');
+			$jsb.loadCss('CsvFileRenderer.css');
 		}
 	},
 	

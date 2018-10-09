@@ -11,7 +11,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('gridView');
-			this.loadCss('GridView.css');
+			$jsb.loadCss('GridView.css');
 
             this.table = new Handsontable({
             	noDataMessage: opts && opts.noDataMessage || 'Нет данных',

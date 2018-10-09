@@ -31,7 +31,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('Explorer.css');
+			$jsb.loadCss('Explorer.css');
 			this.addClass('workspaceExplorer');
 			
 			this.messageBox = this.$('<div class="message"></div>');

@@ -4,7 +4,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('scrollBox.css');
+			$jsb.loadCss('scrollBox.css');
 			if(opts && opts.cssClass){
 			    this.addClass(opts.cssClass);
 			}

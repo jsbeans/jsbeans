@@ -5,7 +5,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('dateString.css');
+			$jsb.loadCss('dateString.css');
 			this.addClass('_dwp_dateString');
 		},
 		

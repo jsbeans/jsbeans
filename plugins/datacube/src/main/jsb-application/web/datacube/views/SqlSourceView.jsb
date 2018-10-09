@@ -10,7 +10,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('SqlSourceView.css');
+			$jsb.loadCss('SqlSourceView.css');
 			this.addClass('sqlSourceView');
 			
 			// create dialog

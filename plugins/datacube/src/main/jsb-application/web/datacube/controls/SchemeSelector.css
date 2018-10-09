@@ -39,6 +39,8 @@
 
 .schemeSelector > ._dwp_cbContainer > .schemeField {
 	white-space: nowrap;
+	overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > * {

@@ -5,7 +5,7 @@
 	$client: {
 	    construct: function(){
 	        this.addClass('namesBinding');
-	        this.loadCss('NamesBinding.css');
+	        $jsb.loadCss('NamesBinding.css');
 
 	        this.createDataList(this.getValueByKey(this._scheme.linkTo));
 

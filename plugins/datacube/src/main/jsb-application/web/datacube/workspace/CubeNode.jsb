@@ -9,7 +9,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('CubeNode.css');
+			$jsb.loadCss('CubeNode.css');
 			this.addClass('cubeNode');
 			
 			this.append('<div class="status"></div>');

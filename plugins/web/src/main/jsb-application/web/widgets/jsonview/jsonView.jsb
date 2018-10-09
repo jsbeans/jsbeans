@@ -11,7 +11,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('jsonView.css');
+			$jsb.loadCss('jsonView.css');
 //			this.preloadImages();
 			this.init(opts);
 		},

@@ -5,7 +5,7 @@
 	    $constructor: function(opts){
 	        $base(opts);
 
-	        this.loadScript('htmlToCanvas.js');
+	        $jsb.loadScript('htmlToCanvas.js');
 
 	        this._downloadAttrSupported = window.document.createElement('a').download !== undefined;
 	    },

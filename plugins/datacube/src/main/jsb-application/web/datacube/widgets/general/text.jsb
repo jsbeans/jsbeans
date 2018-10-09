@@ -147,7 +147,7 @@
 			var self = this;
 			$base(opts);
 			this.addClass('textWidget');
-			this.loadCss('text.css');
+			$jsb.loadCss('text.css');
 			$this.setInitialized();
 		},
 

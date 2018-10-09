@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('httpServerRenderer');
-			this.loadCss('HttpServerRenderer.css');
+			$jsb.loadCss('HttpServerRenderer.css');
 		}
 	},
 	

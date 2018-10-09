@@ -15,7 +15,7 @@
 			
 			JSB().loadCss('tpl/codemirror/lib/codemirror.css');
 			JSB().loadCss('tpl/codemirror/theme/eclipse.css');
-			this.loadCss('console.css');
+			$jsb.loadCss('console.css');
 			JSB().loadScript('tpl/codemirror/lib/codemirror.js', function(){
 				JSB().loadScript('tpl/codemirror/mode/javascript/javascript.js', function(){
 					JSB().loadScript('tpl/codemirror/addon/edit/matchbrackets.js', function(){

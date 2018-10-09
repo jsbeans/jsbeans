@@ -15,7 +15,7 @@
 
 	    construct: function(){
 	        this.addClass('sourceBindingRender');
-	        this.loadCss('SourceBinding.css');
+	        $jsb.loadCss('SourceBinding.css');
 
 	        this.createDataList();
 

@@ -9,7 +9,7 @@
 	        $base(opts);
 
 			this.addClass('jsb-navigator');
-			this.loadCss('navigator.css');
+			$jsb.loadCss('navigator.css');
 
 			this._leftScroll = this.$('<div class="leftScroll hidden"></div>');
 			this.append(this._leftScroll);

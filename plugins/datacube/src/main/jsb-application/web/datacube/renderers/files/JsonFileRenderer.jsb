@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('jsonFileRenderer');
-			this.loadCss('JsonFileRenderer.css');
+			$jsb.loadCss('JsonFileRenderer.css');
 		}
 	},
 	

@@ -8,7 +8,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('entryRenderer');
-			this.loadCss('EntryRenderer.css');
+			$jsb.loadCss('EntryRenderer.css');
 			
 			this.icon = this.$('<div class="icon"></div>');
 			this.append(this.icon);

@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('treeView.css');
+			$jsb.loadCss('treeView.css');
 			this.addClass('_dwp_treeview');
 			this.scrollBox = new ScrollBox(this.options);
 			this.append(this.scrollBox);

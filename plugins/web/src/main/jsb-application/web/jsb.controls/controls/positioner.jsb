@@ -6,7 +6,7 @@
 	        $base(opts);
 
 			this.addClass('jsb-positioner');
-			this.loadCss('positioner.css');
+			$jsb.loadCss('positioner.css');
 
             this.currentVal = this.$('<div class="curVal"></div>');
             this.append(this.currentVal);

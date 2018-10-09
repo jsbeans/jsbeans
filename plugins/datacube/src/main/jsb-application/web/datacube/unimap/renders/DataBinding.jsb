@@ -11,7 +11,7 @@
 
 	    construct: function(){
 	        this.addClass('dataBindingRender');
-	        this.loadCss('DataBinding.css');
+	        $jsb.loadCss('DataBinding.css');
 
 	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList') || [];
 	        this._cubeFieldList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_cubeFieldList') || [];

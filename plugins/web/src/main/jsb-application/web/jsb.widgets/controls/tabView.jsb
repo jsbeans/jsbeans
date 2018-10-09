@@ -4,7 +4,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('tabView.css');
+			$jsb.loadCss('tabView.css');
 			this.init();
 		},
 		

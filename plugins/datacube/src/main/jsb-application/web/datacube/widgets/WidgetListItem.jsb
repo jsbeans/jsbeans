@@ -7,7 +7,7 @@
 
 		$constructor: function(opts, desc){
 			$base(opts);
-			this.loadCss('WidgetListItem.css');
+			$jsb.loadCss('WidgetListItem.css');
 			this.addClass('widgetListItem');
 			this.descriptor = desc;
 			this.attr('key', this.descriptor.jsb);
