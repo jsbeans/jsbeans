@@ -1264,14 +1264,21 @@
 						if(dif != 0){
 							var curSel = d3.select(this);
 							curSel.style('transform', 'translate(0, '+dif+'px)');
-							curSel.transition().duration(800).style('transform', 'translate(0,0)');
+							curSel.transition().duration(800)
+								.style('transform', 'translate(0,0)')
+								.on('end', function(d){
+									d3.select(this).style('transform', null);
+								});
 						}
 					});
 					
 					newRowsSel.selectAll('tr.row')
 						.transition().duration(800)
 							.style('opacity', 1)
-							.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'});
+							.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'})
+							.on('end', function(d){
+								d3.select(this).style('transform', null);
+							});
 				}
 
 			}
