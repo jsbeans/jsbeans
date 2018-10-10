@@ -1961,7 +1961,7 @@
                                         marker.on('click', function(){
                                             $this.addFilter({
                                                 sourceId: $this._dataSource.source,
-                                                type: '$or',
+                                                type: '$and',
                                                 op: '$eq',
                                                 field: filterData.binding,
                                                 value: filterData.value

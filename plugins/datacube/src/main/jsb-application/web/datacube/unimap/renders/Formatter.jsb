@@ -1,5 +1,5 @@
 {
-	$name: 'Unimap.Render.Formatter',
+	$name: 'Unimap.Render.Formatter-old',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
 	    $require: ['JSB.Controls.Select', 'JSB.Controls.Editor', 'JSB.Controls.Checkbox', 'JSB.Controls.Switch', 'DataCube.Controls.SchemeSelector'],
