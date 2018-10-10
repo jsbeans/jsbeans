@@ -13,7 +13,7 @@
 			$base();
 			this.owner = owner;
 			this.filterManager = filterManager;
-			this.loadCss('FilterSelector.css');
+			$jsb.loadCss('FilterSelector.css');
 			this.addClass('filterSelector');
 			
 			var iconElt = this.$('<div class="icon"></div>');

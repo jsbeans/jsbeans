@@ -13,7 +13,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('BrowserView.css');
+			$jsb.loadCss('BrowserView.css');
 			this.addClass('workspaceBrowserView');
 			
 		},

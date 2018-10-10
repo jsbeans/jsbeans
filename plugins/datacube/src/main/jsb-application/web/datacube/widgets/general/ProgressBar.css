@@ -9,8 +9,16 @@
     position: relative;
 }
 
+.progressBar > div.serie[type="Line"] {
+	height: 14px;
+}
+
+.progressBar > div.serie[type="Circle"] {}
+
+.progressBar > div.serie[type="SemiCircle"] {}
+
 .progressBar > div.serie > svg {
-	min-height: 14px;
+	height: 100%;
     padding: 3px 3px;
 }
 

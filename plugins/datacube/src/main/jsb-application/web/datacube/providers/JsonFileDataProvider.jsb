@@ -5,7 +5,7 @@
 	$client: {
 		$constructor: function(){
 			$base();
-			this.loadCss('JsonFileDataProvider.css');
+			$jsb.loadCss('JsonFileDataProvider.css');
 		}
 	},
 	

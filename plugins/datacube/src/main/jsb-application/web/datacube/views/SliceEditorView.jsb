@@ -16,7 +16,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('SliceEditorView.css');
+			$jsb.loadCss('SliceEditorView.css');
 			this.addClass('sliceEditorView');
 
 			this.titleBlock = this.$('<div class="titleBlock"></div>');

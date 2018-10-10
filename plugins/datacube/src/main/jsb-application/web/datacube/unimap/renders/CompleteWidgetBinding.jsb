@@ -6,7 +6,7 @@
 
 	    construct: function(){
 	        this.addClass('completeWidgetBindingRender');
-	        this.loadCss('CompleteWidgetBinding.css');
+	        $jsb.loadCss('CompleteWidgetBinding.css');
 
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
 	        this.append(name);

@@ -8,7 +8,7 @@
 
 	    construct: function(){
 	        this.addClass('embeddedWidgetBindingRender');
-	        this.loadCss('EmbeddedWidgetBinding.css');
+	        $jsb.loadCss('EmbeddedWidgetBinding.css');
 
 	        if(this._scheme.optional){
 	            this.addClass('optional');

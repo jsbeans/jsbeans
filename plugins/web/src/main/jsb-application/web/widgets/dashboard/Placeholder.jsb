@@ -8,7 +8,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('Placeholder.css');
+			$jsb.loadCss('Placeholder.css');
 			this.addClass('_jsb_dashboardPlaceholder');
 			
 			if(this.options.emptyText){

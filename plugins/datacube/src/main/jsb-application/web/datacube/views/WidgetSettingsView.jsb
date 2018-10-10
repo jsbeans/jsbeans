@@ -15,7 +15,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('WidgetSettingsView.css');
+			$jsb.loadCss('WidgetSettingsView.css');
 			this.addClass('widgetSettingsView');
 
             this.titleBlock = this.$('<div class="titleBlock"></div>');

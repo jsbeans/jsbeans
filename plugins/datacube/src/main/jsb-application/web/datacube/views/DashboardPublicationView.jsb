@@ -9,7 +9,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('DashboardPublicationView.css');
+			$jsb.loadCss('DashboardPublicationView.css');
 			this.addClass('dashboardPublicationView');
 			
 			this.append(`#dot

@@ -25,7 +25,7 @@
 			$base(opts);
 
 			this.addClass('apiWidget');
-			this.loadCss('Widget.css');
+			$jsb.loadCss('Widget.css');
 			
 			var wsId = opts.wsid;
 			var wId = opts.wid;

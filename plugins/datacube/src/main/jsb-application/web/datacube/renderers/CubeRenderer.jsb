@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('cubeRenderer');
-			this.loadCss('CubeRenderer.css');
+			$jsb.loadCss('CubeRenderer.css');
 		}
 	},
 	

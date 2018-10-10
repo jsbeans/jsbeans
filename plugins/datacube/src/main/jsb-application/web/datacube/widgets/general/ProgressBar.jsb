@@ -168,7 +168,7 @@
 			$base(opts);
 			
 			this.addClass('progressBar');
-			this.loadCss('ProgressBar.css');
+			$jsb.loadCss('ProgressBar.css');
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.setInitialized();

@@ -5,7 +5,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('jsb-tabview');
-			this.loadCss('tabView.css');
+			$jsb.loadCss('tabView.css');
 
 			// todo: styles for another tab position
             this.tabPane = this.$('<ul class="tabPane ' + this.options.tabPosition + '"></ul>');

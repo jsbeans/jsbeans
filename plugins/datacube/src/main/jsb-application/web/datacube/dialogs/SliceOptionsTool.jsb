@@ -25,7 +25,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('SliceOptionsTool.css');
+			$jsb.loadCss('SliceOptionsTool.css');
 			this.addClass('sliceOptionsTool');
 			
 			this.append(`#dot

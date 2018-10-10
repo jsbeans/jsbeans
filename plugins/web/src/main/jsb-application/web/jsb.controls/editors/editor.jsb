@@ -11,7 +11,7 @@
 	        }
 	        $base(opts);
 
-            this.loadCss('editor.css');
+	        $jsb.loadCss('editor.css');
             this.addClass('jsb-editor');
 
             this.editor = this.getElement();

@@ -37,7 +37,7 @@
 			this.editor = opts.editor;
 			this.slice = opts.slice;
 
-			this.loadCss('SliceDiagramNode.css');
+			$jsb.loadCss('SliceDiagramNode.css');
 			this.addClass('sliceDiagramNode');
 			
 			this.caption = this.$(`#dot

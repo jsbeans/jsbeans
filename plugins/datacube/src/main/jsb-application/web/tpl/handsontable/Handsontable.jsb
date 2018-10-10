@@ -12,7 +12,7 @@
 		$constructor: function(opts){
 			$base(opts);
 
-			this.loadCss('Handsontable.jsb.css');
+			$jsb.loadCss('Handsontable.jsb.css');
 			this.addClass('tableControl');
 
             this.noData = this.$('<div class="noData hidden"></div>').text((opts && opts.noDataMessage)||'Нет данных');
@@ -29,8 +29,8 @@
 			if(this.callbacks.createHeader) // if undefined will set default header
 			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
-            this.loadCss('handsontable.min.css');
-            this.loadScript('handsontable.min.js', function(){    //tpl/handsontable/handsontable.min.js
+			$jsb.loadCss('handsontable.min.css');
+			$jsb.loadScript('handsontable.min.js', function(){    //tpl/handsontable/handsontable.min.js
                 // custom render for all cells
                 function customRenderer(hotInstance, td, row, column, prop, value, cellProperties){
                     // include default renderer

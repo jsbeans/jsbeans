@@ -5,7 +5,7 @@
 		$constructor: function(toolId, toolMgr, w, opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('toolWrapper.css');
+			$jsb.loadCss('toolWrapper.css');
 			this.toolId = toolId;
 			this.toolManager = toolMgr;
 			this.embeddedWidget = w;

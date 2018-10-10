@@ -126,7 +126,7 @@
 
         $constructor: function(opts){
             $base(opts);
-            this.loadCss('foamtree.css');
+            $jsb.loadCss('foamtree.css');
 
             $this.container = $this.$('<div class="container"></div>');
             $this.append($this.container);

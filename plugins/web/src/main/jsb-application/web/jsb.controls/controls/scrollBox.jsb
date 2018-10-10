@@ -10,7 +10,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('jsb-scrollBox');
-			this.loadCss('scrollBox.css');
+			$jsb.loadCss('scrollBox.css');
 
             if(!this.options.xAxisScroll){
                 this.getElement().css('overflow-x', 'hidden');

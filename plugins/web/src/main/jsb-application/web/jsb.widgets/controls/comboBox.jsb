@@ -11,7 +11,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('comboBox.css');
+			$jsb.loadCss('comboBox.css');
 			this.addClass('_dwp_comboBox');
 			this.init();
 		},

@@ -30,7 +30,7 @@
 		
 		construct: function(){
 			var self = this;
-			this.loadCss('dropListTool.css');
+			$jsb.loadCss('dropListTool.css');
 			this.addClass('_dwp_droplistTool');
 			this.listbox = new ListBox({
 				onSelectionChanged: function(key, item, evt){

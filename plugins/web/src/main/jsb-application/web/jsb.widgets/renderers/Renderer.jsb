@@ -6,7 +6,7 @@
 			this.object = obj;
 			$base(opts);
 			this.addClass('renderer');
-			this.loadCss('Renderer.css');
+			$jsb.loadCss('Renderer.css');
 		},
 		
 		getObject: function(){

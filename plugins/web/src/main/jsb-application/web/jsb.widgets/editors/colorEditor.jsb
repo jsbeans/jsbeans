@@ -150,7 +150,7 @@
 			var self = this;
 			$base(opts);
 			this.addClass('colorEditor');
-			this.loadCss('colorEditor.css');
+			$jsb.loadCss('colorEditor.css');
 
 			if(this.options.value){
 			    this._color = this.options.value;

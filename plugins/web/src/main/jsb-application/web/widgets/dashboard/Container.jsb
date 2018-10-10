@@ -17,7 +17,7 @@
 		
 		$constructor: function(opts, parent, dashboard){
 			$base(opts);
-			this.loadCss('Container.css');
+			$jsb.loadCss('Container.css');
 			this.addClass('_jsb_dashboardContainer');
 			this.dashboard = dashboard;
 			this.parent = parent;

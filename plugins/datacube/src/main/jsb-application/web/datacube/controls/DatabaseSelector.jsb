@@ -14,7 +14,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('databaseSelector');
-			this.loadCss('DatabaseSelector.css');
+			$jsb.loadCss('DatabaseSelector.css');
 			
 			this.attr('title', 'Выберите базу');
 			this.placeholderElt = this.$('<div class="placeholder">Выберите/перетащите базу</div>');

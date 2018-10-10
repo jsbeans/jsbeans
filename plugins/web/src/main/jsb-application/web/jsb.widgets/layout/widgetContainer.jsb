@@ -11,7 +11,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('widgetContainer.css');
+			$jsb.loadCss('widgetContainer.css');
 			this.getElement().addClass('_dwp_widgetContainer');
 			
 			var twOpts = {

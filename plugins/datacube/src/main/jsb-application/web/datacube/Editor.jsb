@@ -19,7 +19,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('Editor.css');
+			$jsb.loadCss('Editor.css');
 			this.addClass('dataCubeEditor');
 			$this.server().getVersion(function(v){
 				$this.dcVersion = v;

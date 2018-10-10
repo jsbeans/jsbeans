@@ -32,7 +32,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('SchemePopupTool.css');
+			$jsb.loadCss('SchemePopupTool.css');
 			this.addClass('schemePopupTool');
 			
 			$this.getElement().on({

@@ -15,7 +15,7 @@
 
 	    construct: function(){
 	        this.addClass('parserSourceBindingRender');
-	        this.loadCss('ParserSourceBinding.css');
+	        $jsb.loadCss('ParserSourceBinding.css');
 	        
 	        this.createDataList();
 	        

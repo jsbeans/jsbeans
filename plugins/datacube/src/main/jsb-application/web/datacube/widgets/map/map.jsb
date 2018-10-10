@@ -795,7 +795,7 @@
             this.append(this._widgetElements.header);
 
             this.addClass('mapWidget');
-            this.loadCss('map.css');
+            $jsb.loadCss('map.css');
 
             JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.css');
             JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.Default.css');

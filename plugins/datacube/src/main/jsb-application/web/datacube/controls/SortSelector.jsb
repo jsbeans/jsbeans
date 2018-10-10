@@ -10,7 +10,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('SortSelector.css');
+			$jsb.loadCss('SortSelector.css');
 			this.addClass('sortSelector');
 			
 			this.field = this.$('<div class="field"></div>');

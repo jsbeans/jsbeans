@@ -11,7 +11,7 @@
 			} 
 			this.options = JSB.merge(true, {}, this.options, opts);
 			
-			this.loadCss('control.css');
+			$jsb.loadCss('control.css');
 			if(this.options.element){
 				this.element = this.$(this.options.element);
 				delete this.options.element;

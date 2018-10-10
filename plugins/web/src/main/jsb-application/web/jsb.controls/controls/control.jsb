@@ -21,7 +21,7 @@
                 this.element = this.$('<'+tag+' _id="'+this.getId()+'" class="jsb-control"></'+tag+'>');
             }
 
-			this.loadCss('control.css');
+            $jsb.loadCss('control.css');
 
             // options class
             if(this.options.cssClass){
