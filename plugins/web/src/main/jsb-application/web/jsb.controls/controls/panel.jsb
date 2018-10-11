@@ -6,8 +6,8 @@
         $constructor: function(opts){
             $base(opts);
 
-            this.loadCss('panel.css');
-            this.loadCss('../fonts/fa/fontawesome-all.min.css');
+            $jsb.loadCss('panel.css');
+            $jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
             this.addClass('jsb-panel');
 
             this.elements.header = this.$('<div class="header"></div>');

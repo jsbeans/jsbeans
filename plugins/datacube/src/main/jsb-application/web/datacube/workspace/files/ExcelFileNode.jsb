@@ -5,7 +5,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('ExcelFileNode.css');
+			$jsb.loadCss('ExcelFileNode.css');
 			this.addClass('excelFileNode');
 			
 			this.append(`#dot

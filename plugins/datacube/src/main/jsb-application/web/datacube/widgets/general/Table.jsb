@@ -421,6 +421,7 @@
 	                                    formatter: {
                                             render: 'formatter',
                                             name: 'Формат',
+                                            linkTo: 'sourceBinding',
                                             formatterOpts: {
                                                 basicSettings: {
                                                     type: 'number',
@@ -563,6 +564,7 @@
 	                                    format: {
                                             render: 'formatter',
                                             name: 'Формат',
+                                            linkTo: 'sourceBinding',
                                             formatterOpts: {
                                                 basicSettings: {
                                                     type: 'number',
@@ -747,7 +749,7 @@
 			$base(opts);
 			
 			this.addClass('tableWidget');
-			this.loadCss('Table.css');
+			$jsb.loadCss('Table.css');
 /*			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
@@ -1264,14 +1266,21 @@
 						if(dif != 0){
 							var curSel = d3.select(this);
 							curSel.style('transform', 'translate(0, '+dif+'px)');
-							curSel.transition().duration(800).style('transform', 'translate(0,0)');
+							curSel.transition().duration(800)
+								.style('transform', 'translate(0,0)')
+								.on('end', function(d){
+									d3.select(this).style('transform', null);
+								});
 						}
 					});
 					
 					newRowsSel.selectAll('tr.row')
 						.transition().duration(800)
 							.style('opacity', 1)
-							.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'});
+							.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'})
+							.on('end', function(d){
+								d3.select(this).style('transform', null);
+							});
 				}
 
 			}
@@ -2648,6 +2657,7 @@
 			var rowKeyFields = rowKeySelector.bindings();
 			this.rowsContext = dataSource;
 			
+			// filters
 			this.rowFilters = [];
 			var rowFilters = this.getContext().find('rowFilter').values();
 			for(var i = 0; i < rowFilters.length; i++){

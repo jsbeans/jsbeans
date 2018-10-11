@@ -15,7 +15,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('CubeEditor.css');
+			$jsb.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
 			
 			// create diagram

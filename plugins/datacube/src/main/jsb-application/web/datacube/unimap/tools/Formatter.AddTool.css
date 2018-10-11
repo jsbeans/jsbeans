@@ -1,0 +1,83 @@
+.formatterAddToolWrapper {
+    border-radius: 3px !important;
+    background: rgb(241, 207, 158) !important;
+    border: none !important;
+    padding: 5px;
+    box-shadow: 1px 1px 1px #585858;
+}
+
+.formatterAddTool {
+    width: 350px;
+}
+
+.formatterAddTool > .itemsList,
+.formatterAddTool > .itemsDesc {
+    box-sizing: border-box;
+    display: inline-block;
+    width: 50%;
+    vertical-align: top;
+    min-height: 100px;
+}
+
+.formatterAddTool > .itemsList > li {
+    cursor: pointer;
+    color: #715537;
+    padding: 4px 4px 4px 10px;
+    border-radius: 6px 0 0 6px;
+    border: 1px solid transparent;
+}
+
+.formatterAddTool > .itemsList > li:hover:not(.selected) {
+    border: 1px solid rgba(170, 149, 39, 0.5);
+}
+
+.formatterAddTool > .itemsList > li.selected,
+.formatterAddTool > .itemsDesc > .variablesList > li.selected {
+    background-color: rgb(197, 153, 90);
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+    cursor: default;
+}
+
+.formatterAddTool > .itemsDesc {
+    background-color: #e8d9c8;
+    border: 1px solid rgb(197, 153, 90);
+    padding: 5px;
+    color: #7b4500;
+}
+
+.formatterAddTool > .itemsDesc > .variablesList > li {
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: 3px;
+}
+
+.formatterAddTool > .itemsDesc > .variablesList > li:hover:not(.selected) {
+    background: -webkit-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
+    border: 1px solid rgba(170, 149, 39, 0.5);
+    border-radius: 3px;
+}
+
+.formatterAddTool > .itemsDesc > .jsb-editor {
+    width: 100%;
+}
+
+.formatterAddTool ul {
+    list-style: none;
+}
+
+.formatterAddTool > .addBtn {
+    margin-top: 5px;
+    background: #169F85;
+    border-radius: 3px;
+    padding: 3px;
+    color: white;
+    border: 1px solid #398439;
+    width: 80px;
+    margin-left: calc(100% - 80px);
+}
+
+.formatterAddTool > .addBtn:hover {
+	background: #218838;
+    border: 1px solid #1e7e34;
+}

@@ -15,7 +15,7 @@
 			$base();
 			this.owner = owner;
 			this.filterManager = filterManager;
-			this.loadCss('WidgetFilterSelector.css');
+			$jsb.loadCss('WidgetFilterSelector.css');
 			this.addClass('widgetFilterSelector');
 			
 			$this.updateVisibility();

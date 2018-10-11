@@ -31,7 +31,7 @@
 			$base(opts);
 			
 			this.addClass('schemeSelector');
-			this.loadCss('SchemeSelector.css');
+			$jsb.loadCss('SchemeSelector.css');
 			
 			if(JSB.isDefined(items)){
 				$this.setItems(items, cubeItems, '');

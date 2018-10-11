@@ -5,7 +5,7 @@
 	    $constructor: function(opts){
 	        $base(opts);
 
-	        this.loadCss('switch.css');
+	        $jsb.loadCss('switch.css');
             this.addClass('jsb-switch');
 
             this.checkbox = this.$('<input id="switch_' + $this.getId() + '" type="checkbox" />');

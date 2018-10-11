@@ -44,7 +44,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('FilterEntry.css');
+			$jsb.loadCss('FilterEntry.css');
 			this.addClass('filterEntry');
 			
 			this.editor = new PrimitiveEditor({

@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('folderRenderer');
-			this.loadCss('FolderRenderer.css');
+			$jsb.loadCss('FolderRenderer.css');
 		}
 	},
 	

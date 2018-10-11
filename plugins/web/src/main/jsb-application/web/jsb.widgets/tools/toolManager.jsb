@@ -14,7 +14,7 @@
 		$constructor: function(){
 			$base();
 			var self = this;
-			this.loadCss('toolManager.css');
+			$jsb.loadCss('toolManager.css');
 			this.tools = {};
 			this.visibleInstances = [];
 			this.subscribe('tool');

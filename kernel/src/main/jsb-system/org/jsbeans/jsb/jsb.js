@@ -892,22 +892,9 @@ if(!(function(){return this;}).call(null).JSB){
 									privateMethod = true;
 								}
 							}
-							body[mtdName] = function(){
+							body[mtdName] = proc;
+/*							body[mtdName] = function(){
 								var ctxStack = self.getCallingContext();
-	/*							
-								// perform access call check
-								if(privateMethod){
-									checkPrivate({
-										jsb: self,
-										methodName: mtdName
-									}, ctxStack);
-								} else if(protectedMethod){
-									checkProtected({
-										jsb: self,
-										methodName: mtdName
-									}, ctxStack);
-								}
-	*/
 								ctxStack.push({
 									jsb: self,
 									methodName: mtdName,
@@ -924,7 +911,8 @@ if(!(function(){return this;}).call(null).JSB){
 								}
 								
 								return res;
-							}
+							}*/
+							
 							body[mtdName].jsb = self;
 						})(mtdName);
 					}
@@ -1608,7 +1596,7 @@ if(!(function(){return this;}).call(null).JSB){
 			return null;
 		},
 		
-		getCallingContext: function(){
+/*		getCallingContext: function(){
 			var tls = this.getThreadLocal();
 			var ctx = tls.get('_jsbCallingContext');
 			if(!ctx){
@@ -1617,39 +1605,9 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			
 			return ctx;
-		},
+		},*/
 		
-		getLastInstance: function(){
-			var ctx = this.getCallingContext();
-			if(ctx.length === 0){
-				return null;
-			}
-			return ctx[ctx.length - 1].inst;
-		},
-		
-		getCallerJsb: function(){
-			var ctx = this.getCallingContext();
-			if(ctx.length < 2){
-				return null;
-			}
-			return ctx[ctx.length - 2].jsb;
-		},
-		
-		stringifyCallingContext: function(){
-			var ctx = this.getCallingContext();
-			var dumpArr = [];
-			for(var i = 0; i < ctx.length; i++){
-				dumpArr.push({
-					jsb: (ctx[i] && ctx[i].jsb ? ctx[i].jsb.$name : null),
-					methodName: (ctx[i] ? ctx[i].methodName : null),
-					inst: (ctx[i] && ctx[i].inst && ctx[i].inst.jsb ? ctx[i].inst.jsb.$name : null)
-				});
-			}
-			
-			return JSON.stringify(dumpArr);
-		},
-		
-		saveCallingContext: function(){
+/*		saveCallingContext: function(){
 			var saveCtx = [];
 			var ctx = this.getCallingContext();
 			for(var i = 0; i < ctx.length; i++){
@@ -1664,12 +1622,12 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			
 			return saveCtx;
-		},
+		},*/
 		
-		putCallingContext: function(ctx){
+/*		putCallingContext: function(ctx){
 			var tls = this.getThreadLocal();
 			tls.put('_jsbCallingContext', ctx);
-		},
+		}, */
 		
 		getGroup: function(){
 			if(this.group){
@@ -1890,29 +1848,15 @@ if(!(function(){return this;}).call(null).JSB){
 				// call ctor
 				this.$_superCalled = false;
 					
-				var ctxStack = ss.getCallingContext();
-				ctxStack.push({
-					jsb: ss,
-					methodName: '$constructor',
-					inst: this
-				});
-				// TODO: perform call check
-				
-				try {
-					// call original function
-					if(ss._ctor){
-						ss._ctor.apply(this, arguments);
-					}
-					if (!this.$_superCalled) {
-						parent.apply(this, arguments);
-						this.$_superCalled = true;
-					}
-				} finally {
-					// restore prev context
-					ctxStack.pop();
+				// call original function
+				if(ss._ctor){
+					ss._ctor.apply(this, arguments);
+				}
+				if (!this.$_superCalled) {
+					parent.apply(this, arguments);
+					this.$_superCalled = true;
 				}
 					
-				
 				this.$_superCalled = storeSuperCalled;
 				
 			};
@@ -1939,21 +1883,7 @@ if(!(function(){return this;}).call(null).JSB){
 			return function() {
 				ss._checkBeanReady();
 				if (ss._ctor != null && ss._ctor != undefined) {
-					var ctxStack = ss.getCallingContext();
-					ctxStack.push({
-						jsb: ss,
-						methodName: '$constructor',
-						inst: this
-					});
-					// TODO: perform call check
-					try {
-						// call original function
-						ss._ctor.apply(this, arguments);
-					} finally {
-						// restore prev context
-						ctxStack.pop();
-					}
-					
+					ss._ctor.apply(this, arguments);
 				}
 			};
 		},
@@ -2943,9 +2873,9 @@ if(!(function(){return this;}).call(null).JSB){
 			if(key && this.deferTimeoutMap[key]){
 				JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
 			}
-			var callCtx = this.saveCallingContext();
+			/*var callCtx = this.saveCallingContext();*/
 			var deferTimeout = JSB().Window.setTimeout(function(){
-				self.putCallingContext(callCtx);
+				/*self.putCallingContext(callCtx);*/
 				if(key && self.deferTimeoutMap[key]){
 					var locker = self.getLocker();
 					if(locker){
@@ -2979,9 +2909,9 @@ if(!(function(){return this;}).call(null).JSB){
 			if(key && this.deferTimeoutMap[key]){
 				JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
 			}
-			var callCtx = this.saveCallingContext();
+			/*var callCtx = this.saveCallingContext();*/
 			var toProc = function(){
-				self.putCallingContext(callCtx);
+				/*self.putCallingContext(callCtx);*/
 				var untilRes = false;
 				if(key && self.deferTimeoutMap[key]){
 					var locker = self.getLocker();
@@ -3920,39 +3850,6 @@ JSB({
 		return this.$_destroyed;
 	},
 	
-	getSuperClass: function(className){
-		if(JSB().isNull(className)){
-			
-			var ctxStack = this.jsb.getCallingContext();
-
-			// get calling proc
-			if(ctxStack.length < 2){
-				throw new Error('Invalid "getSuperClass" function call');
-			}
-
-			var callerCtx = ctxStack[ctxStack.length - 2];
-			var cls = callerCtx.jsb.getClass();
-			
-			var sClass = cls.$superclass;
-			if(JSB().isNull(sClass) || JSB().isNull(sClass.jsb)){
-				throw new Error('Wrong parent class found');
-			}
-			return sClass;
-		}
-		
-		var curScope = this.$constructor.$superclass;
-		while(true){
-			if(JSB().isNull(curScope) || JSB().isNull(curScope.jsb)){
-				throw new Error('Unable to find className: "' + className + '"in "' + this.jsb.$name + '" hierarchy stack');
-			}
-			if(curScope.jsb.$name == className){
-				return curScope; 
-			}
-			
-			curScope = curScope.$constructor.$superclass;
-		}
-	},
-	
 	getClass: function(){
 		return this.getJsb().getClass();
 	},
@@ -4818,7 +4715,7 @@ JSB({
 			var self = this;
 			var sync = (opts && opts.sync) || false;
 			var tJsb = this.getJsb();
-			var callCtx = tJsb.saveCallingContext();
+			/*var callCtx = tJsb.saveCallingContext();*/
 			if(!this.$_bindKey){
 				this.$_bindKey = this.id;
 			}
@@ -4834,21 +4731,13 @@ JSB({
 				JSB().injectComplexObjectInRpcResult(res, function(r){
 					args[0] = r;
 					if(callback){
-						tJsb.putCallingContext(callCtx);
+						/*tJsb.putCallingContext(callCtx);*/
 						callback.apply(inst, args);	
 					}
 				});
 			} );
 		},
-
-		loadScript: function( relativeUrl, callback ){
-			$jsb.getCallerJsb().loadScript(relativeUrl, callback);
-		},
-
-		loadCss: function( relativeUrl ){
-			$jsb.getCallerJsb().loadCss(relativeUrl);
-		},
-
+		
 		ajax: function(url, params, callback, opts){
 			var pUrl = url;
 			if(pUrl.indexOf(':') == -1){
@@ -4988,7 +4877,7 @@ JSB({
 				return;
 			}
 			var tJsb = this.getJsb();
-			var callCtx = tJsb.saveCallingContext();
+			/*var callCtx = tJsb.saveCallingContext();*/
 			
 			var execCmd = {
 				instance: this,
@@ -5005,13 +4894,13 @@ JSB({
 					if(fail){
 						JSB().injectComplexObjectInRpcResult(fail, function(r){
 							args[1] = r;
-							tJsb.putCallingContext(callCtx);
+							/*tJsb.putCallingContext(callCtx);*/
 							callback.apply(inst, args);
 						}, {serverRemote: true});
 					} else {
 						JSB().injectComplexObjectInRpcResult(res, function(r){
 							args[0] = r;
-							tJsb.putCallingContext(callCtx);
+							/*tJsb.putCallingContext(callCtx);*/
 							callback.apply(inst, args);
 						}, {serverRemote: true});
 					}
@@ -5026,13 +4915,13 @@ JSB({
 					if(fail){
 						JSB().injectComplexObjectInRpcResult(fail, function(r){
 							args[1] = r;
-							tJsb.putCallingContext(callCtx);
+							/*tJsb.putCallingContext(callCtx);*/
 							callback.apply(inst, args);
 						}, {serverRemote: false});
 					} else {
 						JSB().injectComplexObjectInRpcResult(res, function(r){
 							args[0] = r;
-							tJsb.putCallingContext(callCtx);
+							/*tJsb.putCallingContext(callCtx);*/
 							callback.apply(inst, args);
 						}, {serverRemote: false});
 					}

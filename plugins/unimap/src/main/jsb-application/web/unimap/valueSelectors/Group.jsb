@@ -71,7 +71,7 @@
             values = this._values;
 
             if(!schemePath){
-                schemePath = this._schemePath || '';
+                schemePath = this._schemePath;
             }
         }
 
@@ -86,10 +86,14 @@
         }
 
         for(var i = 0; i < values.length; i++){
-            var res = this.getMainSelector().find(key, values[i], null, !i ? schemePath : undefined);
+            var res = this.getMainSelector().find(key, values[i], isFindAll, schemePath);
             if(res){
                 if(isFindAll){
-                    resArr.push(res);
+                    if(JSB.isArray(res)){
+                        resArr = resArr.concat(res);
+                    } else {
+                        resArr.push(res);
+                    }
                 } else {
                     return res;
                 }

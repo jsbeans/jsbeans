@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('button.css');
+			$jsb.loadCss('button.css');
 			this.addClass('_dwp_button');
 			
 			// create button

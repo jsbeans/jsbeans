@@ -5,7 +5,7 @@
 	$client: {
 		$constructor: function(fDesc, opts){
 			$base(opts);
-			this.loadCss('FilterTag.css');
+			$jsb.loadCss('FilterTag.css');
 			this.addClass('filterTag');
 			if(opts && opts.not){
 				this.addClass('not');

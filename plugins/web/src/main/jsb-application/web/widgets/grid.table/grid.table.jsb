@@ -5,7 +5,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('grid.table.css');
+			$jsb.loadCss('grid.table.css');
 			var self = this;
 			var elt = this.getElement();
 			elt.addClass('_dwp_gridTable');

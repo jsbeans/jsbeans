@@ -23,7 +23,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('Browser.css');
+			$jsb.loadCss('Browser.css');
 			this.addClass('workspaceBrowser');
 			
 			this.tabView = new TabView({

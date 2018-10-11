@@ -24,7 +24,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('CubeMaterializationTool.css');
+			$jsb.loadCss('CubeMaterializationTool.css');
 			this.addClass('cubeMaterializationTool');
 			
 			this.append(`#dot

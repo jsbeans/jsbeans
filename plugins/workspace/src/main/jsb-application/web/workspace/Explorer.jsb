@@ -31,7 +31,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('Explorer.css');
+			$jsb.loadCss('Explorer.css');
 			this.addClass('workspaceExplorer');
 			
 			this.messageBox = this.$('<div class="message"></div>');
@@ -955,11 +955,11 @@
 			var node = null;
 			var nodeSlice = this.explorerNodeTypes;
 			var viewSlice = this.browserViewTypes;
-			
+/*			
 			if(this.wTreeMap[itemDesc.entry.getId()]){
 				return this.wTreeMap[itemDesc.entry.getId()].node;
 			}
-			
+*/			
 			var targetEntry = itemDesc.entry;
 			if(targetEntry.isLink()){
 				targetEntry = targetEntry.getTargetEntry();
@@ -1148,6 +1148,12 @@
 			}
 			
 			return node;
+		},
+		
+		getEntryNode: function(entry){
+			if(this.wTreeMap[entry.getId()]){
+				return this.wTreeMap[entry.getId()].node;
+			}
 		},
 		
 		expandNode: function(key, callback){

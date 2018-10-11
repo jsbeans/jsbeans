@@ -5,7 +5,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('FileNode.css');
+			$jsb.loadCss('FileNode.css');
 			this.addClass('fileNode');
 			
 			this.uploadFile = this.$('<input type="file" style="display: none;" />');

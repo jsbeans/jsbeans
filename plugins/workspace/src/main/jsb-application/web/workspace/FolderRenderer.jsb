@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('fileRenderer');
-			this.loadCss('FileRenderer.css');
+			$jsb.loadCss('FileRenderer.css');
 		}
 		
 	},
