@@ -124,6 +124,7 @@
                 		cubeItems: this._cubeFieldList,
                 		value: values.value,
                 		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
+                		updateId: this.findRenderByKey(this._scheme.linkTo).updateId,
                 		onChange: function(key, val){
                             if(val && JSB.isDefined(val.key)){
                             	values.value = val.key;

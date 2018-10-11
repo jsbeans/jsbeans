@@ -34,7 +34,7 @@
 			$jsb.loadCss('SchemeSelector.css');
 			
 			if(JSB.isDefined(items)){
-				$this.setItems(items, cubeItems, '');
+				$this.setItems(items, cubeItems, opts.updateId);
 			}
 			if(JSB.isDefined(value)){
 				this.dontNotify = true;
