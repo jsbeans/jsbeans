@@ -421,6 +421,7 @@
 	                                    formatter: {
                                             render: 'formatter',
                                             name: 'Формат',
+                                            linkTo: 'sourceBinding',
                                             formatterOpts: {
                                                 basicSettings: {
                                                     type: 'number',
@@ -563,6 +564,7 @@
 	                                    format: {
                                             render: 'formatter',
                                             name: 'Формат',
+                                            linkTo: 'sourceBinding',
                                             formatterOpts: {
                                                 basicSettings: {
                                                     type: 'number',
