@@ -2,32 +2,30 @@
 
 .progressBar {
 	min-height: 14px;
+	position: relative;
 }
 
 .progressBar > div.serie {
-	min-height: 14px;
+	height: 15px;
     position: relative;
 }
 
-.progressBar > div.serie[type="Line"] {
-	height: 14px;
+.progressBar > div.serie > .trail {
+	width: 100%;
+    position: relative;
+    height: 40%;
+    top: 30%;
+    overflow: initial;
 }
 
-.progressBar > div.serie[type="Circle"] {}
-
-.progressBar > div.serie[type="SemiCircle"] {}
-
-.progressBar > div.serie > svg {
-	height: 100%;
-    padding: 3px 3px;
-}
-
-.progressBar > div.serie > svg > path {}
-
-.progressBar > div.serie > svg > path:first-child {}
-
-.progressBar > div.serie > svg > path:last-child {
-	stroke-linecap: round;
+.progressBar > div.serie > .trail > .progress {
+    position: absolute;
+	width: 0;
+	left: 0;
+	height: 140%;
+    top: -10%;
+    border-radius: 2px 4px 4px 2px;
+    transition: width 800ms;
 }
 
 .progressBar > div.serie > .progressbar-text {
@@ -40,19 +38,7 @@
     border-radius: 4px;
     padding: 0 2px;
 	opacity: 0.9;
-}
-
-.progressBar > div.serie[type="Line"] > .progressbar-text {
+	height: 12px;
 	top: 50%;
 	right: 0;
-}
-
-.progressBar > div.serie[type="Circle"] > .progressbar-text {
-	top: 50%;
-	left: 50%;
-}
-
-.progressBar > div.serie[type="SemiCircle"] > .progressbar-text {
-	left: 50%;
-	bottom: 0;
 }
