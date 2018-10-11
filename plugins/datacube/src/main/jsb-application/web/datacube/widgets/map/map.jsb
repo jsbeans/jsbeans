@@ -589,14 +589,14 @@
                                     render: 'select',
                                     name: 'Тип подсказки',
                                     items: {
+                                        /*
                                         simpleTooltip: {
                                             name: 'Простая подсказка',
-                                            /*
                                             items: {
                                                 // todo
                                             }
-                                            */
                                         },
+                                        */
                                         completeWidget: {
                                             name: 'Готовый виджет',
                                             items: {
@@ -1660,21 +1660,25 @@
                         mouseover: function(evt){
                             evt.originalEvent.stopPropagation();
 
-                            if(tooltip.popup){
-                                tooltip.widget.ensureInitialized(function(){
-                                    tooltip.popup.setLatLng(coordinates);
-                                    tooltip.popup.openOn($this.map);
+                            JSB.defer(function(){
+                                if(tooltip.popup){
+                                    tooltip.widget.ensureInitialized(function(){
+                                        tooltip.popup.setLatLng(coordinates);
+                                        tooltip.popup.openOn($this.map);
 
-                                    if(context){
-                                        tooltip.widget.setContextFilter(context);
-                                    }
+                                        if(context){
+                                            tooltip.widget.setContextFilter(context);
+                                        }
 
-                                    tooltip.widget.refresh();
-                                })
-                            }
+                                        tooltip.widget.refresh();
+                                    })
+                                }
+                            }, 200, 'DataCube.Map.tooltip');
                         },
                         mouseout: function(evt){
                             evt.originalEvent.stopPropagation();
+
+                            JSB.cancelDefer('DataCube.Map.tooltip');
 
                             if(tooltip.popup){
                                 tooltip.popup.closePopup();
@@ -1922,7 +1926,8 @@
                             var color = $this._styles.markers[i].simpleColor;
 
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                var marker = undefined,
+                                var coordinates = L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]),
+                                    marker = undefined,
                                     icon = undefined,
                                     html = undefined;
 
@@ -1952,9 +1957,11 @@
                                     }
                                 }
 
-                                marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon});
+                                marker = L.marker(coordinates, {icon: icon});
 
-                                createTooltip(this._styles.markers[i].tooltip, 'markers', marker);
+                                if(this._styles.markers[i].tooltip){
+                                    createTooltipEvents(marker, coordinates, data.markers[i].tooltipFilterData[j], this._styles.markers[i].tooltip);
+                                }
 
                                 if($this._styles.markers[i].filtration){
                                     (function(marker, filterData){
