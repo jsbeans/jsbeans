@@ -103,10 +103,9 @@ debugger;
 		    var reg = url.split(':')
             var host = reg[0];
             var port = reg[1] || ServerAddress.defaultPort();
-
 		    var mongoClient = new MongoClient(
                 ServerAddressHelper.createServerAddress(host, port),
-                properties && (properties.user || properties.authenticationMechanism)
+                properties && properties.user
                     ? MongodbHelper.createMongoCredential(properties.authenticationMechanism ? AuthenticationMechanism.valueOf(properties.authenticationMechanism) : AuthenticationMechanism.valueOf("MONGODB-CR"), properties.user, properties.authDb || properties.db, properties.password)
                     : Collections.emptyList(),
                 MongoClientOptions.builder().build(),    // TODO build from properties

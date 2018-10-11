@@ -20,7 +20,7 @@
         */
 		transform: function(dcQuery, cubeOrDataProvider){
 
-            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before EmbedViewQueries: ' + JSON.stringify(dcQuery));
+//            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before EmbedViewQueries: ' + JSON.stringify(dcQuery));
 
 		    $this._embedViews(dcQuery);
 

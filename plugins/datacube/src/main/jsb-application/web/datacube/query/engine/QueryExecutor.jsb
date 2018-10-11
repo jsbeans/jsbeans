@@ -104,15 +104,16 @@
 		},
 
 		_getProviderGroupKey: function (provider) {
-		    var jsbSqlTableDataProvider = JSB.get('DataCube.Providers.SqlTableDataProvider');
-		    if (jsbSqlTableDataProvider) {
-		        var SqlTableDataProvider = jsbSqlTableDataProvider.getClass();
-                // store key for SQL or unique for other
-                return provider instanceof SqlTableDataProvider
-                    ? provider.getJsb().$name + '/' + provider.getStore().getName()
-                    : provider.id;
-            }
-            return provider.id;
+//		    var jsbSqlTableDataProvider = JSB.get('DataCube.Providers.SqlTableDataProvider');
+//		    if (jsbSqlTableDataProvider) {
+//		        var SqlTableDataProvider = jsbSqlTableDataProvider.getClass();
+//                // store key for SQL or unique for other
+//                return provider instanceof SqlTableDataProvider
+//                    ? provider.getJsb().$name + '/' + provider.getStore().getName()
+//                    : provider.id;
+//            }
+//            return provider.id;
+            return provider.getJsb().$name + '/' + provider.getStore().getName();
         },
 
 //        _extractProviders: function(query){

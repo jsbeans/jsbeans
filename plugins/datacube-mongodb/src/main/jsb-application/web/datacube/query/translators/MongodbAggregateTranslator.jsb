@@ -153,7 +153,7 @@
 
 		    if (query.$offset && query.$offset > 0) {
 		        aggregate.pipeline.push({
-		            $offset: query.$offset
+		            $skip: query.$offset
 		        });
 		    }
 
@@ -291,8 +291,14 @@
                         if (isField(exp[0]) && exp[1].hasOwnProperty('$const')
                             || isField(exp[1]) && exp[0].hasOwnProperty('$const')
                             ) {
-                            var key =   $this._translateExpression(isField(exp[0]) ? exp[0] : exp[1], {aggregate:aggregate, query:query, asKey:true});
-                            var value = $this._translateExpression(exp[1].hasOwnProperty('$const') ? exp[1] : exp[0], {aggregate:aggregate, query:query, notLiteral:true});
+
+//                            if (isField(exp[0]) && isField(exp[1])) {
+//                                var key =   $this._translateExpression((exp[1].$context||query.$context) !== query.$context ? exp[0] : exp[1], {aggregate:aggregate, query:query, asKey:true});
+//                                var value = $this._translateExpression((exp[1].$context||query.$context) !== query.$context ? exp[1] : exp[0], {aggregate:aggregate, query:query, notLiteral:true});
+//                            } else {
+                                var key =   $this._translateExpression(isField(exp[0]) ? exp[0] : exp[1], {aggregate:aggregate, query:query, asKey:true});
+                                var value = $this._translateExpression(exp[1].hasOwnProperty('$const') ? exp[1] : exp[0], {aggregate:aggregate, query:query, notLiteral:true});
+//                            }
 
 
                             var cond = {};
@@ -312,6 +318,17 @@
                             } else {
                                 cond[key][op] = value;
                             }
+                            return cond;
+                        } else if (isField(exp[0]) && isField(exp[1])
+                                && ((exp[0].$context||query.$context) !== query.$context || (exp[1].$context||query.$context) !== query.$context )
+                            ) {
+                            var cond = {
+                                $expr: {
+                                }
+                            };
+                            cond.$expr[op] = [];
+                            cond.$expr[op][0] = $this._translateExpression(exp[0], {aggregate:aggregate, query:query}),
+                            cond.$expr[op][1] = $this._translateExpression(exp[1], {aggregate:aggregate, query:query});
                             return cond;
                         } else {
                             var cond = {};
@@ -433,23 +450,30 @@
             }
 
             function joinSubQuery(subQuery) {
+		        $this._breakTranslator('Nested sub-queries is not supported');
 debugger
-                var joinedAggregate = { let: {}, pipeline: [] };
-                $this._buildQuery(joinedAggregate, subQuery);
-                joinedAggregate = {
-                    from:     joinedAggregate.aggregate,
-                    let:      joinedAggregate.let,
-                    pipeline: joinedAggregate.pipeline,
-                    as:       $this._getContextFieldName(subQuery.$context),
-                };
-                aggregate.pipeline.push({ $lookup: joinedAggregate });
-                // push to aggregate.pipeline $unwind stage
-                aggregate.pipeline.push({
-                    $unwind: {
-                        path: '$' + $this._getContextFieldName(subQuery.$context),
-                        preserveNullAndEmptyArrays: true
-                    }
-                });
+		        // TODO
+                if (QueryUtils.isGlobal(subQuery, $this.dcQuery)) {
+                    // $this.globalQueries
+                    throw 'TODO';
+                } else {
+                    var joinedAggregate = { let: {}, pipeline: [] };
+                    $this._buildQuery(joinedAggregate, subQuery);
+                    joinedAggregate = {
+                        from:     joinedAggregate.aggregate,
+                        let:      joinedAggregate.let,
+                        pipeline: joinedAggregate.pipeline,
+                        as:       $this._getContextFieldName(subQuery.$context),
+                    };
+                    aggregate.pipeline.push({ $lookup: joinedAggregate });
+                    // push to aggregate.pipeline $unwind stage
+                    aggregate.pipeline.push({
+                        $unwind: {
+                            path: '$' + $this._getContextFieldName(subQuery.$context),
+                            preserveNullAndEmptyArrays: true
+                        }
+                    });
+                }
             }
 		},
 
@@ -497,11 +521,17 @@ debugger
 		    QueryUtils.throwError(JSB.isObject(exp), 'Unexpected expression type {}', typeof exp);
 
 		    if (exp.$select) {
-		        return '$' + $this._getContextFieldName(exp.$context) + '.' + Object.keys(exp.$select)[0];
+		        $this._breakTranslator('Nested sub-queries is not supported');
+		        // TODO
+		        var isGlobal = opts.aggregate.pipeline[opts.aggregate.pipeline.length-1].$unwind;
+		        if(isGlobal){
+		            return {$literal:null};
+		        } else {
+		            return '$' + $this._getContextFieldName(exp.$context) + '.' + Object.keys(exp.$select)[0];
+		        }
 		    }
-		    QueryUtils.throwError(!exp.$select, 'Sub-query expression not supported');
 //debugger
-		    if (exp.$const) {
+		    if (exp.hasOwnProperty('$const')) {
 		        if (opts.notLiteral){
 		            return exp.$const;
 		        } else {
@@ -621,7 +651,7 @@ debugger
             return opts.asKey ? field : '$' + field;
 
             function declareVar(){
-                QueryUtils.throwError(!opts.asKey, 'Invalid field for key value');
+//                QueryUtils.throwError(!opts.asKey, 'Invalid field for key value');
                 QueryUtils.throwError(opts.aggregate.let, 'Unexpected external field {} in {}', field, opts.query.$context);
                 opts.aggregate.let[field] ='$' + field;
                 return '$$' + field;
@@ -633,7 +663,12 @@ debugger
 		},
 
 		_fixupResultFields: function(query, pipeline){
-            var prevProject = pipeline[pipeline.length - 1];
+		    for(var offset = 1; offset < pipeline.length && offset < 3; offset++) {
+                var prevProject = pipeline[pipeline.length - offset];
+                if (prevProject.$project) {
+                    break;
+                }
+            }
             QueryUtils.throwError(prevProject.$project, 'Last pipeline stage is not $project');
 
 		    var project = {};

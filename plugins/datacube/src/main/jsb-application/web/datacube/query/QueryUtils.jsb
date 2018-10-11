@@ -852,6 +852,25 @@
             return providers;
         },
 
+        mergeFilters: function (filter1, filter2 /**, ...*/){
+            var result = {$and:[]};
+            for(var i = 0; i < arguments.length; i++) {
+                var filter = arguments[i];
+                if (!filter) continue;
+                for(var op in filter) {
+                    if (op == '$and') {
+                        result.$and = result.$and.concat(filter.$and);
+                    } else {
+                        var f = {};
+                        f[op] = filter[op];
+                        result.$and.push(f);
+                    }
+                }
+
+            }
+            return result.$and.length > 0 ? result : null;
+        },
+
         extractType: function (exp, query, cube, getQuery) {
             function extractFieldType(field){
                 if (query.$from) {
@@ -999,6 +1018,37 @@ throw 'TODO';
              });
              return (like.startsWith('%') ? '' : '^') + pattern + (like.endsWith('%') ? '' : '$');
         },
+
+        isGlobal: function(query, rootQuery) {
+            var outerContexts = {};
+            // collect outer contexts
+            $this.walkQueries(rootQuery, {}, null,
+                function(query){
+                    outerContexts[query.$context] = query.$context;
+                }
+            );
+
+            var hasOuterField = false;
+            // lookup fields from outer context
+            $this.walkQueries(query, {
+                    findView: function(name){
+                        return rootQuery.$views[name];
+                    }
+                }, null,
+                function(query){
+                    $this.walkQueryForeignFields(query, function (field, context, query){
+                        if (outerContexts[context||query.$context]) {
+                            hasOuterField = true;
+                        }
+                    });
+                    if (hasOuterField) {
+                        return false;
+                    }
+                }
+            );
+
+            return !hasOuterField;
+        }
 
 
 	}
