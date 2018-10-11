@@ -7,8 +7,8 @@
         $constructor: function(opts){
             $base(opts);
 
-            this.loadCss('select.css');
-            this.loadCss('../fonts/fa/fontawesome-all.min.css');
+            $jsb.loadCss('select.css');
+            $jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
             this.addClass('jsb-select');
 
             this.currentVal = this.$('<div class="curVal"></div>');

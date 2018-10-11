@@ -67,6 +67,8 @@
 	display: inline-block;
     vertical-align: middle;
 	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .tableWidget > table.header > thead > tr > th.col.sortable > .hWrapper > .text {

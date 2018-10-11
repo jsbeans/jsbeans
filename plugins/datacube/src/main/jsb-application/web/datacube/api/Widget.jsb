@@ -25,7 +25,7 @@
 			$base(opts);
 
 			this.addClass('apiWidget');
-			this.loadCss('Widget.css');
+			$jsb.loadCss('Widget.css');
 			
 			var wsId = opts.wsid;
 			var wId = opts.wid;
@@ -138,6 +138,9 @@
 
 		    this.currentWidget.removeClass('hidden');
 		    this.currentWidget.refresh();
+		    JSB.defer(function(){
+		    	$this.updateSizes();	
+		    });
 		},
 
 		init: function(){
@@ -214,13 +217,13 @@
 		updateSizes: function(){
 			var offset = 0;
 			if(this.filterSelector){
-				offset += this.filterSelector.getElement().outerHeight();
+				offset += this.filterSelector.getElement().get(0).getBoundingClientRect().height;
 			}
 			if(this._drilldownPanel){
-				offset += this._drilldownPanel.getElement().outerHeight();
+				offset += this._drilldownPanel.getElement().get(0).getBoundingClientRect().height;
 			}
 			if($this.currentWidget){
-				$this.currentWidget.getElement().css('height', 'calc(100% - '+offset+'px)');
+				$this.find('> .datacubeWidget').css('height', 'calc(100% - '+offset+'px)');
 			}
 		}
 	},

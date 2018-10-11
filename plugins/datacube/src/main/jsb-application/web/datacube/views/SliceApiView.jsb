@@ -23,7 +23,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('SliceApiView.css');
+			$jsb.loadCss('SliceApiView.css');
 			this.addClass('sliceApiView');
 			
 			var splitBox = new SplitBox({

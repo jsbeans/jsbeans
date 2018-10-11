@@ -25,7 +25,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('widgetTool.css');
+			$jsb.loadCss('widgetTool.css');
 			this.addClass('_dwp_widgetTool');
 			
 			this.wc = new WidgetContainer();

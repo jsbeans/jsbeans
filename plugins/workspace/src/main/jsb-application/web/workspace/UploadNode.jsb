@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('UploadNode.css');
+			$jsb.loadCss('UploadNode.css');
 			this.addClass('uploadNode');
 			
 			this.icon = this.$('<div class="icon"></div>');

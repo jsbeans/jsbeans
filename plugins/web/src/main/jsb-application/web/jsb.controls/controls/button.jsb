@@ -6,7 +6,7 @@
 	        if(!opts.element) opts.element = '<button></button>';
 	        $base(opts);
 
-	        this.loadCss('button.css');
+	        $jsb.loadCss('button.css');
             this.addClass('jsb-button');
 
             // options caption

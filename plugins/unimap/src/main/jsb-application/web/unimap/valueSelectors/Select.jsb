@@ -94,7 +94,7 @@
             value = values.values[0].value;
 
             // remove keys
-            if(scheme.items && scheme.items[value].items){
+            if(scheme.items && scheme.items[value] && scheme.items[value].items){
                 for(var i in values.values[0].items){
                     if(!scheme.items[value].items[i]){   // remove keys
                         if(!opts.removedValues[i]){
@@ -127,7 +127,7 @@
             };
         }
 
-        if(scheme.items && value){
+        if(scheme.items && scheme.items[value] && value){
             for(var i in scheme.items[value].items){
                 if(!values.values[0].items){
                     values.values[0].items = {};

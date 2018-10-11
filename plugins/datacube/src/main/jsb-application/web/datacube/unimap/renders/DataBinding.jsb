@@ -11,7 +11,7 @@
 
 	    construct: function(){
 	        this.addClass('dataBindingRender');
-	        this.loadCss('DataBinding.css');
+	        $jsb.loadCss('DataBinding.css');
 
 	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList') || [];
 	        this._cubeFieldList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_cubeFieldList') || [];
@@ -124,6 +124,7 @@
                 		cubeItems: this._cubeFieldList,
                 		value: values.value,
                 		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
+                		updateId: this.findRenderByKey(this._scheme.linkTo).updateId,
                 		onChange: function(key, val){
                             if(val && JSB.isDefined(val.key)){
                             	values.value = val.key;

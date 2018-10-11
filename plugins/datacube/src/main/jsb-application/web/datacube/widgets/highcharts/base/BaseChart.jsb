@@ -230,52 +230,9 @@
                     valueType: 'number',
                     defaultValue: 1
                 },
-                useHTML: {
-                    render: 'item',
-                    name: 'Использовать HTML',
-                    optional: true,
-                    editor: 'none'
-                },
-                headerFormat: {
-                    render: 'formatter',
-                    name: 'Формат верхнего колонтитула',
-                    formatterOpts: {
-                        variables: [
-                            {
-                                alias: 'Процентное соотношение',
-                                title: 'Только для круговой диаграммы и стеков',
-                                type: 'number',
-                                value: 'percentage'
-                            },
-                            {
-                                alias: 'Общее значение стека',
-                                title: 'Только для стеков',
-                                type: 'number',
-                                value: 'total'
-                            },
-                            {
-                                alias: 'Координаты точки(X)',
-                                type: 'number',
-                                value: 'x'
-                            },
-                            {
-                                alias: 'Значение точки(Y)',
-                                type: 'number',
-                                value: 'y'
-                            },
-                            {
-                                alias: 'Имя серии',
-                                type: 'string',
-                                value: 'series.name'
-                            }
-                        ]
-                    },
-                    valueType: 'string',
-                    defaultValue: '<span style="font-size: 10px">{point.key}</span><br/>'
-                },
                 pointFormat: {
                     render: 'formatter',
-                    name: 'Формат точек',
+                    name: 'Формат значений',
                     formatterOpts: {
                         basicSettings: {
                             type: 'number',
@@ -286,23 +243,23 @@
                                 alias: 'Процентное соотношение',
                                 title: 'Только для круговой диаграммы и стеков',
                                 type: 'number',
-                                value: 'percentage'
+                                value: 'point.percentage'
                             },
                             {
                                 alias: 'Общее значение стека',
                                 title: 'Только для стеков',
                                 type: 'number',
-                                value: 'total'
+                                value: 'point.total'
                             },
                             {
                                 alias: 'Координаты точки(X)',
                                 type: 'number',
-                                value: 'x'
+                                value: 'point.x'
                             },
                             {
                                 alias: 'Значение точки(Y)',
                                 type: 'number',
-                                value: 'y'
+                                value: 'point.y'
                             },
                             {
                                 alias: 'Имя серии',
@@ -312,43 +269,7 @@
                         ]
                     },
                     valueType: 'string',
-                    defaultValue: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y}</b><br/>'
-                },
-                footerFormat: {
-                    render: 'formatter',
-                    name: 'Формат нижнего колонтитула',
-                    formatterOpts: {
-                        variables: [
-                            {
-                                alias: 'Процентное соотношение',
-                                title: 'Только для круговой диаграммы и стеков',
-                                type: 'number',
-                                value: 'percentage'
-                            },
-                            {
-                                alias: 'Общее значение стека',
-                                title: 'Только для стеков',
-                                type: 'number',
-                                value: 'total'
-                            },
-                            {
-                                alias: 'Координаты точки(X)',
-                                type: 'number',
-                                value: 'x'
-                            },
-                            {
-                                alias: 'Значение точки(Y)',
-                                type: 'number',
-                                value: 'y'
-                            },
-                            {
-                                alias: 'Имя серии',
-                                type: 'string',
-                                value: 'series.name'
-                            }
-                        ]
-                    },
-                    valueType: 'string'
+                    defaultValue: '<span style="font-size: 10px">{category}</span><br/><span style="color:{point.color}">●</span> {series.name}: <b>{point.y}</b>'
                 },
                 padding: {
                     render: 'item',
@@ -813,12 +734,6 @@
                                     valueType: 'string',
                                     defaultValue: '{y}'
                                 },
-                                useHTML: {
-                                    render: 'item',
-                                    name: 'Использовать HTML',
-                                    optional: true,
-                                    editor: 'none'
-                                },
                                 style: {
                                     render: 'group',
                                     name: 'Стиль подписей',
@@ -1085,7 +1000,7 @@
                                 borderRadius: plotOptionsDataLabels.find('borderRadius').value(),
                                 borderWidth: plotOptionsDataLabels.find('borderWidth').value(),
                                 format: plotOptionsDataLabels.find('format').value(),
-                                useHTML: plotOptionsDataLabels.find('useHTML').checked(),
+                                useHTML: true,
                                 style: {
                                     color: plotOptionsDataLabels.find('style color').value(),
                                     fontSize: plotOptionsDataLabels.find('style fontSize').value(),
@@ -1180,10 +1095,10 @@
                         borderColor: tooltipContext.find('borderColor').value(),
                         borderRadius: tooltipContext.find('borderRadius').value(),
                         borderWidth: tooltipContext.find('borderWidth').value(),
-                        useHTML: tooltipContext.find('useHTML').checked(),
-                        headerFormat: tooltipContext.find('headerFormat').value(),
+                        useHTML: true,
+                        headerFormat: null,
                         pointFormat: tooltipContext.find('pointFormat').value(),
-                        footerFormat: tooltipContext.find('footerFormat').value(),
+                        footerFormat: null,
                         padding: tooltipContext.find('padding').value(),
                         shadow: tooltipContext.find('shadow').checked(),
                         style: {

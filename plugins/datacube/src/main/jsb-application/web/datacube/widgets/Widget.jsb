@@ -47,7 +47,7 @@
 		    $base();
 
 		    this.addClass('datacubeWidget');
-		    this.loadCss('Widget.css');
+		    $jsb.loadCss('Widget.css');
 		    
 		    this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);

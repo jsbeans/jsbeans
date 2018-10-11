@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('WelcomeView.css');
+			$jsb.loadCss('WelcomeView.css');
 			this.addClass('welcomeView');
 			
 		},

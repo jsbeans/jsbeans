@@ -25,7 +25,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('SchemeEditor.css')
+			$jsb.loadCss('SchemeEditor.css')
 			this.addClass('schemeEditor');
 
 			$this.parent = opts.parent;

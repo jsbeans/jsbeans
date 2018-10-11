@@ -30,7 +30,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('primitiveEditor.css');
+			$jsb.loadCss('primitiveEditor.css');
 			this.addClass('_dwp_primitiveEditor');
 			this.addClass(this.options.mode);
 			

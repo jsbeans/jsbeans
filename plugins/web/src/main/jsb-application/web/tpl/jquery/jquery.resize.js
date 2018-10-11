@@ -10,8 +10,8 @@
 	var elemets = $([]), filtered = null; 
 	var e = $.resize = $.extend($.resize,{});
 	var timeoutHandle;
-	e.delay = 50;
-	e.minDelay = 10;
+	e.delay = 100;
+	e.minDelay = 50;
 	e.maxDelay = 800;
 	e.throttleWindow = true;
 	$.event.special.resize={

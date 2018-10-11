@@ -29,7 +29,7 @@
 		},
 		
 		construct: function(){
-			this.loadCss('ShareTool.css');
+			$jsb.loadCss('ShareTool.css');
 			this.addClass('_jsb_workspaceShareTool');
 			
 			this.append(`#dot

@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('FolderNode.css');
+			$jsb.loadCss('FolderNode.css');
 			this.addClass('folderNode');
 			
 			this.renderer.append('<div class="childCount">(<span></span>)</div>');

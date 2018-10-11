@@ -6,7 +6,7 @@
 			opts = opts || {};
 			$base(wDesc, opts);
 			this.addClass('embededWidgetRenderer');
-			this.loadCss('EmbededWidgetRenderer.css');
+			$jsb.loadCss('EmbededWidgetRenderer.css');
 			
 			this.icon = this.$('<img class="icon"></img>');
 			this.append(this.icon);

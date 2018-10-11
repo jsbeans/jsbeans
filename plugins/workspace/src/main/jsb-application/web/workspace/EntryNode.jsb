@@ -19,7 +19,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('EntryNode.css');
+			$jsb.loadCss('EntryNode.css');
 			this.addClass('entryNode');
 			
 			if(this.isLink()){

@@ -29,7 +29,7 @@
 		
 		construct: function(){
 			var self = this;
-			this.loadCss('dropTreeTool.css');
+			$jsb.loadCss('dropTreeTool.css');
 			this.addClass('_dwp_dropTreeTool');
 			this.tree = new TreeView({
 				onSelectionChanged: function(key, item, evt){

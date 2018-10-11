@@ -7,7 +7,7 @@
 
 	    construct: function(){
 	        this.addClass('itemRender checked');
-	        this.loadCss('Item.css');
+	        $jsb.loadCss('Item.css');
 
 	        if(this._scheme.optional){
 	            this.addClass('optional');

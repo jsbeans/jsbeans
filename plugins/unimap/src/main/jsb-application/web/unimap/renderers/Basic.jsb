@@ -9,7 +9,7 @@
         $constructor: function(opts){
             $base(opts);
             this.addClass('basicRender');
-            this.loadCss('Basic.css');
+            $jsb.loadCss('Basic.css');
 
             if(opts.scheme.advancedRender){
                 this.addClass('advancedRender');

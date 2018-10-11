@@ -18,6 +18,7 @@
 	        name: 'Серии',
 	        multiple: true,
 	        items: {
+/*	        	
 	            type: {
 	                render: 'select',
 	                name: 'Тип',
@@ -33,6 +34,7 @@
 	                    }
 	                }
 	            },
+*/	            
 	            min: {
 	                render: 'dataBinding',
 	                name: 'Минимум',
@@ -158,17 +160,11 @@
 		$require: 'JSB.Utils.Formatter',
 		widgets: [],
 		
-		$bootstrap: function(){
-			(function(){
-				`#include 'progressbar.js'`
-			}).call(null);
-		},
-		
 		$constructor: function(opts){
 			$base(opts);
 			
 			this.addClass('progressBar');
-			this.loadCss('ProgressBar.css');
+			$jsb.loadCss('ProgressBar.css');
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.setInitialized();
@@ -252,30 +248,31 @@
 					.classed('serie', true)
 					.each(function(d){
 						var opts = {
-							color: d.colSelector.value() || '#3a3a3a',
+							color: d.colSelector.value() || '#637e90',
 							strokeWidth: d.colWidth || 4,
-							trailColor: d.trailColor || '#f4f4f4',
+							trailColor: d.trailColor || '#dadada',
 							trailWidth: d.trailWidth || 2
 						};
 						d3.select(this).attr('style', d.css);
-						d3.select(this).attr('type', d.type);
-						var widget = new ProgressBar[d.type](this, opts);
+						//d3.select(this).attr('type', d.type);
 						var min = parseFloat(d.minSelector.value() || 0);
 						var max = parseFloat(d.maxSelector.value() || 0);
 						var val = parseFloat(d.valSelector.value() || 0);
 
 						var progress = 0;
 						if(max - min > 0 && val > 0){
-							progress = (val - min) / (max - min);
+							progress = (val - min) * 100 / (max - min);
 						}
-						widget.set(0);
-						JSB.defer(function(){
-							widget.animate(progress, {
-								duration: 800,
-								easing: 'easeInOut'
-							});
-						}, 0);
-
+						
+						d3.select(this)
+							.append('div')
+								.classed('trail', true)
+								.style('background-color', opts.trailColor)
+								.append('div')
+									.classed('progress', true)
+									.style('background-color', opts.color)
+									.style('width', progress + '%');
+						
 						if(d.showValues){
                             var valStr = '' + val,
                                 format = d.valFormat.value();
@@ -283,62 +280,46 @@
                             if(JSB.isNumber(val) && format){
                                 valStr = Formatter.format(format, {y: val});
                             }
-                            widget.setText(valStr);
-                            d3.select(this).select('.progressbar-text').attr('style', d.textCss);
+    						d3.select(this)
+								.append('div')
+									.classed('progressbar-text', true)
+									.attr('style', d.textCss)
+									.text(valStr);
                         }
-						
-						$this.widgets[d.serieIdx] = {widget: widget, type: d.type};
 					});
 			
 			// update existed
 			seriesSelData.each(function(d){
-				if(!$this.widgets[d.serieIdx]){
-					return;
-				}
-				var widget = $this.widgets[d.serieIdx].widget;
-				var type = $this.widgets[d.serieIdx].type;
-				if(type != d.type){
-					$this.$(this).empty();
-					var opts = {
-						color: d.colSelector.value() || '#3a3a3a',
-						strokeWidth: d.colWidth || 4,
-						trailColor: d.trailColor || '#f4f4f4',
-						trailWidth: d.trailWidth || 2
-					};
-					widget = new ProgressBar[d.type](this, opts);
-					$this.widgets[d.serieIdx] = {widget: widget, type: d.type};
-					d3.select(this).attr('type', d.type);
-				}
+				var opts = {
+					color: d.colSelector.value() || '#3a3a3a',
+					strokeWidth: d.colWidth || 4,
+					trailColor: d.trailColor || '#f4f4f4',
+					trailWidth: d.trailWidth || 2
+				};
 				d3.select(this).attr('style', d.css);
 				var min = parseFloat(d.minSelector.value() || 0);
 				var max = parseFloat(d.maxSelector.value() || 0);
 				var val = parseFloat(d.valSelector.value() || 0);
 				var progress = 0;
 				if(max - min > 0 && val > 0){
-					progress = (val - min) / (max - min);
+					progress = (val - min) * 100 / (max - min);
 				}
-				widget.animate(progress, {
-					duration: 800,
-					easing: 'easeInOut'
-				});
-
+				d3.select(this).selectAll('.trail')
+					.style('background-color', opts.trailColor)
+					.selectAll('.progress')
+						.style('background-color', opts.color)
+						.style('width', progress + '%');
+					
 				if(d.showValues){
                     var format = d.valFormat.value();
                     if(JSB.isNumber(val) && format){
                         val = Formatter.format(format, {y: val});
                     }
-                    widget.setText('' + val);
-
-                    d3.select(this).select('.progressbar-text').attr('style', d.textCss);
+                    
+                    d3.select(this).select('.progressbar-text')
+                    	.attr('style', d.textCss)
+                    	.text('' + val);
 				}
-				
-				d3.select(this).select('svg > path:first-child')
-					.attr('stroke', d.trailColor || '#f4f4f4')
-					.attr('stroke-width', d.trailWidth || 2);
-
-				d3.select(this).select('svg > path:last-child')
-					.attr('stroke', d.colSelector.value() || '#3a3a3a')
-					.attr('stroke-width', d.colWidth || 4);
 			});
 
 			// sort

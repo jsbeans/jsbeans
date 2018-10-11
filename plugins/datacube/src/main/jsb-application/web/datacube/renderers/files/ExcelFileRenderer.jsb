@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('excelFileRenderer');
-			this.loadCss('ExcelFileRenderer.css');
+			$jsb.loadCss('ExcelFileRenderer.css');
 		}
 	},
 	

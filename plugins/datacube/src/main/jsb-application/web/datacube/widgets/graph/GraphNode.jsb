@@ -9,7 +9,7 @@
 		$constructor: function(diagram, key, opts){
 			$base(diagram, key, opts);
 			this.addClass('graphNode');
-			this.loadCss('GraphNode.css');
+			$jsb.loadCss('GraphNode.css');
 
 			this.entry = opts.entry;
             this.updateEntry(opts.entry);

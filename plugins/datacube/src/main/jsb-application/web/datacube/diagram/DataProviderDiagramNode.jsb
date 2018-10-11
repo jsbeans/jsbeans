@@ -40,7 +40,7 @@
 			$base(diagram, key, opts);
 			this.provider = opts.provider;
 			this.editor = opts.editor;
-			this.loadCss('DataProviderDiagramNode.css');
+			$jsb.loadCss('DataProviderDiagramNode.css');
 			this.addClass('dataProviderDiagramNode');
 			this.attr('provider', this.provider.getJsb().$name);
 			

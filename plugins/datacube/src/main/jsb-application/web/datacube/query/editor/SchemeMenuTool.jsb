@@ -24,7 +24,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('SchemeMenuTool.css');
+			$jsb.loadCss('SchemeMenuTool.css');
 			this.addClass('schemeMenuTool');
 			
 			$this.btnEdit = new Button({

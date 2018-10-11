@@ -8,7 +8,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('groupBox.css');
+			$jsb.loadCss('groupBox.css');
 			this.init();
 		},
 		

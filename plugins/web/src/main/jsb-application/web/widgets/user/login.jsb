@@ -11,7 +11,7 @@
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('loginForm');
-			this.loadCss('login.css');
+			$jsb.loadCss('login.css');
 			
 			this.getElement().css({
 				display: 'none'

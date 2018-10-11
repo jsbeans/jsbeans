@@ -12,8 +12,8 @@
 	    $constructor: function(opts){
 	        $base(opts);
 
-            this.loadCss('comboEditor.css');
-            this.loadCss('../fonts/fa/fontawesome-all.min.css');
+	        $jsb.loadCss('comboEditor.css');
+	        $jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
             this.addClass('jsb-comboEditor');
 
             this.currentVal = this.$('<div class="curVal"></div>');

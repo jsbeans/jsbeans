@@ -42,7 +42,7 @@
 				`#include 'highcharts-more.js'`;
 				`#include 'modules/no-data-to-display.js'`;
 
-				$this.loadCss('css/customHighcharts.css');
+				$jsb.loadCss('css/customHighcharts.css');
 
 				$this.setOptions();
 			}).call(null);

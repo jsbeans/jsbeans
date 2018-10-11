@@ -66,7 +66,7 @@
 			JSB.loadCss('tpl/codemirror/theme/xq-light.css');
 			JSB.loadCss('tpl/codemirror/addon/hint/show-hint.css');
 			JSB.loadCss('tpl/codemirror/addon/dialog/dialog.css');
-			this.loadCss('MultiEditor.css');
+			$jsb.loadCss('MultiEditor.css');
 			this.getElement().addClass('multiEditor');
 			
 			JSB.loadScript('tpl/codemirror/lib/codemirror.js', function(){

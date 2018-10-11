@@ -23,7 +23,7 @@
 			if(opts){
 				$jsb.merge(this.descriptor, opts.descriptor);
 			}
-			this.loadCss('ExplorerNode.css');
+			$jsb.loadCss('ExplorerNode.css');
 			this.addClass('workspaceExplorerNode');
 			
 			this.attr('title', this.getName());

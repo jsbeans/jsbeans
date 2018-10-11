@@ -12,7 +12,7 @@
 	    
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('Dashboard.css');
+			$jsb.loadCss('Dashboard.css');
 			this.addClass('_jsb_dashboard');
 			
 			// setup initial placeholder

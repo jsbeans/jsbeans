@@ -9,7 +9,7 @@
 			//opts.editable = false;
 			$base(entry, opts);
 			this.addClass('widgetRenderer');
-			this.loadCss('WidgetRenderer.css');
+			$jsb.loadCss('WidgetRenderer.css');
 			
 			if(opts.showDashboard){
 				this.server().getDashboard(entry, function(dashboardEntry){

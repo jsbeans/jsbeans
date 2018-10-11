@@ -37,7 +37,7 @@
 			$base(diagram, key, opts);
 			this.editor = opts.editor;
 			this.entry = opts.entry;
-			this.loadCss('CubeDiagramNode.css');
+			$jsb.loadCss('CubeDiagramNode.css');
 			this.addClass('cubeDiagramNode');
 			
 			this.caption = this.$(`#dot

@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('jsb-checkbox');
-			this.loadCss('checkbox.css');
+			$jsb.loadCss('checkbox.css');
 
 			this.getElement().append(`#dot
 			    <div class="check-elem">
