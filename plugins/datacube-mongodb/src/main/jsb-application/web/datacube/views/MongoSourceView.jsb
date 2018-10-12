@@ -9,7 +9,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('MongoSourceView.css');
+			$jsb.loadCss('MongoSourceView.css');
 			this.addClass('mongoSourceView');
 			
 			// create dialog

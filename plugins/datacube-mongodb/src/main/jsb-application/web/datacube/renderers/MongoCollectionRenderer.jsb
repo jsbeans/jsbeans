@@ -9,7 +9,7 @@
 			opts.editable = false;
 			$base(entry, opts);
 			this.addClass('mongoCollectionRenderer');
-			this.loadCss('MongoCollectionRenderer.css');
+			$jsb.loadCss('MongoCollectionRenderer.css');
 			entry.ensureSynchronized(function(){
 				var e = $this.getEntry();
 				$this.updateAdditional();

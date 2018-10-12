@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('mongoSourceRenderer');
-			this.loadCss('MongoSourceRenderer.css');
+			$jsb.loadCss('MongoSourceRenderer.css');
 		}
 	},
 	

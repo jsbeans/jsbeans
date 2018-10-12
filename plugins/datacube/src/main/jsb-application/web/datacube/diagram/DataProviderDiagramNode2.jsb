@@ -25,7 +25,7 @@
 	        this.provider = opts.provider;
 	        this.editor = opts.editor;
 
-			this.loadCss('DataProviderDiagramNode.css');
+	        $jsb.loadCss('DataProviderDiagramNode.css');
 			this.addClass('dataProviderDiagramNode');
 
 			// caption

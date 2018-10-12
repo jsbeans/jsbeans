@@ -5,7 +5,7 @@
 	$client: {
 		$constructor: function(){
 			$base();
-			this.loadCss('MongoDataProvider.css');
+			$jsb.loadCss('MongoDataProvider.css');
 		}
 	},
 	
