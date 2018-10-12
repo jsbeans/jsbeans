@@ -13,7 +13,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('complexEditor.css');
+			$jsb.loadCss('complexEditor.css');
 			this.addClass('_jsb_complexEditor');
 		},
 		

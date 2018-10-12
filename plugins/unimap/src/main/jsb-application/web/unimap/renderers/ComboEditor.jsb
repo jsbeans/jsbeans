@@ -7,7 +7,7 @@
 
 	    construct: function(){
 	        this.addClass('comboEditor');
-	        this.loadCss('ComboEditor.css');
+	        $jsb.loadCss('ComboEditor.css');
 
 	        this.createOptionsList();
 

@@ -5,6 +5,7 @@
 	dataVersion: 0,
 	dashboard: null,
 	wType: null,
+	unused: false,
 	
 	getDashboard: function(){
 		return this.dashboard;
@@ -12,6 +13,10 @@
 	
 	getWidgetType: function(){
 		return this.wType;
+	},
+	
+	isUnused: function(){
+		return this.unused;
 	},
 
     extractWidgetScheme: function(){
@@ -103,7 +108,8 @@
 				    dashboard = this.property('dashboard'),
 				    wType = this.property('wType'),
 				    values = this.property('values'),
-				    sourcesIds = this.property('sourcesIds');
+				    sourcesIds = this.property('sourcesIds'),
+				    unused = this.property('unused');
 
 				if(dashboard){
 					this.dashboard = this.getWorkspace().entry(dashboard);
@@ -119,6 +125,10 @@
 
 				if(sourcesIds){
 				    this.sourcesIds = sourcesIds;
+				}
+				
+				if(unused){
+					this.unused = true;
 				}
 
 				this.updateSources();

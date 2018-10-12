@@ -5,7 +5,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('JsonFileNode.css');
+			$jsb.loadCss('JsonFileNode.css');
 			this.addClass('jsonFileNode');
 			
 			this.append('<div class="status"></div>');

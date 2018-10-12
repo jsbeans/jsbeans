@@ -9,23 +9,7 @@
 
         return this._values[0].binding;
     },
-
-    bindingInfo: function(){
-        if(!this._values || this._values.length === 0){
-            return;
-        }
-
-        return this._values[0].bindingInfo;
-    },
-
-    bindingType: function(){
-        if(!this._values || this._values.length === 0){
-            return;
-        }
-
-        return this._values[0].bindingType;
-    },
-
+    
     bindings: function(validOnly){
         var bindings = [];
 
@@ -38,6 +22,54 @@
 
         return bindings;
     },
+
+
+    bindingInfo: function(){
+        if(!this._values || this._values.length === 0){
+            return;
+        }
+
+        return this._values[0].bindingInfo;
+    },
+    
+    bindingInfos: function(validOnly){
+    	var bindingsInfo = [];
+        
+        if(this._values){
+	        for(var i = 0; i < this._values.length; i++){
+	        	if(validOnly && !this._values[i].binding){
+	        		continue;
+	        	}
+	        	bindingsInfo.push(this._values[i].bindingInfo);
+	        }
+        }
+
+        return bindingsInfo;
+    },
+
+    bindingType: function(){
+        if(!this._values || this._values.length === 0){
+            return;
+        }
+
+        return this._values[0].bindingType;
+    },
+
+    bindingTypes: function(){
+    	var bindingTypes = [];
+        
+        if(this._values){
+	        for(var i = 0; i < this._values.length; i++){
+	        	if(validOnly && !this._values[i].binding){
+	        		continue;
+	        	}
+	        	bindingTypes.push(this._values[i].bindingType);
+	        }
+        }
+
+        return bindingTypes;
+    },
+
 
     getBindingName: function(){
         return this._values[0].binding;

@@ -1,22 +1,28 @@
 {
 	$name: 'DataCube.Controls.FilterSelector',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JSB.Widgets.Button'],
+	$require: ['DataCube.Controls.FilterTag'],
 	
 	$client: {
 		owner: null,
 		filterManager: null,
 		visible: false,
+		filterTags: {},
 		
 		$constructor: function(owner, filterManager){
 			$base();
 			this.owner = owner;
 			this.filterManager = filterManager;
-			this.loadCss('FilterSelector.css');
+			$jsb.loadCss('FilterSelector.css');
 			this.addClass('filterSelector');
 			
-			this.append('<div class="icon"></div>');
+			var iconElt = this.$('<div class="icon"></div>');
+			this.append(iconElt);
 			this.append('<div class="filterContainer"></div>');
+			
+			iconElt.click(function(){
+				$this.clear();
+			});
 			
 			$this.updateVisibility();
 			
@@ -33,6 +39,12 @@
 			return this.owner;
 		},
 		
+		clear: function(){
+			var fIds = Object.keys($this.filterTags);
+			$this.filterManager.clear();
+			$this.redraw();
+			$this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'removeFilter', fItemIds: fIds});
+		},
 		
 		updateVisibility: function(){
 			var filterArr = this.filterManager.getFilterArray();
@@ -57,94 +69,12 @@
 			var filterArr = this.filterManager.getFilterArray();
 			var filters = this.filterManager.getFilters();
 			var fContainerElt = this.find('> .filterContainer');
-			fContainerElt.empty();
 			
-			function _constructTag(fId){
-				var fDesc = filters[fId];
-				var fName = fDesc.cubeField || fDesc.field;
-				var fTag = $this.$('<div class="filterTag"></div>').attr('fId', fId);
-/*
-				var type = '';
-				switch(fDesc.type){
-				    case '$and':
-                        type = 'И';
-				        break;
-                    case '$or':
-                        type = 'ИЛИ';
-                        break;
-				}
-                //fTag.append($this.$('<div class="type"></div>').text(type));
-*/
-				fTag.append($this.$('<div class="field"></div>').text(fName).attr('title', fName));
-				var opSign = ':';
-				switch(fDesc.op){
-				case '$eq':
-					opSign = '=';
-					break;
-				case '$lt':
-					opSign = '<';
-					break;
-				case '$lte':
-					opSign = '&le;';
-					break;
-				case '$gt':
-					opSign = '>';
-					break;
-				case '$gte':
-					opSign = '&ge;';
-					break;
-				case '$ne':
-					opSign = '&ne;';
-					break;
-				case '$like':
-				case '$ilike':
-					opSign = '&asymp;';
-					break;
-				case '$in':
-				case '$range':
-					opSign = '&isin;';
-					break;
-				case '$nin':
-					opSign = '&notin;';
-					break;
-				default:
-					opSign = ':';
-				}
-				fTag.append('<div class="op">'+opSign+'</div>');
-
-				var v = fDesc.value;
-				if(fDesc.op == '$range' && JSB.isArray(fDesc.value)){
-					v = '[' + fDesc.value[0] + ' - ' + fDesc.value[1] + ']';
-				} else if(JSB.isArray(fDesc.value)){
-					v = JSON.stringify(fDesc.value);
-				} else if(JSB().isDate(fDesc.value)){
-				    v = fDesc.value.toDateString();
-				}
-				var valElt = $this.$('<div class="value"></div>').text('' + v).attr('title', '' + v);
-				if(JSB.isString(fDesc.value)){
-					valElt.addClass('string');
-				}
-				fTag.append(valElt);
-				
-				var removeButton = new Button({
-					cssClass: 'roundButton btn10 btnDelete',
-					tooltip: 'Удалить фильтр',
-					onClick: function(evt){
-						evt.stopPropagation();
-						$this.filterManager.removeFilter(fId);
-						removeButton.destroy();
-						fTag.remove();
-						$this.updateVisibility();
-						
-						JSB.defer(function(){
-							$this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'removeFilter', fItemIds: [fId]});
-						});
-					}
-				});
-				fTag.append(removeButton.getElement());
-				
-				return fTag;
+			// remove old
+			for(var fId in $this.filterTags){
+				$this.filterTags[fId].destroy();
 			}
+			fContainerElt.empty();
 
 			// construct logic tree
 			var ffMap = {};
@@ -163,6 +93,8 @@
 					ffDesc.andFilters.push({type:'tag', id: fItemId});
 				} else if(fDesc.type == '$or'){
 					ffDesc.orFilters.push({type:'tag', id: fItemId});
+				} else if(fDesc.type == '$not'){
+					ffDesc.andFilters.push({type:'tag', id: fItemId, not:true});
 				}
 			}
 			
@@ -222,7 +154,25 @@
 
 			function _renderTree(treeNode){
 				if(treeNode.type == 'tag'){
-					return _constructTag(treeNode.id);
+					var fId = treeNode.id;
+					var fDesc = filters[fId];
+					var fTag = new FilterTag(fDesc, {
+						not: treeNode.not, 
+						onRemove: function(){
+							$this.filterManager.removeFilter(fId);
+							if($this.filterTags[fId]){
+								delete $this.filterTags[fId];
+							}
+							fTag.destroy();
+							$this.updateVisibility();
+							JSB.defer(function(){
+								$this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'removeFilter', fItemIds: [fId]});
+							});
+						}
+					});
+					$this.filterTags[fId] = fTag;
+					
+					return fTag.getElement();
 				} else {
 					var nodeElt = $this.$('<div class="node"></div>');
 					for(var i = 0; i < treeNode.values.length; i++){

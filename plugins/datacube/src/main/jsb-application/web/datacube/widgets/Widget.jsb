@@ -36,13 +36,18 @@
 		},
 		rowKeyColumns: [],
 
-		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'JQuery.UI.Loader', 'Unimap.ValueSelector', 'Datacube.Unimap.Bootstrap'],
+		$require: ['JSB.Crypt.MD5', 
+		           'DataCube.Export.Export', 
+		           'JQuery.UI.Loader', 
+		           'Unimap.ValueSelector', 
+		           'Datacube.Unimap.Bootstrap',
+		           'JSB.Widgets.ToolBar'],
 
 		$constructor: function(opts){
 		    $base();
 
 		    this.addClass('datacubeWidget');
-		    this.loadCss('Widget.css');
+		    $jsb.loadCss('Widget.css');
 		    
 		    this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
@@ -60,7 +65,7 @@
                     });
                 });
 		    }
-
+		    
 		    var UpdateDispatcher = function(){
 		        var status = 'ready',
 		            needRefresh = false,
@@ -89,8 +94,180 @@
 		            }
 		        }
             }
-
+		    
 		    this.updateDispatcher = new UpdateDispatcher();
+		    
+		    function Selection(){
+		    	this.selMap = {};
+		    	this.lastKey = null;
+		    }
+		    Selection.prototype = {
+		    	clear: function(){
+		    		if(!this.selMap || Object.keys(this.selMap).length == 0){
+		    			return;
+		    		}
+		    		this.selMap = {};
+		    		this.lastKey = null;
+		    		$this.showToolbar(false);
+		    		$this.publish('DataCube.Widgets.Widget.selection', {type:'clear'});
+		    	},
+		    	
+		    	add: function(key, desc){
+		    		this.selMap[key] = desc;
+		    		this.lastKey = key;
+		    		$this.showToolbar(true);
+		    		$this.publish('DataCube.Widgets.Widget.selection', {type:'add', item: key, params: desc});
+		    	},
+		    	
+		    	remove: function(key){
+		    		if(!this.isSelected(key)){
+		    			return;
+		    		}
+		    		delete this.selMap[key];
+		    		if(this.lastKey == key){
+		    			this.lastKey = null;
+		    		}
+		    		if(this.count() == 0){
+		    			$this.showToolbar(false);
+		    		}
+		    		$this.publish('DataCube.Widgets.Widget.selection', {type:'remove', item: key});
+		    	},
+		    	
+		    	count: function(){
+		    		return Object.keys(this.selMap).length;
+		    	},
+		    	
+		    	isSelected: function(key){
+		    		return this.selMap[key];
+		    	},
+		    	
+		    	getLastSelectedKey: function(){
+		    		return this.lastKey;
+		    	},
+		    	
+		    	get: function(key){
+		    		return this.selMap[key];
+		    	},
+		    	
+		    	keys: function(){
+		    		return Object.keys(this.selMap);
+		    	},
+		    	
+		    	each: function(callback){
+		    		for(var key in this.selMap){
+		    			callback.call(this, key, this.selMap[key]);
+		    		}
+		    	}
+		    };
+
+		    this.selection = new Selection();
+		},
+		
+		getSelection: function(){
+			return this.selection;
+		},
+		
+		ensureToolbar: function(){
+			if(this.toolbar){
+				return this.toolbar;
+			}
+			this.toolbar = new ToolBar();
+		    this.append(this.toolbar);
+		    this.toolbar.getElement().resize(function(){
+		    	var height = $this.toolbar.getElement().outerHeight();
+		    	var width = $this.toolbar.getElement().outerWidth();
+		    	$this.toolbar.getElement().css({
+		    		'margin-left': '-' + Math.floor(width / 2) + 'px',
+		    		'bottom': '-' + Math.floor(height) + 'px'
+		    	});
+		    });
+		    
+		    this.toolbar.addItem({
+		    	key: 'selectedCount',
+		    	allowHover: false,
+		    	element: '<div class="count"></div>'
+		    });
+		    
+		    this.toolbar.addSeparator({key: 'selectionInfo'});
+		    
+		    // add tool buttons
+/*		    
+		    this.toolbar.addItem({
+		    	key: 'selectAll',
+		    	tooltip: 'Выделить все',
+		    	element: '<div class="icon"></div>'
+		    });
+		    
+		    this.toolbar.addItem({
+		    	key: 'inverseSelection',
+		    	tooltip: 'Инвертировать выделение',
+		    	element: '<div class="icon"></div>'
+		    });
+*/		    
+		    this.toolbar.addItem({
+		    	key: 'unselectAll',
+		    	tooltip: 'Снять выделение',
+		    	element: '<div class="icon"></div>',
+		    	onClick: function(){
+		    		$this.getSelection().clear();
+		    	}
+		    });
+		    
+		    this.toolbar.addSeparator({key: 'selectionButtons'});
+		    
+		    this.toolbar.addItem({
+		    	key: 'filterAnd',
+		    	tooltip: 'Фильтровать группу по И',
+		    	element: '<div class="filter and">И</div>',
+		    	onClick: function(){
+		    		$this.addSelectedToFilter('$and');
+		    	}
+		    });
+
+		    this.toolbar.addItem({
+		    	key: 'filterOr',
+		    	tooltip: 'Фильтровать группу по ИЛИ',
+		    	element: '<div class="filter or">ИЛИ</div>',
+		    	onClick: function(){
+		    		$this.addSelectedToFilter('$or');
+		    	}
+		    });
+
+		    this.toolbar.addItem({
+		    	key: 'filterNot',
+		    	tooltip: 'Фильтровать группу по НЕ',
+		    	element: '<div class="filter not">НЕ</div>',
+		    	onClick: function(){
+		    		$this.addSelectedToFilter('$not');
+		    	}
+		    });
+
+		    this.subscribe('DataCube.Widgets.Widget.selection', function(sender, msg, params){
+		    	if(sender != $this){
+		    		return;
+		    	}
+		    	$this.toolbar.find('._dwp_toolBarItem[key="selectedCount"] > .count').text($this.getSelection().count());
+		    });
+		    
+		    return this.toolbar;
+		},
+		
+		showToolbar: function(bShow){
+			if(bShow){
+				this.ensureToolbar();
+				if(this.hasClass('toolbar')){
+					return;
+				}
+				this.addClass('toolbar');
+				this.publish('DataCube.Widgets.Widget.toolbar', true);
+			} else {
+				if(!this.hasClass('toolbar')){
+					return;
+				}
+				this.removeClass('toolbar');
+				this.publish('DataCube.Widgets.Widget.toolbar', false);
+			}
+			
 		},
 		
 		showMessage: function(txt){
@@ -106,9 +283,104 @@
 		addDrilldownElement: function(opts){
 		    this.wrapper.addDrilldownElement(opts);
 		},
+		
+		addSelectedToFilter: function(type){
+			// proceed only $eq ops
+			var groupItems = [];
+			$this.getSelection().each(function(key, selDesc){
+				if(!selDesc.filter || !JSB.isArray(selDesc.filter) || selDesc.filter.length == 0){
+					return;
+				}
+				if(selDesc.filter.length == 1){
+					var fDesc = selDesc.filter[0];
+					fDesc.type = '$or';
+					groupItems.push(fDesc);
+				} else {
+					var innerItems = [];
+					for(var i = 0; i < selDesc.filter.length; i++){
+						var fDesc = selDesc.filter[i];
+						fDesc.type = '$and';
+						innerItems.push(fDesc);
+					}
+					groupItems.push({
+						op: '$group',
+						type: '$or',
+						items: innerItems
+					});
+				}
+/*				
+				for(var i = 0; i < selDesc.filter.length; i++){
+					var fDesc = selDesc.filter[i];
+					groupFilters.push();
+					if(fDesc.op != '$eq'){
+						continue;
+					}
+					if(!filterFields[fDesc.field]){
+						filterFields[fDesc.field] = {
+							sourceId: fDesc.sourceId,
+							values: []
+						};
+					}
+					filterFields[fDesc.field].values.push(fDesc.value);
+				}
+*/				
+			});
+			
+			if(groupItems.length > 0){
+				// add filters
+				this.addFilter({
+					type: type,
+					op: '$group',
+					items: groupItems
+				});
+				
+				$this.getSelection().clear();
+				$this.refreshAll();
+			}
+/*			
+			if(type == '$and'){
+				for(var fName in filterFields){
+					var fDesc = filterFields[fName];
+					this.addFilter({
+						sourceId: fDesc.sourceId,
+						field: fName,
+						type: '$and',
+						op: '$in',
+						value: fDesc.values
+					})
+				}
+			} else if(type == '$or') {
+				for(var fName in filterFields){
+					var fDesc = filterFields[fName];
+					this.addFilter({
+						sourceId: fDesc.sourceId,
+						field: fName,
+						type: '$or',
+						op: '$in',
+						value: fDesc.values
+					})
+				}
+			} else if(type == '$not') {
+				for(var fName in filterFields){
+					var fDesc = filterFields[fName];
+					this.addFilter({
+						sourceId: fDesc.sourceId,
+						field: fName,
+						type: '$and',
+						op: '$nin',
+						value: fDesc.values
+					})
+				}
+				
+			} else {
+				return;
+			}
+*/			
+		},
 
 		addFilter: function(fDesc){
 		    if(!this.filterManager){ return; }
+		    fDesc.sender = this.getEntry();
 			var filterId = this.filterManager.addFilter(this.translateFilter(fDesc));
 			this.getWrapper().addFilter(filterId);
 			return filterId;
@@ -127,6 +399,7 @@
 		
 		hasFilter: function(fDesc){
 		    if(!this.filterManager){ return; }
+		    fDesc.sender = this.getEntry();
 			return this.filterManager.hasFilter(this.translateFilter(fDesc));
 		},
 

@@ -33,8 +33,19 @@
 		},
 		
 		constructFilterId: function(fItem){
-			var f = fItem.cubeField || fItem.field;
-			return MD5.md5('' + f) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5(JSON.stringify(fItem.value));
+			function _constructFilterPath(fDesc, sender){
+				if(fDesc.op == '$group'){
+					var curSender = fDesc.sender || sender;
+					var str = '__$group' + curSender.getId();
+					for(var i = 0; i < fDesc.items.length; i++){
+						str += '|' + _constructFilterPath(fDesc.items[i], curSender);
+					}
+					return str;
+				} else {
+					return '' + (fDesc.cubeField || fDesc.field) + '|' + fDesc.op + '|' + JSON.stringify(fDesc.value);
+				}
+			}
+			return  MD5.md5(_constructFilterPath(fItem));
 		},
 		
 		registerSource: function(widget, source, callback){
@@ -124,14 +135,23 @@
 
 		translateFilter: function(fDesc, source){
 			var newDesc = JSB.clone(fDesc);
-			var cubeField = this.extractCubeField(source, newDesc.field);
-			if(cubeField){
-				newDesc.cubeField = cubeField;
-				newDesc.cubeId = source.getCube().getId();
-			} else {
-				newDesc.boundTo = source.getId();
+			function _translate(newDesc){
+				if(newDesc.op == '$group'){
+					for(var i = 0; i < newDesc.items.length; i++){
+						_translate(newDesc.items[i]);
+					}
+				} else {
+					var cubeField = newDesc.cubeField || $this.extractCubeField(source, newDesc.field);
+					if(cubeField){
+						newDesc.cubeField = cubeField;
+						newDesc.cubeId = source.getCube().getId();
+					} else {
+						newDesc.boundTo = source.getId();
+					}
+				}
+				return newDesc;
 			}
-			return newDesc;
+			return _translate(newDesc);
 		},
 
 		addFilter: function(fDesc){
@@ -194,16 +214,7 @@
                 }
             }
 
-			$this.filters[itemId] = {
-				id: itemId,
-				type: fDesc.type,
-				field: fDesc.field,
-				cubeField: fDesc.cubeField,
-				boundTo: fDesc.boundTo,
-				value: fDesc.value,
-				op: fDesc.op,
-				options: fDesc.options
-			};
+			$this.filters[itemId] = JSB.merge({}, fDesc, {id: itemId});
 			$this.filterArr.push($this.filters[itemId]);
 
 			$this.publish('DataCube.filterChanged');
@@ -228,10 +239,24 @@
 			var cube = source.getCube();
 			var cubeFields = $this.cubeFieldMap[cube.getId()];
 			var srcFilters = {};
+			
+			function _checkSourceAccepted(fDesc){
+				if(fDesc.op == '$group'){
+					for(var i = 0; i < fDesc.items.length; i++){
+						if(_checkSourceAccepted(fDesc.items[i])){
+							return true;
+						}
+					}
+					return false;
+				} else {
+					var f = fDesc.cubeField || fDesc.field;
+					return fDesc.boundTo == sourceId || (cubeFields && cubeFields[f]);
+				}
+			}
+			
 			for(var fItemId in this.filters){
 				var fDesc = this.filters[fItemId];
-				var f = fDesc.cubeField || fDesc.field;
-				if(fDesc.boundTo == sourceId || (cubeFields && cubeFields[f])){
+				if(_checkSourceAccepted(fDesc)){
 					srcFilters[fItemId] = JSB.clone(fDesc);
 				}
 			}
@@ -240,6 +265,88 @@
 		
 		constructFilterBySource: function(source){
 			return this.constructFilterByLocal(this.getFiltersBySource(source), source);
+		},
+		
+		performSegmentation: function(segMap, fDesc, sourceId){
+			// generate segDesc entry
+			var segName = fDesc.op == '$group' ? '__group' + fDesc.sender.getId() : fDesc.cubeField || fDesc.field;
+			if(!segMap[segName]){
+				segMap[segName] = {
+					andFilters: [],
+					orFilters: [],
+					notFilters: [],
+					andFiltersLocal: [],
+					orFiltersLocal: [],
+					notFiltersLocal: []
+				};
+			}
+			var type = fDesc.type;
+			
+			function _insertToSeg(fDesc, segDesc, filterName, localFilterName, val){
+				if(fDesc.boundTo && localFilterName){
+					if(fDesc.boundTo == sourceId){
+						segDesc[localFilterName].push(val);
+					}
+				} else {
+					segDesc[filterName].push(val);
+				}
+
+			}
+			
+			function _performSegmentation(segDesc, fDesc){
+				if(fDesc.op == '$group'){
+					var groupSeg = {
+						type: 'group',
+						andFilters: [],
+						orFilters: [],
+						notFilters: [],
+						andFiltersLocal: [],
+						orFiltersLocal: [],
+						notFiltersLocal: []
+					};
+					for(var i = 0; i < fDesc.items.length; i++){
+						_performSegmentation(groupSeg, fDesc.items[i]);
+					}
+					
+					if(fDesc.type == '$and'){
+						_insertToSeg(fDesc, segDesc, 'andFilters', null, groupSeg);
+					} else if(fDesc.type == '$or'){
+						_insertToSeg(fDesc, segDesc, 'orFilters', null, groupSeg);
+					} else if(fDesc.type == '$not'){
+						_insertToSeg(fDesc, segDesc, 'notFilters', null, groupSeg);
+					} else {
+						throw new Error('Unexpected filter type: ' + fDesc.type);
+					}
+				} else {
+					var field = {};
+					if(fDesc.op == '$range'){
+						var f = fDesc.cubeField || fDesc.field;
+						if(JSB.isArray(fDesc.value) && fDesc.value.length >= 2){
+							var f1 = {}, f2 = {};
+							f1[f] = {$gte: fDesc.value[0]};
+							f2[f] = {$lte: fDesc.value[1]};
+							field.$and = [f1, f2];
+						}
+					} else {
+						var f = fDesc.cubeField || fDesc.field;
+						var fOp = {};
+						fOp[fDesc.op] = fDesc.value;
+						field[f] = fOp;
+					}
+					
+					if(fDesc.type == '$and'){
+						_insertToSeg(fDesc, segDesc, 'andFilters', 'andFiltersLocal', {type:'filter', filter:field});
+					} else if(fDesc.type == '$or'){
+						_insertToSeg(fDesc, segDesc, 'orFilters', 'orFiltersLocal', {type:'filter', filter:field});
+					} else if(fDesc.type == '$not'){
+						_insertToSeg(fDesc, segDesc, 'notFilters', 'notFiltersLocal', {type:'filter', filter:field});
+					} else {
+						throw new Error('Unexpected filter type: ' + fDesc.type);
+					}
+				}
+			}
+			
+			_performSegmentation(segMap[segName], fDesc, sourceId);
 		},
 		
 		constructFilterByLocal: function(filters, source){
@@ -252,7 +359,10 @@
 			var ffMap = {};
 			for(var fItemId in filters){
 				var fDesc = filters[fItemId];
-				var f = fDesc.cubeField || fDesc.field;
+				
+				$this.performSegmentation(ffMap, fDesc, sourceId);
+/*				
+				var f = fDesc.op == '$group' ? '__group' + fDesc.sender.getId() : fDesc.cubeField || fDesc.field;
 				if(!ffMap[f]){
 					ffMap[f] = {
 						andFilters: [],
@@ -263,19 +373,8 @@
 				}
 				
 				var ffDesc = ffMap[f];
-				var fOp = {};
-				var field = {};
-				if(fDesc.op == '$range'){
-					if(JSB.isArray(fDesc.value) && fDesc.value.length >= 2){
-						var f1 = {}, f2 = {};
-						f1[f] = {$gte: fDesc.value[0]};
-						f2[f] = {$lte: fDesc.value[1]};
-						field.$and = [f1, f2];
-					}
-				} else {
-					fOp[fDesc.op] = fDesc.value;
-					field[f] = fOp;
-				}
+				var field = $this.resolveOp(fDesc, sourceId);
+				
 				if(fDesc.type == '$and'){
 					if(fDesc.boundTo){
 						if(fDesc.boundTo == sourceId){
@@ -293,11 +392,10 @@
 						ffDesc.orFilters.push(field);
 					}
 				}
+*/				
 			}
 			
-			function _constructFieldFilter(fName){
-				var ffDesc = ffMap[fName];
-				
+			function _constructSegFilter(ffDesc){
 				var filter = null;
 				var postFilter = null;
 				
@@ -307,10 +405,43 @@
 				var orLocal = {$or:[]};
 				var andLocal = {$and:[]};
 				
-				// proceed and
+				// proceed and & not
 				if(ffDesc.andFilters.length > 0){
 					for(var i = 0; i < ffDesc.andFilters.length; i++){
-						and.$and.push(ffDesc.andFilters[i]);
+						var curFilter = null;
+						var curFilterLocal = null;
+						if(ffDesc.andFilters[i].type == 'filter'){
+							curFilter = ffDesc.andFilters[i].filter;
+						} else {
+							var curDesc = _constructSegFilter(ffDesc.andFilters[i]);
+							curFilter = curDesc.filter;
+							curFilterLocal = curDesc.postFilter;
+						}
+						if(curFilter){
+							and.$and.push(curFilter);
+						}
+						if(curFilterLocal){
+							andLocal.$and.push(curFilterLocal);
+						}
+					}
+				}
+				if(ffDesc.notFilters.length > 0){
+					for(var i = 0; i < ffDesc.notFilters.length; i++){
+						var curFilter = null;
+						var curFilterLocal = null;
+						if(ffDesc.notFilters[i].type == 'filter'){
+							curFilter = ffDesc.notFilters[i].filter;
+						} else {
+							var curDesc = _constructSegFilter(ffDesc.notFilters[i]);
+							curFilter = curDesc.filter;
+							curFilterLocal = curDesc.postFilter;
+						}
+						if(curFilter){
+							and.$and.push({$not:curFilter});
+						}
+						if(curFilterLocal){
+							andLocal.$and.push({$not:curFilterLocal});
+						}
 					}
 				}
 				if(and.$and.length == 0){
@@ -324,9 +455,25 @@
 					if(and){
 						or.$or.push(and);
 					}
+					
 					for(var i = 0; i < ffDesc.orFilters.length; i++){
-						or.$or.push(ffDesc.orFilters[i]);
+						var curFilter = null;
+						var curFilterLocal = null;
+						if(ffDesc.orFilters[i].type == 'filter'){
+							curFilter = ffDesc.orFilters[i].filter;
+						} else {
+							var curDesc = _constructSegFilter(ffDesc.orFilters[i]);
+							curFilter = curDesc.filter;
+							curFilterLocal = curDesc.postFilter;
+						}
+						if(curFilter){
+							or.$or.push(curFilter);
+						}
+						if(curFilterLocal){
+							orLocal.$or.push(curFilterLocal);
+						}
 					}
+					
 					if(or.$or.length == 0){
 						or = null;
 					} else if(or.$or.length == 1){
@@ -337,12 +484,27 @@
 					filter = and;
 				}
 				
-				// proceed and local
+				// proceed and & not local
 				if(ffDesc.andFiltersLocal.length > 0){
 					for(var i = 0; i < ffDesc.andFiltersLocal.length; i++){
-						andLocal.$and.push(ffDesc.andFiltersLocal[i]);
+						if(ffDesc.andFiltersLocal[i].type == 'filter'){
+							andLocal.$and.push(ffDesc.andFiltersLocal[i].filter);
+						} else {
+							throw new Error('Groups cannot be hosted in local filters')
+						}
 					}
 				}
+				
+				if(ffDesc.notFiltersLocal.length > 0){
+					for(var i = 0; i < ffDesc.notFiltersLocal.length; i++){
+						if(ffDesc.notFiltersLocal[i].type == 'filter'){
+							andLocal.$and.push({$not:ffDesc.notFiltersLocal[i].filter});
+						} else {
+							throw new Error('Groups cannot be hosted in local filters')
+						}
+					}
+				}
+				
 				if(andLocal.$and.length == 0){
 					andLocal = null;
 				} else if(andLocal.$and.length == 1){
@@ -355,7 +517,11 @@
 						orLocal.$or.push(andLocal);
 					}
 					for(var i = 0; i < ffDesc.orFiltersLocal.length; i++){
-						orLocal.$or.push(ffDesc.orFiltersLocal[i]);
+						if(ffDesc.orFiltersLocal[i].type == 'filter'){
+							orLocal.$or.push(ffDesc.orFiltersLocal[i].filter);
+						} else {
+							throw new Error('Groups cannot be hosted in local filters')
+						}
 					}
 					if(orLocal.$or.length == 0){
 						orLocal = null;
@@ -373,17 +539,17 @@
 			var postFilter = {$or:[{$and:[]}]};
 			
 			for(var fName in ffMap){
-				var fDesc = _constructFieldFilter(fName);
 				var ffDesc = ffMap[fName];
+				var fDesc = _constructSegFilter(ffDesc);
 				if(fDesc.filter){
-					if(ffDesc.andFilters.length > 0){
+					if(ffDesc.andFilters.length > 0 || ffDesc.notFilters.length > 0){
 						filter.$or[0].$and.push(fDesc.filter);
 					} else {
 						filter.$or.push(fDesc.filter);
 					}
 				}
 				if(fDesc.postFilter){
-					if(ffDesc.andFiltersLocal.length > 0){
+					if(ffDesc.andFiltersLocal.length > 0 || ffDesc.notFiltersLocal.length > 0){
 						postFilter.$or[0].$and.push(fDesc.postFilter);	
 					} else {
 						postFilter.$or.push(fDesc.postFilter);

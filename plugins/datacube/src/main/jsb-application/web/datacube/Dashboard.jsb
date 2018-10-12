@@ -17,7 +17,7 @@
 		           
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('Dashboard.css');
+			$jsb.loadCss('Dashboard.css');
 			this.addClass('dataCubeDashboard loading');
 			
 			this.filterManager = new FilterManager(this);

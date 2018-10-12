@@ -5,7 +5,7 @@
 	$client: {
 		$constructor: function(){
 			$base();
-			this.loadCss('MongoDataProvider.css');
+			$jsb.loadCss('MongoDataProvider.css');
 		}
 	},
 	
@@ -58,6 +58,10 @@
 		getStore: function(){
 			var sourceEntry = this.getEntry().getWorkspace().entry(this.getEntry().getParentId());
 			return sourceEntry.getStore();
+		},
+
+		getCollectionName: function(){
+		    return this.getDescriptor().name;
 		},
 		
 		prepareName: function(name){
@@ -155,7 +159,7 @@
 			    isIdProps = opts && opts.idProps;
 			var collectionName = desc.name;
 			
-			var scheme = this.getStore().asMongodb().connected(function(conn){
+			var scheme = (function(conn){
 				// extract columns by querying contents
 				var fieldTree = {};
 				var it = this.asMongodb().iteratedQuery({find:collectionName});
@@ -178,9 +182,9 @@
 					}
 					return fieldTree;
 				} finally {
-					it.close();	
+					it.close();
 				}
-			});
+			}).call(this.getStore());
 			
 			// transform fieldTree into plain fields
 			function transformTreeEntry(treeFields, parent){

@@ -13,7 +13,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('WidgetExplorer.css');
+			$jsb.loadCss('WidgetExplorer.css');
 			this.addClass('widgetExplorer');
 			
 			this.scrollBox = new ScrollBox();

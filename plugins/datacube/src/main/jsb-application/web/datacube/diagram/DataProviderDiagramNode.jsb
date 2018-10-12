@@ -40,7 +40,7 @@
 			$base(diagram, key, opts);
 			this.provider = opts.provider;
 			this.editor = opts.editor;
-			this.loadCss('DataProviderDiagramNode.css');
+			$jsb.loadCss('DataProviderDiagramNode.css');
 			this.addClass('dataProviderDiagramNode');
 			this.attr('provider', this.provider.getJsb().$name);
 			
@@ -274,7 +274,6 @@
 			this.keyFieldList.empty();
 
 			var isUseComments = this.provider.getOption('useComments');
-
 			if(isUseComments){
 			    var aliases = [];
 

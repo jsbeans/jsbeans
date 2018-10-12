@@ -63,7 +63,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('diagram.css');
+			$jsb.loadCss('diagram.css');
 			this.addClass('_jsb_diagram');
 			
 			JSB().loadScript('tpl/d3/d3.min.js', function(){

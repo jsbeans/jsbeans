@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('xmlFileRenderer');
-			this.loadCss('XmlFileRenderer.css');
+			$jsb.loadCss('XmlFileRenderer.css');
 		}
 	},
 	

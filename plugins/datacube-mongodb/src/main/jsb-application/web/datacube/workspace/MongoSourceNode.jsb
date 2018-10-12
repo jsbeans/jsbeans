@@ -4,7 +4,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('MongoSourceNode.css');
+			$jsb.loadCss('MongoSourceNode.css');
 			this.addClass('mongoSourceNode');
 			
 			this.append(`#dot

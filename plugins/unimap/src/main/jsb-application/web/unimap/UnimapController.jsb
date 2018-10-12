@@ -6,7 +6,7 @@
 	    $constructor: function(opts){
 	        $base(opts);
             this.addClass('scheme');
-            this.loadCss('UnimapController.css');
+            $jsb.loadCss('UnimapController.css');
 
             this._scheme = opts.scheme;
             this._values = opts.values.values;
@@ -227,7 +227,11 @@
 	    },
 
 	    getLinkedRenders: function(key){
-	        return this._linksMap[key].linkedRenders;
+	        if(this._linksMap[key]){
+	            return this._linksMap[key].linkedRenders;
+	        } else {
+	            return [];
+	        }
 	    },
 
 	    getRenderByName: function(name){

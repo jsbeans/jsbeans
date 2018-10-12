@@ -10,7 +10,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('WidgetApiView.css');
+			$jsb.loadCss('WidgetApiView.css');
 			this.addClass('widgetApiView');
 			
 			var splitBox = new SplitBox({

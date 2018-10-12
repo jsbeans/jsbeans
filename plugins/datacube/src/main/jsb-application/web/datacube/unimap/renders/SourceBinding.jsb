@@ -15,7 +15,7 @@
 
 	    construct: function(){
 	        this.addClass('sourceBindingRender');
-	        this.loadCss('SourceBinding.css');
+	        $jsb.loadCss('SourceBinding.css');
 
 	        this.createDataList();
 
@@ -88,12 +88,12 @@
 	    },
 
 	    createDataList: function(){
-	        function collectFields(desc, items, path){
+	        function collectSliceFields(desc, items, path){
 	        	if(!desc){
 	        		return;
 	        	}
 	        	if(desc.type == 'array'){
-	        		collectFields(desc.arrayType, items, path);
+	        		collectSliceFields(desc.arrayType, items, path);
 	        	} else if(desc.type == 'object'){
 	        		var fieldArr = Object.keys(desc.record);
 	        		fieldArr.sort(function(a, b){
@@ -113,22 +113,46 @@
                         $this._fields.push(schemeRef);
 	        			$this._bindingsInfo[curPath] = schemeRef;
 	        			items.push(item);
-	        			collectFields(rf, item.child, curPath);
+	        			collectSliceFields(rf, item.child, curPath);
 	        		}
+	        	}
+	        }
+	        
+	        function collectCubeFields(desc, items){
+	        	if(!desc.cubeFields || Object.keys(desc.cubeFields).length == 0){
+	        		return;
+	        	}
+	        	for(var cubeField in desc.cubeFields){
+	        		var cubeFieldType = desc.cubeFields[cubeField].type;
+	        		var key = '__$cube.' + cubeField;
+	        		var item = {
+	        			key: key, 
+	        			value: $this.$('<div class="cubeFieldRender">' + cubeField + '</div>'),
+	        			scheme: {
+	        				type: cubeFieldType,
+	        				field: cubeField,
+	        				cubeField: true
+	        			}
+	        		};
+	        		$this._bindingsInfo[key] = item.scheme;
+        			items.push(item);
 	        	}
 	        }
 
 	        this._fields = [];
 	        this._dataList = [];
+	        this._cubeFieldList = [];
 	        this._bindingsInfo = {};
 
 	        if(!this._values.values || !this._values.values[0]){
 	            return;
 	        }
 
-	        collectFields(this._values.values[0].binding, this._dataList, '');
+			collectSliceFields(this._values.values[0].binding, this._dataList, '');
+			collectCubeFields(this._values.values[0].binding, this._cubeFieldList);
 
             DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_dataList', this._dataList);
+            DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_cubeFieldList', this._cubeFieldList);
             DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_bindingsInfo', this._bindingsInfo);
 	    },
 
@@ -371,7 +395,7 @@
 		    if(needResolve){
 		        this.resolveLinkedFields();
 		    }
-
+		    this.updateId = JSB.generateUid();
 		    this.onchange();
 		},
 
@@ -488,7 +512,8 @@
 				type: 'array',
 				source: source.getId(),
 				arrayType: recordTypes,
-				workspaceId: source.getWorkspace().getId()
+				workspaceId: source.getWorkspace().getId(),
+				cubeFields: source.getCubeFields()
 			}
 	    },
 

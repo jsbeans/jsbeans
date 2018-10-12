@@ -5,7 +5,7 @@
 	$client: {
 	    construct: function(){
 	        this.addClass('switchRender');
-	        this.loadCss('Switch.css');
+	        $jsb.loadCss('Switch.css');
 
 	        this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
 

@@ -15,7 +15,7 @@
 			var self = this;
 			$base(opts);
 			
-			this.loadCss('itemList.tableView.css');
+			$jsb.loadCss('itemList.tableView.css');
 			
 			this.subscribe(['JSB.Widgets.ItemList.insertItem', 'JSB.Widgets.ItemList.deleteItem','JSB.Widgets.ItemList.clear'], function(sender, msg, params){
 				if(self.list !== sender){

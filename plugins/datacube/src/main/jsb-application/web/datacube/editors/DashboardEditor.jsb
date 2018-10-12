@@ -15,8 +15,7 @@
 		           
 		$constructor: function(opts){
 			$base(opts);
-			
-			this.loadCss('DashboardEditor.css');
+			$jsb.loadCss('DashboardEditor.css');
 			this.addClass('dashboardEditor loading');
 			
 			this.filterManager = new FilterManager(this);
@@ -34,6 +33,14 @@
 							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
 								return true;
 							}
+							if(obj.obj && JSB.isInstanceOf(obj.obj, 'DataCube.WidgetNode')){
+								var dashboardEntry = $this.entry;
+								if(obj.tree && obj.parent
+									&& JSB.isInstanceOf(obj.tree.get(obj.parent).obj, 'DataCube.DashboardNode') 
+									&& obj.tree.get(obj.parent).obj.getEntry() == $this.entry){
+									return true;
+								}
+							}
 						}
 					}
 					return false;
@@ -45,16 +52,28 @@
 							var obj = d.get(0).draggingItems[i];
 							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
 								$this.entry.server().createWidgetWrapper(obj.descriptor.jsb, obj.descriptor.name, function(widgetEntry, fail){
-									
-									var wWrapper = new WidgetWrapper(widgetEntry, $this, {
-										showSettings: true
-									});
-									$this.wrappers[wWrapper.getId()] = wWrapper;
-									if(callback){
-										callback.call($this, wWrapper);
+									if(widgetEntry){
+										var wWrapper = new WidgetWrapper(widgetEntry, $this, {
+											showSettings: true
+										});
+										$this.wrappers[wWrapper.getId()] = wWrapper;
+										if(callback){
+											callback.call($this, wWrapper);
+										}
 									}
 								});
 								return;
+							} else if(obj.obj && JSB.isInstanceOf(obj.obj, 'DataCube.WidgetNode')){
+								var widgetEntry = obj.obj.getEntry();
+								$this.entry.server().checkWrapperRelation(widgetEntry.getId(), function(res, fail){
+									if(res){
+										var wWrapper = new WidgetWrapper(widgetEntry, $this, {});
+										$this.wrappers[wWrapper.getId()] = wWrapper;
+										if(callback){
+											callback.call($this, wWrapper);
+										}
+									}
+								});
 							}
 						}
 					}

@@ -11,7 +11,7 @@
 			} 
 			this.options = JSB.merge(true, {}, this.options, opts);
 			
-			this.loadCss('control.css');
+			$jsb.loadCss('control.css');
 			if(this.options.element){
 				this.element = this.$(this.options.element);
 				delete this.options.element;
@@ -21,6 +21,10 @@
 				var tag = opts.tag || 'div';
 				this.element = this.$('<'+tag+' _id="'+this.getId()+'" class="_dwp_control"></'+tag+'>');
 			}
+			// options class
+            if(this.options.cssClass){
+                this.addClass(this.options.cssClass);
+            }
 			this._init();
 		},
 		

@@ -15,21 +15,14 @@
         	QueryTransformer.register(this);
         },
 
-        config: {
-            cloneViewQuery: true,
-        },
-
         /**
         * Вставляет в запрос тела вьюх, удаляя $views
         */
 		transform: function(dcQuery, cubeOrDataProvider){
 
-            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before EmbedViewQueries: ' + JSON.stringify(dcQuery, 0, 2));
+//            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before EmbedViewQueries: ' + JSON.stringify(dcQuery));
 
 		    $this._embedViews(dcQuery);
-		    if ($this.config.cloneViewQuery) {
-		        QueryUtils.defineContextQueries(dcQuery);
-            }
 
 		    return dcQuery;
 		},
@@ -53,8 +46,8 @@
                         if (exp.$from && typeof exp.$from === 'string') {
                             // embed view query to $from
                             var view = views[exp.$from];
-                            if (!view) throw new Error('Internal error: EmbedViewQueries: View not found: ' + exp.$from);
-                            exp.$from = $this.config.cloneViewQuery ? JSB.clone(view) : view;
+                            QueryUtils.throwError(view, 'Internal error: EmbedViewQueries: View not found: ' + exp.$from);
+                            exp.$from = JSB.clone(view);
                         }
                     }
                     for(var i in exp) if (exp.hasOwnProperty(i)) {

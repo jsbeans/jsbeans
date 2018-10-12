@@ -6,7 +6,7 @@
 
 	    construct: function(){
 	        this.addClass('databaseBindingRender');
-	        this.loadCss('DatabaseBinding.css');
+	        $jsb.loadCss('DatabaseBinding.css');
 
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
 	        this.append(name);

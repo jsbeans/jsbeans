@@ -4,15 +4,17 @@
 	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor', 'DataCube.Controls.SchemeSelector', 'Unimap.Render.DataBindingCache'],
 	$client: {
         _dataList: [],
+        _cubeFieldList: [],
         _bindingsInfo: {},
 	    _editors: [],
 	    _errorList: [],
 
 	    construct: function(){
 	        this.addClass('dataBindingRender');
-	        this.loadCss('DataBinding.css');
+	        $jsb.loadCss('DataBinding.css');
 
 	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList') || [];
+	        this._cubeFieldList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_cubeFieldList') || [];
 	        this._bindingsInfo = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo') || {};
 
 	        $base();
@@ -43,6 +45,7 @@
                     // todo: ComboEditor like Select
 
                     var editor = new ComboEditor({
+                    	cssClass: 'item',
                         clearBtn: true,
                         options: dataList,
                         value: values.value,
@@ -77,6 +80,7 @@
                     break;
                 case 'select':
                     var editor = new Select({
+                    	cssClass: 'item',
                         clearBtn: !this._scheme.multiple,
                         cloneOptions: true,
                         options: this._dataList,
@@ -111,12 +115,16 @@
                 case 'scheme':
                 default:
                 	var editor = new SchemeSelector({
+                		cssClass: 'item',
                 		context: this.getContext(),
                 		sourceKey: this._scheme.linkTo,
                 	    clearBtn: !this._scheme.multiple,
+                	    cubeFields: this._scheme.cubeFields,
                 		items: this._dataList,
+                		cubeItems: this._cubeFieldList,
                 		value: values.value,
                 		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
+                		updateId: this.findRenderByKey(this._scheme.linkTo).updateId,
                 		onChange: function(key, val){
                             if(val && JSB.isDefined(val.key)){
                             	values.value = val.key;
@@ -179,10 +187,15 @@
 
 	    changeLinkTo: function(values, render, callback){
 	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList');
+	        this._cubeFieldList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_cubeFieldList');
 	        this._bindingsInfo = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo');
 
             for(var i = 0; i < this._editors.length; i++){
-                this._editors[i].setOptions(this._dataList, true);
+            	if(JSB.isInstanceOf(this._editors[i], 'DataCube.Controls.SchemeSelector')){
+            		this._editors[i].setOptions(this._dataList, this._cubeFieldList, render.updateId);
+            	} else {
+            		this._editors[i].setOptions(this._dataList, true);
+            	}
             }
 
             if(this._values.values[0] && !this._values.values[0].value && this._scheme.autocomplete){

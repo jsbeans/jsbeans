@@ -5,7 +5,7 @@
 	$client: {
 		$constructor: function(){
 			$base();
-			this.loadCss('SqlTableDataProvider.css');
+			$jsb.loadCss('SqlTableDataProvider.css');
 		}
 	},
 	

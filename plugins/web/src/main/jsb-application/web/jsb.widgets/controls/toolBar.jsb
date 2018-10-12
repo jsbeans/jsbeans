@@ -5,7 +5,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('toolBar.css');
+			$jsb.loadCss('toolBar.css');
 			this.addClass('_dwp_toolBar');
 			this.itemContainer = this.$('<ul class="_dwp_tbContainer"></ul>');
 			this.append(this.itemContainer);
@@ -110,15 +110,23 @@
 					if(itemObj.click && JSB().isFunction(itemObj.click)){
 						itemObj.click.call(this, evt, itemObj.key, itemObj);
 					}
+					if(itemObj.onClick && JSB().isFunction(itemObj.onClick)){
+						itemObj.onClick.call(this, evt, itemObj.key, itemObj);
+					}
 				} else if(itemObj.group){
 					if(!self.isChecked(itemObj.key)){
 						self.checkItem(itemObj.key, true);
 						if(itemObj.click && JSB().isFunction(itemObj.click)){
 							itemObj.click.call(this, evt, itemObj.key, itemObj);
 						}
+						if(itemObj.onClick && JSB().isFunction(itemObj.onClick)){
+							itemObj.onClick.call(this, evt, itemObj.key, itemObj);
+						}
 					}
 				} else if(itemObj.click && JSB().isFunction(itemObj.click)){
 					itemObj.click.call(this, evt, itemObj.key, itemObj);
+				} else if(itemObj.onClick && JSB().isFunction(itemObj.onClick)){
+					itemObj.onClick.call(this, evt, itemObj.key, itemObj);
 				}
 			});
 			

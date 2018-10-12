@@ -232,7 +232,7 @@
 
             if (exp.$select) {
                 // sub query expression
-                var subSql = $this.translateQueryExpression(exp) ;
+                var subSql = $this.translateQueryExpression(exp, true) ;
                 return subSql.startsWith('(') ?  subSql : '(' + subSql + ')';
             }
 
@@ -241,42 +241,32 @@
 		    }
 
 
-            var op = Object.keys(exp)[0];
-            // const or field
-            switch(op) {
-                case '$type':
-                case '$const':
-                    if (JSB.isString(exp.$const)) {
-                        return "'" + exp.$const + "'"
-                    } else if (JSB.isNumber(exp.$const)) {
-                        return '' + exp.$const;
-                    } else if (JSB.isBoolean(exp.$const)) {
-                        return ('' + exp.$const).toUpperCase();
-                    } else if (exp.$const == null) {
-                        if (exp.$type) {
-                            var jdbcType = JDBC.translateType(exp.$type, $this.vendor);
-                            if (/^bit$/i.test(jdbcType)) {
-                                jdbcType = 'BOOLEAN';
-                            }
-                            return 'NULL::' + jdbcType;
-                        } else {
-                            return 'NULL';
-                        }
-                    }
-                    throw new Error('Unsupported $const type ' + typeof exp[op]);
-                case '$field':
-                case '$context':
-                    if (!exp.$field) throw new Error('Field $field is not defined:' + JSON.stringify(exp));
-                    return this._translateField(
-                            exp.$field,
-                            // if context is not defined then use current
-                            exp.$context || dcQuery.$context,
-                            // if foreign context force use table field not alias
-                            useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context,
-                            dcQuery.$context
-                    );
+            if (exp.hasOwnProperty('$const')) {
+                var value;
+                if (JSB.isString(exp.$const)) {
+                    value = "'" + exp.$const + "'"
+                } else if (JSB.isNumber(exp.$const)) {
+                    value = '' + exp.$const;
+                } else if (JSB.isBoolean(exp.$const)) {
+                    value =  ('' + exp.$const).toUpperCase();
+                } else if (exp.$const == null) {
+                    value = 'NULL';
+                } else {
+                    throw new Error('Unsupported $const type ' + typeof exp.$const);
+                }
+                return exp.$type ? value + '::' + JDBC.translateType(exp.$type, $this.vendor): value;
+            } else if (exp.$field){
+                return this._translateField(
+                        exp.$field,
+                        // if context is not defined then use current
+                        exp.$context || dcQuery.$context,
+                        // if foreign context force use table field not alias
+                        useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context,
+                        dcQuery.$context
+                );
             }
 
+            var op = Object.keys(exp)[0];
             // n-operators
             switch(op) {
                 case '$coalesce':
@@ -905,7 +895,6 @@
                         sqlOp = JSB.isArray(operands[1]) ? ' IN ' : ' = ANY';
                         return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
                     case '$nin':
-                        sqlOp = JSB.isArray(operands[1]) ? ' IN ' : ' = ANY';
                         sqlOp = JSB.isArray(operands[1]) ? ' NOT IN ' : ' != ANY';
                         return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
                     default:

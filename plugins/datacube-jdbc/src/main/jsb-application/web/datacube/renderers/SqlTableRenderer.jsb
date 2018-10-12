@@ -9,7 +9,7 @@
 			opts.editable = false;
 			$base(entry, opts);
 			this.addClass('sqlTableRenderer');
-			this.loadCss('SqlTableRenderer.css');
+			$jsb.loadCss('SqlTableRenderer.css');
 			entry.ensureSynchronized(function(){
 				var e = $this.getEntry();
 				$this.updateAdditional();

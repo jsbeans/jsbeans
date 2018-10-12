@@ -148,6 +148,12 @@
 	    	name: 'Пробрасывать события мыши контейнеру',
             optional: true,
             editor: 'none'
+	    },
+	    userSelect: {
+	    	render: 'item',
+	    	name: 'Разрешать выделять текст',
+            optional: true,
+            editor: 'none'
 	    }
 	},
 	$client: {
@@ -290,7 +296,7 @@
 			$base(opts);
 			
 			this.addClass('htmlWidget');
-			this.loadCss('Html.css');
+			$jsb.loadCss('Html.css');
 			$this.setInitialized();
 		},
 
@@ -314,15 +320,31 @@
                 }
 			} else {
 			    if(recordContext.hasBinding && recordContext.hasBinding()){
-                    this.fetch(recordContext, {batchSize: 1}, function(data, fail){
+/*			    	
+			    	var loaderShown = false;
+			    	JSB.defer(function(){
+			    		$this.getElement().loader();
+			    		loaderShown = true;
+			    	}, 100, 'fetchDefer_' + $this.getId());
+*/			    	
+                    $this.fetch(recordContext, {batchSize: 1, reset:true}, function(data, fail){
+/*                    	JSB.cancelDefer('fetchDefer_' + $this.getId());
+                    	if(loaderShown){
+	                    	try {
+	                    		$this.getElement().loader('hide');
+	                    	} catch(e){}
+                    	}
+*/                    	
                     	if(fail){
                     		return;
                     	}
                         recordContext.next();
                         $this.draw(opts ? opts.isCacheMod : false);
+                        $this.ready();
                     });
 			    } else {
-			        this.draw(opts ? opts.isCacheMod : false, true);
+			        $this.draw(opts ? opts.isCacheMod : false, true);
+			        $this.ready();
 			    }
 			}
 		},
@@ -406,29 +428,33 @@
 		},
 		
 		setSimpleMode: function(callback){
-			if(this.currentRender == 'simple'){
-				callback(this.simpleContainer);
-				return;
-			}
-			this.currentRender = 'simple';
-			var propagateSelector = this.getContext().find('propagateMouseEvents');
-			if(JSB.isNull(this.simpleContainer)){
-				this.simpleContainer = this.$('<div class="simpleContainer"></div>');
-				this.getElement().append(this.simpleContainer);
-				this.simpleContainer.on({
-					mousedown: function(evt){
-						if(!propagateSelector.checked()){
-							evt.stopPropagation();
+			if(this.currentRender != 'simple'){
+				this.currentRender = 'simple';
+				if(JSB.isNull(this.simpleContainer)){
+					this.simpleContainer = this.$('<div class="simpleContainer"></div>');
+					this.getElement().append(this.simpleContainer);
+					this.simpleContainer.on({
+						mousedown: function(evt){
+							if(!$this.getContext().find('propagateMouseEvents').checked()){
+								evt.stopPropagation();
+							}
+						},
+						mouseup: function(evt){
+							if(!$this.getContext().find('propagateMouseEvents').checked()){
+								evt.stopPropagation();
+							}
 						}
-					},
-					mouseup: function(evt){
-						if(!propagateSelector.checked()){
-							evt.stopPropagation();
-						}
-					}
-				});
+					});
+				}
+				this.attr('mode', this.currentRender);
 			}
-			this.attr('mode', this.currentRender);
+			
+			if(this.getContext().find('userSelect').checked()){
+				this.simpleContainer.addClass('userSelect');
+			} else {
+				this.simpleContainer.removeClass('userSelect');
+			}
+
 			callback(this.simpleContainer);
 		},
 		

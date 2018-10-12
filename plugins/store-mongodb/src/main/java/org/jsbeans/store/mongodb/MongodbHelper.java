@@ -71,7 +71,7 @@ public class MongodbHelper {
                 list.add(toDBObject(a));
             }
             return list;
-        } else if (obj instanceof String) {
+        } else if (obj instanceof CharSequence) {
             String str = obj.toString();
 
             /// convert Timestamp
@@ -100,6 +100,7 @@ public class MongodbHelper {
                 return new ObjectId();
             }
 
+            return str;
         }
         return obj;
     }

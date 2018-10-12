@@ -103,11 +103,10 @@ debugger;
 		    var reg = url.split(':')
             var host = reg[0];
             var port = reg[1] || ServerAddress.defaultPort();
-
 		    var mongoClient = new MongoClient(
                 ServerAddressHelper.createServerAddress(host, port),
-                properties && (properties.user || properties.authenticationMechanism)
-                    ? MongodbHelper.createMongoCredential(properties.authenticationMechanism ? AuthenticationMechanism.valueOf(properties.authenticationMechanism) : AuthenticationMechanism.valueOf("MONGODB-CR"), properties.user, properties.db, properties.password)
+                properties && properties.user
+                    ? MongodbHelper.createMongoCredential(properties.authenticationMechanism ? AuthenticationMechanism.valueOf(properties.authenticationMechanism) : AuthenticationMechanism.valueOf("MONGODB-CR"), properties.user, properties.authDb || properties.db, properties.password)
                     : Collections.emptyList(),
                 MongoClientOptions.builder().build(),    // TODO build from properties
                 MongoDriverInformation.builder().build() // TODO build from properties
@@ -129,19 +128,24 @@ debugger;
             return $this.createIterator(names, opts);
         },
 
-        listCollectionNames: function(client, dbName, opts){
-            var names = $this.getDB(client, dbName).listCollectionNames();
+        iterateCollectionNames: function(client, dbName, opts){
+            var names = $this.getDB(client, dbName).iterateCollectionNames();
             return $this.createIterator(names, opts);
         },
         
-        listCollections: function(client, dbName, opts){
+        iterateCollections: function(client, dbName, opts){
         	var collections = $this.getDB(client, dbName).listCollections​();
         	return $this.createIterator(collections, opts);
         },
         
-        listIndexes: function(client, dbName, collectionName, opts){
+        iterateIndexes: function(client, dbName, collectionName, opts){
         	var indexes = $this.getDB(client, dbName).getCollection(collectionName).listIndexes​();
         	return $this.createIterator(indexes, opts);
+        },
+
+        iterateAggregate: function(client, dbName, collectionName, pipeline, opts){
+        	var cursor = $this.getDB(client, dbName).getCollection(collectionName).aggregate($this.toDBObject(pipeline));
+        	return $this.createIterator(cursor, opts);
         },
         
         iteratedQuery: function(client, dbName, query, opts) {

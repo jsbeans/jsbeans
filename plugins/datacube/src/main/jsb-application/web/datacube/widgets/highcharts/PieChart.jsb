@@ -94,7 +94,39 @@
 	                        items: {
 	                            align: {
 	                                render: null
-	                            }
+	                            },
+                                format: {
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Процентное соотношение',
+                                                type: 'number',
+                                                value: 'percentage'
+                                            },
+                                            {
+                                                alias: 'Общее значение стека',
+                                                title: 'Только для стеков',
+                                                type: 'number',
+                                                value: 'total'
+                                            },
+                                            {
+                                                alias: 'Имя точки',
+                                                type: 'number',
+                                                value: 'point.name'
+                                            },
+                                            {
+                                                alias: 'Значение точки',
+                                                type: 'number',
+                                                value: 'y'
+                                            },
+                                            {
+                                                alias: 'Имя серии',
+                                                type: 'string',
+                                                value: 'series.name'
+                                            }
+                                        ]
+                                    }
+                                }
 	                        }
 	                    }
 	                }

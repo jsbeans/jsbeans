@@ -5,7 +5,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('CsvFileNode.css');
+			$jsb.loadCss('CsvFileNode.css');
 			this.addClass('csvFileNode');
 			
 			this.append('<div class="status"></div>');

@@ -371,11 +371,12 @@
                         id: exp.$idField.$field||exp.$idField,
                         parentId: exp.$parentIdField.$field||exp.$parentIdField,
                         value: exp.$aggregateExpr[aggFunc],
+                        depth: {$const: 0, $type: 'double'},
                     },
                     $filter: {
                         $eq: [
                             exp.$idField.$field||exp.$idField,
-                            {$field:exp.$idField.$field||exp.$idField, $context: dcQuery.$context}
+                            {$field:exp.$idField.$field||exp.$idField, $context: dcQuery.$context},
                         ]
                     }
                 };
@@ -385,6 +386,7 @@
                         id: exp.$idField.$field||exp.$idField,
                         parentId: exp.$parentIdField.$field||exp.$parentIdField,
                         value: exp.$aggregateExpr[aggFunc],
+                        depth: {$add: [{$field:"depth"}, {$const:1}]}
                     }
                 };
                 if (dcQuery.$from) {
@@ -449,10 +451,34 @@
             sql += ')';
             sql += ' SELECT ' + $this._translateExpression((function(){
                 var val = {};
-                val[aggFunc] = "value";
+                val[aggFunc] = {$const:'#####'}; // HACK
                 return val;
-            })(), dcQuery);
-            sql += ' FROM ' + $this._quotedName(treeContext);
+            })(), dcQuery).replace("'#####'", '"Q".value');
+            sql += ' FROM ' + $this._quotedName(treeContext) + ' AS "Q"';
+//            if (exp.$onlyLeafs) {
+//                throw 'TODO';
+//                sql += ' INNER JOIN ' + $this._translateFrom(dcQuery) + ' AS ' + $this._quotedName(dcQuery.$context);
+//                sql += ' ON "Q".id = ' + $this._translateExpression(exp.$parentIdField.$field||exp.$parentIdField, dcQuery);
+//            }
+            if (exp.$onlyLeafs || exp.$depth && (exp.$depth.$max >= 0 || exp.$depth.$min >= 0)) {
+                sql += ' WHERE' ;
+                if (exp.$onlyLeafs) {
+                    sql += ' "Q".id NOT IN (';
+                    sql += 'SELECT ' + $this._translateExpression(exp.$parentIdField.$field||exp.$parentIdField, dcQuery);
+                    sql += ' FROM ' + $this._translateFrom(dcQuery) + ' AS ' + $this._quotedName(dcQuery.$context);
+                    var where = $this._translateWhere(dcQuery, $this._extractWhereOrHavingFilter(dcQuery, true));
+                    if (where) sql += 'WHERE ' + where;
+                    sql += ')';
+                }
+                if (exp.$depth && exp.$depth.$max >= 0 ) {
+                    if (exp.$onlyLeafs) sql += ' AND ';
+                    sql += ' "Q".depth <= ' + exp.$depth.$max;
+                }
+                if (exp.$depth && exp.$depth.$min >= 0) {
+                    if (exp.$onlyLeafs || exp.$depth.$max >= 0 ) sql += ' AND ';
+                    sql += ' "Q".depth >= ' + exp.$depth.$min;
+                }
+            }
 
             return '(' + sql + ')';
         },

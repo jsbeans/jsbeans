@@ -5,7 +5,7 @@
         $constructor: function(opts){
             $base(opts);
 
-            this.loadCss('CubePanel.css');
+            $jsb.loadCss('CubePanel.css');
             this.addClass('cubePanel');
         }
     }

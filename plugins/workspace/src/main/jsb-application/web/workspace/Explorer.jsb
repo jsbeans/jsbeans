@@ -20,18 +20,18 @@
 	},
 	
 	currentWorkspace: null,
-	wTreeMap: {},
-	mCollapseKeys: {},
-	mExpandKeys: {},
 	
 	$client: {
 		_isReady: false,
 		ignoreSync: 0,
+		wTreeMap: {},
+		mCollapseKeys: {},
+		mExpandKeys: {},
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('Explorer.css');
+			$jsb.loadCss('Explorer.css');
 			this.addClass('workspaceExplorer');
 			
 			this.messageBox = this.$('<div class="message"></div>');
@@ -955,6 +955,11 @@
 			var node = null;
 			var nodeSlice = this.explorerNodeTypes;
 			var viewSlice = this.browserViewTypes;
+/*			
+			if(this.wTreeMap[itemDesc.entry.getId()]){
+				return this.wTreeMap[itemDesc.entry.getId()].node;
+			}
+*/			
 			var targetEntry = itemDesc.entry;
 			if(targetEntry.isLink()){
 				targetEntry = targetEntry.getTargetEntry();
@@ -1145,6 +1150,12 @@
 			return node;
 		},
 		
+		getEntryNode: function(entry){
+			if(this.wTreeMap[entry.getId()]){
+				return this.wTreeMap[entry.getId()].node;
+			}
+		},
+		
 		expandNode: function(key, callback){
 			if(key){
 				$this.tree.expandNode(key);
@@ -1304,6 +1315,9 @@
 		
 		redrawTree: function(nTree, bExpanded){
 			this.tree.clear();
+			this.wTreeMap = {};
+			this.mCollapseKeys = {};
+			this.mExpandKeys = {};
 			for(var eId in nTree){
 				var desc = nTree[eId];
 				this.addTreeItem(desc, null, false, {collapsed:bExpanded ? false:true});

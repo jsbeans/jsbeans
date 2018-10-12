@@ -7,7 +7,7 @@
 
 	    construct: function(){
 	        this.addClass('selectRender');
-	        this.loadCss('Select.css');
+	        $jsb.loadCss('Select.css');
 
 	        this.createOptionsList();
 

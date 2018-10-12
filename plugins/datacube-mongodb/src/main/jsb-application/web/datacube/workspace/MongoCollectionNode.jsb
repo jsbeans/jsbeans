@@ -4,7 +4,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('MongoCollectionNode.css');
+			$jsb.loadCss('MongoCollectionNode.css');
 			this.addClass('mongoCollectionNode');
 			this.suffix = this.$('<div class="suffix"></div>');
 			this.append(this.suffix);

@@ -4,7 +4,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('SqlSourceNode.css');
+			$jsb.loadCss('SqlSourceNode.css');
 			this.addClass('sqlSourceNode');
 			
 			this.append(`#dot

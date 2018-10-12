@@ -4,7 +4,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('DashboardNode.css');
+			$jsb.loadCss('DashboardNode.css');
 			this.addClass('dashboardNode');
 			
 			this.append(`#dot

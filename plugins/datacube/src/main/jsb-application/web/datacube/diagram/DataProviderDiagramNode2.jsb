@@ -33,7 +33,7 @@
 	        this.editor = opts.editor;
 	        this.fields = opts.fields;
 
-			this.loadCss('DataProviderDiagramNode.css');
+	        $jsb.loadCss('DataProviderDiagramNode.css');
 			this.addClass('dataProviderDiagramNode');
 
 			// caption

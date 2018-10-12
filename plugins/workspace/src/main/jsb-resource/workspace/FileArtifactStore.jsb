@@ -64,6 +64,9 @@
 				}
 				
 			} catch(e){
+				if(opts && opts.silent){
+					return;
+				}
 				entry.getWorkspace().blockWithException(e);
 				throw e;
 			} finally {
@@ -71,7 +74,7 @@
 			}
 		},
 		
-		size: function(entry, name){
+		size: function(entry, name, opts){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
 			if(!FileSystem.exists(eFileName)){
@@ -114,6 +117,9 @@
 				}
 
 			} catch(e){
+				if(opts && opts.silent){
+					return;
+				}
 				entry.getWorkspace().blockWithException(e);
 				throw e;
 			} finally {
@@ -122,7 +128,7 @@
 			
 		},
 		
-		remove: function(entry, name){
+		remove: function(entry, name, opts){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
 			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId() + '.' + name;
@@ -137,6 +143,9 @@
 					}
 				}
 			} catch(e){
+				if(opts && opts.silent){
+					return;
+				}
 				entry.getWorkspace().blockWithException(e);
 				throw e;
 			} finally {
@@ -144,7 +153,7 @@
 			}
 		},
 		
-		rename: function(entry, existedName, newName){
+		rename: function(entry, existedName, newName, opts){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, existedName);
 			var eFileNewName = FileSystem.join(eDir, newName);
@@ -155,6 +164,9 @@
 					FileSystem.move(eFileName, eFileNewName);
 				}
 			} catch(e){
+				if(opts && opts.silent){
+					return;
+				}
 				entry.getWorkspace().blockWithException(e);
 				throw e;
 			} finally {

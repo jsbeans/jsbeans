@@ -12,7 +12,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('Navigator.css');
+			$jsb.loadCss('Navigator.css');
 			this.addClass('workspaceNavigator');
 			
 			if(this.options.wmKey){

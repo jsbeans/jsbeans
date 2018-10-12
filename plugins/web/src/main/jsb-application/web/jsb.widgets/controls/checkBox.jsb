@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('checkBox.css');
+			$jsb.loadCss('checkBox.css');
 			this.addClass('_dwp_checkBox');
 			
 			// construct

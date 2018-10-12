@@ -10,7 +10,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('scrollBox');
-			this.loadCss('scrollBox.css');
+			$jsb.loadCss('scrollBox.css');
 
             if(this.options.cssClass){
                 this.addClass(this.options.cssClass);

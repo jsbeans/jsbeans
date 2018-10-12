@@ -10,7 +10,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('HttpServerView.css');
+			$jsb.loadCss('HttpServerView.css');
 			this.addClass('httpServerView');
 			
 			// create dialog

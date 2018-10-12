@@ -628,16 +628,16 @@
 .schemeEditor[sname = "$query"] > .container > .entry[key="$groupBy"] {}
 
 .schemeEditor[sname = "$query"] > .btnCreate {
-	margin: 4px;
-	width: 24px;
-    height: 24px;
+	margin: 8px;
+	width: 25px;
+    height: 25px;
 }
 
 .schemeEditor[sname = "$query"] > .btnCreate > ._dwp_icon {
-	width: 16px;
-    height: 16px;
-    left: 4px;
-    top: 4px;
+	width: 15px;
+    height: 15px;
+    left: 5px;
+    top: 5px;
 }
 
 

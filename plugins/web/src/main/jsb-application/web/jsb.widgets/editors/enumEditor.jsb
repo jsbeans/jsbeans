@@ -16,7 +16,7 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('enumEditor.css');
+			$jsb.loadCss('enumEditor.css');
 			this.getElement().addClass('_dwp_enumEditor');
 			this.init();
 		},

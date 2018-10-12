@@ -6,7 +6,7 @@
 			var self = this;
 			$base(entry, opts);
 			this.addClass('dashboardRenderer');
-			this.loadCss('DashboardRenderer.css');
+			$jsb.loadCss('DashboardRenderer.css');
 		}
 	},
 	

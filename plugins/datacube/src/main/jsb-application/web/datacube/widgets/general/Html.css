@@ -8,7 +8,9 @@
 	border: none;
 }
 
-.htmlWidget > div.simpleContainer {
+.htmlWidget > div.simpleContainer {}
+
+.htmlWidget > div.simpleContainer.userSelect {
 	-webkit-user-select: text;
 	-khtml-user-select: text;
 	-moz-user-select: text;

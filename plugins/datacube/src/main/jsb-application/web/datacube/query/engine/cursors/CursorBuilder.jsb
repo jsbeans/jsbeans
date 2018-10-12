@@ -27,6 +27,7 @@
         },
 
         buildAnyCursor:function(query, params, parent, caller) {
+//debugger;
             // is empty
             if (query == null || JSB.isEqual(query, {})) {
                 return $this.buildEmptyCursor(parent, caller);

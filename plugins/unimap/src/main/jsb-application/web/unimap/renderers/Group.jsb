@@ -9,7 +9,7 @@
 
 	    construct: function(opts){
 	        this.addClass('groupRender');
-	        this.loadCss('Group.css');
+	        $jsb.loadCss('Group.css');
 
 	        this._values.name = opts.name || this._values.name || this._scheme.name;
 

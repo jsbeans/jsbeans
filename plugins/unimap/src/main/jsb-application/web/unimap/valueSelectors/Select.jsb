@@ -94,25 +94,27 @@
             value = values.values[0].value;
 
             // remove keys
-            for(var i in values.values[0].items){
-                if(!scheme.items[value].items[i]){   // remove keys
-                    if(!opts.removedValues[i]){
-                        opts.removedValues[i] = [];
-                    }
+            if(scheme.items && scheme.items[value] && scheme.items[value].items){
+                for(var i in values.values[0].items){
+                    if(!scheme.items[value].items[i]){   // remove keys
+                        if(!opts.removedValues[i]){
+                            opts.removedValues[i] = [];
+                        }
 
-                    opts.removedValues[i].push(values.values[0].items[i]);
-                    delete values.values[0].items[i];
-
-                    wasUpdated = true;
-                } else {    // update old keys
-                    if(!scheme.items[value].items[i].render){    // empty values was added in old scheme versions or scheme parts was disabled
+                        opts.removedValues[i].push(values.values[0].items[i]);
                         delete values.values[0].items[i];
-                        wasUpdated = true;
-                        continue;
-                    }
 
-                    if(values.values[0].items[i]){
-                        wasUpdated = this.getRenderByName(scheme.items[value].items[i].render).updateValues(i, scheme.items[value].items[i], values.values[0].items[i], opts) || wasUpdated;
+                        wasUpdated = true;
+                    } else {    // update old keys
+                        if(!scheme.items[value].items[i].render){    // empty values was added in old scheme versions or scheme parts was disabled
+                            delete values.values[0].items[i];
+                            wasUpdated = true;
+                            continue;
+                        }
+
+                        if(values.values[0].items[i]){
+                            wasUpdated = this.getRenderByName(scheme.items[value].items[i].render).updateValues(i, scheme.items[value].items[i], values.values[0].items[i], opts) || wasUpdated;
+                        }
                     }
                 }
             }
@@ -125,7 +127,7 @@
             };
         }
 
-        if(scheme.items && value){
+        if(scheme.items && scheme.items[value] && value){
             for(var i in scheme.items[value].items){
                 if(!values.values[0].items){
                     values.values[0].items = {};

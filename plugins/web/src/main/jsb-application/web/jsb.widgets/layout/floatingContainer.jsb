@@ -5,7 +5,7 @@
 		$constructor: function(opts){
 			// ctor
 			$base(opts);
-			this.loadCss('floatingContainer.css');
+			$jsb.loadCss('floatingContainer.css');
 			this.getElement().addClass('_dwp_floatingContainer');
 			this.init();
 		},

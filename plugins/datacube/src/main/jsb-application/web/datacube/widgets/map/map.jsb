@@ -361,54 +361,45 @@
                     render: 'group',
                     name: 'Группа маркеров',
                     items: {
-                        coordinatesX: {
-                            render: 'dataBinding',
-                            name: 'Широта',
-                            linkTo: 'dataSource',
-                            valueType: 'number'
-                        },
-                        coordinatesY: {
-                            render: 'dataBinding',
-                            name: 'Долгота',
-                            linkTo: 'dataSource',
-                            valueType: 'number'
+                        coordinatesType: {
+                            render: 'select',
+                            name: 'Тип координат',
+                            items: {
+                                simple: {
+                                    name: 'Отдельные координаты',
+                                    items: {
+                                        coordinatesX: {
+                                            render: 'dataBinding',
+                                            name: 'Широта',
+                                            linkTo: 'dataSource',
+                                            valueType: 'number'
+                                        },
+                                        coordinatesY: {
+                                            render: 'dataBinding',
+                                            name: 'Долгота',
+                                            linkTo: 'dataSource',
+                                            valueType: 'number'
+                                        }
+                                    }
+                                },
+                                array: {
+                                    name: 'Массив координат',
+                                    items: {
+                                        coordinatesArray: {
+                                            render: 'dataBinding',
+                                            name: 'Массив',
+                                            linkTo: 'dataSource'
+                                        }
+                                    }
+                                }
+                            }
                         },
                         markerType: {
                             render: 'select',
                             name: 'Тип маркера',
                             items: {
                                 defaultMarker: {
-                                    name: 'По-умолчанию',
-                                    items: {
-                                        markerValue: {
-                                            render: 'switch',
-                                            name: 'Значение маркера',
-                                            items: {
-                                                name: {
-                                                    render: 'dataBinding',
-                                                    name: 'Имя',
-                                                    linkTo: 'dataSource'
-                                                },
-                                                value: {
-                                                    render: 'dataBinding',
-                                                    name: 'Значение',
-                                                    linkTo: 'dataSource'
-                                                },
-                                                valueDisplayType: {
-                                                    render: 'select',
-                                                    name: 'Способ отображения значений',
-                                                    items: {
-                                                        legend: {
-                                                            name: 'Информационная легенда'
-                                                        },
-                                                        onObject: {
-                                                            name: 'На объекте'
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                                    name: 'По-умолчанию'
                                 },
                                 widget: {
                                     name: 'Виджет',
@@ -568,34 +559,6 @@
                                                 }
                                             }
                                         },
-                                        markerValue: {
-                                            render: 'switch',
-                                            name: 'Значение маркера',
-                                            items: {
-                                                name: {
-                                                    render: 'dataBinding',
-                                                    name: 'Имя',
-                                                    linkTo: 'dataSource'
-                                                },
-                                                value: {
-                                                    render: 'dataBinding',
-                                                    name: 'Значение',
-                                                    linkTo: 'dataSource'
-                                                },
-                                                valueDisplayType: {
-                                                    render: 'select',
-                                                    name: 'Способ отображения значений',
-                                                    items: {
-                                                        legend: {
-                                                            name: 'Информационная легенда'
-                                                        },
-                                                        onObject: {
-                                                            name: 'На объекте'
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
                                         markerStyleType: {
                                             render: 'select',
                                             name: 'Стиль маркера',
@@ -612,22 +575,57 @@
                                 }
                             }
                         },
-                        displayContent: {
-                            render: 'formatter',
-                            name: 'Контент',
-                            linkTo: 'dataSource',
-                            formatterOpts: {
-                                variables: [
-                                    {
-                                        alias: 'Значение',
-                                        type: 'number',
-                                        value: 'y'
+                        useCluster: {
+                            render: 'item',
+                            name: 'Использовать группировку',
+                            optional: true,
+                            editor: 'none'
+                        },
+                        markerTooltip: {
+                            render: 'switch',
+                            name: 'Подсказка',
+                            items: {
+                                tooltipType: {
+                                    render: 'select',
+                                    name: 'Тип подсказки',
+                                    items: {
+                                        /*
+                                        simpleTooltip: {
+                                            name: 'Простая подсказка',
+                                            items: {
+                                                // todo
+                                            }
+                                        },
+                                        */
+                                        completeWidget: {
+                                            name: 'Готовый виджет',
+                                            items: {
+                                                completeWidgetBinding: {
+                                                    render: 'completeWidget',
+                                                    name: 'Виджет'
+                                                },
+                                                identField: {
+                                                    render: 'dataBinding',
+                                                    name: 'Поле идентификации',
+                                                    linkTo: 'dataSource'
+                                                }
+                                            }
+                                        }
                                     }
-                                ]
+                                }
                             }
                         },
-                        valueType: 'string',
-                        defaultValue: '{y:,.0f}'
+                        markerFiltration: {
+                            render: 'switch',
+                            name: 'Фильтрация',
+                            items: {
+                                markerFilterField: {
+                                    render: 'dataBinding',
+                                    name: 'Фильтрующее поле',
+                                    linkTo: 'dataSource'
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -718,20 +716,20 @@
                  render: 'select',
                  name: 'Сервер карт',
                  items: {
-                     avicomp: {
-                         name: 'OGCServer'
+                     openstreetmap: {
+                         name: 'Openstreetmap.org'
                      },
                      sputnik: {
                          name: 'Спутник.ру'
-                     },
-                     openstreetmap: {
-                         name: 'Openstreetmap.org'
                      },
                      cartocdn: {
                          name: 'Cartocdn.com'
                      },
                      stamen: {
                          name: 'Stamen.com'
+                     },
+                     avicomp: {
+                         name: 'OGCServer'
                      },
                      custom: {
                          name: 'Свой',
@@ -797,11 +795,16 @@
             this.append(this._widgetElements.header);
 
             this.addClass('mapWidget');
-            this.loadCss('map.css');
+            $jsb.loadCss('map.css');
+
+            JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.css');
+            JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.Default.css');
 
             JSB.loadCss('tpl/leaflet/leaflet.css');
             JSB.loadScript(['tpl/leaflet/leaflet-src.js', 'tpl/topojson/topojson-client.js'], function(){    // tpl/leaflet/leaflet.js
-                $this.setInitialized();
+                JSB.loadScript(['tpl/leaflet.markercluster/leaflet.markercluster.js'], function(){
+                    $this.setInitialized();
+                });
             });
 
             this.getElement().resize(function(){
@@ -905,6 +908,7 @@
                 }
 
                 if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash && this.map){
+                    this.ready();
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
@@ -1084,22 +1088,31 @@
                     for(var i = 0; i < markersContext.length; i++){
                         this._styles.markers[i] = {};
 
-                        var markerType = markersContext[i].find('markerType').value();
+                        var markerType = markersContext[i].find('markerType').value(),
+                            useCluster = markersContext[i].find('useCluster').checked();
+
                         this._styles.markers[i].markerType = markerType;
 
-                        this._styles.markers[i].coordinatesX = markersContext[i].find('coordinatesX');
-                        this._styles.markers[i].coordinatesY = markersContext[i].find('coordinatesY');
+                        this._styles.markers[i].coordinatesType = markersContext[i].find('coordinatesType').value();
+                        if(this._styles.markers[i].coordinatesType === 'array'){
+                            this._styles.markers[i].coordinatesArray = markersContext[i].find('coordinatesArray');
+                        } else {
+                            this._styles.markers[i].coordinatesX = markersContext[i].find('coordinatesX');
+                            this._styles.markers[i].coordinatesY = markersContext[i].find('coordinatesY');
+                        }
 
+                        this._styles.markers[i].useCluster = useCluster;
+
+                        if(useCluster){
+                            // todo: cluster settings
+                        }
+                        /*
                         this._styles.contentBindings = this._styles.contentBindings.concat(markersContext[i].find('displayContent').getBindingFields());
                         this._styles.markers[i].displayContent = markersContext[i].find('displayContent').value();
+                        */
 
                         switch(markerType){
                             case 'defaultMarker':
-                                if(markersContext[i].find('markerValue').checked()){
-                                    this._styles.markers[i].markerNameBinding = markersContext[i].find('markerValue name');
-                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value');
-                                    this._styles.markers[i].valueDisplayType = markersContext[i].find('markerValue valueDisplayType').value();
-                                }
                                 break;
                             case 'widget':
                                 var wb = markersContext[i].find('widgetBinding');
@@ -1155,14 +1168,38 @@
                                     this._styles.markers[i].fixedSize = markersContext[i].find('sizeValues fixedSize').value();
                                 }
 
-                                if(markersContext[i].find('markerValue').checked()){
-                                    this._styles.markers[i].markerNameBinding = markersContext[i].find('markerValue name');
-                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value');
-                                    this._styles.markers[i].valueDisplayType = markersContext[i].find('markerValue valueDisplayType').value();
-                                }
-
                                 this._styles.markers[i].markerStyleType = markersContext[i].find('markerStyleType').value();
                                 break;
+                        }
+
+                        // marker tooltip
+                        var markerTooltip = markersContext[i].find('markerTooltip');
+
+                        if(markerTooltip.checked()){
+                            var tooltipType = markerTooltip.find('tooltipType').value();
+
+                            this._styles.markers[i].tooltip = {
+                                tooltipType: tooltipType,
+                                identField: markerTooltip.find('identField')
+                            };
+
+                            switch(tooltipType){
+                                case 'simpleTooltip':
+                                    //
+                                    break;
+                                case 'completeWidget':
+                                    this._styles.markers[i].tooltip.widgetDesc = markerTooltip.find('completeWidgetBinding').value();
+                                    break;
+                            }
+                        }
+
+                        // filtration
+                        var markerFiltration = markersContext[i].find('markerFiltration');
+
+                        if(markerFiltration.checked()){
+                            this._styles.markers[i].filtration = {
+                                filterField: markerFiltration.find('markerFilterField')
+                            }
                         }
                     }
                     /*********/
@@ -1281,6 +1318,7 @@
 
                             // load markers
                             /*********/
+
                             for(var i = 0; i < markersContext.length; i++){
                                 if(!markers[i]){
                                     markers[i] = {
@@ -1288,22 +1326,43 @@
                                     }
                                 }
 
-                                markers[i].coordinates.push([$this._styles.markers[i].coordinatesX.value(), $this._styles.markers[i].coordinatesY.value()]);
+                                if($this._styles.markers[i].coordinatesType === 'array'){
+                                    var val = $this._styles.markers[i].coordinatesArray.value();
 
-                                if($this._styles.markers[i].markerValueBinding){
-                                    if(!markers[i].markerValues){
-                                        markers[i].markerValues = [];
+                                    if(!val || !val[0] || !val[1]){
+                                        continue;
                                     }
 
-                                    markers[i].markerValues.push($this._styles.markers[i].markerValueBinding.value());
+                                    markers[i].coordinates.push([parseFloat(val[1]), parseFloat(val[0])]);
+                                } else {
+                                    markers[i].coordinates.push([$this._styles.markers[i].coordinatesX.value(), $this._styles.markers[i].coordinatesY.value()]);
                                 }
 
-                                if($this._styles.markers[i].markerNameBinding){
-                                    if(!markers[i].markerNames){
-                                        markers[i].markerNames = [];
+                                if($this._styles.markers[i].tooltip){
+                                    if(!markers[i].tooltipFilterData){
+                                        markers[i].tooltipFilterData = [];
                                     }
 
-                                    markers[i].markerNames.push($this._styles.markers[i].markerNameBinding.value());
+                                    var filter = {};
+
+                                    filter[$this._styles.markers[i].tooltip.identField.binding()] = {
+                                        $eq: {
+                                            $const: $this._styles.markers[i].tooltip.identField.value()
+                                        }
+                                    }
+
+                                    markers[i].tooltipFilterData.push(filter);
+                                }
+
+                                if($this._styles.markers[i].filtration){
+                                    if(!markers[i].filterData){
+                                        markers[i].filterData = [];
+                                    }
+
+                                    markers[i].filterData.push({
+                                       binding:  $this._styles.markers[i].filtration.filterField.binding(),
+                                       value:  $this._styles.markers[i].filtration.filterField.value()
+                                    });
                                 }
 
                                 switch($this._styles.markers[i].markerType){
@@ -1534,13 +1593,6 @@
                         this._layers.geoJson[i].remove();
                     }
                     */
-                } else {
-                    /*
-                    this.map = L.map(this.container.get(0), {
-                        center: [40.5, 40.5],
-                        zoom: 2
-                    });
-                    */
                 }
 
                 this.map = L.map(this.container.get(0), mapOpts);
@@ -1566,6 +1618,73 @@
                             L.tileLayer(this._styles.tiles[i].url, {foo: 'bar', layerType: 'tile'}).addTo(this.map);
                         }
                     }
+                }
+
+                // tooltip
+                function createTooltip(opts){
+                    if(!opts){
+                        return;
+                    }
+
+                    var popup = L.popup({closeButton: false, autoPan: false, minWidth: 400, maxWidth: 500, offset: L.point(0, -30)});
+
+                    switch(opts.tooltipType){
+                        case 'simpleTooltip':
+                            //
+                            break;
+                        case 'completeWidget':
+                            $this.server().getWidgetEntry(opts.widgetDesc.widgetWsid, opts.widgetDesc.widgetWid, function(entry, fail){
+                                if(fail){
+                                    return;
+                                }
+
+                                JSB.lookup(entry.wType, function(WidgetClass){
+                                    var widget = new WidgetClass({
+                                        filterManager: $this.filterManager,
+                                        widgetEntry: entry,
+                                        widgetWrapper: $this.getWrapper()
+                                    });
+
+                                    opts.widget = widget;
+                                    opts.popup = popup;
+
+                                    popup.setContent(widget.getElement().get(0));
+                                });
+                            });
+                            break;
+                    }
+                }
+
+                function createTooltipEvents(layer, coordinates, context, tooltip){
+                    layer.on({
+                        mouseover: function(evt){
+                            evt.originalEvent.stopPropagation();
+
+                            JSB.defer(function(){
+                                if(tooltip.popup){
+                                    tooltip.widget.ensureInitialized(function(){
+                                        tooltip.popup.setLatLng(coordinates);
+                                        tooltip.popup.openOn($this.map);
+
+                                        if(context){
+                                            tooltip.widget.setContextFilter(context);
+                                        }
+
+                                        tooltip.widget.refresh();
+                                    })
+                                }
+                            }, 200, 'DataCube.Map.tooltip');
+                        },
+                        mouseout: function(evt){
+                            evt.originalEvent.stopPropagation();
+
+                            JSB.cancelDefer('DataCube.Map.tooltip');
+
+                            if(tooltip.popup){
+                                tooltip.popup.closePopup();
+                            }
+                        }
+                    });
                 }
 
                 // add geojson layers
@@ -1725,26 +1844,37 @@
                 for(var i = 0; i < data.markers.length; i++){
                     markersGroups[i] = [];
 
+                    createTooltip(this._styles.markers[i].tooltip);
+
                     switch(this._styles.markers[i].markerType){
                         case 'defaultMarker':
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                var marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]));
+                                var coordinates = L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]),
+                                    marker = L.marker(coordinates);
 
-                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
-                                    marker.bindPopup(formatMarkerText(i, j), {closeButton: false, autoPan: false});
-
-                                    marker.on({
-                                        mouseover: function(evt){
-                                            evt.originalEvent.stopPropagation();
-                                            this.openPopup();
-                                        },
-                                        mouseout: function(evt){
-                                            evt.originalEvent.stopPropagation();
-                                            this.closePopup();
-                                        }
-                                    });
+                                if(this._styles.markers[i].tooltip){
+                                    createTooltipEvents(marker, coordinates, data.markers[i].tooltipFilterData[j], this._styles.markers[i].tooltip);
                                 }
 
+                                if($this._styles.markers[i].filtration){
+                                    (function(marker, filterData){
+                                        marker.on('click', function(){
+                                            $this.addFilter({
+                                                sourceId: $this._dataSource.source,
+                                                type: '$or',
+                                                op: '$eq',
+                                                field: filterData.binding,
+                                                value: filterData.value
+                                            });
+
+                                            $this.refreshAll();
+
+                                            $this.refresh();
+                                        });
+                                    })(marker, data.markers[i].filterData[j]);
+                                }
+
+                                /*
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
                                     (function(content){
                                         marker.on({
@@ -1757,6 +1887,7 @@
                                         });
                                     })($this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]}));
                                 }
+                                */
 
                                 markersGroups[i].push(marker);
                             }
@@ -1795,7 +1926,8 @@
                             var color = $this._styles.markers[i].simpleColor;
 
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                var marker = undefined,
+                                var coordinates = L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]),
+                                    marker = undefined,
                                     icon = undefined,
                                     html = undefined;
 
@@ -1825,23 +1957,31 @@
                                     }
                                 }
 
-                                marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon});
+                                marker = L.marker(coordinates, {icon: icon});
 
-                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
-                                    marker.bindPopup(formatMarkerText(i, j), {closeButton: false, autoPan: false});
-
-                                    marker.on({
-                                        mouseover: function(evt){
-                                            evt.originalEvent.stopPropagation();
-                                            this.openPopup();
-                                        },
-                                        mouseout: function(evt){
-                                            evt.originalEvent.stopPropagation();
-                                            this.closePopup();
-                                        }
-                                    });
+                                if(this._styles.markers[i].tooltip){
+                                    createTooltipEvents(marker, coordinates, data.markers[i].tooltipFilterData[j], this._styles.markers[i].tooltip);
                                 }
 
+                                if($this._styles.markers[i].filtration){
+                                    (function(marker, filterData){
+                                        marker.on('click', function(){
+                                            $this.addFilter({
+                                                sourceId: $this._dataSource.source,
+                                                type: '$and',
+                                                op: '$eq',
+                                                field: filterData.binding,
+                                                value: filterData.value
+                                            });
+
+                                            $this.refreshAll();
+
+                                            $this.refresh();
+                                        });
+                                    })(marker, data.markers[i].filterData[j]);
+                                }
+
+                                /*
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
                                     (function(content){
                                         marker.on({
@@ -1854,10 +1994,11 @@
                                         });
                                     })($this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]}));
                                 }
+                                */
 
                                 markersGroups[i].push(marker);
                             }
-
+                            /*
                             if(this._styles.markers[i].legend){
                                 this._createLegend(this._styles.markers[i].legend.position, data.markers[i].colorMap);
                             }
@@ -1865,13 +2006,24 @@
                             if(this._styles.markers[i].valueDisplayType === 'legend'){
                                 this._createInfoControl();
                             }
+                            */
                             break;
                     }
                 }
 
                 this._layers.markers = [];
                 for(var i = 0; i < markersGroups.length; i++){
-                    this._layers.markers.push(L.layerGroup(markersGroups[i], {pane: 'markerPane', layerType: 'markersGroup'}).addTo(this.map));
+                    if(this._styles.markers[i].useCluster){
+                        var layer = L.markerClusterGroup();
+
+                        for(var j = 0; j < markersGroups[i].length; j++){
+                            layer.addLayer(markersGroups[i][j]);
+                        }
+
+                        this.map.addLayer(layer);
+                    } else {
+                        this._layers.markers.push(L.layerGroup(markersGroups[i], {pane: 'markerPane', layerType: 'markersGroup'}).addTo(this.map));
+                    }
                 }
                 /*********/
             } catch(ex){
@@ -2111,5 +2263,23 @@
 
             return {};
         }
-    }
+    },
+
+	$server: {
+		$require: ['JSB.Workspace.WorkspaceController'],
+
+		getWidgetEntry: function(wsId, wId){
+			var w = WorkspaceController.getWorkspace(wsId);
+			if(!w){
+				throw new Error('Unable to find workspace with id: ' + wsId);
+			}
+
+			var widgetEntry = w.entry(wId);
+			if(!widgetEntry || !JSB.isInstanceOf(widgetEntry, 'DataCube.Model.Widget')){
+				throw new Error('Unable to find widget with id: ' + wId);
+			}
+
+			return widgetEntry;
+		}
+	}
 }

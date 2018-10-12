@@ -333,9 +333,7 @@
 			this.load();
 			var provider = this.getProviderById(pId);
 
-			if(this.dataProviderFields[provider.getId()]){
-				return this.createProviderFieldsList(provider);
-			}
+		},
 
 			this.dataProviderFields[provider.getId()] = provider.extractFields({comment: true, type: true, nativeType: true, idProps: true});
 			this.store();

@@ -284,7 +284,7 @@
 
         $constructor: function(opts){
             $base(opts);
-            this.loadCss('GraphWidget.css');
+            $jsb.loadCss('GraphWidget.css');
             this.addClass('graphWidget');
 
             JSB().loadScript('tpl/d3/d3.min.js', function(){

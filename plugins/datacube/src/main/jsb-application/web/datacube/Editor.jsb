@@ -10,7 +10,7 @@
 	],
 	
 	$html: {
-		title: 'DataCube',
+		title: `#dot {{=Config.get('datacube.title')}}`,
 		favicon: '/datacube/images/datacube.png'
 	},
 	
@@ -19,7 +19,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('Editor.css');
+			$jsb.loadCss('Editor.css');
 			this.addClass('dataCubeEditor');
 			$this.server().getVersion(function(v){
 				$this.dcVersion = v;
@@ -32,7 +32,7 @@
 				<div class="dcHeader">
 					<div class="dcLogo"></div>
 					<div class="dcTitle">
-						<div class="caption">DataCube</div>
+						<div class="caption">{{=$this.getJsb().$html.title}}</div>
 						<div class="version">{{=$this.dcVersion}}</div>
 					</div>
 					

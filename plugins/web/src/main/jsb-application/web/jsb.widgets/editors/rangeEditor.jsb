@@ -14,7 +14,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('rangeEditor.css');
+			$jsb.loadCss('rangeEditor.css');
 			this.addClass('_dwp_rangeEditor');
 			this.slider = this.$('<div class="_dwp_slider"></div>');
 			this.append(this.slider);

@@ -3,16 +3,19 @@
 	$parent: 'JSB.Widgets.Control',
 	
 	$client: {
+		$require: ['DataCube.Controls.FilterTag'],
+		
 		visible: false,
 		owner: null,
 		filterManager: null,
 		filters: {},
+		filterTags: {},
 		
 		$constructor: function(owner, filterManager){
 			$base();
 			this.owner = owner;
 			this.filterManager = filterManager;
-			this.loadCss('WidgetFilterSelector.css');
+			$jsb.loadCss('WidgetFilterSelector.css');
 			this.addClass('widgetFilterSelector');
 			
 			$this.updateVisibility();
@@ -76,78 +79,33 @@
 			for(var i = 0; i < fidsToRemove.length; i++){
 				delete this.filters[fidsToRemove[i]];
 			}
-
+			
+			for(var fId in $this.filterTags){
+				$this.filterTags[fId].destroy();
+			}
 			this.getElement().empty();
 			
-			function _constructTag(fId){
-				var fDesc = $this.filters[fId];
-				var fName = fDesc.cubeField || fDesc.field;
-				var fTag = $this.$('<div class="filterTag"></div>').attr('fId', fId);
-				fTag.append('<div class="removeLine"></div>');
-				fTag.append($this.$('<div class="field"></div>').text(fName).attr('title', fName));
-				var opSign = ':';
-				switch(fDesc.op){
-				case '$eq':
-					opSign = '=';
-					break;
-				case '$lt':
-					opSign = '<';
-					break;
-				case '$lte':
-					opSign = '&le;';
-					break;
-				case '$gt':
-					opSign = '>';
-					break;
-				case '$gte':
-					opSign = '&ge;';
-					break;
-				case '$ne':
-					opSign = '&ne;';
-					break;
-				case '$like':
-				case '$ilike':
-					opSign = '&asymp;';
-					break;
-				case '$in':
-				case '$range':
-					opSign = '&isin;';
-					break;
-				case '$nin':
-					opSign = '&notin;';
-					break;
-				default:
-					opSign = ':';
-				}
-				fTag.append('<div class="op">'+opSign+'</div>');
-
-				var v = fDesc.value;
-				if(fDesc.op == '$range' && JSB.isArray(fDesc.value)){
-					v = '[' + fDesc.value[0] + ' - ' + fDesc.value[1] + ']';
-				} else if(JSB.isArray(fDesc.value)){
-					v = JSON.stringify(fDesc.value);
-				} else if(JSB().isDate(fDesc.value)){
-				    v = fDesc.value.toDateString();
-				}
-				var valElt = $this.$('<div class="value"></div>').text('' + v).attr('title', '' + v);
-				if(JSB.isString(fDesc.value)){
-					valElt.addClass('string');
-				}
-				fTag.append(valElt);
-				return fTag;
-			}
 			
 			for(var fId in this.filters){
 				(function(fId){
-					var fTag = _constructTag(fId);
-					$this.append(fTag);
-					fTag.click(function(){
-						fTag.remove();
-						$this.filterManager.removeFilter(fId);
-						JSB.defer(function(){
-                            $this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'changeFilterType', fItemIds: [fId]});
-                        });
+					var fDesc = $this.filters[fId];
+					var fTag = new FilterTag(fDesc, {
+						not: fDesc.type == '$not',
+						onRemove: function(){
+							$this.filterManager.removeFilter(fId);
+							if($this.filterTags[fId]){
+								delete $this.filterTags[fId];
+							}
+							fTag.destroy();
+							$this.updateVisibility();
+							JSB.defer(function(){
+								$this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'removeFilter', fItemIds: [fId]});
+							});
+						}
 					});
+					$this.filterTags[fId] = fTag;
+					
+					$this.append(fTag);
 				})(fId);
 			}
 

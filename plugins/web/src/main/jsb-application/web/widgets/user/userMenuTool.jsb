@@ -26,7 +26,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('userMenuTool.css');
+			$jsb.loadCss('userMenuTool.css');
 			this.addClass('_dwp_userMenuTool');
 			
 			// append header

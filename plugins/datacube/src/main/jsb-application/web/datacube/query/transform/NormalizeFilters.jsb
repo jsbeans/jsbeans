@@ -31,14 +31,14 @@
                         switch(op) {
                             case '$or':
                                 var $or = [];
-                                for (var i in exps[op]) {
+                                for (var i = 0; i < exps[op].length; i++) {
                                     var newCond = walkMultiFilter(exps[op][i]);
                                     $or.push(newCond);
                                 }
                                 $and.push({$or: $or});
                                 break;
                             case '$and':
-                                for (var i in exps[op]) {
+                                for (var i = 0; i < exps[op].length; i++) {
                                     var newCond = walkMultiFilter(exps[op][i]);
                                     $and.push(newCond);
                                 }
@@ -91,8 +91,28 @@
                 }
             }
 
+            function walkInnerConditions(exp) {
+                /// find $cond and $filter
+                if (JSB.isObject(exp)) {
+                    if (exp.$cond) {
+                        exp.$cond = walkMultiFilter(exp.$cond);
+                    } else if (exp.$filter && !exp.$select) {
+                        exp.$filter = walkMultiFilter(exp.$filter);
+                    } else if (!exp.$select || includeSubQueries || exp == dcQuery) {
+                        for(var i in exp) if (exp[i] != null) {
+                            walkInnerConditions(exp[i]);
+                        }
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for (var i=0; i < exp.length; i++) if (exp[i] != null) {
+                        walkInnerConditions(exp[i]);
+                    }
+                }
+            }
+
             walkQueryFilter(dcQuery, '$filter');
             walkQueryFilter(dcQuery, '$postFilter');
+            walkInnerConditions(dcQuery);
 		},
 	}
 }
