@@ -212,15 +212,7 @@
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query', '$viewName'],
 		    });
-		    /*
-		    new this.SingleObject({
-		        name: '$join',
-		        category: 'Источник запроса',
-		        displayName: 'Пересечение',
-		        desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
-		        values: ['$joinExpr']
-		    });
-		    */
+
 		    new this.ComplexObject({
 		        name: '$join',
 		        category: 'Источник запроса',
@@ -229,21 +221,29 @@
 		        values: {
 		            '$joinType': '$joinType',
 		            '$filter': '$joinFilter',
-		            //'$left': '$query',
 		            '$left': '$fromSelect',
-		            '$right': '$query',
+		            '$right': '$fromSelect',
 		        }
 		    });
 
 		    new this.Group({
 		    	name: '$fromSelect',
-		        values: ['$provider', '$query']
+		        values: ['$provider', '$cube', '$query']
 		    });
 
 		    new this.DropContainer({
 		        name: '$provider',
+		        category: 'Источник запроса',
 		        allowValues: ['DataCube.Model.DatabaseTable'],
 		        desc: 'Идентификатор первичного источника данных',
+		        values: []
+		    });
+
+		    new this.DropContainer({
+		        name: '$cube',
+		        category: 'Источник запроса',
+		        allowValues: ['DataCube.Model.Cube'],
+		        desc: 'Идентификатор куба',
 		        values: []
 		    });
 
@@ -1334,19 +1334,6 @@
 		        name: '$viewName',
 		        desc: 'Имя среза источника'
 		    });
-
-		    new this.EConstString({
-		        name: '$cube',
-		        category: 'Источник запроса',
-		        desc: 'Идентификатор куба'
-		    });
-		    /*
-		    new this.EConstString({
-		        name: '$provider',
-		        category: 'Источник запроса',
-		        desc: 'Идентификатор первичного источника данных'
-		    });
-		    */
 
 		    new this.EConstNumber({
 		    	displayName: 'Число',

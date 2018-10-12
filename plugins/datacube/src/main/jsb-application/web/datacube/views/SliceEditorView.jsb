@@ -12,6 +12,7 @@
 	$client: {
 		ready: false,
 		ignoreHandlers: false,
+		structFields: {},
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -29,12 +30,13 @@
                 cssClass: "btnOk",
                 caption: "Сохранить",
                 onClick: function(){
+// todo: check slice name
 debugger;
                 	$this.getElement().loader({message:'Сохранение...', onShow: function(){
                         $this.slice.cube.server().updateSliceSettings($this.slice.getId(), {
                             name: $this.titleEditor.getData().getValue(),
-                            query: $this.query,
-                            queryParams: {}
+                            structFields: $this.structFields,
+                            query: $this.query
                         }, function(){
                         	$this.getElement().loader('hide');
                         });
@@ -113,7 +115,8 @@ debugger;
 			vSplitBox.addToPane(0, scrollBox);
 			
 			this.queryEditor = new QueryEditor({
-			    editorType: 'queryDataProvider',
+			    editorView: $this,
+			    structFields: this.structFields,
 				onChange: function(){
 					$this.updateTextQuery();
 				}
@@ -153,7 +156,10 @@ debugger;
 			}
 			this.slice.server().getCubeFields(function(fields){
 				$this.query = JSB.clone($this.slice.getQuery());
+				$this.structFields = $this.slice.getStructFields();
+
 				$this.queryEditor.setOption('cube', $this.slice.getCube());
+				$this.queryEditor.setOption('structField', $this.structFields);
 				$this.queryEditor.setOption('cubeFields', fields);
 
 				$this.slice.server().getCubeSlices(function(slices){

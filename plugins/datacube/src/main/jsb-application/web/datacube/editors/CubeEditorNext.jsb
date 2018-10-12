@@ -97,62 +97,11 @@
 			this.cubePanel = new CubePanel();
 			this.append(this.cubePanel);
 
-			this.diagram.getElement().droppable({
-				accept: function(d){
-					if(d && d.length > 0){
-					    var draggingItems = d.get(0).draggingItems;
-					    if(draggingItems){
-                            for(var i = 0; i < draggingItems.length; i++){
-                                var node = draggingItems[i].obj;
-
-                                if(!JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
-                                    continue;
-                                }
-
-                                var entry = node.getTargetEntry();
-                                var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
-                                if(dpInfo){
-                                    if(JSB.isInstanceOf(entry, 'DataCube.Model.SqlTable')){
-                                        if(entry.isMissing()){
-                                            continue;
-                                        }
-                                    }
-                                    return true;
-                                }
-                            }
-						}
-					}
-					return false;
-				},
-				tolerance: 'pointer',
-				greedy: true,
-                activeClass : 'acceptDraggable',
-                hoverClass: 'hoverDraggable',
-				drop: function(evt, ui){
-					var posPt = $this.diagram.pageToSheetCoords({x: ui.offset.left, y: ui.offset.top});
-					var d = ui.draggable;
-					if(d && d.length > 0 && d.get(0).draggingItems){
-						for(var i = 0; i < d.get(0).draggingItems.length; i++){
-							var entry = d.get(0).draggingItems[i].obj.getTargetEntry();
-
-							$this.addDataProvider(entry, posPt);
-						}
-					}
-				}
-			});
-
             this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
                 if(slice.cube === $this.cubeEntry){
                     $this.addSlice(slice);
                 }
             });
-	    },
-
-	    addDataProvider: function(entry, position){
-			this.cubeEntry.server().addDataProvider(entry, {position: position }, function(result){
-				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider: result.provider, fields: result.fields, editor: $this});
-				pNode.setPosition(position.x, position.y);
-			});
 	    },
 
 		addSlice: function(slice){
@@ -168,15 +117,6 @@
 		},
 
 	    constructCube: function(desc){
-	        // create providers' nodes
-	        for(var i = 0; i < desc.providers.length; i++){
-	            var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider: desc.providers[i].provider, editor: $this}),
-	                diagramOpts = desc.providers[i].provider.getOption('diagramOpts');
-
-	            pNode.setPosition(diagramOpts.position.x, diagramOpts.position.y);
-	            pNode.getElement().width(diagramOpts.size);
-	        }
-
 	        // create slices' nodes
 	        for(var i = 0; i < desc.slices.length; i++){
 	            var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: desc.slices[i].slice, editor: $this});

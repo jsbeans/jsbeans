@@ -4,21 +4,19 @@
 	
 	cube: null,
 	query: {},
-	queryParams: {},
-	
-	getQuery: function(){
-		return this.query;
+	structFields: {},
+
+	getStructFields: function(){
+	    return this.structFields;
 	},
 
-	getQueryParams: function(){
-	    return this.queryParams;
+	getQuery: function(){
+		return this.query;
 	},
 	
 	getCube: function(){
 		return this.cube;
 	},
-	
-	$client: {},
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController', 
@@ -38,6 +36,7 @@
 		
 		$constructor: function(id, workspace, cube, name){
 			$base(id, workspace);
+
 			if(cube && name){
 				this.cube = cube;
 				this.property('cube', this.cube.getId());
@@ -47,57 +46,63 @@
 				if(this.property('cube')){
 					this.cube = this.getWorkspace().entry(this.property('cube'));
 				}
+
 				if(this.property('query')){
 					this.query = this.property('query');
 				}
+
+				if(this.property('structFields')){
+					this.query = this.property('structFields');
+				}
 			}
+
 			this.cacheEnabled = Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled');
+
 			this.subscribe('DataCube.Query.QueryCache.updated', function(sender){
 				if($this.queryCache && sender == $this.queryCache){
 					$this.publish('DataCube.Model.Slice.updated');
 				}
 			});
 		},
-		
+
 		setName: function(name){
 			$base(name);
 			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
 			this.doSync();
 		},
-		
-		setQuery: function(q){
-			if(this.query && q && JSB.isEqual(this.query, q)){
-				return;
-			}
-			this.query = q;
-			this.property('query', this.query);
-			this.invalidate();
-			this.loadCacheFromCube();
-			this.doSync();
+
+		setSliceParams: function(params){
+		    var isNeedUpdate = false;
+
+		    if(!JSB.isEqual(this.getName(), params.name)){
+		        $base(params.name);
+		        this.publish('DataCube.Model.Slice.renameSlice', { name: params.name }, {session: true});
+
+		        isNeedUpdate = true;
+		    }
+
+		    if(!JSB.isEqual(this.query, params.query)){
+                this.query =  params.query;
+                this.property('query', this.query);
+
+    			this.invalidate();
+    			this.loadCacheFromCube();
+
+		        isNeedUpdate = true;
+		    }
+
+		    if(!JSB.isEqual(this.structFields, params.structFields)){
+                this.structFields = params.structFields;
+                this.property('structFields', this.structFields);
+
+		        isNeedUpdate = true;
+		    }
+
+		    if(isNeedUpdate){
+		        this.doSync();
+		    }
 		},
 
-		setQueryParams: function(q){
-			if(this.queryParams && q && JSB.isEqual(this.queryParams, q)){
-				return;
-			}
-		    this.queryParams = q;
-            this.property('queryParams', this.queryParams);
-            this.doSync();
-		},
-/*		
-		updateSettings: function(desc){
-			$this.getCube().load();
-			if(desc && this.query && desc.query && JSB.isEqual(this.query, desc.query) && desc.name == this.getName()){
-				return;
-			}
-			this.query = desc.query;
-			this.setName(desc.name);
-			this.property('query', this.query);
-			this.invalidate();
-			this.cube.store();
-			this.doSync();
-		},
-*/		
 		executeQuery: function(opts){
 			$this.getCube().load();
 			var params = {};
@@ -232,6 +237,5 @@
 			this.ensureQueryCache();
 			this.queryCache.update(true);
 		}
-		
 	}
 }

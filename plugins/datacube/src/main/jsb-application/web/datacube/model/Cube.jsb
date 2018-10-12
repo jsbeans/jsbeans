@@ -44,15 +44,11 @@
 		},
 		
 		loaded: false,
-		dataProviders: {},
-		dataProviderFields: {},
 
 		fields: {},
 		fieldMap: null,
 		slices: {},
 		slicePositions: {},
-
-		defaultFields: null,
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
@@ -97,38 +93,6 @@
 		
 						if(this.existsArtifact('.cube')){
 							var snapshot = this.loadArtifact('.cube');
-
-							this.defaultFields = snapshot.defaultFields;
-
-							// construct data providers
-							for(var i = 0; i < snapshot.providers.length; i++){
-								var pDesc = snapshot.providers[i];
-								var pEntry = null;
-								if(!this.getWorkspace().existsEntry(pDesc.entry)){
-									JSB.getLogger().warn('Unable to construct data provider "'+pDesc.jsb+'" due to missing source entry: ' + pDesc.entry);
-									continue;
-								} else {
-									pEntry = this.getWorkspace().entry(pDesc.entry);
-								}
-								var pJsb = JSB.get(pDesc.jsb);
-								if(!pJsb){
-									JSB.getLogger().error('Unable to construct data provider "'+pDesc.jsb+'" due to missing its bean');
-									continue;
-								}
-								var ProviderClass = pJsb.getClass();
-								var providerDesc = DataProviderRepository.queryDataProviderInfo(pEntry);
-								var provider = new ProviderClass(pDesc.id, pEntry, this, pDesc.options || {mode: pDesc.mode});
-								this.dataProviders[pDesc.id] = provider;
-								this.dataProviderFields[pDesc.id] = pDesc.fields;
-		
-								// actualize dataProviderFields
-								for(var fName in this.dataProviderFields[pDesc.id]){
-									if(this.dataProviderFields[pDesc.id][fName] && !JSB.isObject(this.dataProviderFields[pDesc.id][fName])){
-										this.dataProviderFields[pDesc.id] = provider.extractFields({comment: true, type: true, nativeType: true, idProps: true});
-										break;
-									}
-								}
-							}
 							
 							// construct fields
 							// todo: field is object
@@ -148,15 +112,15 @@
 							// construct slices
 							for(var i = 0; i < snapshot.slices.length; i++){
 								var sDesc = snapshot.slices[i];
+
 								if(this.getWorkspace().existsEntry(sDesc.id)){
 									var slice = this.getWorkspace().entry(sDesc.id);
+
 									if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
 										continue;
 									}
-									slice.setQuery(sDesc.query);
-									slice.setQueryParams(sDesc.queryParams);
+
 									this.slices[sDesc.id] = slice;
-									this.slicePositions[sDesc.id] = sDesc.position;
 								}
 							}
 							
@@ -176,20 +140,14 @@
 			
 			// construct response for drawing
 			var desc = {
-				defaultFields: this.defaultFields,
 				providers: [],
 				fields: this.fields,
 				slices: []
 			};
-			for(var pId in this.dataProviders){
-				desc.providers.push({
-					provider: this.dataProviders[pId]
-				});
-			}
+
 			for(var sId in this.slices){
 				desc.slices.push({
-					slice: this.slices[sId],
-					position: this.slicePositions[sId]
+					slice: this.slices[sId]
 				});
 			}
 
@@ -254,26 +212,9 @@
 			try {
 				// construct snapshot
 				var snapshot = {
-					providers: [],
 					fields: [],
-					slices: [],
-					defaultFields: this.defaultFields
+					slices: []
 				};
-	
-				// prepare providers
-				for(var pId in this.dataProviders){
-				    var provider = this.dataProviders[pId],
-				        providerFields = {};
-
-					var pDesc = {
-						id: pId,
-						jsb: provider.getJsb().$name,
-						entry: provider.entry.getId(),
-						fields: this.dataProviderFields[pId],
-						options: provider.getOptions()
-					};
-					snapshot.providers.push(pDesc);
-				}
 	
 				// prepare fields
 				for(var fName in this.fields){
@@ -292,10 +233,7 @@
 				for(var sId in this.slices){
 					var sDesc = {
 						id: sId,
-						name: this.slices[sId].getName(),
-						query: this.slices[sId].getQuery(),
-						queryParams: this.slices[sId].getQueryParams(),
-						position: this.slicePositions[sId]
+						name: this.slices[sId].getName()
 					}
 					snapshot.slices.push(sDesc);
 				}
@@ -303,7 +241,6 @@
 				this.storeArtifact('.cube', snapshot);
 				
 				this.fieldCount = Object.keys(this.fields).length;
-				this.sourceCount = Object.keys(this.dataProviders).length;
 				this.sliceCount = Object.keys(this.slices).length;
 				
 				this.property('sources', this.sourceCount);
@@ -315,26 +252,6 @@
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
-		},
-
-		// +
-		addDataProvider: function(providerEntry, diagramOpts){
-			this.load();
-			var providerDesc = DataProviderRepository.queryDataProviderInfo(providerEntry);
-			providerDesc.diagramOpts = diagramOpts;
-			var providerJsb = JSB.get(providerDesc.pType);
-			if(!providerJsb){
-				throw new Error('Unable to find provider bean: ' + providerDesc.pType);
-			}
-			var ProviderCls = providerJsb.getClass();
-			var pId = this.getId() + '|dp_' + JSB.generateUid();
-			var provider = new ProviderCls(pId, providerEntry, this, providerDesc);
-			this.dataProviders[pId] = provider;
-			this.sourceCount = Object.keys(this.dataProviders).length;
-			this.publish('DataCube.Model.Cube.changed', {action: 'providerAdded'}, {session: true});
-			this.store();
-			this.doSync();
-			return {provider: provider, fields: this.extractDataProviderFields(provider.getId())};
 		},
 
 		// +
@@ -372,20 +289,6 @@
 
             return res;
 		},
-
-		// +
-		updateDataProviderNodePosition: function(pId, pt, size){
-			this.load();
-			var provider = this.getProviderById(pId);
-
-			provider.setDiagramOpts({
-			    position: pt,
-			    size: size
-			});
-
-			this.store();
-		},
-
 /* ******************* */
 
 		syncFieldMap: function(){
@@ -422,121 +325,6 @@
 		getFields: function(){
 			this.load();
 		    return this.fields;
-		},
-		
-		getProviderById: function(pId){
-			this.load();
-			if(!this.dataProviders[pId]){
-				throw new Error('Unable to find data provider by id: ' + pId);
-			}
-			return this.dataProviders[pId];
-		},
-
-		getOrderedDataProviders: function(){
-			this.load();
-
-		    var ordered = [];
-		    var joins = [];
-		    for(var id in this.dataProviders) {
-                var provider = this.dataProviders[id];
-		        if ((provider.getMode()||'union') == 'union') {
-		            ordered.push(provider);
-		        } else {
-		            joins.push(provider);
-		        }
-		    }
-
-            function orderJoins(allOrAny){
-                var cubeFields = $this.getManagedFields();
-                var stop = false;
-                while(!stop) {
-                    stop = true;
-                    for (var p =0; p < joins.length; p++) {
-                        var provider = joins[p];
-                        var allBinded = true;
-                        var anyBinded = false;
-                        //  check all shared fields has binding with ordered
-                        cubeFields:
-                        for(var cubeField in cubeFields) {
-                            var binding = cubeFields[cubeField].binding;
-                            if (binding.length > 1) {
-                                for(var b in binding) {
-                                    if(binding[b].provider == provider) {
-                                        // here cubeField is shared field of provider
-                                        var hasBinding = (function(){
-                                            // find left provider with binding
-                                            for (var o in ordered) {
-                                                var leftProvider = ordered[o];
-                                                for(var b2 in binding) {
-                                                    if(binding[b2].provider == leftProvider) {
-                                                        return true;
-                                                    }
-                                                }
-                                            }
-                                            return false;
-                                        })();
-                                        if (hasBinding) {
-                                            anyBinded = true;
-                                            if (!allOrAny) {
-                                                break cubeFields;
-                                            }
-                                        } else {
-                                            allBinded = false;
-                                            if (allOrAny) {
-                                                break cubeFields;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (allOrAny ? allBinded : anyBinded) {
-                            joins.splice(p--, 1);
-                            ordered.push(provider);
-                            stop = false;
-                        }
-                    }
-                }
-            }
-
-            orderJoins(true); // first all shared fields binded
-            orderJoins(false); // then any shared field binded
-
-            if (joins.length > 0) {
-                throw new Error('Some provider`s fields has no JOIN ON binding');
-            }
-		    return ordered;
-		},
-
-		changeProviderOptions: function(providerId, opts){
-			this.load();
-			var provider = this.getProviderById(providerId);
-			var curOpts = provider.getOptions();
-			var bChanged = false;
-			for(var o in opts){
-				if(JSB.isNull(opts[o]) && !JSB.isNull(curOpts[o])){
-					delete curOpts[o];
-					bChanged = true;
-				} else {
-					if(curOpts[o] != opts[o]){
-						curOpts[o] = opts[o];
-						bChanged = true;
-					}
-				}
-			}
-			if(bChanged){
-				provider.setOptions(curOpts);
-				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
-				this.store();
-	            this.doSync();
-			}
-			return curOpts;
-		},
-		
-		getProviderOptions: function(providerId){
-			this.load();
-			var provider = this.getProviderById(providerId);
-			return provider.getOptions();
 		},
 
 		extractDataProviderFields: function(pId){
@@ -581,96 +369,6 @@
 			}
 
 			return name;
-		},
-
-		removeProvider: function(pId){
-			this.load();
-		    var fieldsForRemove = [];
-
-            for(var i in this.fields){
-                for(var j = 0; j < this.fields[i].binding.length; j++){
-                    var field = this.fields[i].binding[j];
-                    if(field.provider.getId() == pId){
-                        fieldsForRemove.push(i);
-                    }
-                }
-            }
-
-            this.removeFields(fieldsForRemove);
-            delete this.dataProviders[pId];
-            delete this.dataProviderFields[pId];
-            this.sourceCount--;
-            this.publish('DataCube.Model.Cube.changed', {action: 'providerRemoved'}, {session: true});
-            
-		    this.store();
-            this.doSync();
-
-            this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
-		},
-		
-		refreshDataProviderFields: function(pId){
-			this.load();
-			var provider = this.getProviderById(pId);
-			var dpNewFields = provider.extractFields({comment: true, type: true, nativeType: true, idProps: true});
-			var dpFields = this.dataProviderFields[provider.getId()];
-			var bNeedStore = false;
-			
-			this.dataProviderFields[provider.getId()] = dpNewFields;
-			if(this.removeUnexistedFields(provider)){
-				bNeedStore = true;
-			}
-			
-			var providerBindingMap = {};
-			for(var fName in this.fields){
-				var fDesc = this.fields[fName];
-				var bindingArr = fDesc.binding;
-				for(var i = 0; i < bindingArr.length; i++){
-					var bDesc = bindingArr[i];
-					if(bDesc.provider != provider){
-						continue;
-					}
-					if(bDesc.type != dpNewFields[bDesc.field].nativeType){
-						bDesc.type = dpNewFields[bDesc.field].nativeType;
-						bNeedStore = true;
-					}
-					if(!providerBindingMap[bDesc.field]){
-						providerBindingMap[bDesc.field] = [];
-					}
-					providerBindingMap[bDesc.field].push({
-						field: bDesc.field,
-						type: bDesc.type,
-						link: fDesc.link,
-						order: fDesc.order
-					});
-				}
-			}
-
-			if(bNeedStore){
-				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
-				this.store();
-				this.doSync();
-			}
-			
-			return {fields: this.createProviderFieldsList(provider), binding: providerBindingMap};
-		},
-		
-		renameDataProviderField: function(provider, oldName, newName, type){
-			this.load();
-			// iterate over all fields in cube
-			for(var fName in this.fields){
-				var fDesc = this.fields[fName];
-				var bindingArr = fDesc.binding;
-				for(var i = 0; i < bindingArr.length; i++){
-					var bDesc = bindingArr[i];
-					if(bDesc.provider != provider){
-						continue;
-					}
-					if(bDesc.field == oldName){
-						bDesc.field = newName;
-						bDesc.type = type;
-					}
-				}
-			}
 		},
 		
 		removeUnexistedFields: function(provider){
@@ -775,61 +473,6 @@
 			return this.fields[nameCandidate];
 		},
 
-		linkFields: function(fields){
-			this.load();
-            var nFields = [], nField, fType;
-
-		    for(var i = 0; i < fields.length; i++){
-		        var f = this.fields[fields[i].field];
-
-		        if(f.binding.length > 1){   // key field
-		            if(!nField){
-		                nField = f;
-		            } else {
-		                for(var j = 0; j < f.binding.length; j++){
-                            nFields.push({
-                                field: f.binding[j].field,
-                                type: f.binding[j].type,
-                                provider: f.binding[j].provider
-                            });
-		                }
-		                delete this.fields[fields[i].field];
-		            }
-		        } else {
-		        	if(!fType){
-		        		fType = f.type;
-		        	}
-                    nFields.push({
-                        field: f.binding[0].field,
-                        type: f.binding[0].type,
-                        provider: f.binding[0].provider
-                    });
-		            delete this.fields[fields[i].field];
-		        }
-		    }
-
-		    if(!nField){
-                var nField = this.fields[nFields[0].field] = {
-                    binding: [],
-                    field: nFields[0].field,
-                    link: true,
-                    type: fType
-                };
-		    }
-
-		    for(var i = 0; i < nFields.length; i++){
-		        nField.binding.push(nFields[i]);
-		    }
-
-		    this.fieldCount = Object.keys(this.fields).length;
-		    this.invalidate();
-		    this.publish('DataCube.Model.Cube.changed', {action: 'fieldChanged'}, {session: true});
-		    this.store();
-            this.doSync();
-
-            return nField;
-		},
-
 		renameField: function(oldName, newName){
 			this.load();
 			if(!this.fields[oldName]){
@@ -900,15 +543,8 @@
 
 			return nFields;
 		},
-
-		setDefaultFields: function(fields){
-			this.load();
-		    this.defaultFields = fields;
-            this.store();
-            this.doSync();
-		},
 		
-		addSlice: function(selectedFields, isMerge){
+		addSlice: function(){
 			this.load();
 			// generate slice name map
 			var snMap = {};
@@ -924,38 +560,6 @@
 			}
 			var sId = JSB.generateUid();
 			var slice = new Slice(sId, this.getWorkspace(), this, sName);
-
-			// add default fields or selected fields
-			if(selectedFields && Object.keys(selectedFields).length > 0){
-			    if(isMerge && this.defaultFields){
-                    var q = {};
-                    for(var i in this.defaultFields){
-                        q[i] = i;
-                    }
-                    for(var i in selectedFields){
-                        q[i] = i;
-                    }
-                    slice.setQuery({
-                        $select: q
-                    });
-			    } else {
-                    var q = {};
-                    for(var i in selectedFields){
-                        q[i] = i;
-                    }
-                    slice.setQuery({
-                        $select: q
-                    });
-			    }
-			} else if(this.defaultFields){
-                var q = {};
-                for(var i in this.defaultFields){
-                    q[i] = i;
-                }
-                slice.setQuery({
-                    $select: q
-                });
-			}
 
 			this.slices[sId] = slice;
 			this.sliceCount = Object.keys(this.slices).length;
@@ -1031,42 +635,14 @@
 			return fMap;
 		},
 		
-		renameSlice: function(sId, newName){
-			this.load();
-			var slice = this.getSliceById(sId);
-			if(slice.getName() == newName){
-				return slice;
-			}
-			for(var ssId in this.slices){
-				if(this.slices[ssId].getName() == newName){
-					return false;
-				}
-			}
-			slice.setName(newName);
-			this.publish('DataCube.Model.Cube.changed', {action: 'sliceChanged'}, {session: true});
-			return slice;
-		},
-		
 		updateSliceSettings: function(sId, desc){
 			this.load();
-			var slice = this.getSliceById(sId);
-			this.renameSlice(sId, desc.name);
-			if(desc.query){
-				slice.setQuery(desc.query);
-			}
-			if(desc.queryParams){
-			    slice.setQueryParams(desc.queryParams);
-			}
+
+			this.getSliceById(sId).setSliceParams(desc);
+
 			this.publish('DataCube.Model.Cube.changed', {action: 'sliceChanged'}, {session: true});
 			this.store();
 			this.doSync();
-		},
-		
-		updateSliceNodePosition: function(sId, pt){
-			this.load();
-			var slice = this.getSliceById(sId);
-			this.slicePositions[sId] = pt;
-			this.store();
 		},
 
 		parametrizeQuery: function(query){

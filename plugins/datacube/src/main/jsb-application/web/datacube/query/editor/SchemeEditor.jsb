@@ -13,6 +13,7 @@
 		options: {
 			schemeName: null,
 			expanded: false,
+			structField: {},
 			
 			onChange: function(){}
 		},
@@ -1429,14 +1430,9 @@
 				hoverElt.removeClass('wrap');
 			}
 
-
-/*
-			if((bSelect && hoverElt.hasClass('hover')) || (!bSelect && !hoverElt.hasClass('hover'))){
-				return;
-			}
-*/			
-			var allowEdit = false;
-			var allowRemove = false;
+			var allowEdit = false,
+			    allowRemove = false,
+			    allowSetStruct = false;
 			
 			if(bSelect){
 				var hoverDesc = $this.hoverValues[entryKey];
@@ -1448,11 +1444,13 @@
 					allowRemove = hoverDesc.allowRemove;
 				}
 			}
+
+			if(this.scopeName === '$select' && this.parent && !this.parent.parent){
+			    allowSetStruct = true;
+			}
 			
 			$this.publish('DataCube.Query.SchemeEditor.selected', {entryType: entryType, entryKey:entryKey, selected: bSelect});
 
-            // todo: check cube fields
-//debugger;
 			// show popup menu
 			if(bSelect && (allowEdit || allowRemove)){
 				$this.menuTool = ToolManager.activate({
@@ -1462,9 +1460,11 @@
 						editor: $this,
 						entryType: entryType,
 						entryKey: entryKey,
+						isStruct: $this.options.structFields[entryKey],
 						actions: {
 							allowEdit: allowEdit,
-							allowRemove: allowRemove
+							allowRemove: allowRemove,
+							allowSetStruct: allowSetStruct
 						}
 					},
 					scope: null,
@@ -1482,6 +1482,8 @@
 							$this.doEdit(entryType, entryKey);
 						} else if(cmd == 'delete'){
 							$this.doRemove(hoverElt, entryType, entryKey);
+						} else if(cmd == 'setStruct'){
+						    $this.setStructField(hoverElt, entryKey);
 						} else {
 							throw new Error('Unexpected menu command: ' + cmd);
 						}
@@ -1505,6 +1507,20 @@
 				$this.scopeName = scopeName;
 			}
 			$this.refresh();
+		},
+
+		setStructField: function(elt, entryKey){
+		    var isStruct = this.options.structFields[entryKey];
+
+		    elt.toggleClass('struct');
+
+		    if(isStruct){
+		        if(this.options.structFields[entryKey]){
+		            delete this.options.structFields[entryKey];
+		        }
+		    } else {
+		        this.options.structFields[entryKey] = true;
+		    }
 		},
 		
 		refresh: function(){
@@ -1555,6 +1571,10 @@
 				entryElt = $this.$('<div class="entry"></div>');
 				entryElt.attr('key', valName);
 				container.append(entryElt);
+
+				if(this.scopeName === '$select' && this.options.structField[valName]){
+				    entryElt.addClass('struct');
+                }
 			} 
 			
 			// add key
@@ -1734,8 +1754,6 @@
 			} else if(valScheme.expressionType == 'SingleObject'){
 				var handle = valueEditor.getHandle();
 				$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
-			} else if(valScheme.expressionType == 'DropContainer'){
-			    return;
 			} else {
 				$this.installHoverHandlers('value', valName, null, {acceptedSchemes: acceptedSchemes});
 			}
@@ -2083,12 +2101,24 @@
 
                             // dataprovider
                             if(JSB.isInstanceOf(entry, 'DataCube.Model.DatabaseTable')){
-                                newVal = {
-                                    $provider: entry.getWorkspace().getId() + '|' + entry.getId()
+                                if($this.scopeName === '$provider'){
+                                    newVal = entry.getWorkspace().getId() + '|' + entry.getId();
+                                } else {
+                                    newVal = {
+                                        $provider: entry.getWorkspace().getId() + '|' + entry.getId()
+                                    }
                                 }
                             }
 
-                            // todo: cube
+                            if(JSB.isInstanceOf(entry, 'DataCube.Model.Cube')){
+                                if($this.scopeName === '$cube'){
+                                    newVal = entry.getWorkspace().getId() + '|' + entry.getId();
+                                } else {
+                                    newVal = {
+                                        $cube: entry.getWorkspace().getId() + '|' + entry.getId()
+                                    }
+                                }
+                            }
 
                             createValue(newVal, entry);
 
@@ -2398,7 +2428,17 @@
 	    $require: ['JSB.Workspace.WorkspaceController'],
 
 	    getDPEntry: function(value){
-	        var desc = value.$provider.split('|');
+	        var desc;
+
+	        if(value.$provider){
+	            desc = value.$provider.split('|');
+	        } else if(value.$cube) {
+	            desc = value.$cube.split('|');
+	        } else if(JSB.isString(value)) {
+	            desc = value.split('|');
+	        } else {
+	            return;
+	        }
 
 	        return WorkspaceController.getWorkspace(desc[0]).entry(desc[1]);
 	    }

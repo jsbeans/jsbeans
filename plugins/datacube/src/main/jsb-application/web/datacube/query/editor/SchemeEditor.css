@@ -29,6 +29,10 @@
     display: block;
 }
 
+.schemeEditor > .container > .entry.struct > .selectField > .keyEditor > ._dwp_plain {
+    font-weight: 900;
+}
+
 /* substrate */
 .schemeEditor > .container > .entry > .substrate,
 .schemeEditor > .container > .entry > .value > .substrate {
@@ -710,6 +714,7 @@
 
 /* drop container */
 .schemeEditor > .container > .dropContainer {
+    margin-bottom: 2px;
 	height: 26px;
     min-width: 150px;
     background: rgba(24, 108, 138, 0.2);
