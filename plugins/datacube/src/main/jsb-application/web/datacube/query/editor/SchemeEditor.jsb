@@ -13,7 +13,7 @@
 		options: {
 			schemeName: null,
 			expanded: false,
-			structField: {},
+			structFields: {},
 			
 			onChange: function(){}
 		},
@@ -1572,7 +1572,7 @@
 				entryElt.attr('key', valName);
 				container.append(entryElt);
 
-				if(this.scopeName === '$select' && this.options.structField[valName]){
+				if(this.scopeName === '$select' && this.options.structFields[valName]){
 				    entryElt.addClass('struct');
                 }
 			} 
@@ -1715,6 +1715,7 @@
 				value: $this.value[valName],
 				expanded: false,
 			}));
+			valueEditor.setOption('structFields', this.options.structFields);
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
 			
@@ -1791,6 +1792,7 @@
 				value: curVal,
 				expanded: false
 			}));
+			valueEditor.setOption('structFields', this.options.structFields);
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
 
@@ -1855,9 +1857,6 @@
 		},
 		
 		construct: function(){
-/*			if($this.scheme.name == '$select'){
-				debugger;
-			}*/
 			$this.attr('etype', $this.scheme.expressionType);
 			$this.attr('sname', $this.scheme.name);
 

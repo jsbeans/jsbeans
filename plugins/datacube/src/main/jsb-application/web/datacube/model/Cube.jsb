@@ -333,8 +333,6 @@
 			this.load();
 			var provider = this.getProviderById(pId);
 
-		},
-
 			this.dataProviderFields[provider.getId()] = provider.extractFields({comment: true, type: true, nativeType: true, idProps: true});
 			this.store();
 			this.doSync();

@@ -52,7 +52,7 @@
 				}
 
 				if(this.property('structFields')){
-					this.query = this.property('structFields');
+					this.structFields = this.property('structFields');
 				}
 			}
 

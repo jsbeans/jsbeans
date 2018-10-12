@@ -31,7 +31,6 @@
                 caption: "Сохранить",
                 onClick: function(){
 // todo: check slice name
-debugger;
                 	$this.getElement().loader({message:'Сохранение...', onShow: function(){
                         $this.slice.cube.server().updateSliceSettings($this.slice.getId(), {
                             name: $this.titleEditor.getData().getValue(),
@@ -156,10 +155,11 @@ debugger;
 			}
 			this.slice.server().getCubeFields(function(fields){
 				$this.query = JSB.clone($this.slice.getQuery());
-				$this.structFields = $this.slice.getStructFields();
+				$this.structFields = JSB.clone($this.slice.getStructFields());
 
 				$this.queryEditor.setOption('cube', $this.slice.getCube());
-				$this.queryEditor.setOption('structField', $this.structFields);
+				$this.queryEditor.setOption('structFields', $this.structFields);
+
 				$this.queryEditor.setOption('cubeFields', fields);
 
 				$this.slice.server().getCubeSlices(function(slices){
