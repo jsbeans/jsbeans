@@ -37,6 +37,8 @@
 
 		    var store = this.providers[0].getStore();
 
+//		    translatedQuery.pipeline.push({$limit:10000});
+
 //		    var iterator = store.asMongodb().runCommand(translatedQuery);
             var iterator = store.asMongodb().iterateAggregate(translatedQuery.aggregate, translatedQuery.pipeline);
 
@@ -165,8 +167,7 @@
 		},
 
 		_buildJoin: function(aggregate, query){
-            if (/left\s*outer/i.test(query.$join.$joinType)) {
-                // left outer join
+            if (/left/i.test(query.$join.$joinType)) {
 
                 // build left stages
                 $this._buildQuery(aggregate, query.$join.$left);
@@ -186,6 +187,19 @@
                     as:       $this._getContextFieldName(rightQuery.$context),
                 };
                 aggregate.pipeline.push({ $lookup: joinedAggregate });
+
+                // filter if inner join
+                var isOuter = /outer/i.test(query.$join.$joinType);
+                if (!isOuter) {
+                    aggregate.pipeline.push({
+                        $match: (function(){
+                            var match = {};
+                            match[$this._getContextFieldName(rightQuery.$context)] = {$ne: null};
+                            return match;
+                        })()
+                    });
+                }
+
                 // push to aggregate.pipeline $unwind stage
                 aggregate.pipeline.push({
                     $unwind: {
@@ -643,7 +657,7 @@ debugger
                     if (opts.query.$join.$right.$context == context) {
                         return opts.asKey
                                 ? $this._getContextFieldName(context) + '.' + field
-                                : '$' + $this._getContextFieldName(context) + '.' + field;
+                                : {$ifNull:['$' + $this._getContextFieldName(context) + '.' + field, null]};
                     }
                 }
                 return declareVar();

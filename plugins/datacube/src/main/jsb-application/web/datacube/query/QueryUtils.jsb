@@ -1022,10 +1022,14 @@ throw 'TODO';
         isGlobal: function(query, rootQuery) {
             var outerContexts = {};
             // collect outer contexts
-            $this.walkQueries(rootQuery, {}, null,
-                function(query){
-                    outerContexts[query.$context] = query.$context;
-                }
+            $this.walkQueries(rootQuery, {},
+                function(q){
+                    if (query == q) {
+                        return false; // stop
+                    }
+                    outerContexts[q.$context] = q.$context;
+                },
+                null
             );
 
             var hasOuterField = false;
@@ -1036,8 +1040,8 @@ throw 'TODO';
                     }
                 }, null,
                 function(query){
-                    $this.walkQueryForeignFields(query, function (field, context, query){
-                        if (outerContexts[context||query.$context]) {
+                    $this.walkQueryForeignFields(query, function (field, context, q){
+                        if (outerContexts[context||q.$context]) {
                             hasOuterField = true;
                         }
                     });

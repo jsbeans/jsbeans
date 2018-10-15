@@ -13,17 +13,23 @@
         },
 
 		transform: function(dcQuery, cubeOrDataProvider){
-            // move top fields that used in other
-            $this.upperGeneralFields(dcQuery);
-            if (!dcQuery.$groupBy || dcQuery.$groupBy.length == 0) {
-                for(var alias in dcQuery.$select) {
-                    var e = dcQuery.$select[alias];
-                    if (QueryUtils.isAggregatedExpression(e)) {
-                        dcQuery.$groupBy = [{$const:1}];
-                        break;
+             // move top fields that used in other
+             $this.upperGeneralFields(dcQuery);
+
+             // embed global groups
+             QueryUtils.walkQueries(dcQuery, {}, null,
+                function(query){
+                    if (!query.$groupBy || query.$groupBy.length == 0) {
+                        for(var alias in query.$select) {
+                            var e = query.$select[alias];
+                            if (QueryUtils.isAggregatedExpression(e)) {
+                                query.$groupBy = [{$const:1}];
+                                break;
+                            }
+                        }
                     }
                 }
-            }
+            );
 		    return dcQuery;
 		},
 

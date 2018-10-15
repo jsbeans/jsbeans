@@ -9,6 +9,7 @@
         nested: {},
         chain: [],
         state: {},
+        globalSubQueries: {},
 
 		$constructor: function(executor, query, params, parent, caller){
 		    $base(executor, query, params, parent, caller);
@@ -32,13 +33,17 @@
         reset: function(){
             $base();
             $this.state = {};
+            $this.stepState = {};
             $this.buildQueryBody();
         },
 
         destroy: function(){
             if ($this.closed) return;
+            $this.globalSubQueries = null;
             $this.chain = null;
             $this.state = null;
+            $this.stepState = null;
+            $this.nested = null;
             $base();
         },
 
@@ -49,8 +54,7 @@
         buildQueryBody: function(){
 
             // вход запроса
-            $this.next = function nextInput(){
-                $this.state = {};
+            $this.next = function inputNext(){
                 return $this.object = $this.source.next();
             }
             $this.chain.push('input');
@@ -93,16 +97,17 @@ debugger;
             // ограничение по кол-ву
             $this.query.$limit
                     && $this._installLimit($this.query.$limit);
+
+            $this._installFinally();
         },
 
         _installFilter: function($filter){
             var inputNext = $this.next;
 
-            $this.next = function (){
+            $this.next = function filter(){
                 var object = inputNext.call($this);
                 while(object != null && !$this.Common.check.call($this, $filter)) {
                     object = inputNext.call($this);
-if (object['Год отчетного периода'] == '2016' && object['Номер в ЕМД'] == '03.01.0042' ) debugger;
                 }
                 return $this.object = object;
             };
@@ -110,17 +115,17 @@ if (object['Год отчетного периода'] == '2016' && object['Но
             $this.chain.push('filter');
         },
 
-        _installGroupBy: function($select){
+        _installGroupBy: function ($select){
             var inputNext = $this.next;
             var objects = [];
             var currentPos = -1;
-            $this.next = function(){
+            $this.next = function groupBy(){
                 if (currentPos == -1) {
-debugger;
                     $this.Aggregate.init.call($this);
-
+                    var count = 0;
                     var object = inputNext.call($this);
                     while(object != null) {
+                        count ++;
                         $this.Aggregate.map.call($this, object);
 
                         object = inputNext.call($this);
@@ -135,7 +140,7 @@ debugger;
             }
 
             var inputClose = $this.destroy;
-            $this.destroy = function(){
+            $this.destroy = function groupBy(){
                 inputClose.call($this);
                 objects = null;
             };
@@ -143,10 +148,10 @@ debugger;
             $this.chain.push('group');
         },
 
-        _installSelect: function($select){
+        _installSelect: function ($select){
             var inputNext = $this.next;
 
-            $this.next = function(){
+            $this.next = function select(){
                 var object = $this.object = inputNext.call($this);
 
                 if (object != null) {
@@ -160,10 +165,10 @@ debugger;
             }
         },
 
-        _installDistinct: function($distinct){
+        _installDistinct: function ($distinct){
             var inputNext = $this.next;
             var ids = {};
-            $this.next = function(){
+            $this.next = function distinct(){
                 do {
                     var object = inputNext.call($this);
                     var id = $this.Runtime.id.call($this);
@@ -174,7 +179,7 @@ debugger;
             };
 
             var inputClose = $this.destroy;
-            $this.destroy = function(){
+            $this.destroy = function distinct(){
                 inputClose.call($this);
                 ids = {};
             };
@@ -184,18 +189,55 @@ debugger;
 
         _installSort: function($sort){
             var inputNext = $this.next;
-            var objects = {};
+            var objects = null;
+            var currentPos = -1;
 
-            $this.next = function sorting(){
-                // TODO sort next
-                return inputNext.call($this);
+            $this.next = function sort(){
+                if (objects == null) {
+                    objects = [];
+                    var object = inputNext.call($this);
+                    object.$$sort = [];
+                    for(var i = 0; i < $sort.length; i++){
+                        object.$$sort[i] = $this.Common.get.call($this, $sort[i].$expr);
+                    }
+                    objects.push(object);
+                    while(object != null) {
+                        object = inputNext.call($this);
+                        if (object) {
+                            object.$$sort = [];
+                            for(var i = 0; i < $sort.length; i++){
+                                object.$$sort[i] = $this.Common.get.call($this, $sort[i].$expr);
+                            }
+                            objects.push(object);
+                        }
+                    }
+                    var self = this;
+                    objects.sort(function(a, b){
+                        for(var i = 0; i < a.$$sort.length; i++) {
+                          if (a.$$sort[i] == b.$$sort[i]) {
+                            continue;
+                          }
+                          if (a.$$sort[i] > b.$$sort[i]) {
+                            return $sort[i].$type;
+                          }
+                          if (a.$$sort[i] < b.$$sort[i]) {
+                            return -$sort[i].$type;
+                          }
+                        }
+                        return 0;
+                    });
+                }
+
+                var object = $this.object = objects[++currentPos];
+                if(object) delete object.$$sort;
+                return object;
             };
 
             var inputClose = $this.destroy;
-            $this.destroy = function sorting(){
-                // TODO sort close
+            $this.destroy = function sort(){
                 inputClose.call($this);
-                objects = {};
+                objects = null;
+                currentPos = -1;
             };
 
             $this.chain.push('sort');
@@ -206,7 +248,6 @@ debugger;
             var current = 0;
 
             $this.next = function offset(){
-debugger;
                 var object = inputNext.call($this);
                 while(object != null && current++ < $offset) {
                     object = inputNext.call($this);
@@ -231,6 +272,10 @@ debugger;
             };
 
             $this.chain.push('limit');
+        },
+
+        _installFinally: function(){
+            this.stepState = {};
         },
 
         _extractSubFilter: function($filter, inputOrOutput) {
