@@ -421,12 +421,8 @@
 	                                    formatter: {
                                             render: 'formatter',
                                             name: 'Формат',
-                                            linkTo: 'sourceBinding',
+                                            linkTo: 'rows',
                                             formatterOpts: {
-                                                basicSettings: {
-                                                    type: 'number',
-                                                    value: 'y'
-                                                },
                                                 variables: [
                                                     {
                                                         alias: 'Значение',
@@ -564,12 +560,8 @@
 	                                    format: {
                                             render: 'formatter',
                                             name: 'Формат',
-                                            linkTo: 'sourceBinding',
+                                            linkTo: 'rows',
                                             formatterOpts: {
-                                                basicSettings: {
-                                                    type: 'number',
-                                                    value: 'y'
-                                                },
                                                 variables: [
                                                     {
                                                         alias: 'Значение',
