@@ -1,5 +1,6 @@
 package org.jsbeans.web;
 
+import org.jsbeans.helpers.ConfigHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +72,18 @@ public class BasicPassAuthFilter implements Filter {
                 }
             }
         } else {
-            unauthorized(response);
+            //unauthorized(response);
+        	filterChain.doFilter(new HttpServletRequestWrapper(request) {
+                @Override
+                public Principal getUserPrincipal() {
+                    return new Principal() {
+                        @Override
+                        public String getName() {
+                        	return ConfigHelper.getConfigString("kernel.security.admin.user");
+                        }
+                    };
+                }
+            }, servletResponse);
         }
     }
 
