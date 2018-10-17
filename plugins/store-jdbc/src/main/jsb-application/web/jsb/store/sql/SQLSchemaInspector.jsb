@@ -98,18 +98,22 @@
                 var columns = databaseMetaData.getColumns(null, tableSchema, tableName, null);
                 while (columns.next()) {
                     var columnName = ''+columns.getString("COLUMN_NAME");
-
-                    tableDesc.columns[columnName] = JSB.merge({
-                        entryType: 'column',
-                        name: columnName,
-                        datatype: columns.getInt("DATA_TYPE"),
-                        datatypeName: '' + JDBCType.valueOf(columns.getInt("DATA_TYPE")).toString(),
-                        size: ''+columns.getString("COLUMN_SIZE"),
-                        decimalDigits: ''+columns.getString("DECIMAL_DIGITS"),
-                        comment: '' + columns.getString("REMARKS"),
-                        nullable: columns.getString("IS_NULLABLE").equalsIgnoreCase('YES'),
-                        autoIncrment: columns.getString("IS_AUTOINCREMENT").equalsIgnoreCase('YES'),
-                    }, tableDesc.columns[columnName]);
+                    
+                    try {
+	                    tableDesc.columns[columnName] = JSB.merge({
+	                        entryType: 'column',
+	                        name: columnName,
+	                        datatype: columns.getInt("DATA_TYPE"),
+	                        datatypeName: '' + JDBCType.valueOf(columns.getInt("DATA_TYPE")).toString(),
+	                        size: ''+columns.getString("COLUMN_SIZE"),
+	                        decimalDigits: ''+columns.getString("DECIMAL_DIGITS"),
+	                        comment: '' + columns.getString("REMARKS"),
+	                        nullable: columns.getString("IS_NULLABLE").equalsIgnoreCase('YES'),
+	                        autoIncrment: columns.getString("IS_AUTOINCREMENT").equalsIgnoreCase('YES'),
+	                    }, tableDesc.columns[columnName]);
+                    } catch(e){
+                    	JSB.getLogger().warn('Column "'+columnName+'" skipped due to following error: ' + e.message);
+                    }
                 }
 
                 // list primary keys

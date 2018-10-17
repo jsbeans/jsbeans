@@ -369,6 +369,23 @@
 				'timestamp': 'timestamp',
 				'array': 'array',
 				'object': 'nvarchar'
+			},
+			'Microsoft SQL Server': {
+				'integer': 'bigint',
+				'int': 'bigint',
+				'boolean': 'bit',
+				'nvarchar': 'nvarchar(max)',
+				'varchar': 'varchar(max)',
+				'string': 'nvarchar(max)',
+				'float': 'float',
+				'double': 'float',
+				'number': 'float',
+				'date': 'timestamp',
+				'time': 'timestamp',
+				'datetime': 'timestamp',
+				'timestamp': 'timestamp',
+				'array': 'table',
+				'object': 'table'
 			}
 		},
 		
@@ -416,9 +433,11 @@
             case 'binary':
             case 'longvarbinary':
             case 'longvarchar':
+            case 'longnvarchar':
             case 'char':
             case 'varchar':
             case 'nvarchar':
+            case 'nchar':
             case 'text':
             case 'string':
 				jsonType = 'string';

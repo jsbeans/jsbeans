@@ -183,6 +183,8 @@
 	    },
 
 	    openEditTool: function(target){
+	        var isThousandSeparate = target.attr('isThousandSeparate');
+
 	        this.editTool = ToolManager.activate({
                 id: 'formatterEditTool',
                 cmd: 'show',
@@ -193,7 +195,7 @@
 
                     // numbers format only
                     decimals: target.attr('decimals'),
-                    isThousandSeparate: target.attr('isThousandSeparate'),
+                    isThousandSeparate: JSB.isDefined(isThousandSeparate) ? (isThousandSeparate == 'true') : true,
                     // date format only
                     dateFormat: target.attr('dateFormat'),
 
@@ -240,7 +242,8 @@
                 value = '';
 
             for(var i = 0; i < elements.length; i++){
-                var el = this.$(elements[i]);
+                var el = this.$(elements[i]),
+                    isThousandSeparate = el.attr('isThousandSeparate');
 
                 var desc = {
                     key: el.attr('key'),
@@ -249,7 +252,7 @@
 
                     // numbers format only
                     decimals: el.attr('decimals'),
-                    isThousandSeparate: el.attr('isThousandSeparate'),
+                    isThousandSeparate: JSB.isDefined(isThousandSeparate) ? (isThousandSeparate == 'true') : true,
                     // date format only
                     dateFormat: el.attr('dateFormat'),
 
@@ -265,7 +268,7 @@
                         case 'float':
                             value += ':';
 
-                            if(!JSB.isDefined(desc.isThousandSeparate) || desc.isThousandSeparate){
+                            if(desc.isThousandSeparate){
                                 desc.isThousandSeparate = true;
                                 value += ',';
 
