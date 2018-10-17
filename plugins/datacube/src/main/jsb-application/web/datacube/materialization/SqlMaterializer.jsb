@@ -20,7 +20,6 @@
 		
 		
 		createTable: function(cName, fields, opts){
-			var sqlFields = {};
 			var fieldMap = {};
 			var store = this.source.getStore();
 			var connWrap = store.getConnection(true);
@@ -55,32 +54,60 @@
 					break;
 				}
 				
-				// create table with suggestedName
-				var sql = 'create table "' + schema + '"."' +suggestedName + '" ()';
-				JDBC.executeUpdate(connection, sql);
-				
-				var fNameArr = Object.keys(fields);
-				for(var i = 0; i < fNameArr.length; i++){
-					var fType = fields[fNameArr[i]].type;
-					var fComment = fields[fNameArr[i]].comment;
-					sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + JDBC.translateType(fType, vendor);
+				if(vendor == 'Microsoft SQL Server'){
+					var sql = 'create table "' + schema + '"."' +suggestedName + '" (';
+					var fNameArr = Object.keys(fields);
+					for(var i = 0; i < fNameArr.length; i++){
+						var fName = fNameArr[i];
+						var fType = fields[fName].type;
+						var jdbcType = JDBC.translateType(fType, vendor);
+						if(i > 0){
+							sql += ', ';
+						}
+						sql += '"' + fName + '" ' + jdbcType;
+					}
+					sql += ')';
 					JDBC.executeUpdate(connection, sql);
 					
-					// extract current field
 					var columns = databaseMetaData.getColumns(null, schema, suggestedName, null);
 					while(columns.next()) {
 						var columnName = ''+columns.getString("COLUMN_NAME");
-						if(sqlFields[columnName]){
-							continue;
+						if(fields[columnName]){
+							fieldMap[columnName] = columnName;
+						} else {
+							throw new Error('Invalid column name: ' + columnName);
 						}
-						sqlFields[columnName] = true;
-						fieldMap[fNameArr[i]] = columnName;
+					}
+				} else {
+					var sqlFields = {};
+
+					// create table with suggestedName
+					var sql = 'create table "' + schema + '"."' +suggestedName + '" ()';
+					JDBC.executeUpdate(connection, sql);
+					
+					var fNameArr = Object.keys(fields);
+					for(var i = 0; i < fNameArr.length; i++){
+						var fType = fields[fNameArr[i]].type;
+						var fComment = fields[fNameArr[i]].comment;
+						sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + JDBC.translateType(fType, vendor);
+						JDBC.executeUpdate(connection, sql);
 						
-						if(fComment && fComment.length > 0){
-							sql = 'comment on column "' + schema + '"."' + suggestedName + '"."' + columnName + '" is \'' + fComment + '\'';
-							JDBC.executeUpdate(connection, sql);
+						// extract current field
+						var columns = databaseMetaData.getColumns(null, schema, suggestedName, null);
+						while(columns.next()) {
+							var columnName = ''+columns.getString("COLUMN_NAME");
+							if(sqlFields[columnName]){
+								continue;
+							}
+							sqlFields[columnName] = true;
+							fieldMap[fNameArr[i]] = columnName;
+							
+							if(fComment && fComment.length > 0){
+								sql = 'comment on column "' + schema + '"."' + suggestedName + '"."' + columnName + '" is \'' + fComment + '\'';
+								JDBC.executeUpdate(connection, sql);
+							}
+							break;
 						}
-						break;
 					}
 				}
 				
