@@ -53,8 +53,8 @@
                 var oldNext = it.next;
                 it.next = function(){
                     try {
-                        return oldNext.apply(this, arguments);
-                    }catch(e){
+                        return oldNext.call(rootCursor);
+                    } catch(e){
                         $this.tracer && $this.tracer.failed('execute query next failed', e);
                         this.close();
                         throw e;

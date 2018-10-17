@@ -115,15 +115,24 @@
                         }
                     },
                     function enterCallback(subQuery){
-                        if (!this.inFrom && QueryUtils.isGlobal(subQuery, $this.query)) {
-                            cursor.globalSubQueries[subQuery.$context] = subQuery;
-                        }
                     },
                     function leaveCallback(subQuery){
+                        if (!this.inFrom) {
+                            if (!QueryUtils.extractParentForeignFields(subQuery, $this.query)) {
+                                cursor.globalSubQueries[subQuery.$context] = subQuery;
+                            }
+//                            else {
+//                                // if expression subquery has foreign fields
+//                                subQuery = $this._replaceForeignFieldsWithVars(subQuery);
+//                            }
+                        }
                         if (subQuery.$context != query.$context) {
-                            cursor.addNested(
+                            cursor.setCreateNested(
                                 subQuery.$context,
-                                $this.buildAnyCursor(subQuery, params, cursor, cursor)
+                                function (subQuery, localParams){
+                                    var localParams = localParams ? JSB.merge({}, params, localParams) : params;
+                                    return $this.buildAnyCursor(subQuery, localParams, cursor, cursor);
+                                }
                             );
                         }
                     }
@@ -178,19 +187,17 @@
             joinCursor.setRight(
                 $this.buildAnyCursor(joinQuery.$join.$right, params, parent, joinCursor)
             );
-            joinCursor.setCreateRight(function (filter, params){
+            joinCursor.setCreateRight(function (localFilter, localParams){
                 /// построение правого запроса - добавление доп.условий
-                if(params) {
-                    params = JSB.merge({}, $this.params, params);
-                }
+                var localParams = localParams ? JSB.merge({}, params, localParams) : params;
                 var query = JSB.clone(joinQuery.$join.$right);
-                if(filter) {
+                if(localFilter) {
                     if(query.$filter) {
-                        filter.$and.push(query.$filter);
+                        localFilter.$and.push(query.$filter);
                     }
-                    query.$filter = filter;
+                    query.$filter = localFilter;
                 }
-                return $this.buildAnyCursor(query, params, parent, joinCursor);
+                return $this.buildAnyCursor(query, localParams, parent, joinCursor);
             });
 
             $this._buildViewFields(joinCursor);
@@ -240,5 +247,43 @@
             }
 
         },
+
+//        _replaceForeignFieldsWithVars: function(query) {
+//debugger;
+//            var outerContexts = {};
+//            // collect outer contexts
+//            QueryUtils.walkQueries($this.query, {},
+//                function(q){
+//                    if (query.$context == q.$context) {
+//                        for (var i = this.path.length - 1; i >= 0; i--) {
+//                            if (this.path[i].$context != q.$context) {
+//                                outerContexts[this.path[i].$context] = this.path[i];
+//                            }
+//                        }
+//                        return false; // stop
+//                    }
+//                },
+//                null
+//            );
+//
+//            var outerFields = {};
+//            var clonedQuery = JSB.clone(query);
+//            // lookup fields from outer context
+//            QueryUtils.walkQueries(clonedQuery, {
+//                    findView: function(name){
+//                        return $this.query.$views[name];
+//                    }
+//                }, null,
+//                function(query){
+//                    QueryUtils.walkQueryForeignFields(query, function (field, context, q){
+//                        if (outerContexts[context||q.$context]) {
+//                            return '${'+context+'/'+field+'}';
+//                        }
+//                    });
+//                }
+//            );
+//            return clonedQuery;
+//
+//        },
     }
 }

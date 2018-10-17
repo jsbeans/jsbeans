@@ -45,7 +45,7 @@
 		asIterator: function(){
             return {
                 next: function() {
-                    return $this.next();
+                    return $this.next.call(this);
                 },
                 close: function(){
                     $this.destroy();

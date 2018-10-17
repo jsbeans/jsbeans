@@ -112,7 +112,10 @@
                     return {last:null};
                 },
                 aggregate: function(state, exp, path){
-                    state.last = this.Common.get.call(this, exp);
+                    var value = this.Common.get.call(this, exp);
+                    if (value != null) {
+                        state.last = value;
+                    }
                 },
                 get: function(state){
                     return state.last;
@@ -140,6 +143,80 @@
                 },
                 get: function(state){
                     return state.count;
+                },
+            },
+
+            $avg: {
+                init: function() {
+                    return {sum:0, count:0};
+                },
+                aggregate: function(state, exp, path){
+                    var value = this.Common.get.call(this, exp);
+                    state.sum += value || 0;
+                    if (value != null) state.count++;
+                },
+                get: function(state){
+                    return state.sum;
+                },
+            },
+
+            $max: {
+                init: function() {
+                    return {max:null};
+                },
+                aggregate: function(state, exp, path){
+                    var value = this.Common.get.call(this, exp) || 0;
+                    if (value != null && (state.max == null || state.max < value)) state.max = value;
+                },
+                get: function(state){
+                    return state.max || 0;
+                },
+            },
+
+            $min: {
+                init: function() {
+                    return {min:null};
+                },
+                aggregate: function(state, exp, path){
+                    var value = this.Common.get.call(this, exp) || 0;
+                    if (value != null && (state.min == null || state.min > value)) state.min = value;
+                },
+                get: function(state){
+                    return state.min || 0;
+                },
+            },
+
+            $array: {
+                init: function() {
+                    return {array:[]};
+                },
+                aggregate: function(state, exp, path){
+                    var value = this.Common.get.call(this, exp);
+                    if (value != null) {
+                        state.array.push(value);
+                    }
+                },
+                get: function(state){
+                    return state.array;
+                },
+            },
+
+            $flatArray: {
+                init: function() {
+                    return {array:[]};
+                },
+                aggregate: function(state, exp, path){
+                    var value = this.Common.get.call(this, exp);
+                    if (value != null) {
+                        if (JSB.isArray(value)) {
+                            state.array = state.array.concat(value);
+                        } else {
+                            state.array.push(value);
+                        }
+                    }
+                },
+                get: function(state){
+                    return state.array;
                 },
             },
         },
@@ -248,6 +325,19 @@
             },
 
             subQueryValue: function(subQuery) {
+                function createCursor(){
+                    var createCursorCallback = this.nestedFactories[subQuery.$context];
+                    var localParams = {};
+                    var self = this;
+                    var clonedQuery = JSB.clone(subQuery);
+                    this.QueryUtils.walkParentForeignFields(clonedQuery, this.findRootCursor().query, function(field, context, q){
+//                        var varName = 'param_' + JSB.generateUid().substring(0,5) + Object.keys(localParams).length;
+//                        localParams[varName] = self.Common.get.call(self, {$field: field, $context:context});
+                        return {$const: self.Common.get.call(self, {$field: field, $context:context})};
+                    });
+                    return this.nested[subQuery.$context] = createCursorCallback.call(this, clonedQuery, localParams);
+                }
+
                 function getValue(object){
                     return object ? object[Object.keys(subQuery.$select)[0]] : null;
                 }
@@ -257,6 +347,7 @@
                     if (state.subQueriesValues.hasOwnProperty(subQuery.$context)) {
                         return state.subQueriesValues[subQuery.$context];
                     } else {
+                        var subQueryCursor = createCursor.call(this);
                         subQueryCursor.reset();
                         var object = subQueryCursor.next();
                         var nextObject = subQueryCursor.next()
@@ -276,14 +367,12 @@
                     }
                 }
 
-                var subQueryCursor = this.nested[subQuery.$context];
-                var stepState = subQueryCursor.state;
 
                 if (this.globalSubQueries[subQuery.$context]){
-                    return getOrCachedValue(this.state);
+                    return getOrCachedValue.call(this, this.state);
                 }
 
-                return getOrCachedValue(this.stepState);
+                return getOrCachedValue.call(this, this.stepState);
             },
 
 

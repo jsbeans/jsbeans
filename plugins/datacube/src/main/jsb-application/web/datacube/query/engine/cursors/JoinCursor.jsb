@@ -5,6 +5,7 @@
 	$server: {
 		$require: [
 		    'DataCube.Query.QueryUtils',
+            'JSB.Crypt.MD5',
         ],
 
 		$constructor: function(executor, query, params, parent, caller){
@@ -96,17 +97,17 @@
         next: function(){
 debugger;
             function createRight(){
-                var idx = 0;
                 var params = {};
+                var guid = JSB.generateUid().substring(0, 5);
                 var filter = $this._patchFilter(JSB.clone($this.filter), function(field) {
                     if ($this.rightContext == field.$context) {
                         return field.$field;
                     } else if ($this.left.context == field.$context) {
-                        var name = "joinParam_" + idx++;
+                        var name = "joinParam_" + guid + idx++;
                         params[name] = $this.Common.get.call($this.left, field.$field);
                         return '${' + name + '}';
                     } else {
-                        var name = "joinParam_" + idx++;
+                        var name = "joinParam_" + guid + idx++;
                         params[name] = $this.Common.get.call($this.left, field);
                         return '${' + name + '}';
                     }

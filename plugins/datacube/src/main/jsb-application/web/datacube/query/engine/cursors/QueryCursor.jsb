@@ -4,11 +4,14 @@
 
 	$server: {
 		$require: [
+		    'DataCube.Query.QueryUtils',
         ],
 
         nested: {},
+        nestedFactories: {},
         chain: [],
         state: {},
+        stepState: {},
         globalSubQueries: {},
 
 		$constructor: function(executor, query, params, parent, caller){
@@ -16,8 +19,9 @@
 
         },
 
-        addNested: function(name, cursor){
-            $this.nested[name] = cursor;
+        setCreateNested: function(name, createNestedCursor){
+            $this.nested[name] = null;
+            $this.nestedFactories[name] = createNestedCursor;
         },
 
         getNested: function(){
@@ -31,6 +35,10 @@
 		},
 
         reset: function(){
+            var nested = $this.getNested();
+            for(var name in nested) {
+                nested[name] && nested[name].reset();
+            }
             $base();
             $this.state = {};
             $this.stepState = {};
@@ -44,11 +52,20 @@
             $this.state = null;
             $this.stepState = null;
             $this.nested = null;
+            $this.nestedFactories = null;
             $base();
         },
 
         next: function(){
              /// look $this.buildQueryBody
+        },
+
+        findRootCursor: function(){
+            var parent = $this;
+            while(parent.parent && parent.parent != parent) {
+                parent = parent.parent;
+            }
+            return parent;
         },
 
         buildQueryBody: function(){
@@ -59,7 +76,7 @@
             }
             $this.chain.push('input');
 
-debugger;
+//debugger;
 
             // фильтрация  - только в отношении входных полей (условия с выходными игнорируются)
             $this.query.$filter
@@ -275,7 +292,13 @@ debugger;
         },
 
         _installFinally: function(){
-            this.stepState = {};
+            var inputNext = $this.next;
+            $this.next = function _finally(){
+                var object = inputNext.call(this);
+                this.stepState = {};
+                return object;
+            };
+
         },
 
         _extractSubFilter: function($filter, inputOrOutput) {

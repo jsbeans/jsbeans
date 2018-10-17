@@ -443,18 +443,25 @@
             function collect(exp) {
                 if (JSB.isObject(exp) && exp.$field) {
                     if (exp.$context && query.$context != exp.$context) {
-                        callback(exp.$field, exp.$context, query);
+                        var res = callback.call(exp, exp.$field, exp.$context, query);
+                        if (res) return res;
                     }
                 } else if (JSB.isObject(exp)) {
                     if (exp == query || !exp.$select) {
                         // if start query or any expression
                         for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            collect(exp[f]);
+                            var res = collect(exp[f]);
+                            if (res) {
+                                exp[f] = res;
+                            }
                         }
                     }
                 } else if (JSB.isArray(exp)) {
                     for (var i = 0 ; i < exp.length; i++) {
-                        collect(exp[i]);
+                        var res = collect(exp[i]);
+                        if (res) {
+                            exp[i] = res;
+                        }
                     }
                 }
             }
@@ -1019,20 +1026,23 @@ throw 'TODO';
              return (like.startsWith('%') ? '' : '^') + pattern + (like.endsWith('%') ? '' : '$');
         },
 
-        isGlobal: function(query, rootQuery) {
+        walkParentForeignFields: function(query, rootQuery, callback) {
             var outerContexts = {};
             // collect outer contexts
             $this.walkQueries(rootQuery, {},
                 function(q){
-                    if (query == q) {
+                    if (query.$context == q.$context) {
+                        for (var i = this.path.length - 1; i >= 0; i--) {
+                            if (this.path[i].$context != q.$context) {
+                                outerContexts[this.path[i].$context] = this.path[i];
+                            }
+                        }
                         return false; // stop
                     }
-                    outerContexts[q.$context] = q.$context;
                 },
                 null
             );
 
-            var hasOuterField = false;
             // lookup fields from outer context
             $this.walkQueries(query, {
                     findView: function(name){
@@ -1042,17 +1052,22 @@ throw 'TODO';
                 function(query){
                     $this.walkQueryForeignFields(query, function (field, context, q){
                         if (outerContexts[context||q.$context]) {
-                            hasOuterField = true;
+                            //outerFields[context+'/'+field] = {$field: field, $context: context};
+                            return callback(field, context, q);
                         }
                     });
-                    if (hasOuterField) {
-                        return false;
-                    }
                 }
             );
+        },
 
-            return !hasOuterField;
-        }
+        extractParentForeignFields: function(query, rootQuery) {
+            var outerFields = {};
+            $this.walkParentForeignFields(query, rootQuery, function(field, context, q){
+                outerFields[context+'/'+field] = {$field: field, $context: context};
+            });
+            var fields = Object.keys(outerFields);
+            return fields.length > 0 ? fields : null;
+        },
 
 
 	}
