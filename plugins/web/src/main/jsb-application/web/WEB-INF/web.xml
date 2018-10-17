@@ -41,7 +41,7 @@
         <async-supported>true</async-supported>
     </filter>
     <filter-mapping>
-        <filter-name>BaseAuthFilter</filter-name>
+        <filter-name>BasicPassAuthFilter</filter-name>
         <servlet-name>JsbServlet</servlet-name>
         <servlet-name>HttpJsbServlet</servlet-name>
         <servlet-name>ApiServlet</servlet-name>
