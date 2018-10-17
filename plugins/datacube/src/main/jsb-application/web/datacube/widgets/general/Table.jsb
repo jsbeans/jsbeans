@@ -421,7 +421,7 @@
 	                                    formatter: {
                                             render: 'formatter',
                                             name: 'Формат',
-                                            linkTo: 'rows',
+                                            //linkTo: 'rows',
                                             formatterOpts: {
                                                 variables: [
                                                     {
@@ -560,7 +560,7 @@
 	                                    format: {
                                             render: 'formatter',
                                             name: 'Формат',
-                                            linkTo: 'rows',
+                                            //linkTo: 'rows',
                                             formatterOpts: {
                                                 variables: [
                                                     {
