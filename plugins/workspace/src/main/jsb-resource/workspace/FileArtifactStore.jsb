@@ -28,6 +28,7 @@
 		write: function(entry, name, a, opts){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
+			var eFileNameTmp = eFileName + '.tmp';
 			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId();
 			JSB.getLocker().lock(mtxName);
 			try {
@@ -46,18 +47,22 @@
 				}
 				
 				if(artifactType == 'string'){
-					FileSystem.write(eFileName, a, opts);	
+					FileSystem.write(eFileNameTmp, a, opts);
+					FileSystem.move(eFileNameTmp, eFileName);
 				} else if(artifactType == 'value'){
-					FileSystem.write(eFileName, JSON.stringify(a, null, 4));
+					FileSystem.write(eFileNameTmp, JSON.stringify(a, null, 4));
+					FileSystem.move(eFileNameTmp, eFileName);
 				} else if(artifactType == 'binary'){
 					if(JSB.isInstanceOf(a, 'JSB.IO.Stream')){
-						var oStream = FileSystem.open(eFileName, {binary: true, write: true, read: false});
+						var oStream = FileSystem.open(eFileNameTmp, {binary: true, write: true, read: false});
 						a.copy(oStream, {
 							onProgress: opts && opts.onProgress
 						});
 						oStream.close();
+						FileSystem.move(eFileNameTmp, eFileName);
 					} else {
-						FileSystem.write(eFileName, a, {binary: true});
+						FileSystem.write(eFileNameTmp, a, {binary: true});
+						FileSystem.move(eFileNameTmp, eFileName);
 					}
 				} else {
 					throw new Error('Unexpected artifact type: ' + artifactType);

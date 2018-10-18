@@ -998,7 +998,11 @@
 					return;
 				}
 				$this._isReady = false;
-				$this.server().loadNodes(targetEntry, function(nTree){
+				$this.server().loadNodes(targetEntry, function(nTree, fail){
+					if(fail){
+						JSB.getLogger().error(fail);
+						return;
+					}
 					var chArr = Object.keys(nTree);
 					chArr.sort(function(a, b){
 						var an = nTree[a].name || '';
