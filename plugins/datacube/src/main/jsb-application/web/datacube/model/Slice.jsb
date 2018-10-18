@@ -75,7 +75,8 @@
 		    var isNeedUpdate = false;
 
 		    if(!JSB.isEqual(this.getName(), params.name)){
-		        $base(params.name);
+		        $super.setName(params.name);
+
 		        this.publish('DataCube.Model.Slice.renameSlice', { name: params.name }, {session: true});
 
 		        isNeedUpdate = true;

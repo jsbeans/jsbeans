@@ -80,6 +80,7 @@
 					if($this.ignoreHandlers){
 						return;
 					}
+
 					$this.data.callback.call($this, {scheme: item.scheme, value: item.value, context: item.context});
 					$this.close();
 				}
@@ -121,13 +122,12 @@
 			});
 		},
 		
-		
 		update: function(){
 			$this.categoriesElt.empty();
-			
+
 			var items = $this.data.data.items;
 			var selected = $this.data.data.selectedObj;
-			
+
 			if(JSB.isArray(items)){
 				// hide categories
 				$this.categoriesElt.addClass('hidden');
@@ -202,69 +202,41 @@
 		},
 		
 		fillItems: function(items){
-			var selected = $this.data.data.selectedObj;
+			var selected = $this.data.data.selectedObj,
+			    editor = $this.data.data.editor,
+			    chosenListItem = null;
+
 			$this.itemsListBox.clear();
 			$this.itemsListBox.setFilter(null);
 			$this.searchEditor.setData('');
-			var chosenListItem = null;
+
 			for(var i = 0; i < items.length; i++){
 				var item = items[i];
 				if(item == '#fieldName' || item == '$fieldName'){
-					
-					var editor = $this.data.data.editor;
-					function getSourceFields(callback){
-						return editor.hasAscendantScheme('$cubeFilter') ? editor.getCubeFields(callback) : editor.getSourceFields(callback);
-					}
-					getSourceFields(function(fields){
-						$this.ignoreHandlers = true;
-						var fArr = Object.keys(fields);
-						fArr.sort(function(a, b){
-							return a.localeCompare(b);
-						});
-						for(var j = 0; j < fArr.length; j++){
-							var fName = fArr[j];
-							var fType = fields[fName].type || '';
-							var fTitle = '', comment = '';
-	
-							if(JSB.isString(fields[fName].comment)){
-							    fTitle = fields[fName].comment;
-							    comment = fields[fName].comment;
-							} else if(JSB.isObject(fields[fName].comment)){
-							    fTitle = '';
-							    comment = '';
-	
-							    for(var k in fields[fName].comment){
-							        fTitle += k + ': ' + fields[fName].comment[k] + '\n';
-							        comment += fields[fName].comment[k] + '';
-							    }
-							}
-							fTitle = fTitle.length > 0 ? (fName + '\n' + fTitle) : fName;
-	
+				    editor.getSourceSelectFields(function(fields){
+				        for(var i in fields){
 							var listItem = $this.itemsListBox.addItem({
-							    comment: comment,
-								key: fName,
-								value: fName,
+								key: i,
+								value: i,
 								scheme: item,
 								desc: null,
 								element: `#dot
-									<div class="field" title="{{=fTitle}}">
+									<div class="field" title="{{=i}}">
 										<div class="icon"></div>
-										<div class="name">{{=fName}}</div>
-										<div class="type">{{=fType.toLowerCase()}}</div>
+										<div class="name">{{=i}}</div>
+										<div class="type">{{=fields[i].type.toLowerCase()}}</div>
 									</div>
 								`
 							});
-							if(selected && selected.scheme == item && selected.value == fName){
-//								chosenListItem = listItem;
+							if(selected && selected.scheme == item && selected.value == i){
 								$this.itemsListBox.selectItem(listItem.key);
 								$this.itemsListBox.scrollTo(listItem.key);
 							}
-						}
-						$this.ignoreHandlers = false;
-					});
+				        }
+				    });
 				} else if(item == '#outputFieldName' || item == '$fieldExpr' || item == '$sortField') {
-					var editor = $this.data.data.editor;
 					var colMap = editor.combineColumns();
+
 					for(var qName in colMap){
 						var colArr = colMap[qName];
 						for(var j = 0; j < colArr.length; j++){
@@ -286,12 +258,10 @@
 							if(selected && selected.scheme == item && selected.value == fName){
 								chosenListItem = listItem;
 							}
-
 						}
 					}
 
 				} else if(item == '$viewName') {
-					var editor = $this.data.data.editor;
 					editor.getCubeSlices(function(slices){
 						$this.ignoreHandlers = true;
 						var sArr = Object.keys(slices);
@@ -362,7 +332,6 @@
 					if(selected && selected.scheme == item.item){
 						chosenListItem = listItem;
 					}
-
 				}
 			}
 			
@@ -376,11 +345,8 @@
 			JSB.defer(function(){
 				$this.searchEditor.setFocus();	
 			}, 300);
-			
 
 			$this.ignoreHandlers = false;
-		},
-		
-		
+		}
 	}
 }

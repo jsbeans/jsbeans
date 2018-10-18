@@ -29,7 +29,7 @@
 
 			$this.btnSetStruct = new Button({
 				cssClass: 'roundButton btn10 btnSetStruct',
-				tooltip: 'Пометить как структурное',
+				tooltip: 'Пометить как измерение',
 				onClick: function(evt){
 					$this.close();
 					$this.data.callback.call($this, 'setStruct');

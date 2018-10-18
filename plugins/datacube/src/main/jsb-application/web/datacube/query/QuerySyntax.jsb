@@ -4,7 +4,7 @@
 	$sync: {
 		updateCheckInterval: 0
 	},
-	
+
 	schemeExpressions: {},
 	
 	getSchema: function (){
@@ -157,18 +157,19 @@
 		        desc: 'Подзапрос',
 		        values: {
 		            '$views': '$views',
-		            '$context': '$contextName',
-		            '$filter': '$filter',
-		            '$groupBy': '$groupBy',
 		            '$select': '$select',
+		            '$groupBy': '$groupBy',
+		            '$filter': '$filter',
 		            '$distinct': '$distinctAll',
 		            '$postFilter': '$postFilter',
 		            '$cubeFilter': '$cubeFilter',
 		            '$sort': '$sort',
-		            '$limit': '$limit',
-		            '$offset': '$offset',
 		            '$finalize': '$finalize',
+		            '$limit': '$limit',
 		            '$sql': '$sqlQuery',
+
+		            '$context': '$contextName',
+		            '$offset': '$offset',
 
 		            '$from':'$from',
 		            '$join':'$join',
@@ -192,6 +193,7 @@
 		        displayName: 'Именованные запросы',
 		        onlyInRootQuery: true,
 		        customKey: '#viewName',
+		        order: 0,
 		        values: {
 		            '#viewName': '$query'
 		        },
@@ -229,7 +231,31 @@
 
 		    new this.Group({
 		    	name: '$fromSelect',
-		        values: ['$provider', '$cube', '$query']
+		        values: ['$fromProvider', '$fromCube', '$query', '$join', '$union']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$fromProvider',
+		        category: 'Источник запроса',
+		        displayName: 'Таблица',
+		        desc: 'Задает в качестве источника таблицу базы данных',
+		        values: {
+		            '$context': '$contextName',
+		            '$provider': '$provider',
+		            '$select': '$sourceSelect'
+		        }
+		    });
+
+		    new this.ComplexObject({
+		        name: '$fromCube',
+		        category: 'Источник запроса',
+		        displayName: 'Куб',
+		        desc: 'Задает в качестве источника куб',
+		        values: {
+		            '$context': '$contextName',
+		            '$cube': '$cube',
+		            '$select': '$sourceSelect'
+		        }
 		    });
 
 		    new this.DropContainer({
@@ -240,12 +266,28 @@
 		        values: []
 		    });
 
+		    new this.ComplexObject({
+		        name: '$sourceSelect',
+		        desc: 'Столбцы источника для добавления в срез',
+		        displayName: 'Столбцы источника',
+		        customKey: '#outputFieldName',
+		        values: {
+		            '#outputFieldName': '$sourceValueDefinition'
+		        },
+		        optional: ['#outputFieldName']
+		    });
+
 		    new this.DropContainer({
 		        name: '$cube',
 		        category: 'Источник запроса',
 		        allowValues: ['DataCube.Model.Cube'],
 		        desc: 'Идентификатор куба',
 		        values: []
+		    });
+
+		    new this.Group({
+		    	name: '$sourceValueDefinition',
+		        values: ['$fieldName']
 		    });
 
 		    new this.Group({

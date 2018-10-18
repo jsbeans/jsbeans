@@ -55,7 +55,32 @@
 			});
 
 		},
-		
+
+		extractFields: function(opts){
+			var columns = this.getDescriptor().columns,
+			    fields = {};
+
+            for(var i in columns){
+                fields[i] = {
+                    type: columns[i].datatypeName
+                }
+            }
+
+			return fields;
+		},
+
+		getDescriptor: function(){
+			return this.descriptor;
+		},
+
+		getTableFullName:function(){
+		    var tableDescriptor = this.getDescriptor();
+
+		    return tableDescriptor.schema
+		            ? '"' + tableDescriptor.schema + '"."' + tableDescriptor.name + '"'
+		            : '"' + tableDescriptor.name + '"';
+        },
+
 		updateDescriptor: function(desc){
 			this.descriptor = desc;
 			this.property('descriptor', this.descriptor);
@@ -63,13 +88,6 @@
 			this.setName(this.descriptor.schema + '.' + this.descriptor.name);
 			this.doSync();
 			$this.publish('DataCube.Model.SqlTable.updated');
-		},
-		
-		
-		
-		getDescriptor: function(){
-			return this.descriptor;
 		}
-		
 	}
 }

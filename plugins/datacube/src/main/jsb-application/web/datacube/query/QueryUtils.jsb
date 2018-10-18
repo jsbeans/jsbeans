@@ -5,6 +5,7 @@
 	$server: {
 	    $require: [
 	        'DataCube.Query.QuerySyntax',
+	        'JSB.Workspace.WorkspaceController',
 		    'JSB.Crypt.MD5',
 
 		    'java:java.util.HashMap'

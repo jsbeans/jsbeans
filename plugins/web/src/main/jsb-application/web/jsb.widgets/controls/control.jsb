@@ -38,7 +38,6 @@
 		options: {
 			onContextMenu: null
 		},
-
 		
 		/* methods */
 		setOption: function(opt, b){
@@ -265,6 +264,5 @@
 			this.replacingMark.remove();
 			this.replacingMark = null;
 		}
-
 	}
 }

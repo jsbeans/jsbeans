@@ -739,3 +739,8 @@
 .schemeEditor > .container > .dropContainer > .renderer {
     vertical-align: middle;
 }
+
+/* hide context */
+.schemeEditor > .container > .entry[key="$context"] {
+    display: none;
+}

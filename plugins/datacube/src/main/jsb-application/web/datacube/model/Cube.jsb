@@ -6,7 +6,6 @@
 	fieldCount: 0,
 	sliceCount: 0,
 	
-	
 	getSourceCount: function(){
 		return this.sourceCount;
 	},
@@ -18,16 +17,12 @@
 	getSliceCount: function(){
 		return this.sliceCount;
 	},
-	
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'DataCube.Providers.DataProviderRepository',
 		           'DataCube.Model.Slice',
 		           'DataCube.Query.QueryEngine',
-		           'DataCube.Query.QueryCache',
-		           'DataCube.MaterializationEngine',
-		           'JSB.Crypt.MD5'],
+		           'DataCube.Query.QueryCache'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode(null, this, {
@@ -48,7 +43,6 @@
 		fields: {},
 		fieldMap: null,
 		slices: {},
-		slicePositions: {},
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
@@ -78,8 +72,9 @@
 		},
 		
 		load: function(bRespond){
-			var mtxName = 'load_' + this.getId();
 			if(!this.loaded){
+			    var mtxName = 'load_' + this.getId();
+
 				JSB.getLocker().lock(mtxName);
 				try {
 					if(!this.loaded) {
@@ -93,21 +88,6 @@
 		
 						if(this.existsArtifact('.cube')){
 							var snapshot = this.loadArtifact('.cube');
-							
-							// construct fields
-							// todo: field is object
-							for(var i = 0; i < snapshot.fields.length; i++){
-								var fDesc = snapshot.fields[i];
-								this.fields[fDesc.field] = {
-									field: fDesc.field,
-									type: fDesc.type,
-									link: fDesc.link,
-									order: fDesc.order,
-									comment: fDesc.comment,
-									binding: []
-								};
-							}
-							this.syncFieldMap();
 
 							// construct slices
 							for(var i = 0; i < snapshot.slices.length; i++){
@@ -121,9 +101,10 @@
 									}
 
 									this.slices[sDesc.id] = slice;
+
+									this.fields = JSB.merge(this.fields, slice.getStructFields());
 								}
 							}
-							
 						}
 						this.loaded = true;
 						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
@@ -140,7 +121,6 @@
 			
 			// construct response for drawing
 			var desc = {
-				providers: [],
 				fields: this.fields,
 				slices: []
 			};
@@ -212,22 +192,8 @@
 			try {
 				// construct snapshot
 				var snapshot = {
-					fields: [],
 					slices: []
 				};
-	
-				// prepare fields
-				for(var fName in this.fields){
-					var fDesc = {
-						field: fName,
-						type: this.fields[fName].type,
-						link: this.fields[fName].link,
-						order: this.fields[fName].order,
-						comment: this.fields[fName].comment
-					};
-
-					snapshot.fields.push(fDesc);
-				}
 				
 				// prepare slices
 				for(var sId in this.slices){
@@ -246,7 +212,6 @@
 				this.property('sources', this.sourceCount);
 				this.property('fields', this.fieldCount);
 				this.property('slices', this.sliceCount);
-				this.syncFieldMap();
 				
 				this.getWorkspace().store();
 			} finally {
@@ -254,92 +219,10 @@
 			}
 		},
 
-		// +
-		createProviderFieldsList: function(provider){
-            var fields = this.dataProviderFields[provider.getId()],
-                res = {
-                    fields: []
-                };
+		extractFields: function(){
+		    // todo
+		}.
 
-            var isUseComments = provider.getOption('useComments'),
-                commentField = provider.getOption('commentField');
-
-            for(var i in fields){
-                res.fields.push({
-                    isInCube: !!this.fields[i],
-                    key: i,
-                    name: isUseComments ? (commentField ? fields[i].comment[commentField] : fields[i].comment) : fields[i].name,
-                    nativeType: fields[i].nativeType,
-                    type: fields[i].type
-                });
-            }
-
-            if(fields[i].comment){
-                if(JSB.isObject(fields[i].comment)){
-                    res.commentsType = 'json';
-                    res.commentsList = Object.keys(fields[i].comment);
-                } else {
-                    res.commentsType = 'string';
-                }
-            }
-
-            res.fields.sort(function(a, b){
-                return a.name > b.name ? 1 : -1;
-            });
-
-            return res;
-		},
-/* ******************* */
-
-		syncFieldMap: function(){
-			var bChanged = false;
-			if(!this.fieldMap){
-				this.fieldMap = {};
-				bChanged = true;
-			}
-			// remove unexisted
-			var toRemove = [];
-			for(var f in this.fieldMap){
-				if(!this.fields[f]){
-					toRemove.push(f);
-				}
-			}
-			for(var i = 0; i < toRemove.length; i++){
-				delete this.fieldMap[toRemove[i]];
-				bChanged = true;
-			}
-			
-			// add new
-			for(var f in this.fields){
-				if(!this.fieldMap[f]){
-					this.fieldMap[f] = this.fields[f].type;
-					bChanged = true;
-				}
-			}
-			
-			if(bChanged){
-				this.property('fieldMap', this.fieldMap);
-			}
-		},
-
-		getFields: function(){
-			this.load();
-		    return this.fields;
-		},
-
-		extractDataProviderFields: function(pId){
-//todo: loadOpts
-
-			this.load();
-			var provider = this.getProviderById(pId);
-
-			this.dataProviderFields[provider.getId()] = provider.extractFields({comment: true, type: true, nativeType: true, idProps: true});
-			this.store();
-			this.doSync();
-
-			return this.createProviderFieldsList(provider);
-		},
-		
 		prepareFieldName: function(name){
 			name = name.trim();
 			if(name.length == 0){
@@ -365,179 +248,6 @@
 			}
 
 			return name;
-		},
-		
-		removeUnexistedFields: function(provider){
-			this.load();
-			var bNeedStore = false;
-			var dpFields = this.dataProviderFields[provider.getId()];
-			var fieldsToRemove = [];
-			for(var fName in this.fields){
-				var fDesc = this.fields[fName];
-				var bindingArr = fDesc.binding;
-				for(var i = bindingArr.length - 1; i >= 0 ; i--){
-					var bDesc = bindingArr[i];
-					if(bDesc.provider != provider){
-						continue;
-					}
-
-					if(!dpFields[bDesc.field]){
-						bindingArr.splice(i, 1);
-					} else {
-					    if(fDesc.type != dpFields[bDesc.field].type){
-					        fDesc.type = dpFields[bDesc.field].type;
-					    }
-					}
-				}
-
-				if(bindingArr.length == 0){
-					fieldsToRemove.push(fName);
-					bNeedStore = true;
-				}
-				if(bindingArr.length == 1){
-				    fDesc.link = false;
-				}
-				if(bindingArr.length >= 2){
-				    var first = bindingArr[0].type;
-				    for(var i = 1; i < bindingArr.length; i++){
-				        if(first !== bindingArr[i].type){
-				            this.removeFields(fName);
-				        }
-				    }
-				}
-			}
-			for(var i = 0; i < fieldsToRemove.length; i++){
-				if(this.fields[fieldsToRemove[i]]){
-					delete this.fields[fieldsToRemove[i]];
-				}
-			}
-			this.publish('DataCube.Model.Cube.changed', {action: 'fieldRemoved'}, {session: true});
-			return bNeedStore;
-		},
-		
-		addField: function(pId, pField){
-			this.load();
-			var provider = this.getProviderById(pId);
-			var pfName = pField;
-			var fMap = provider.extractFields({comment: true, type: true, nativeType: true, idProps: true});
-			var pType = fMap[pField].nativeType;
-			var cType = fMap[pField].type;
-
-			if(provider.getOption('useComments')){
-			    var alias = provider.getOption('commentField');
-
-			    if(alias){
-			        if(JSB.isString(fMap[pField].comment[alias]) && fMap[pField].comment[alias].length > 0){
-			            pfName = fMap[pField].comment[alias];
-			        }
-			    } else {
-                    if(JSB.isString(fMap[pField].comment) && fMap[pField].comment.length > 0){
-                        pfName = fMap[pField].comment;
-                    }
-			    }
-			}
-			var nameCandidate = this.prepareFieldName(pfName);
-			if(this.fields[nameCandidate]){
-				// lookup appropriate name
-				for(var cnt = 2; ; cnt++){
-					nameCandidate = this.prepareFieldName(pfName) + cnt;
-					if(!this.fields[nameCandidate]){
-						break;
-					}
-				}
-			}
-			var order = Object.keys(this.fields).length;
-			this.fields[nameCandidate] = {
-			    comment: fMap[pField].comment,
-				field: nameCandidate,
-				type: cType,
-				binding: [],
-				link: false,
-				order: order
-			};
-			this.fields[nameCandidate].binding.push({
-				provider: provider,
-				field: pField,
-				type: pType
-			});
-			this.fieldMap[nameCandidate] = true;
-			this.fieldCount = Object.keys(this.fields).length;
-			this.invalidate();
-			this.publish('DataCube.Model.Cube.changed', {action: 'fieldAdded'}, {session: true});
-			this.store();
-			this.doSync();
-			return this.fields[nameCandidate];
-		},
-
-		renameField: function(oldName, newName){
-			this.load();
-			if(!this.fields[oldName]){
-				throw new Error('Field not existed: ' + oldName);
-			}
-			if(oldName == newName){
-				return this.fields[oldName];	
-			}
-			var n = newName.trim();
-			if(n.length == 0){
-				return false;
-			}
-			if(/$\d/.test(n)){
-				return false;
-			}
-			if(this.fields[n]){
-				return false;
-			}
-			
-			// update fields
-			this.fields[n] = this.fields[oldName];
-			delete this.fields[oldName];
-			this.fields[n].field = n;
-
-			this.invalidate();
-			this.publish('DataCube.Model.Cube.changed', {action: 'fieldChanged'}, {session: true});
-			this.store();
-			this.doSync();
-			return this.fields[n];
-		},
-
-		removeFields: function(fields){
-			this.load();
-		    if(!JSB.isArray(fields)){
-		        fields = [fields];
-		    }
-
-		    var nFields = {
-		        add: [],
-		        uncheck: []
-		    };
-
-		    for(var i = 0; i < fields.length; i++){
-                if(!this.fields[fields[i]]){
-                    continue;
-                }
-
-                var oldField = JSB.clone(this.fields[fields[i]]);
-                delete this.fields[fields[i]];
-
-                if(oldField.binding.length > 1){ // key field
-                    for(var i = 0; i < oldField.binding.length; i++){
-                        var f = this.addField(oldField.binding[i].provider.getId(), oldField.binding[i].field);
-
-                        nFields.add.push(f);
-                    }
-                } else {
-                    nFields.uncheck.push(oldField);
-                }
-		    }
-
-			this.fieldCount = Object.keys(this.fields).length;
-
-			this.invalidate();
-			this.publish('DataCube.Model.Cube.changed', {action: 'fieldRemoved'}, {session: true});
-			this.store();
-			this.doSync();
-
-			return nFields;
 		},
 		
 		addSlice: function(){
