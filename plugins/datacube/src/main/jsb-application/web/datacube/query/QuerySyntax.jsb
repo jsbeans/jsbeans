@@ -199,7 +199,7 @@
 		            '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$timeHour', '$timeMinute', '$timeSecond',
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
 		            '$distinct',
-		            '$any', '$last','$first', '$sum', '$count','$min', '$max', '$avg',
+		            '$any', '$last','$first', '$sum', '$count','$min', '$max', '$avg', '$corr',
 		            '$array', '$flatArray', '$expandArray', '$concatArray',
 		            '$gsum', '$gcount', '$gmin', '$gmax', '$gavg',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
@@ -587,6 +587,20 @@
 		         category: 'Функции',
 		         desc: 'Удалить пробельные символы в начале и в конце строки',
 		         values: ['$field', '$const', '$expression', '$query', '$param'],
+		    });
+
+		    new this.SingleObject({
+		        name: '$corr',
+		        category: 'Функции агрегации',
+		        desc: 'Высчитать корреляцию значений значений двух столбцов',
+		        aggregate: true,
+		        values: ['$corrValues'],
+		    });
+		    new this.EArray({
+		        name: '$corrValues',
+		        minOperands: 2,
+		        maxOperands: 2,
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 
 		    new this.SingleObject({
@@ -1276,6 +1290,7 @@
 		macros: {},
 		
 		schemaAggregateOperators: {
+		    $corr: {},
 		    $any: {},
 		    $first: {},
 		    $last: {},
