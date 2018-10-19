@@ -1298,11 +1298,11 @@
                                     value: value
                                 });
 
-                                if(!regions[i].maxValue || regions[i].maxValue < value){
+                                if(!JSB.isDefined(regions[i].maxValue) || regions[i].maxValue < value){
                                     regions[i].maxValue = value;
                                 }
 
-                                if(!regions[i].minValue || regions[i].minValue > value){
+                                if(!JSB.isDefined(regions[i].minValue) || regions[i].minValue > value){
                                     regions[i].minValue = value;
                                 }
 
