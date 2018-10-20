@@ -1069,6 +1069,15 @@ throw 'TODO';
             return fields.length > 0 ? fields : null;
         },
 
+        jsonReplaceBody: function(target, source) {
+            for(var alias in target) {
+                delete target[alias];
+            }
+            for(var alias in source) {
+                target[alias] = source[alias];
+            }
+        },
+
 
 	}
 }

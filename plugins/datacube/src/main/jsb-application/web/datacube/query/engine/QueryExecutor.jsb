@@ -35,7 +35,9 @@
 
 		execute: function(){
 		    try {
-		        $this.tracer && $this.tracer.profile('execute query started');
+                var tStarted = Date.now();
+
+//		        $this.tracer && $this.tracer.profile('execute query started');
 
                 $this._prepareQuery();
 
@@ -45,12 +47,15 @@
 		        $this.contextQueries = QueryUtils.indexContextQueries($this.query);
                 $this.tracer && $this.tracer.profile('query prepared', $this.preparedQuery);
 
+                var tPrepared = Date.now();
+
                 $this.builder = new CursorBuilder($this, $this.query);
                 var rootCursor = $this.builder.buildAnyCursor($this.query, $this.params, null);
-                $this.tracer && $this.tracer.profile('root cursor created');
-//                rootCursor.analyze();
+                $this.tracer && $this.tracer.profile('root cursor created', rootCursor.analyze());
                 var it =  rootCursor.asIterator();
                 var oldNext = it.next;
+                var tReady = Date.now();
+                var tExecuted;
                 it.next = function(){
                     try {
                         return oldNext.call(rootCursor);
@@ -58,6 +63,16 @@
                         $this.tracer && $this.tracer.failed('execute query next failed', e);
                         this.close();
                         throw e;
+                    } finally {
+                        if (!tExecuted) {
+                            tExecuted = Date.now();
+                            $this.tracer && $this.tracer.profile('query stat', {
+                                prepare: (tPrepared - tStarted)/1000,
+                                cursor: (tReady - tPrepared)/1000,
+                                lookup: (tExecuted - tReady)/1000,
+                                total: (tExecuted - tStarted)/1000,
+                            });
+                        }
                     }
                 };
                 return it;

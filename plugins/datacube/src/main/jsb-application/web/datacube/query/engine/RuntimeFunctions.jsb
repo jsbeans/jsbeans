@@ -13,6 +13,7 @@
 
                 (function walk(e, path) {
                     if (this.JSB.isObject(e)) {
+                        if (e.$select && e != query) return;
                         for (var op in e) if (e[op] != null && op !== '$$aggregates') {
                             if(this.Aggregate[op]) {
                                 e.$$aggregatePath = path; /// store aggregator key path to query for finalize

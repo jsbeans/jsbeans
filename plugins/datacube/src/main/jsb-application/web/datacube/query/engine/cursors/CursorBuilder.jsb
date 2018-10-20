@@ -27,6 +27,7 @@
         },
 
         buildAnyCursor:function(query, params, parent, caller) {
+//debugger;
             // is empty
             if (query == null || JSB.isEqual(query, {})) {
                 return $this.buildEmptyCursor(parent, caller);
@@ -48,6 +49,7 @@
                 if (cursor) {
                     return cursor;
                 }
+
                 if (query.$provider || $this._translatorSkipQueries) {
                     QueryUtils.throwError(0, 'Compatible translator does not exist for query "{}"', query.$context);
                 }
@@ -69,6 +71,7 @@
         },
 
         tryBuildTranslatedCursor: function(query, params, parent, caller) {
+            // try translate query as-is
             var it = $this.executor.tryTranslateQuery(query, params);
             if (it) {
                 try {
