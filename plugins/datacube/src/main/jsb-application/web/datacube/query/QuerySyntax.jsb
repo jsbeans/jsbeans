@@ -292,7 +292,7 @@
 
 		    new this.Group({
 		    	name: '$valueDefinition',
-		        values: ['$const', '$expression', '$query', '$field', '$param', '$sql'],
+		        values: ['$const', '$expression', '$query', '$fieldExpr', '$param', '$sql'],
 		    });
 
 		    new this.Group({
@@ -1131,7 +1131,7 @@
 		        desc: 'Если первое равно второму',
 		        minOperands: 2,
 		        maxOperands: 2,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$const', '$expression', '$query', '$fieldExpr', '$param'],
 		    });
 		    new this.EArray({
 		        desc: 'Если первое не равно второму',

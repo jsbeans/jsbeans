@@ -23,8 +23,10 @@
 		hoverEntries: {},
 		hoverValues: {},
 		sourceFields: null,
+		sourceEditor: null,
 
 		fromContext: ['$from', '$join', '$union', '$provider'],
+		sourceEditorsList: ['$joinFilter'],
 
 		$constructor: function(opts){
 			$base(opts);
@@ -39,6 +41,12 @@
 			$this.value = opts.value;
 
 			$this.handle = $this.getElement();
+
+            if(this.sourceEditorsList.indexOf(this.schemeName) > -1){
+                this.sourceEditor = this;
+            } else {
+                this.sourceEditor = opts.sourceEditor;
+            }
 
 			// 'from' query
 			this.fromLabel = this.$('<span class="fromLabel">Источник запроса</span>');
@@ -399,18 +407,93 @@
 		},
 
 		getSourceSelectFields: function(callback){
-		    if(this.entryFields){
-		        callback.call(this, this.entryFields);
-		    } else {
-		        this.server().getEntryFields(this.scope.$provider || this.scope.$cube, function(res, fail){
-		            if(fail){
-		                return;
-		            }
+		    function loadSourceFields(source, sourceFields){
+                $this.server().getEntryFields(source, function(res, fail){
+                    if(fail){
+                        return;
+                    }
 
-		            $this.entryFields = res;
-		            callback.call($this, res);
-		        });
+                    sourceFields[source].fields = res;
+                    $this.sourceFields = sourceFields;
+                    callback.call($this, sourceFields);
+                });
 		    }
+
+            switch(this.schemeName){
+                case '$joinFilter':
+                    var sources = [this.scope.$left.$provider || this.scope.$left.$cube,
+                                   this.scope.$right.$provider || this.scope.$right.$cube],
+                        sourceFields = {};
+
+                    sourceFields[sources[0]] = {
+                        context: this.scope.$left.$context,
+                        fields: this.scope.$left.$select,
+                        sourceName: 'Левый источник'
+                    }
+
+                    sourceFields[sources[1]] = {
+                        context: this.scope.$right.$context,
+                        fields: this.scope.$right.$select,
+                        sourceName: 'Правый источник'
+                    }
+
+                    callback.call(this, sourceFields);
+                    break;
+                case '$sourceSelect':
+                    if(this.sourceFields){
+                        callback.call(this, this.sourceFields);
+                        break;
+                    }
+
+                    var source = this.scope.$provider || this.scope.$cube,
+                        sourceFields = {};
+
+                    sourceFields[source] = {
+                        context: this.scope.$context,
+                        sourceName: '<Имя источника>'
+                    }
+
+                    loadSourceFields(source, sourceFields);
+                    break;
+                case '$select':
+                    var sourceFields = {};
+
+                    if(this.scope.$join){
+                        sourceFields['left'] = {
+                            context: this.scope.$join.$left.$context,
+                            fields: this.scope.$join.$left.$select,
+                            sourceName: '$left'
+                        }
+
+                        sourceFields['right'] = {
+                            context: this.scope.$join.$right.$context,
+                            fields: this.scope.$join.$right.$select,
+                            sourceName: '$right'
+                        }
+
+                        this.sourceFields = sourceFields;
+                        callback.call(this, sourceFields);
+                    }
+
+                    if(this.scope.$provider || this.scope.$cube){
+                        if(this.sourceFields){
+                            callback.call(this, this.sourceFields);
+                        } else {
+                            sourceFields[this.scope.$provider || this.scope.$cube] = {
+                                context: this.scope.$context
+                            }
+
+                            loadSourceFields(this.scope.$provider || this.scope.$cube, sourceFields);
+                        }
+                    }
+                    break;
+                default:
+                    if(this.sourceEditor){
+                        this.sourceEditor.getSourceSelectFields(callback);
+                    } else {
+                        debugger;
+                    }
+            }
 		},
 
 		getSourceFields: function(callback){
@@ -1727,6 +1810,7 @@
 				scope: $this.value,
 				value: $this.value[valName],
 				expanded: false,
+				sourceEditor: this.sourceEditor
 			}));
 			valueEditor.setOption('structFields', this.options.structFields);
 			valueEditor.addClass('value');
@@ -1803,7 +1887,8 @@
 				scopeName: i,
 				scope: $this.value,
 				value: curVal,
-				expanded: false
+				expanded: false,
+				sourceEditor: this.sourceEditor
 			}));
 			valueEditor.setOption('structFields', this.options.structFields);
 			valueEditor.addClass('value');
@@ -1978,7 +2063,7 @@
 				if($this.value && !JSB.isArray($this.value)){
 					$this.value = $this.scope[$this.scopeName] = [$this.value];
 				}
-				
+
 				if(JSB.isDefined($this.value)){
 					var valSchemes = $this.resolve($this.scheme, $this.value);
 					for(var i = 0; i < $this.value.length; i++){

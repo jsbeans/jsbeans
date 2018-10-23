@@ -212,29 +212,51 @@
 
 			for(var i = 0; i < items.length; i++){
 				var item = items[i];
-				if(item == '#fieldName' || item == '$fieldName'){
-				    editor.getSourceSelectFields(function(fields){
-				        for(var i in fields){
-							var listItem = $this.itemsListBox.addItem({
-								key: i,
-								value: i,
-								scheme: item,
-								desc: null,
-								element: `#dot
-									<div class="field" title="{{=i}}">
-										<div class="icon"></div>
-										<div class="name">{{=i}}</div>
-										<div class="type">{{=fields[i].type.toLowerCase()}}</div>
-									</div>
-								`
-							});
-							if(selected && selected.scheme == item && selected.value == i){
-								$this.itemsListBox.selectItem(listItem.key);
-								$this.itemsListBox.scrollTo(listItem.key);
-							}
+				if(item == '#fieldName' || item == '$fieldName' || item == '$fieldExpr'){
+				    editor.getSourceSelectFields(function(sources){
+				        for(var j in sources){
+				            var fields = sources[j].fields;
+
+				            if(sources[j].sourceName){
+                                $this.itemsListBox.addItem({
+                                    allowHover: false,
+                                    allowSelect: false,
+                                    key: j,
+                                    value: j,
+                                    scheme: item,
+                                    desc: null,
+                                    element: `#dot
+                                        <div class="sourceName" title="{{=j}}">
+                                            <div class="icon"></div>
+                                            <div class="name">{{=(sources[j].sourceName)}}</div>
+                                        </div>
+                                    `
+                                });
+                            }
+
+                            for(var i in fields){
+                                var element = $this.$('<div class="field" title="' + i + '"> <div class="icon"></div><div class="name">' + i + '</div></div>');
+
+                                if(fields[i].type){
+                                    element.append('<div class="type">' + fields[i].type.toLowerCase() + '</div>');
+                                }
+
+                                var listItem = $this.itemsListBox.addItem({
+                                    context: sources[j].context,
+                                    key: j + '_' + i,
+                                    value: i,
+                                    scheme: item,
+                                    desc: null,
+                                    element: element
+                                });
+                                if(selected && selected.scheme == item && selected.value == i){
+                                    $this.itemsListBox.selectItem(listItem.key);
+                                    $this.itemsListBox.scrollTo(listItem.key);
+                                }
+                            }
 				        }
 				    });
-				} else if(item == '#outputFieldName' || item == '$fieldExpr' || item == '$sortField') {
+				} else if(item == '#outputFieldName' || item == '$sortField') { //|| item == '$fieldExpr'
 					var colMap = editor.combineColumns();
 
 					for(var qName in colMap){

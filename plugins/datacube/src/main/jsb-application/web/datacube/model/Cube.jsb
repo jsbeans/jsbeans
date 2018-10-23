@@ -221,7 +221,7 @@
 
 		extractFields: function(){
 		    // todo
-		}.
+		},
 
 		prepareFieldName: function(name){
 			name = name.trim();
