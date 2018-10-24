@@ -1383,11 +1383,11 @@
 
                                             var value = $this._styles.markers[i].rangeColor.colorValues.value();
 
-                                            if(!markers[i].maxColorValue || markers[i].maxColorValue < value){
+                                            if(!JSB.isDefined(markers[i].maxColorValue) || markers[i].maxColorValue < value){
                                                 markers[i].maxColorValue = value;
                                             }
 
-                                            if(!markers[i].minColorValue || markers[i].minColorValue > value){
+                                            if(!JSB.isDefined(markers[i].minColorValue) || markers[i].minColorValue > value){
                                                 markers[i].minColorValue = value;
                                             }
 
@@ -1410,11 +1410,11 @@
 
                                             var value = $this._styles.markers[i].sizeValuesBinding.value();
 
-                                            if(!markers[i].maxSizeValue || markers[i].maxSizeValue < value){
+                                            if(!JSB.isDefined(markers[i].maxSizeValue) || markers[i].maxSizeValue < value){
                                                 markers[i].maxSizeValue = value;
                                             }
 
-                                            if(!markers[i].minSizeValue || markers[i].minSizeValue > value){
+                                            if(!JSB.isDefined(markers[i].minSizeValue) || markers[i].minSizeValue > value){
                                                 markers[i].minSizeValue = value;
                                             }
 
