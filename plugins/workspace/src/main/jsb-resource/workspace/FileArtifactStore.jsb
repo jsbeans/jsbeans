@@ -47,22 +47,43 @@
 				}
 				
 				if(artifactType == 'string'){
-					FileSystem.write(eFileNameTmp, a, opts);
-					FileSystem.move(eFileNameTmp, eFileName);
+					if(opts && opts.append){
+						FileSystem.write(eFileName, a, opts);
+					} else {
+						FileSystem.write(eFileNameTmp, a, opts);
+						FileSystem.move(eFileNameTmp, eFileName);
+					}
 				} else if(artifactType == 'value'){
-					FileSystem.write(eFileNameTmp, JSON.stringify(a, null, 4));
-					FileSystem.move(eFileNameTmp, eFileName);
+					var val = JSON.stringify(a, null, 4);
+					if(opts && opts.append){
+						FileSystem.write(eFileName, val);
+					} else {
+						FileSystem.write(eFileNameTmp, val);
+						FileSystem.move(eFileNameTmp, eFileName);
+					}
 				} else if(artifactType == 'binary'){
 					if(JSB.isInstanceOf(a, 'JSB.IO.Stream')){
-						var oStream = FileSystem.open(eFileNameTmp, {binary: true, write: true, read: false});
-						a.copy(oStream, {
-							onProgress: opts && opts.onProgress
-						});
-						oStream.close();
-						FileSystem.move(eFileNameTmp, eFileName);
+						if(opts && opts.append){
+							var oStream = FileSystem.open(eFileName, {binary: true, write: true, read: false});
+							a.copy(oStream, {
+								onProgress: opts && opts.onProgress
+							});
+							oStream.close();
+						} else {
+							var oStream = FileSystem.open(eFileNameTmp, {binary: true, write: true, read: false});
+							a.copy(oStream, {
+								onProgress: opts && opts.onProgress
+							});
+							oStream.close();
+							FileSystem.move(eFileNameTmp, eFileName);
+						}
 					} else {
-						FileSystem.write(eFileNameTmp, a, {binary: true});
-						FileSystem.move(eFileNameTmp, eFileName);
+						if(opts && opts.append){
+							FileSystem.write(eFileName, a, {binary: true});
+						} else {
+							FileSystem.write(eFileNameTmp, a, {binary: true});
+							FileSystem.move(eFileNameTmp, eFileName);
+						}
 					}
 				} else {
 					throw new Error('Unexpected artifact type: ' + artifactType);
