@@ -1439,7 +1439,7 @@
                     type: '$and',
                     op: type === 'min' ? '$gte' : '$lte',
                     field: binding,
-                    value: value
+                    value: filterValue
                 };
 
                 $this._curRangeFilters[type + 'Filter'] = $this.addFilter(fDesc);
