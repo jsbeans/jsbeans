@@ -7,7 +7,7 @@
 		$constructor: function(query, params){
 		    this.query = query;
 		    this.params = params;
-
+/*
             this.installSuper = function (obj, super) {
                 if (!Object.setPrototypeOf) {
                     obj.__proto__ = super;
@@ -17,10 +17,11 @@
 
                 return super;
             };
-
+*/
             /**
             * Query descriptor classes
             */
+/*		    
             this.Expression = function Expression(data){
                 this.getConstructor = function(){ return $this.Expression; }
 
@@ -46,7 +47,8 @@
                     return this.getConstructor().name + '( ' + data + innerArgs + ', [' + children + ']' + ' )';
                 }
             };
-
+*/
+/*		    
             this.MultiExpression = function MultiExpression(data, expressions) {
                 var super = $this.installSuper(this, new $this.Expression(data));
                 this.getConstructor = function(){ return $this.MultiExpression; }
@@ -190,7 +192,7 @@
                     return super.toString.call(this, innerArgs);
                 }
 
-            };
+            };*/
 		},
 
 
