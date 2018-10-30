@@ -102,9 +102,9 @@ public class JsHub extends Service {
             @Override
             protected boolean hasFeature(Context cx, int featureIndex)
             {
-            	if(featureIndex == Context.FEATURE_THREAD_SAFE_OBJECTS) {
+/*            	if(featureIndex == Context.FEATURE_THREAD_SAFE_OBJECTS) {
             		return true;
-                }
+                }*/
                 return super.hasFeature(cx, featureIndex);
             }
         };
