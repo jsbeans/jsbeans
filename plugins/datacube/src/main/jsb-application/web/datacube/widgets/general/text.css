@@ -3,6 +3,7 @@
 .textWidget {
 	padding: 4px;
 	text-align: left;
+	overflow: auto;
 }
 
 .textWidget > p,
