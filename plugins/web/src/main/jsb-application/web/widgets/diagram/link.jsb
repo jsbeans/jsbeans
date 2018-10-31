@@ -16,6 +16,7 @@
 		options: {
 			cellRoundMax: 2,
 			wiringClass: '_jsb_diagramWiringLinkMode',
+			wiringModeStyle: false,
 			
 			onHighlight: function(bEnable){
 				this.group.classed('highlighted', bEnable);
@@ -55,7 +56,24 @@
 					this.joints.push(joint);
 				}
 			}
-			
+
+			var isNeedRedraw = false;
+
+			if(this.options.sourceConnector){
+			    this.setSource(this.options.sourceConnector, true);
+			    isNeedRedraw = true;
+			}
+
+			if(this.options.targetConnector){
+			    this.setTarget(this.options.targetConnector, true);
+			    isNeedRedraw = true;
+			}
+
+			if(isNeedRedraw){
+			    this.updateConnectors();
+			    this.redraw();
+			}
+
 			this.subscribe('_jsb_diagramConnectorInstalled', function(sender, msg, params){
 				if(sender == self.source || sender == self.target){
 					self.redraw();
@@ -90,7 +108,7 @@
 			$base();
 		},
 		
-		setSource: function(obj){
+		setSource: function(obj, notRedraw){
 			if(this.source && JSB.isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') && this.source != obj){
 				// unbind source
 				this.source.removeLink(this);
@@ -102,11 +120,14 @@
 			} else {
 				throw 'Invalid source specified: ' + JSON.stringify(obj);
 			}
-			this.updateConnectors();
-			this.redraw();
+
+			if(!notRedraw){
+			    this.updateConnectors();
+                this.redraw();
+            }
 		},
 
-		setTarget: function(obj){
+		setTarget: function(obj, notRedraw){
 			if(this.target && JSB.isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector') && this.target != obj){
 				// unbind source
 				this.target.removeLink(this);
@@ -118,8 +139,11 @@
 			} else {
 				throw 'Invalid target specified: ' + JSON.stringify(obj);
 			}
-			this.updateConnectors();
-			this.redraw();
+
+			if(!notRedraw){
+			    this.updateConnectors();
+                this.redraw();
+			}
 		},
 		
 		updateConnectors: function(){
@@ -200,7 +224,6 @@
 			}
 			return pathStr;
 		},
-
 		
 		redraw: function(){
 			if(JSB().isNull(this.source) || JSB().isNull(this.target)){
@@ -211,6 +234,7 @@
 			if(!this.group){
 				this.group = this.diagram.svg.append('g')
 					.classed('link', true)
+					.classed(this.options.wiringClass, this.options.wiringModeStyle)
 					.attr('key', this.key);
 				this.path = this.group.append('path');
 				this.sourceHead = null;
@@ -410,7 +434,5 @@
 			}
 			return pArr;
 		}
-	},
-	
-	$server: {}
+	}
 }

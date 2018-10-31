@@ -55,7 +55,7 @@
 			
 			// event handlers
 			onInit: function(){},
-			onChange: function(){},
+			onChange: function(changeType, item){},
 			onCreate: function(item){},
 			onRemove: function(item){}
 		},
@@ -559,7 +559,7 @@
 			this.sheet.append(node.getElement());
 			
 			if(this.options.onChange){
-				this.options.onChange.call(this);
+				this.options.onChange.call(this, 'createNode', node);
 			}
 			if(this.options.onCreate){
 				this.options.onCreate.call(this, node);
@@ -593,7 +593,7 @@
 			}
 			
 			if(this.options.onChange){
-				this.options.onChange.call(this);
+				this.options.onChange.call(this, 'removeNode', node);
 			}
 			if(this.options.onRemove){
 				this.options.onRemove.call(this, node);
@@ -616,7 +616,7 @@
 			node.destroy();
 		},
 		
-		createLink: function(linkKey, opts){
+		createLink: function(linkKey, opts, hideEvent){
 			var self = this;
 			var linkDesc = this.linkDescs[linkKey];
 			var linkClass = Link;
@@ -626,17 +626,17 @@
 			var link = new linkClass(this, linkKey, opts);
 			this.links[link.getId()] = link;
 			
-			if(this.options.onChange){
-				this.options.onChange.call(this);
+			if(this.options.onChange && !hideEvent){
+				this.options.onChange.call(this, 'createLink', link);
 			}
-			if(this.options.onCreate){
+			if(this.options.onCreate && !hideEvent){
 				this.options.onCreate.call(this, link);
 			}
 			
 			return link;
 		},
 		
-		removeLink: function(linkVal){
+		removeLink: function(linkVal, hideEvent){
 			var link = null;
 			if(JSB().isString(linkVal)){
 				link = this.links[linkVal];
@@ -656,13 +656,13 @@
 				}
 			}
 			
-			if(link.options.onRemove){
+			if(link.options.onRemove && !hideEvent){
 				link.options.onRemove.call(link);
 			}
-			if(this.options.onChange){
-				this.options.onChange.call(this);
+			if(this.options.onChange && !hideEvent){
+				this.options.onChange.call(this, 'removeLink', link);
 			}
-			if(this.options.onRemove){
+			if(this.options.onRemove && !hideEvent){
 				this.options.onRemove.call(this, link);
 			}
 			

@@ -24,15 +24,22 @@
 				wiringLinkKey = this.fromConnector.options.wiringLink.key;
 				this.wiringType = this.fromConnector.options.wiringLink.type;
 			}
-			this.wiringLink = this.diagram.createLink(wiringLinkKey);
-			this.wiringLink.setWiringModeStyle(true);
+
+			var source, target;
 			if(this.wiringType == 'source'){
-				this.wiringLink.setSource(this.fromConnector);
-				this.wiringLink.setTarget(this.toPt);
+				source = this.fromConnector;
+				target = this.toPt;
 			} else {
-				this.wiringLink.setSource(this.toPt);
-				this.wiringLink.setTarget(this.fromConnector);
+				source = this.toPt;
+				target = this.fromConnector;
 			}
+
+			this.wiringLink = this.diagram.createLink(wiringLinkKey, {
+			    sourceConnector: source,
+			    targetConnector: target,
+			    wiringModeStyle: true
+			}, true);
+
 			this.publish('_jsb_diagramConnectorUserHover', this.fromConnector);
 		},
 		
@@ -71,23 +78,28 @@
 							} else {
 								// create link
 								var linkId = Object.keys(lMap)[0];
-								var link = self.diagram.createLink(linkId);
-								var wiringType = lMap[linkId];
-								if(wiringType == 'source'){
-									link.setSource(self.fromConnector);
-									link.setTarget(sender);
+
+								var source, target;
+
+								if(lMap[linkId] == 'source'){ // wiringType
+									source = self.fromConnector;
+									target = sender;
 								} else {
-									link.setSource(sender);
-									link.setTarget(self.fromConnector);
-								}								
+									source = sender;
+									target = self.fromConnector;
+								}
+
+								var link = self.diagram.createLink(linkId, {
+								    sourceConnector: source,
+								    targetConnector: target
+								});
 							}
-							
 						}
 					});
 					
 					sender.denyWiring(false);
 				}
-				this.diagram.removeLink(this.wiringLink);
+				this.diagram.removeLink(this.wiringLink, true);
 				this.publish('_jsb_diagramConnectorUserOut', this.fromConnector);
 				this.diagram.popController();	// exit wiring
 				this.diagram.controllers.normal.preventClick = true;
