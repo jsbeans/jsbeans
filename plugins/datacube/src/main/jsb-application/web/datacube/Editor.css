@@ -193,7 +193,7 @@ div.ajaxloader[key="error"] > div.ajaxloaderInfo > .icon {
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_tab[clientid="workspaceExplorer"] ._dwp_primitiveEditor {
 	display: block;
-	padding-right: 32px;
+	padding-right: 36px;
 }
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_tab[clientid="workspaceExplorer"] .roundButton {
