@@ -499,7 +499,7 @@
 		    new this.SingleObject({
 		        name: '$regexpReplace',
 		        category: 'Функции',
-		        desc: 'Замена подстроки с использованием регулярного выражения',
+		        desc: 'Замена подстроки с использованием регулярного выражения POSIX. $replacementString позволяет ссылаться на группы, определенные в $pattern. Например: $pattern="(.*)_(.*)", $replacementString="\1 - \2".',
 		        values: ['$regexpReplaceExpr']
 		    });
 

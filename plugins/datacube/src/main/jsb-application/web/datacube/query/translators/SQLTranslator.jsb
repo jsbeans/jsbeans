@@ -7,7 +7,6 @@
 		
 		$require: [
 		    'DataCube.Query.Translators.TranslatorRegistry',
-		    'DataCube.Query.QueryParser',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
@@ -244,13 +243,15 @@
             if (exp.hasOwnProperty('$const')) {
                 var value;
                 if (JSB.isString(exp.$const)) {
-                    value = "'" + exp.$const + "'"
+                    value = "'" + exp.$const + "'";
                 } else if (JSB.isNumber(exp.$const)) {
                     value = '' + exp.$const;
                 } else if (JSB.isBoolean(exp.$const)) {
                     value =  ('' + exp.$const).toUpperCase();
                 } else if (exp.$const == null) {
                     value = 'NULL';
+                } else if (JSB.isDate(exp.$const)) {
+                    value = "'" + exp.$const.toISOString() + "'";
                 } else {
                     throw new Error('Unsupported $const type ' + typeof exp.$const);
                 }

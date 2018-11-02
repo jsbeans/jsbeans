@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Engine.Cursors.JoinCursor',
-	$parent: 'DataCube.Query.Engine.Cursors.ViewCursor',
+	$parent: 'DataCube.Query.Engine.Cursors.InterpretedCursor',
 
 	$server: {
 		$require: [

@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Engine.Cursors.QueryCursor',
-	$parent: 'DataCube.Query.Engine.Cursors.ViewCursor',
+	$parent: 'DataCube.Query.Engine.Cursors.InterpretedCursor',
 
 	$server: {
 		$require: [
@@ -19,7 +19,7 @@
 
         },
 
-        setCreateNested: function(name, createNestedCursor){
+        setNestedQueryFactory: function(name, createNestedCursor){
             $this.nested[name] = null;
             $this.nestedFactories[name] = createNestedCursor;
         },

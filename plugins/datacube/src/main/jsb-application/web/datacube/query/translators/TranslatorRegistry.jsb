@@ -8,50 +8,38 @@
 		    'DataCube.Query.QueryUtils'
         ],
 
-        _dataProviderTranslator: {},
+        translatorsCfg: null,
+        translatorsJsb: {},
         
         $constructor: function(){
         	$base();
-        	
         	$this.translatorsCfg = Config.get('datacube.query.translators');
-        	$this.fixedTranslator = Config.get('datacube.queryengine.fixedTranslator');
         },
 
-		register: function(translatorJsb, dataProviderName){
-			if(translatorJsb instanceof JSB){
+		register: function(translatorJsb){
+
+            if(translatorJsb instanceof JSB){
 				translatorJsb = translatorJsb.$name;
-			} else if(JSB.isBean(translatorJsb)){
-				translatorJsb = translatorJsb.getJsb().$name;
-			} else if(!JSB.isString(translatorJsb)){
-				throw new Error('Invalid translator type');
 			}
-			if(dataProviderName){
-				this._dataProviderTranslator[dataProviderName] = translatorJsb;
-				JSB.getLogger().debug('Registered translator ' + translatorJsb + ' for ' + dataProviderName);
-			} else {
-				for(var dpName in this.translatorsCfg){
-					if(translatorJsb == this.translatorsCfg[dpName]){
-						this._dataProviderTranslator[dpName] = translatorJsb;
-						JSB.getLogger().debug('Registered translator ' + translatorJsb + ' for ' + dpName);
-					}
-				}
+
+			var config = $this.translatorsCfg[translatorJsb];
+			if (config) {
+			    JSB.getLogger().debug('Registered translator ' + translatorJsb);
+			    $this.translatorsJsb[translatorJsb] = JSB.get(translatorJsb);
+			    QueryUtils.throwError($this.translatorsJsb[translatorJsb], 'Translator {} is undefined ');
 			}
 		},
 
-		hasTranslator: function(provider){
-		    var translatorName = this._dataProviderTranslator[provider.getJsb().$name];
-		    return !!translatorName;
-		},
-
-		newTranslator: function(providerOrProviders, cube){
-		    QueryUtils.assert(cube, 'Cube is undefined');
-		    var dataProvider = JSB.isArray(providerOrProviders) ? providerOrProviders[0] : providerOrProviders;
-		    var translatorName = $this.fixedTranslator  || this._dataProviderTranslator[dataProvider.getJsb().$name ];
-		    if (!translatorName) {
-		        throw new Error('Translator not found for ' + dataProvider.getJsb().$name);
-		    }
-		    var Translator = JSB.get(translatorName).getClass();
-		    return new Translator(providerOrProviders, cube);
+		lookupTranslators: function(providerType, providers, defaultCube){
+            var translators = [];
+            for(var translatorName in $this.translatorsJsb) {
+                var config = $this.translatorsCfg[translatorName];
+                if (config.providers.indexOf(providerType) !== -1) {
+                    var Translator = $this.translatorsJsb[translatorName].getClass();
+                    translators.push(new Translator(providers, defaultCube));
+                }
+            }
+            return translators;
 		},
 	}
 }

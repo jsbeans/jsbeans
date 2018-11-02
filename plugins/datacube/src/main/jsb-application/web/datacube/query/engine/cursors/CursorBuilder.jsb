@@ -32,28 +32,32 @@
             if (query == null || JSB.isEqual(query, {})) {
                 return $this.buildEmptyCursor(parent, caller);
             }
-            if ($this.executor.providers.length == 0) {
-                return $this.buildQueryCursor(query, params, parent, caller);
-            }
+//            if ($this.executor.providers.length == 0) {
+//                return $this.buildQueryCursor(query, params, parent, caller);
+//            }
             // is translatable: provider or translate whole query
-            if (query.$provider
-
-                    || !$this._translatorSkipQueries
-
-                    || $this._translateQueriesFromProviders
-                        && query.$from
-                        && (query.$from.$provider || $this.query.$views && $this.query.$views[query.$from])
-                        && true // TODO filter provider-queries by fields
-            ) {
-                var cursor = $this.tryBuildTranslatedCursor(query, params, parent, caller);
-                if (cursor) {
-                    return cursor;
-                }
-
-                if (query.$provider || $this._translatorSkipQueries) {
-                    QueryUtils.throwError(0, 'Compatible translator does not exist for query "{}"', query.$context);
-                }
+            var cursor = $this.tryBuildTranslatedCursor(query, params, parent, caller);
+            if (cursor) {
+                return cursor;
             }
+//            if (query.$provider
+//
+//                    || !$this._translatorSkipQueries
+//
+//                    || $this._translateQueriesFromProviders
+//                        && query.$from
+//                        && (query.$from.$provider || $this.query.$views && $this.query.$views[query.$from])
+//                        && true // TODO filter provider-queries by fields
+//            ) {
+//                var cursor = $this.tryBuildTranslatedCursor(query, params, parent, caller);
+//                if (cursor) {
+//                    return cursor;
+//                }
+//
+//                if (query.$provider || $this._translatorSkipQueries) {
+//                    QueryUtils.throwError(0, 'Compatible translator does not exist for query "{}"', query.$context);
+//                }
+//            }
             // is union
             if (query.$union) {
                 return $this.buildUnionCursor(query, params, parent, caller);
@@ -64,7 +68,7 @@
             }
             // is recursive
             if (query.$recursive) {
-                QueryUtils.throwError('$recursive cursor is not implemented');
+                return $this.buildRecursiveCursor(query, params, parent, caller);
             }
             // query
             return $this.buildQueryCursor(query, params, parent, caller);
@@ -86,7 +90,7 @@
                             return $this.executor.tryTranslateQuery(query, params);
                         }
                     });
-                    $this._buildViewFields(cursor);
+                    $this._fillOutputFields(cursor);
                     return cursor;
                 } catch(e) {
                     it && it.close();
@@ -107,8 +111,10 @@
                 }
                 QueryUtils.throwError(sourceQuery, 'Query source/$from is undefined in context {}', query.$context);
 
+                /// build source
                 cursor.source = $this.buildAnyCursor(sourceQuery, params, parent, cursor);
 
+                /// build nested sub-queries in expressions
                 QueryUtils.walkQueries(
                     JSB.merge({},query,{$from:null}),
                     {
@@ -121,6 +127,7 @@
                     },
                     function leaveCallback(subQuery){
                         if (!this.inFrom) {
+                            // if has not external fields then store as nested global query
                             if (!QueryUtils.extractParentForeignFields(subQuery, $this.query)) {
                                 cursor.globalSubQueries[subQuery.$context] = subQuery;
                             }
@@ -129,11 +136,12 @@
 //                                subQuery = $this._replaceForeignFieldsWithVars(subQuery);
 //                            }
                         }
+                        // build nested queries
                         if (subQuery.$context != query.$context) {
-                            cursor.setCreateNested(
+                            cursor.setNestedQueryFactory(
                                 subQuery.$context,
-                                function (subQuery, localParams){
-                                    var localParams = localParams ? JSB.merge({}, params, localParams) : params;
+                                function createNestedSubQuery (subQuery, localParams){
+                                    var localParams = localParams ? JSB.merge(localParams, params, localParams) : params;
                                     return $this.buildAnyCursor(subQuery, localParams, cursor, cursor);
                                 }
                             );
@@ -141,7 +149,7 @@
                     }
                 );
 
-                $this._buildViewFields(cursor);
+                $this._fillOutputFields(cursor);
 
                 cursor.buildQueryBody();
                 return cursor;
@@ -169,7 +177,7 @@
                 );
             }
 
-            $this._buildViewFields(unionsCursor);
+            $this._fillOutputFields(unionsCursor);
 
             return unionsCursor;
         },
@@ -203,12 +211,17 @@
                 return $this.buildAnyCursor(query, localParams, parent, joinCursor);
             });
 
-            $this._buildViewFields(joinCursor);
+            $this._fillOutputFields(joinCursor);
 
             return joinCursor;
         },
 
-        _buildViewFields: function(viewCursor){
+        buildRecursiveCursor: function (query, params, parent, caller) {
+            // TODO interpreted $recursive cursor
+            QueryUtils.throwError('$recursive cursor is not implemented');
+        },
+
+        _fillOutputFields: function(viewCursor){
             viewCursor.fields = {};
             for(var alias in viewCursor.query.$select) {
 

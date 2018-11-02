@@ -10,10 +10,6 @@
         ],
 
         $deprecated: 'код устарел относительно текущей версии движка',
-        
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
 
         /**
         * Вставляет в запрос тела вьюх, удаляя $views

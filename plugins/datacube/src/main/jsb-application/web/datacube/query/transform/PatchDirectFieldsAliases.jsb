@@ -7,10 +7,6 @@
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Transforms.QueryTransformer'
         ],
-        
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
 
         /** patch links to aliases if alias is source field */
 		transform: function(dcQuery, cube){

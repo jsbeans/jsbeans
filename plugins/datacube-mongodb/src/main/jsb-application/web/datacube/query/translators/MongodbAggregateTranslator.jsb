@@ -6,7 +6,6 @@
 		
 		$require: [
 		    'DataCube.Query.Translators.TranslatorRegistry',
-		    'DataCube.Query.QueryParser',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
@@ -36,7 +35,7 @@
 
 		    var store = this.providers[0].getStore();
 
-		    translatedQuery.pipeline.push({$limit:10000});
+//		    translatedQuery.pipeline.push({$limit:10000});
 
 //debugger
             var iterator = store.asMongodb().iterateAggregate(translatedQuery.aggregate, translatedQuery.pipeline);
