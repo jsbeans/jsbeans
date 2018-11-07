@@ -824,7 +824,7 @@ if(!(function(){return this;}).call(null).JSB){
 						var hasCurrent = currentRx.test(procStr);
 						var hasThis = thisRx.test(procStr);
 						
-						var procDecl = 'function ' + fName + '(' + declM[2] + '){ ';
+						var procDecl = 'function __' + fName + '(' + declM[2] + '){ ';
 						if(hasThis || (hasBase && isCtor)){
 							procDecl += 'var $this=this; ';
 						}
@@ -6465,7 +6465,7 @@ JSB({
 						error: null,
 					};
 					if(JSB.isFuture(ret)){
-						ret.await(function(ret, fail){
+						ret.wait(function(ret, fail){
 							if(fail){
 								respPacket.error = fail;
 								respPacket.success = false;
@@ -6699,7 +6699,7 @@ JSB({
 		}
 	},
 
-	await: function(callback, opts){
+	wait: function(callback, opts){
 		if(!callback){
 			return;
 		}

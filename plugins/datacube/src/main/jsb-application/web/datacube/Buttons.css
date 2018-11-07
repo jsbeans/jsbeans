@@ -3,7 +3,7 @@
 ._dwp_button.roundButton {
     background: #ccc;
     padding: 0;
-    border-radius: 20px;
+    border-radius: 3px;
     border: none;
 	box-shadow: 0 0 0 1px rgba(119,119,119,0.5);
 	position: relative;

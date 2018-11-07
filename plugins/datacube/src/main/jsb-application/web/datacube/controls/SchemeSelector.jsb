@@ -161,6 +161,7 @@
 					key: item.key,
 					pKey: pKey,
 					element: fieldElt,
+					field: item.scheme.field,
 					children: [],
 					allowSelect: allowSelect,
 					allowHover: allowSelect,
@@ -170,6 +171,9 @@
 					for(var i = 0; i < item.child.length; i++){
 						nItem.children.push(_translateItem(item.child[i], item.key, bCubeField));
 					}
+					nItem.children.sort(function(a, b){
+						return a.field.localeCompare(b.field);
+					});
 				}
 				return nItem;
 			}
@@ -189,6 +193,9 @@
 				for(var i = 0; i < cubeItems.length; i++){
 					cubeFieldsNode.children.push(_translateItem(cubeItems[i], cubeFieldsNode.key, true));
 				}
+				cubeFieldsNode.children.sort(function(a, b){
+					return a.field.localeCompare(b.field);
+				});
 				
 				// add slice fields
 				var sliceFieldsNode = {
@@ -203,10 +210,16 @@
 				for(var i = 0; i < sliceItems.length; i++){
 					sliceFieldsNode.children.push(_translateItem(sliceItems[i], sliceFieldsNode.key, false));
 				}
+				sliceFieldsNode.children.sort(function(a, b){
+					return a.field.localeCompare(b.field);
+				});
 			} else {
 				for(var i = 0; i < sliceItems.length; i++){
 					items.push(_translateItem(sliceItems[i], null, false));
 				}
+				items.sort(function(a, b){
+					return a.field.localeCompare(b.field);
+				});
 			}
 			
 			

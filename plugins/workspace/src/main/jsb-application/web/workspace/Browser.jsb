@@ -195,9 +195,9 @@
 		
 		updateNavigator: function(){
 			var tabs = this.tabView.find('> ul.tabPane > li:visible');
-			var size = 22;
+			var size = 16;
 			for(var i = 0; i < tabs.length; i++){
-				size += this.$(tabs[i]).outerWidth();
+				size += this.$(tabs[i]).outerWidth(true);
 			}
 			this.navigator.getElement().css('width', 'calc(100% - ' + size + 'px)');
 		}
