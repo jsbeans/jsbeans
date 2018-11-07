@@ -1744,7 +1744,7 @@
                                             return;
                                         }
 
-                                        layer.bindPopup(reg.region + ': ' + $this._format($this._styles.regions[i].displayContent, i, {y: reg.value}), {closeButton: false, autoPan: false});
+                                        layer.bindPopup($this._format($this._styles.regions[i].displayContent, regInfo.index, {y: reg.value}), {closeButton: false, autoPan: false});
 
                                         layer.on({
                                             mouseover: function(evt){
@@ -1759,7 +1759,7 @@
                                     }
 
                                     if($this._styles.regions[i].showValuesPermanent && reg){
-                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, i, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, regInfo.index, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 

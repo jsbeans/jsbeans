@@ -29,6 +29,10 @@
             return JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
         }
 
+        if(this._values[0].value){
+            return this._values[0].value.replace(/binding\$/g, '');
+        }
+
         // old settings
         /***/
         if(JSB.isDefined(this._values[0].isAdvancedSettings)){

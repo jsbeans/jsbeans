@@ -36,11 +36,13 @@
                             name: 'Размеры частей',
                             linkTo: 'source'
                         },
+                        /*
                         parent: {
                             render: 'dataBinding',
                             name: 'Родитель',
                             linkTo: 'source'
                         },
+                        */
                         autoSize: {
                             render: 'item',
                             name: 'Автоматически считать размеры',
@@ -52,6 +54,181 @@
                             name: 'Суммировать количество',
                             optional: true,
                             editor: 'none'
+                        },
+                        tooltip: {
+                            items: {
+                                pointFormat: {
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Процентное соотношение',
+                                                title: 'Только для круговой диаграммы и стеков',
+                                                type: 'number',
+                                                value: 'point.percentage'
+                                            },
+                                            {
+                                                alias: 'Общее значение стека',
+                                                title: 'Только для стеков',
+                                                type: 'number',
+                                                value: 'point.total'
+                                            },
+                                            {
+                                                alias: 'Значение точки',
+                                                type: 'number',
+                                                value: 'point.value'
+                                            },
+                                            {
+                                                alias: 'Имя точки',
+                                                type: 'string',
+                                                value: 'point.name'
+                                            },
+                                            {
+                                                alias: 'Имя серии',
+                                                type: 'string',
+                                                value: 'point.seriesName'
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        dataLabels: {
+                            render: 'group',
+                            name: 'Подписи',
+                            collapsible: true,
+                            items: {
+                                format: {
+                                    render: 'formatter',
+                                    name: 'Форматирование',
+                                    formatterOpts: {
+                                        basicSettings: {
+                                            type: 'number',
+                                            value: 'y'
+                                        },
+                                        variables: [
+                                            {
+                                                alias: 'Процентное соотношение',
+                                                title: 'Только для круговой диаграммы и стеков',
+                                                type: 'number',
+                                                value: 'percentage'
+                                            },
+                                            {
+                                                alias: 'Общее значение стека',
+                                                title: 'Только для стеков',
+                                                type: 'number',
+                                                value: 'total'
+                                            },
+                                            {
+                                                alias: 'Значение точки',
+                                                type: 'number',
+                                                value: 'point.value'
+                                            },
+                                            {
+                                                alias: 'Имя точки',
+                                                type: 'string',
+                                                value: 'point.name'
+                                            },
+                                            {
+                                                alias: 'Имя серии',
+                                                type: 'string',
+                                                value: 'point.seriesName'
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+	    mainTooltip: {
+            items: {
+                pointFormat: {
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Процентное соотношение',
+                                title: 'Только для круговой диаграммы и стеков',
+                                type: 'number',
+                                value: 'point.percentage'
+                            },
+                            {
+                                alias: 'Общее значение стека',
+                                title: 'Только для стеков',
+                                type: 'number',
+                                value: 'point.total'
+                            },
+                            {
+                                alias: 'Имя точки',
+                                type: 'string',
+                                value: 'point.name'
+                            },
+                            {
+                                alias: 'Значение точки',
+                                type: 'number',
+                                value: 'point.value'
+                            },
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'point.seriesName'
+                            }
+                        ]
+                    }
+                }
+            }
+	    },
+
+        plotOptions: {
+            items: {
+                series: {
+                    items: {
+                        dataLabels: {
+                            render: 'group',
+                            name: 'Подписи',
+                            collapsible: true,
+                            items: {
+                                format: {
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Процентное соотношение',
+                                                title: 'Только для круговой диаграммы и стеков',
+                                                type: 'number',
+                                                value: 'percentage'
+                                            },
+                                            {
+                                                alias: 'Общее значение стека',
+                                                title: 'Только для стеков',
+                                                type: 'number',
+                                                value: 'total'
+                                            },
+                                            {
+                                                alias: 'Координаты точки(X)',
+                                                type: 'number',
+                                                value: 'x'
+                                            },
+                                            {
+                                                alias: 'Значение точки(Y)',
+                                                type: 'number',
+                                                value: 'y'
+                                            },
+                                            {
+                                                alias: 'Имя точки',
+                                                type: 'string',
+                                                value: 'point.name'
+                                            },
+                                            {
+                                                alias: 'Имя серии',
+                                                type: 'string',
+                                                value: 'point.seriesName'
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -87,7 +264,7 @@
                     this._schemeOpts.series.push({
                         nameSelector: seriesContext[i].find('name'),
                         dataSelector: seriesContext[i].find('data'),
-                        parentSelector: seriesContext[i].find('parent'),
+                        //parentSelector: seriesContext[i].find('parent'),
                         seriesNameSelector: seriesContext[i].find('seriesName'),
                         autoSize: seriesContext[i].find('autoSize').checked(),
                         isSum: seriesContext[i].find('isSum').checked()
@@ -125,24 +302,30 @@
                         }
 
                         while($this._dataSource.next()){
-                            var curCat = data;
-
+                            var prevId = undefined;
                             for(var i = 0; i < $this._schemeOpts.series.length; i++){
-                                var name = $this._schemeOpts.series[i].seriesNameSelector.value() || $this._schemeOpts.series[i].nameSelector.value(),
+                                var name = $this._schemeOpts.series[i].nameSelector.value(),
+                                    binding = $this._schemeOpts.series[i].nameSelector.binding(),
                                     value = $this._schemeOpts.series[i].dataSelector.value(),
-                                    parent = $this._schemeOpts.series[i].parentSelector.value();
+                                    parent = null; // = $this._schemeOpts.series[i].parentSelector.value();
+
+                                var id = name + '|' + binding;
+
+                                if(parent){
+                                    //parent += '|' + $this._schemeOpts.series[i].parentSelector.binding();
+                                } else if(prevId){
+                                    parent = prevId;
+                                }
 
                                 if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
                                     break;
                                 }
 
-                                var id = $this._schemeOpts.series[i].seriesNameSelector.value() || $this._schemeOpts.series[i].nameSelector.value();
-
-                                if(curCat[name]){
+                                if(data[id]){
                                     if($this._schemeOpts.series[i].autoSize){
-                                        curCat[name].chartOpts.value++;
+                                        data[id].value++;
                                     } else if($this._schemeOpts.series[i].isSum){
-                                        curCat[name].chartOpts.value += value;
+                                        data[id].value += value;
                                     }
                                 } else {
                                     var color;
@@ -155,24 +338,22 @@
                                         }
                                     }
 
-                                    curCat[name] = {
-                                        child: {},
-                                        chartOpts: {
-                                            datacube: {
-                                                binding: $this._schemeOpts.series[i].nameSelector.binding(),
-                                            },
-                                            color: color,
-                                            id: id,
-                                            name: name,
-                                            parent: parent,
-                                            value: $this._schemeOpts.series[i].autoSize ? 0 : value
-                                        }
+                                    data[id] = {
+                                        datacube: {
+                                            binding: binding,
+                                        },
+                                        color: color,
+                                        id: id,
+                                        name: name,
+                                        parent: parent,
+                                        seriesName: $this._schemeOpts.series[i].seriesNameSelector.value(),
+                                        value: $this._schemeOpts.series[i].autoSize ? 0 : value
                                     };
 
                                     i === 0 && colorCount++;
                                 }
 
-                                curCat = curCat[name].child;
+                                prevId = id;
                             }
                         }
 
@@ -187,34 +368,20 @@
 
             function resultProcessing(){
                 try{
-                    function resolveData(arr, data, parent){
-                        if(!data){
-                            return;
-                        }
+                    var seriesData = [];
 
-                        for(var i in data){
-                            if(!data[i].chartOpts.parent){
-                                data[i].chartOpts.parent = parent;
-                            }
-
-                            arr.push(data[i].chartOpts);
-
-                            resolveData(arr, data[i].child, data[i].chartOpts.id);
-                        }
+                    for(var i in data){
+                        seriesData.push(data[i]);
                     }
 
-                    var seriesData = [];
-                    resolveData(seriesData, data, '');
-
                     $this.buildChart(seriesData);
-
-
                 } catch(ex){
                     console.log('Sunburst processing data exception');
                     console.log(ex);
                 } finally{
                     $this.getElement().loader('hide');
                 }
+                $this.getElement().loader('hide');
             }
 
             fetch(true);
