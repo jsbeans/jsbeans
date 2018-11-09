@@ -1298,11 +1298,11 @@
                                     value: value
                                 });
 
-                                if(!regions[i].maxValue || regions[i].maxValue < value){
+                                if(!JSB.isDefined(regions[i].maxValue) || regions[i].maxValue < value){
                                     regions[i].maxValue = value;
                                 }
 
-                                if(!regions[i].minValue || regions[i].minValue > value){
+                                if(!JSB.isDefined(regions[i].minValue) || regions[i].minValue > value){
                                     regions[i].minValue = value;
                                 }
 
@@ -1383,11 +1383,11 @@
 
                                             var value = $this._styles.markers[i].rangeColor.colorValues.value();
 
-                                            if(!markers[i].maxColorValue || markers[i].maxColorValue < value){
+                                            if(!JSB.isDefined(markers[i].maxColorValue) || markers[i].maxColorValue < value){
                                                 markers[i].maxColorValue = value;
                                             }
 
-                                            if(!markers[i].minColorValue || markers[i].minColorValue > value){
+                                            if(!JSB.isDefined(markers[i].minColorValue) || markers[i].minColorValue > value){
                                                 markers[i].minColorValue = value;
                                             }
 
@@ -1410,11 +1410,11 @@
 
                                             var value = $this._styles.markers[i].sizeValuesBinding.value();
 
-                                            if(!markers[i].maxSizeValue || markers[i].maxSizeValue < value){
+                                            if(!JSB.isDefined(markers[i].maxSizeValue) || markers[i].maxSizeValue < value){
                                                 markers[i].maxSizeValue = value;
                                             }
 
-                                            if(!markers[i].minSizeValue || markers[i].minSizeValue > value){
+                                            if(!JSB.isDefined(markers[i].minSizeValue) || markers[i].minSizeValue > value){
                                                 markers[i].minSizeValue = value;
                                             }
 
@@ -1744,7 +1744,7 @@
                                             return;
                                         }
 
-                                        layer.bindPopup(reg.region + ': ' + $this._format($this._styles.regions[i].displayContent, i, {y: reg.value}), {closeButton: false, autoPan: false});
+                                        layer.bindPopup($this._format($this._styles.regions[i].displayContent, regInfo.index, {y: reg.value}), {closeButton: false, autoPan: false});
 
                                         layer.on({
                                             mouseover: function(evt){
@@ -1759,7 +1759,7 @@
                                     }
 
                                     if($this._styles.regions[i].showValuesPermanent && reg){
-                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, i, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, regInfo.index, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 

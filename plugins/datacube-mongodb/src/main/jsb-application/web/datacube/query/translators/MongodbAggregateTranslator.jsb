@@ -6,7 +6,6 @@
 		
 		$require: [
 		    'DataCube.Query.Translators.TranslatorRegistry',
-		    'DataCube.Query.QueryParser',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
@@ -25,7 +24,6 @@
 		    if ($this.cube) {
 		        $this.cubeFields = $this.cube.getManagedFields();
             }
-
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
@@ -37,7 +35,9 @@
 
 		    var store = this.providers[0].getStore();
 
-//		    var iterator = store.asMongodb().runCommand(translatedQuery);
+//		    translatedQuery.pipeline.push({$limit:10000});
+
+//debugger
             var iterator = store.asMongodb().iterateAggregate(translatedQuery.aggregate, translatedQuery.pipeline);
 
 
@@ -165,8 +165,7 @@
 		},
 
 		_buildJoin: function(aggregate, query){
-            if (/left\s*outer/i.test(query.$join.$joinType)) {
-                // left outer join
+            if (/left/i.test(query.$join.$joinType)) {
 
                 // build left stages
                 $this._buildQuery(aggregate, query.$join.$left);
@@ -186,6 +185,19 @@
                     as:       $this._getContextFieldName(rightQuery.$context),
                 };
                 aggregate.pipeline.push({ $lookup: joinedAggregate });
+
+                // filter if inner join
+                var isOuter = /outer/i.test(query.$join.$joinType);
+                if (!isOuter) {
+                    aggregate.pipeline.push({
+                        $match: (function(){
+                            var match = {};
+                            match[$this._getContextFieldName(rightQuery.$context)] = {$ne: null};
+                            return match;
+                        })()
+                    });
+                }
+
                 // push to aggregate.pipeline $unwind stage
                 aggregate.pipeline.push({
                     $unwind: {
@@ -337,6 +349,7 @@
                             return cond;
                         }
                     }
+
                     default:
                         QueryUtils.throwError(0, 'Invalid or unsupported operator {}', op);
                 } // end switch
@@ -453,7 +466,7 @@
 		        $this._breakTranslator('Nested sub-queries is not supported');
 debugger
 		        // TODO
-                if (QueryUtils.isGlobal(subQuery, $this.dcQuery)) {
+                if (!QueryUtils.extractParentForeignFields(subQuery, $this.dcQuery)) {
                     // $this.globalQueries
                     throw 'TODO';
                 } else {
@@ -515,7 +528,13 @@ debugger
 
 		_translateExpression: function(exp, opts){
 		    if (JSB.isString(exp)) {
-		        exp = {$field:exp};
+		        if (exp.startsWith('$')) {
+		            QueryUtils.throwError(!opts.asKey, 'Variable "{}" has no support as key translation', exp);
+		            var varName = exp.match(/\$\{(.*)\}/)[1];
+		            return {$literal: $this.params[varName]};
+		        } else {
+		            exp = {$field:exp};
+		        }
 		    }
 
 		    QueryUtils.throwError(JSB.isObject(exp), 'Unexpected expression type {}', typeof exp);
@@ -620,6 +639,20 @@ debugger
                             }
                         };
                     }
+
+                case '$toString':
+                    return { $toString: $this._translateExpression(exp[op], opts) };
+                case '$toInt':
+                    return { $toInt: $this._translateExpression(exp[op], opts) };
+                case '$toDouble':
+                    return { $toDouble: $this._translateExpression(exp[op], opts) };
+                case '$toBoolean':
+                    return { $toBool: $this._translateExpression(exp[op], opts) };
+                case '$toDate':
+                    return { $toDate: $this._translateExpression(exp[op], opts) };
+                case '$toTimestamp':
+                    return { $toDouble : { $toLong: $this._translateExpression(exp[op], opts) } };
+
 		    }
 
             throw new Error('Unsupported expression operator ' + op);
@@ -643,7 +676,7 @@ debugger
                     if (opts.query.$join.$right.$context == context) {
                         return opts.asKey
                                 ? $this._getContextFieldName(context) + '.' + field
-                                : '$' + $this._getContextFieldName(context) + '.' + field;
+                                : {$ifNull:['$' + $this._getContextFieldName(context) + '.' + field, null]};
                     }
                 }
                 return declareVar();
@@ -652,8 +685,10 @@ debugger
 
             function declareVar(){
 //                QueryUtils.throwError(!opts.asKey, 'Invalid field for key value');
+                if (opts.aggregate.let) {
                 QueryUtils.throwError(opts.aggregate.let, 'Unexpected external field {} in {}', field, opts.query.$context);
                 opts.aggregate.let[field] ='$' + field;
+                }
                 return '$$' + field;
             }
 		},
@@ -663,8 +698,8 @@ debugger
 		},
 
 		_fixupResultFields: function(query, pipeline){
-		    for(var offset = 1; offset < pipeline.length && offset < 3; offset++) {
-                var prevProject = pipeline[pipeline.length - offset];
+		    for(var i = pipeline.length - 1; i >= 0 && pipeline.length - i <= 3; i--) {
+                var prevProject = pipeline[i];
                 if (prevProject.$project) {
                     break;
                 }

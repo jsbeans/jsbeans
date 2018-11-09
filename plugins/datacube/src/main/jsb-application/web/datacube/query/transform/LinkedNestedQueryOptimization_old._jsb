@@ -10,10 +10,6 @@
         ],
 
         $deprecated: 'код устарел относительно текущей версии движка',
-        
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
 
         /**
         * В отличии от базового NestedQueryOptimization при формировании вьюхи выкусывает из запроса внешние поля,

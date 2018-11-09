@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Engine.Cursors.ViewCursor',
+	$name: 'DataCube.Query.Engine.Cursors.InterpretedCursor',
 	$parent: 'DataCube.Query.Engine.Cursors.Cursor',
 
 	$server: {

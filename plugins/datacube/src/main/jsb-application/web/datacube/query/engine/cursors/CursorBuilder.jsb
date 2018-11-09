@@ -32,43 +32,32 @@
             if (query == null || JSB.isEqual(query, {})) {
                 return $this.buildEmptyCursor(parent, caller);
             }
-            if ($this.executor.providers.length == 0) {
-                return $this.buildQueryCursor(query, params, parent, caller);
-            }
-
-            // is translatable: provider or whole query
-            if (query.$provider
-
-                    || (!$this._translatorSkipQueries)
-
-                    || $this._translateQueriesFromProviders
-                        && query.$from
-                        && query.$from.$provider
-            ) {
-                var cursor = $this.buildTranslatedCursor(query, params, parent, caller);
-                if (cursor) {
-                    return cursor;
-                } else if (query.$provider) {
-                    QueryUtils.throwError(false, 'Compatible translator does not exist for provider query "{}"', query.$context);
-                }
-            }
+//            if ($this.executor.providers.length == 0) {
+//                return $this.buildQueryCursor(query, params, parent, caller);
+//            }
             // is translatable: provider or translate whole query
-            if (query.$provider
-
-                    || !$this._translatorSkipQueries
-
-                    || $this._translateQueriesFromProviders
-                        && query.$from
-                        && (query.$from.$provider || $this.query.$views && $this.query.$views[query.$from])
-                        && true // TODO filter provider-queries by fields
-            ) {
-                var cursor = $this.buildTranslatedCursor(query, params, parent, caller);
-                if (cursor) {
-                    return cursor;
-                } else {
-                    QueryUtils.throwError(false, 'Compatible translator does not exist for provider query "{}"', query.$context);
-                }
+            var cursor = $this.tryBuildTranslatedCursor(query, params, parent, caller);
+            if (cursor) {
+                return cursor;
             }
+//            if (query.$provider
+//
+//                    || !$this._translatorSkipQueries
+//
+//                    || $this._translateQueriesFromProviders
+//                        && query.$from
+//                        && (query.$from.$provider || $this.query.$views && $this.query.$views[query.$from])
+//                        && true // TODO filter provider-queries by fields
+//            ) {
+//                var cursor = $this.tryBuildTranslatedCursor(query, params, parent, caller);
+//                if (cursor) {
+//                    return cursor;
+//                }
+//
+//                if (query.$provider || $this._translatorSkipQueries) {
+//                    QueryUtils.throwError(0, 'Compatible translator does not exist for query "{}"', query.$context);
+//                }
+//            }
             // is union
             if (query.$union) {
                 return $this.buildUnionCursor(query, params, parent, caller);
@@ -77,11 +66,16 @@
             if (query.$join) {
                 return $this.buildJoinCursor(query, params, parent, caller);
             }
+            // is recursive
+            if (query.$recursive) {
+                return $this.buildRecursiveCursor(query, params, parent, caller);
+            }
             // query
             return $this.buildQueryCursor(query, params, parent, caller);
         },
 
-        buildTranslatedCursor: function(query, params, parent, caller) {
+        tryBuildTranslatedCursor: function(query, params, parent, caller) {
+            // try translate query as-is
             var it = $this.executor.tryTranslateQuery(query, params);
             if (it) {
                 try {
@@ -96,7 +90,7 @@
                             return $this.executor.tryTranslateQuery(query, params);
                         }
                     });
-                    $this._buildViewFields(cursor);
+                    $this._fillOutputFields(cursor);
                     return cursor;
                 } catch(e) {
                     it && it.close();
@@ -117,8 +111,10 @@
                 }
                 QueryUtils.throwError(sourceQuery, 'Query source/$from is undefined in context {}', query.$context);
 
+                /// build source
                 cursor.source = $this.buildAnyCursor(sourceQuery, params, parent, cursor);
 
+                /// build nested sub-queries in expressions
                 QueryUtils.walkQueries(
                     JSB.merge({},query,{$from:null}),
                     {
@@ -130,16 +126,30 @@
                     function enterCallback(subQuery){
                     },
                     function leaveCallback(subQuery){
+                        if (!this.inFrom) {
+                            // if has not external fields then store as nested global query
+                            if (!QueryUtils.extractParentForeignFields(subQuery, $this.query)) {
+                                cursor.globalSubQueries[subQuery.$context] = subQuery;
+                            }
+//                            else {
+//                                // if expression subquery has foreign fields
+//                                subQuery = $this._replaceForeignFieldsWithVars(subQuery);
+//                            }
+                        }
+                        // build nested queries
                         if (subQuery.$context != query.$context) {
-                            cursor.addNested(
+                            cursor.setNestedQueryFactory(
                                 subQuery.$context,
-                                $this.buildAnyCursor(subQuery, params, cursor, cursor)
+                                function createNestedSubQuery (subQuery, localParams){
+                                    var localParams = localParams ? JSB.merge(localParams, params, localParams) : params;
+                                    return $this.buildAnyCursor(subQuery, localParams, cursor, cursor);
+                                }
                             );
                         }
                     }
                 );
 
-                $this._buildViewFields(cursor);
+                $this._fillOutputFields(cursor);
 
                 cursor.buildQueryBody();
                 return cursor;
@@ -167,7 +177,7 @@
                 );
             }
 
-            $this._buildViewFields(unionsCursor);
+            $this._fillOutputFields(unionsCursor);
 
             return unionsCursor;
         },
@@ -188,27 +198,30 @@
             joinCursor.setRight(
                 $this.buildAnyCursor(joinQuery.$join.$right, params, parent, joinCursor)
             );
-            joinCursor.setCreateRight(function (filter, params){
+            joinCursor.setCreateRight(function (localFilter, localParams){
                 /// построение правого запроса - добавление доп.условий
-                if(params) {
-                    params = JSB.merge({}, $this.params, params);
-                }
+                var localParams = localParams ? JSB.merge({}, params, localParams) : params;
                 var query = JSB.clone(joinQuery.$join.$right);
-                if(filter) {
+                if(localFilter) {
                     if(query.$filter) {
-                        filter.$and.push(query.$filter);
+                        localFilter.$and.push(query.$filter);
                     }
-                    query.$filter = filter;
+                    query.$filter = localFilter;
                 }
-                return $this.buildAnyCursor(query, params, parent, joinCursor);
+                return $this.buildAnyCursor(query, localParams, parent, joinCursor);
             });
 
-            $this._buildViewFields(joinCursor);
+            $this._fillOutputFields(joinCursor);
 
             return joinCursor;
         },
 
-        _buildViewFields: function(viewCursor){
+        buildRecursiveCursor: function (query, params, parent, caller) {
+            // TODO interpreted $recursive cursor
+            QueryUtils.throwError('$recursive cursor is not implemented');
+        },
+
+        _fillOutputFields: function(viewCursor){
             viewCursor.fields = {};
             for(var alias in viewCursor.query.$select) {
 
@@ -250,5 +263,43 @@
             }
 
         },
+
+//        _replaceForeignFieldsWithVars: function(query) {
+//debugger;
+//            var outerContexts = {};
+//            // collect outer contexts
+//            QueryUtils.walkQueries($this.query, {},
+//                function(q){
+//                    if (query.$context == q.$context) {
+//                        for (var i = this.path.length - 1; i >= 0; i--) {
+//                            if (this.path[i].$context != q.$context) {
+//                                outerContexts[this.path[i].$context] = this.path[i];
+//                            }
+//                        }
+//                        return false; // stop
+//                    }
+//                },
+//                null
+//            );
+//
+//            var outerFields = {};
+//            var clonedQuery = JSB.clone(query);
+//            // lookup fields from outer context
+//            QueryUtils.walkQueries(clonedQuery, {
+//                    findView: function(name){
+//                        return $this.query.$views[name];
+//                    }
+//                }, null,
+//                function(query){
+//                    QueryUtils.walkQueryForeignFields(query, function (field, context, q){
+//                        if (outerContexts[context||q.$context]) {
+//                            return '${'+context+'/'+field+'}';
+//                        }
+//                    });
+//                }
+//            );
+//            return clonedQuery;
+//
+//        },
     }
 }

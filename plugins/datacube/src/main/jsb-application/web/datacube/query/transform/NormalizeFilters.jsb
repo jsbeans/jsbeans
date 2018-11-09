@@ -7,10 +7,6 @@
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Transforms.QueryTransformer'
         ],
-        
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
 
 		transform: function(dcQuery, cubeOrDataProvider){
             // standardize $filter
@@ -98,7 +94,8 @@
                         exp.$cond = walkMultiFilter(exp.$cond);
                     } else if (exp.$filter && !exp.$select) {
                         exp.$filter = walkMultiFilter(exp.$filter);
-                    } else if (!exp.$select || includeSubQueries || exp == dcQuery) {
+                    }
+                    if (!exp.$select || includeSubQueries || exp == dcQuery) {
                         for(var i in exp) if (exp[i] != null) {
                             walkInnerConditions(exp[i]);
                         }

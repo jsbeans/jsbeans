@@ -79,21 +79,87 @@
                             name: 'Всплывающая подсказка',
                             collapsible: true,
                             items: {
-                                valueDecimals: {
-                                    render: 'item',
-                                    name: 'Число знаков после запятой',
-                                    valueType: 'number',
-                                    defaultValue: 2
-                                },
-                                valuePrefix: {
-                                    render: 'item',
-                                    name: 'Префикс значения',
-                                    valueType: 'string'
-                                },
-                                valueSuffix: {
-                                    render: 'item',
-                                    name: 'Суффикс значения',
-                                    valueType: 'string'
+                                pointFormat: {
+                                    render: 'formatter',
+                                    name: 'Формат значений',
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Процентное соотношение',
+                                                title: 'Только для круговой диаграммы и стеков',
+                                                type: 'number',
+                                                value: 'point.percentage'
+                                            },
+                                            {
+                                                alias: 'Общее значение стека',
+                                                title: 'Только для стеков',
+                                                type: 'number',
+                                                value: 'point.total'
+                                            },
+                                            {
+                                                alias: 'Координаты точки(X)',
+                                                type: 'number',
+                                                value: 'point.x'
+                                            },
+                                            {
+                                                alias: 'Значение точки(Y)',
+                                                type: 'number',
+                                                value: 'point.y'
+                                            },
+                                            {
+                                                alias: 'Имя серии',
+                                                type: 'string',
+                                                value: 'series.name'
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        dataLabels: {
+                            render: 'group',
+                            name: 'Подписи',
+                            collapsible: true,
+                            items: {
+                                format: {
+                                    render: 'formatter',
+                                    name: 'Форматирование',
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Процентное соотношение',
+                                                title: 'Только для круговой диаграммы и стеков',
+                                                type: 'number',
+                                                value: 'percentage'
+                                            },
+                                            {
+                                                alias: 'Общее значение стека',
+                                                title: 'Только для стеков',
+                                                type: 'number',
+                                                value: 'total'
+                                            },
+                                            {
+                                                alias: 'Координаты точки(X)',
+                                                type: 'number',
+                                                value: 'x'
+                                            },
+                                            {
+                                                alias: 'Значение точки(Y)',
+                                                type: 'number',
+                                                value: 'y'
+                                            },
+                                            {
+                                                alias: 'Имя точки',
+                                                type: 'string',
+                                                value: 'point.name'
+                                            },
+                                            {
+                                                alias: 'Имя серии',
+                                                type: 'string',
+                                                value: 'series.name'
+                                            }
+                                        ]
+                                    }
                                 }
                             }
                         }
@@ -234,10 +300,6 @@
                     render: 'formatter',
                     name: 'Формат значений',
                     formatterOpts: {
-                        basicSettings: {
-                            type: 'number',
-                            value: 'y'
-                        },
                         variables: [
                             {
                                 alias: 'Процентное соотношение',
@@ -282,21 +344,6 @@
                     name: 'Тень',
                     optional: 'checked',
                     editor: 'none'
-                },
-                valueDecimals: {
-                    render: 'item',
-                    name: 'Количество символов после запятой',
-                    valueType: 'number'
-                },
-                valuePrefix: {
-                    render: 'item',
-                    name: 'Префикс значения',
-                    valueType: 'string'
-                },
-                valueSuffix: {
-                    render: 'item',
-                    name: 'Суффикс значения',
-                    valueType: 'string'
                 }
             }
 	    },
@@ -697,10 +744,6 @@
                                     render: 'formatter',
                                     name: 'Форматирование',
                                     formatterOpts: {
-                                        basicSettings: {
-                                            type: 'number',
-                                            value: 'y'
-                                        },
                                         variables: [
                                             {
                                                 alias: 'Процентное соотношение',
@@ -723,6 +766,11 @@
                                                 alias: 'Значение точки(Y)',
                                                 type: 'number',
                                                 value: 'y'
+                                            },
+                                            {
+                                                alias: 'Имя точки',
+                                                type: 'string',
+                                                value: 'point.name'
                                             },
                                             {
                                                 alias: 'Имя серии',
@@ -933,8 +981,9 @@
 
                 for(var i = 0; i < seriesContext.length; i++){
                     var allowPointSelect = seriesContext[i].find('allowPointSelect').checked(),
-                        tooltip = seriesContext[i].find('tooltip'),
-                        datacube = undefined;
+                        dataLabels = seriesContext[i].find('dataLabels'),
+                        datacube = undefined,
+                        obj = {};
 
                     if(allowPointSelect){
                         var isDrilldown = seriesContext[i].find('allowPointSelect drilldown').checked();
@@ -950,18 +999,30 @@
                         }
                     }
 
-                    series.push({
+                    obj = {
                         allowPointSelect: allowPointSelect,
                         cursor: allowPointSelect ? 'pointer' : undefined,
                         datacube: datacube,
                         name: seriesContext[i].find('seriesName').value(),
-                        tooltip: {
-                            valueDecimals: tooltip.find('valueDecimals').value(),
-                            valuePrefix: tooltip.find('valuePrefix').value(),
-                            valueSuffix: tooltip.find('valueSuffix').value()
-                        },
                         visible: seriesContext[i].find('visible').checked()
-                    });
+                    }
+
+                    var tooltipPointFormat = seriesContext[i].find('tooltip pointFormat').value();
+                    if(tooltipPointFormat){
+                        obj.tooltip = {
+                            pointFormat: tooltipPointFormat
+                        }
+                    }
+
+                    var dataLabelsFormat = dataLabels.find('format').value();
+                    if(dataLabelsFormat){
+                        obj.dataLabels = {
+                            format: dataLabelsFormat,
+                            //filter: dataLabels.find('filter').value()
+                        }
+                    }
+
+                    series.push(obj);
                 }
 
                 chartOpts = {
@@ -1103,10 +1164,7 @@
                         shadow: tooltipContext.find('shadow').checked(),
                         style: {
                             color: tooltipContext.find('color').value()
-                        },
-                        valueDecimals: tooltipContext.find('valueDecimals').value(),
-                        valuePrefix: tooltipContext.find('valuePrefix').value(),
-                        valueSuffix: tooltipContext.find('valueSuffix').value()
+                        }
                     }
                 }
 
@@ -1439,7 +1497,7 @@
                     type: '$and',
                     op: type === 'min' ? '$gte' : '$lte',
                     field: binding,
-                    value: value
+                    value: filterValue
                 };
 
                 $this._curRangeFilters[type + 'Filter'] = $this.addFilter(fDesc);

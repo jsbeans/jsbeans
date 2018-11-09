@@ -30,7 +30,7 @@
         reset: function(){
             $this.object = null;
             $this.iterator && $this.iterator.close();
-            $this.iterator = createIterator.call();
+            $this.iterator = $this.createIterator.call();
         },
 
 //        clone: function(){

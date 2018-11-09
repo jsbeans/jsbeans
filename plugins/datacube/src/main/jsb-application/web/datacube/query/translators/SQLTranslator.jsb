@@ -7,7 +7,6 @@
 		
 		$require: [
 		    'DataCube.Query.Translators.TranslatorRegistry',
-		    'DataCube.Query.QueryParser',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
@@ -244,13 +243,15 @@
             if (exp.hasOwnProperty('$const')) {
                 var value;
                 if (JSB.isString(exp.$const)) {
-                    value = "'" + exp.$const + "'"
+                    value = "'" + exp.$const + "'";
                 } else if (JSB.isNumber(exp.$const)) {
                     value = '' + exp.$const;
                 } else if (JSB.isBoolean(exp.$const)) {
                     value =  ('' + exp.$const).toUpperCase();
                 } else if (exp.$const == null) {
                     value = 'NULL';
+                } else if (JSB.isDate(exp.$const)) {
+                    value = "'" + exp.$const.toISOString() + "'";
                 } else {
                     throw new Error('Unsupported $const type ' + typeof exp.$const);
                 }
@@ -359,6 +360,8 @@
                     return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$any':
                     return 'MIN(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
+                case '$corr':
+                    return 'CORR(' + translateNOperator(exp[op], ',') + ')';
                 case '$first':
                     return '(ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useAlias) + '))[1]';
 //                    return 'FIRST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';

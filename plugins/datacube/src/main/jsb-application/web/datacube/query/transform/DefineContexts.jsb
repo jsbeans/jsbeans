@@ -7,10 +7,6 @@
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Transforms.QueryTransformer'
         ],
-        
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
 
 		transform: function(dcQuery, cubeOrDataProvider){
             // ensure queries has defined $context

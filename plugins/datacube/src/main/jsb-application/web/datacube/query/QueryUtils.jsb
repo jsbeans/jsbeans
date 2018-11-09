@@ -409,53 +409,78 @@
             function collect(exp, fixedContext) {
                 if (JSB.isString(exp) && !exp.startsWith('$')) {
                     if (!fixedContext) {
-                        callback(exp, query.$context, query, false);
+                        return callback(exp, query.$context||query.$context, query, false);
                     }
                 } else if (JSB.isObject(exp) && exp.$field) {
                     $this.throwError(JSB.isString(exp.$field), 'Invalid $field value type "{}"', typeof exp.$field);
+                    if (exp.$context) {
+                        if (query.$context == exp.$context || !fixedContext) {
+                            return callback(exp.$field, exp.$context, query, true);
+                        } else if (query.$join && (query.$join.$left.$context == exp.$context || query.$join.$right.$context == exp.$context)) {
+                            return callback(exp.$field, exp.$context, query, true);
+                        }
+                    } else {
+                        return callback(exp.$field, query.$context, query, true);
+                    }
                     if (exp.$context && fixedContext && query.$context == exp.$context) {
-                        callback(exp.$field, exp.$context, query, true);
+                        return callback(exp.$field, exp.$context, query, true);
                     } else if (!exp.$context && !fixedContext) {
-                        callback(exp.$field, exp.$context, query, true);
+                        return callback(exp.$field, exp.$context||query.$context, query, true);
                     }
                 } else if (JSB.isObject(exp)) {
                     if (exp == query || !exp.$select) {
                         // if start query or any expression
                         for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            collect(exp[f], fixedContext);
+                            var res = collect(exp[f], fixedContext);
+                            if (res) {
+                                exp[f] = res;
+                            }
                         }
                     } else if(exp.$select && !skipSubQuery) {
                         // if enabled sub-query
                         for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            collect(exp[f], true);
+                            var res = collect(exp[f], true);
+                            if (res) {
+                                exp[f] = res;
+                            }
                         }
                     }
                 } else if (JSB.isArray(exp)) {
                     for (var i = 0 ; i < exp.length; i++) {
-                        collect(exp[i], fixedContext);
+                        var res = collect(exp[i], fixedContext);
+                        if (res) {
+                            exp[i] = res;
+                        }
                     }
                 }
             }
 
-            collect(valueExp, false);
+            return collect(valueExp, false);
         },
 
         walkQueryForeignFields: function(query, callback /*(field, context, query)*/){
             function collect(exp) {
                 if (JSB.isObject(exp) && exp.$field) {
                     if (exp.$context && query.$context != exp.$context) {
-                        callback(exp.$field, exp.$context, query);
+                        var res = callback.call(exp, exp.$field, exp.$context, query);
+                        if (res) return res;
                     }
                 } else if (JSB.isObject(exp)) {
                     if (exp == query || !exp.$select) {
                         // if start query or any expression
                         for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            collect(exp[f]);
+                            var res = collect(exp[f]);
+                            if (res) {
+                                exp[f] = res;
+                            }
                         }
                     }
                 } else if (JSB.isArray(exp)) {
                     for (var i = 0 ; i < exp.length; i++) {
-                        collect(exp[i]);
+                        var res = collect(exp[i]);
+                        if (res) {
+                            exp[i] = res;
+                        }
                     }
                 }
             }
@@ -839,12 +864,12 @@
 		    }
         },
 
-        extractProviders: function(query, cube) {
+        extractProviders: function(query, defaultCube) {
 //if(MD5.md5(query) == '1441a7909c087dbbe7ce59881b9df8b9') debugger;
             var providers = [];
             $this.walkQueries(query, {}, null, function(q) {
                 if (q.$provider) {
-		            var provider = $this.getQueryDataProvider(q.$provider, cube);
+		            var provider = $this.getQueryDataProvider(q.$provider, defaultCube);
                     if (providers.indexOf(provider) == -1) {
                         providers.push(provider);
                     }
@@ -1020,16 +1045,23 @@ throw 'TODO';
              return (like.startsWith('%') ? '' : '^') + pattern + (like.endsWith('%') ? '' : '$');
         },
 
-        isGlobal: function(query, rootQuery) {
+        walkParentForeignFields: function(query, rootQuery, callback) {
             var outerContexts = {};
             // collect outer contexts
-            $this.walkQueries(rootQuery, {}, null,
-                function(query){
-                    outerContexts[query.$context] = query.$context;
-                }
+            $this.walkQueries(rootQuery, {},
+                function(q){
+                    if (query.$context == q.$context) {
+                        for (var i = this.path.length - 1; i >= 0; i--) {
+                            if (this.path[i].$context != q.$context) {
+                                outerContexts[this.path[i].$context] = this.path[i];
+                            }
+                        }
+                        return false; // stop
+                    }
+                },
+                null
             );
 
-            var hasOuterField = false;
             // lookup fields from outer context
             $this.walkQueries(query, {
                     findView: function(name){
@@ -1037,19 +1069,89 @@ throw 'TODO';
                     }
                 }, null,
                 function(query){
-                    $this.walkQueryForeignFields(query, function (field, context, query){
-                        if (outerContexts[context||query.$context]) {
-                            hasOuterField = true;
+                    $this.walkQueryForeignFields(query, function (field, context, q){
+                        if (outerContexts[context||q.$context]) {
+                            //outerFields[context+'/'+field] = {$field: field, $context: context};
+                            return callback(field, context, q);
                         }
                     });
-                    if (hasOuterField) {
-                        return false;
-                    }
                 }
             );
+        },
 
-            return !hasOuterField;
-        }
+        extractParentForeignFields: function(query, rootQuery) {
+            var outerFields = {};
+            $this.walkParentForeignFields(query, rootQuery, function(field, context, q){
+                outerFields[context+'/'+field] = {$field: field, $context: context};
+            });
+            var fields = Object.keys(outerFields);
+            return fields.length > 0 ? fields : null;
+        },
+
+        jsonReplaceBody: function(target, source) {
+            for(var alias in target) {
+                delete target[alias];
+            }
+            for(var alias in source) {
+                target[alias] = source[alias];
+            }
+        },
+
+        walkFilterExpressions: function(filter, callback/*(exp, path)*/) {
+
+            function walkAndOr(array, path) {
+                $this.throwError(JSB.isArray(array), 'Unsupported expression type for operator $and/$or');
+
+                for (var i = 0 ; i < array.length; i++) {
+                    walkMultiFilter(array[i], path.concat([i]));
+                }
+            }
+
+            function walkBinaryCondition(op, args, path) {
+                for (var i = 0; i < args.length; i++) {
+debugger
+                    var res = callback(args[i], path.concat([i]));
+                    if (res) {
+                        args[i] = res;
+                    }
+                }
+            }
+
+            function walkMultiFilter(exps, path) {
+                $this.throwError(JSB.isObject(exps), 'Unsupported expression type {}', typeof exps);
+
+                for (var field in exps) if (typeof exps[field] !== 'undefined') {
+                    if (field.startsWith('$')) {
+                        var op = field;
+                        switch(op) {
+                            case '$or':
+                            case '$and':
+                                var res = walkAndOr(exps[op], path.concat([op]));
+                                if (res) {
+                                    exps[op] = res;
+                                }
+                                break;
+                            case '$not':
+                                var res = walkMultiFilter(exps[op], path.concat([op]));
+                                if (res) {
+                                    exps[op] = res;
+                                }
+                                break;
+                            default:
+                                // $op: [left, right] expression
+                                walkBinaryCondition(op, exps[op], path.concat([op]));
+                        }
+                    } else {
+                        // field: {$eq: expr}
+                        var opp = Object.keys(exps[field])[0];
+                        var rightExpr = exps[field][opp];
+                        walkBinaryCondition(op, [{$field: field}, rightExpr], path.concat([op]));
+                    }
+                }
+            }
+
+            walkMultiFilter(filter,[]);
+        },
 
 
 	}

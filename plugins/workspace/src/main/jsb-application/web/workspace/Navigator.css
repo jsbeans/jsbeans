@@ -6,6 +6,7 @@
 	list-style: none;
 	white-space: nowrap;
 	overflow: hidden;
+	padding: 0 1px;
 }
 
 .workspaceNavigator > ul.wnbContainer > li {
@@ -14,7 +15,8 @@
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag {
-	padding: 1px 4px;
+	margin: 1px 0;
+	padding: 0 4px;
     border-radius: 4px;
     cursor: pointer;
     box-sizing: border-box;
@@ -42,16 +44,16 @@
 .workspaceNavigator > ul.wnbContainer > li.tag > .icon,
 .workspaceNavigator > ul.wnbContainer > li.tag > .renderer > .icon {
 	position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     background-size: 100%;
     top: 50%;
-    margin-top: -12px;
+    margin-top: -10px;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .text,
 .workspaceNavigator > ul.wnbContainer > li.tag > .renderer > .title {
-	padding-left: 30px;
+	padding-left: 26px;
     font-size: 16px;
     height: 20px;
 }

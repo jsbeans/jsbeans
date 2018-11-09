@@ -10,10 +10,6 @@
         ],
 
         $deprecated: 'код устарел относительно текущей версии движка',
-        
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
 
 		transform: function(dcQuery, cubeOrDataProvider){
             if (dcQuery.$views) {

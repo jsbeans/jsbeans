@@ -344,6 +344,10 @@
                     var min = j * increment + this.minNum,
                         max = (j + 1) * increment + this.minNum;
 
+                    if(j + 1 === count){
+                        max = this.maxNum;
+                    }
+
                     this.colorMap.push({
                         min: min,
                         innerMin: min,

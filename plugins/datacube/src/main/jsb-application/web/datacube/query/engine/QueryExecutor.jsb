@@ -31,11 +31,15 @@
 
             $this.cube = cube;
             $this.tracer && $this.tracer.profile('cube query', $this.cube.id);
+
+            QueryTransformer.initialize();
 		},
 
 		execute: function(){
 		    try {
-		        $this.tracer && $this.tracer.profile('execute query started');
+                var tStarted = Date.now();
+
+//		        $this.tracer && $this.tracer.profile('execute query started');
 
                 $this._prepareQuery();
 
@@ -45,19 +49,32 @@
 		        $this.contextQueries = QueryUtils.indexContextQueries($this.query);
                 $this.tracer && $this.tracer.profile('query prepared', $this.preparedQuery);
 
+                var tPrepared = Date.now();
+
                 $this.builder = new CursorBuilder($this, $this.query);
                 var rootCursor = $this.builder.buildAnyCursor($this.query, $this.params, null);
-                $this.tracer && $this.tracer.profile('root cursor created');
-//                rootCursor.analyze();
+                $this.tracer && $this.tracer.profile('root cursor created', rootCursor.analyze());
                 var it =  rootCursor.asIterator();
                 var oldNext = it.next;
+                var tReady = Date.now();
+                var tExecuted;
                 it.next = function(){
                     try {
-                        return oldNext.apply(this, arguments);
-                    }catch(e){
+                        return oldNext.call(rootCursor);
+                    } catch(e){
                         $this.tracer && $this.tracer.failed('execute query next failed', e);
                         this.close();
                         throw e;
+                    } finally {
+                        if (!tExecuted) {
+                            tExecuted = Date.now();
+                            $this.tracer && $this.tracer.profile('query stat', {
+                                prepare: (tPrepared - tStarted)/1000,
+                                cursor: (tReady - tPrepared)/1000,
+                                lookup: (tExecuted - tReady)/1000,
+                                total: (tExecuted - tStarted)/1000,
+                            });
+                        }
                     }
                 };
                 return it;
@@ -76,45 +93,86 @@
 		},
 
 		tryTranslateQuery: function(query, params) {
-		    var providers = QueryUtils.extractProviders(query, $this.cube);
-		    var providersGroups = $this._groupSameProviders(providers);
-            if (providers.length == 1 || providersGroups.length == 1) {
-                if (TranslatorRegistry.hasTranslator(providers[0])) {
+		    var lastKey, singleType;
+            var providers = QueryUtils.extractProviders(query, $this.cube);
+            providers.forEach(function(provider){
+                var newKey = provider.getJsb().$name + '/' + provider.getStore().getName();
+                if (lastKey && newKey != lastKey) {
+                    singleType = null;
+                }
+                if (!lastKey) {
+                    lastKey = newKey;
+                    singleType = provider.getJsb().$name;
+                }
+            });
+
+            if (singleType) {
+                var translators = TranslatorRegistry.lookupTranslators(singleType, providers, $this.cube);
+                for(var i = 0; i < translators.length; i++) {
                     try {
-                        var translator = TranslatorRegistry.newTranslator(
-                                providers,
-                                $this.cube
-                        );
-                        var it = translator.translatedQueryIterator(query, params);
+                        // translator`s transform
+                        query = QueryTransformer.transformForTranslator(translators[i].getJsb().$name, query, $this.cube);
+                        // try translate
+                        var it = translators[i].translatedQueryIterator(query, params);
                         if (it) {
+                            // translated
                             return it;
                         }
                     } catch(e) {
-                        if(translator) translator.close();
+                        for(var i = 0; i < translators.length; i++) {
+                            translators[i].close();
+                        }
                         throw e;
                     }
                 }
             }
-            return null;
+
+		    // not translated
+		    return null;
 		},
+
+//		tryTranslateQuery: function(query, params) {
+//		    var providers = QueryUtils.extractProviders(query, $this.cube);
+//		    /**  Трансряторы подбираются по типам провайдеров и группируются так, что неважно
+//		    */
+//		    var providersGroups = $this._groupSameProviders(providers);
+//            if (providers.length == 1 || providersGroups.length == 1) {
+//                if (TranslatorRegistry.hasTranslator(providers[0])) {
+//                    try {
+//                        var translator = TranslatorRegistry.newTranslator(
+//                                providers,
+//                                $this.cube
+//                        );
+//                        var it = translator.translatedQueryIterator(query, params);
+//                        if (it) {
+//                            return it;
+//                        }
+//                    } catch(e) {
+//                        if(translator) translator.close();
+//                        throw e;
+//                    }
+//                }
+//            }
+//            return null;
+//		},
 
 		_prepareQuery: function() {
 		    $this.originalQuery = $this.query;
 		    return $this.query = $this.preparedQuery = QueryTransformer.transform($this.query, $this.cube || $this.providers[0]);
 		},
 
-		_getProviderGroupKey: function (provider) {
-//		    var jsbSqlTableDataProvider = JSB.get('DataCube.Providers.SqlTableDataProvider');
-//		    if (jsbSqlTableDataProvider) {
-//		        var SqlTableDataProvider = jsbSqlTableDataProvider.getClass();
-//                // store key for SQL or unique for other
-//                return provider instanceof SqlTableDataProvider
-//                    ? provider.getJsb().$name + '/' + provider.getStore().getName()
-//                    : provider.id;
-//            }
-//            return provider.id;
-            return provider.getJsb().$name + '/' + provider.getStore().getName();
-        },
+//		_getProviderGroupKey: function (provider) {
+////		    var jsbSqlTableDataProvider = JSB.get('DataCube.Providers.SqlTableDataProvider');
+////		    if (jsbSqlTableDataProvider) {
+////		        var SqlTableDataProvider = jsbSqlTableDataProvider.getClass();
+////                // store key for SQL or unique for other
+////                return provider instanceof SqlTableDataProvider
+////                    ? provider.getJsb().$name + '/' + provider.getStore().getName()
+////                    : provider.id;
+////            }
+////            return provider.id;
+//            return provider.getJsb().$name + '/' + provider.getStore().getName();
+//        },
 
 //        _extractProviders: function(query){
 //
@@ -144,21 +202,21 @@
 
         /** Объединяет провайдеры в группы по типам
         */
-		_groupSameProviders: function(providers){
-		    var groupsMap = {/**key:[provider]*/}; //
-
-            for(var i = 0; i < providers.length; i++) {
-                var provider = providers[i];
-                var key = $this._getProviderGroupKey(provider);
-                groupsMap[key] = groupsMap[key] || [];
-                groupsMap[key].push(provider);
-            }
-		    var groups = []; // [[]]
-		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
-		        groups.push(groupsMap[k]);
-		    }
-		    return groups;
-		},
+//		_groupSameProviders: function(providers){
+//		    var groupsMap = {/**key:[provider]*/}; //
+//
+//            for(var i = 0; i < providers.length; i++) {
+//                var provider = providers[i];
+//                var key = $this._getProviderGroupKey(provider);
+//                groupsMap[key] = groupsMap[key] || [];
+//                groupsMap[key].push(provider);
+//            }
+//		    var groups = []; // [[]]
+//		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
+//		        groups.push(groupsMap[k]);
+//		    }
+//		    return groups;
+//		},
 
 		_initContextFields: function(ctx){
             ctx.fields = {};

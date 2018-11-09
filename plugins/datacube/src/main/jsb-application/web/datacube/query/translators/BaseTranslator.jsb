@@ -45,15 +45,12 @@
 		        this.iterator.close();
 		    }
 
-            // extract sub-query for current providers
-            // TODO: починить вернуть !!!! - отключено временно !!!!
-            var subQuery = dcQuery;//this.extractSelfSubQuery(dcQuery, params);
-
             // store dcQuery and params
 		    if (this.dcQuery) {
 		        throw new Error('SQLTranslator does not support reuse, create new instance');
 		    }
-		    this.dcQuery = subQuery;
+
+		    this.dcQuery = dcQuery;
 		    this.params = params;
 
             this._collectContextQueries();
@@ -82,7 +79,6 @@
                             if (!$this.iterator) {
                                 QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] Executing query...');
                                 $this.iterator = $this.executeQuery(translatedQuery);
-                                QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] Query executed');
                             }
                             return $this.translateResult($this.iterator.next());
                         },

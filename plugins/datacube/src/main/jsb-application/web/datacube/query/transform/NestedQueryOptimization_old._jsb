@@ -10,10 +10,6 @@
         ],
 
         $deprecated: 'код устарел относительно текущей версии движка',
-        
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
 
         /**
         * 1) Выделяет подзапросы с одинаковой основной частью
