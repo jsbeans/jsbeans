@@ -4,10 +4,12 @@ import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.plugin.DependsOn;
 import org.jsbeans.plugin.KernelPluginActivator;
 import org.jsbeans.plugin.PluginActivator;
-import org.jsbeans.store.mongodb.MongodbStorePluginActivator;
+import org.jsbeans.web.WebPluginActivator;
+import org.jsbeans.workspace.WorkspacePluginActivator;
+import org.jsbeans.unimap.UnimapPluginActivator;
 
-@DependsOn({KernelPluginActivator.class, DataCubePluginActivator.class, MongodbStorePluginActivator.class})
-public class DataCubeMongodbPluginActivator implements PluginActivator {
+@DependsOn({KernelPluginActivator.class, WebPluginActivator.class, WorkspacePluginActivator.class, UnimapPluginActivator.class})
+public class DataCubeEnginePluginActivator implements PluginActivator {
     public void init() {
         String folder = ConfigHelper.getConfigString("datacube.folder");
         if (folder == null) {
@@ -21,6 +23,6 @@ public class DataCubeMongodbPluginActivator implements PluginActivator {
 
     @Override
     public String getName() {
-        return "datacube-mongodb";
+        return "datacube-engine";
     }
 }

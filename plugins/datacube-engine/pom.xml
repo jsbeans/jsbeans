@@ -15,41 +15,22 @@
 
     <parent>
         <groupId>org.jsbeans</groupId>
-        <artifactId>jsbeans</artifactId>
+        <artifactId>plugins</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>plugins</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>plugin-datacube-engine</artifactId>
+    <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
-
-    <modules>
-        <module>web</module>
-
-        <module>store</module>
-        <module>store-jdbc</module>
-        <module>store-mongodb</module>
-
-        <module>workspace</module>
-        <module>unimap</module>
-        <module>textextractors</module>
-        <module>worker</module>
-
-        <module>datacube</module>
-        <module>datacube-engine</module>
-        <module>datacube-jdbc</module>
-        <module>datacube-mongodb</module>
-
-        <module>empty</module>
-    </modules>
 
     <dependencies>
         <dependency>
             <groupId>org.jsbeans</groupId>
-            <artifactId>kernel</artifactId>
+            <artifactId>plugin-datacube</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
 
 </project>
