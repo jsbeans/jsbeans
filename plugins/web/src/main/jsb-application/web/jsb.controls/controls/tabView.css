@@ -70,7 +70,8 @@
 }
 
 .jsb-tabview > .tabPane.top > li:not(.active):hover {
-    color: #888;
+	color: #696969;
+    background: #fff;
 }
 
 .jsb-tabview > .tabPane.top > li.icon {

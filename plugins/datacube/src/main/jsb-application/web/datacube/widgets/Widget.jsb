@@ -379,7 +379,9 @@
 		},
 
 		addFilter: function(fDesc){
-		    if(!this.filterManager){ return; }
+		    if(!this.filterManager){
+		        return;
+            }
 		    fDesc.sender = this.getEntry();
 			var filterId = this.filterManager.addFilter(this.translateFilter(fDesc));
 			this.getWrapper().addFilter(filterId);

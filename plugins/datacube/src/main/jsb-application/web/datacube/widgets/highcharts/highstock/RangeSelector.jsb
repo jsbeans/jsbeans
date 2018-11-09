@@ -366,7 +366,7 @@
                                     $this._schemeOpts.seriesTypes[i] = type;
                                 }
 
-                                if($this._schemeOpts.seriesTypes[i] === 'date'){
+                                if($this._schemeOpts.seriesTypes[i] === 'date' && x !== undefined && x !== null){
                                     x = x.getTime();
                                 }
 

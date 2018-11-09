@@ -359,6 +359,8 @@
                     return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$any':
                     return 'MIN(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
+                case '$corr':
+                    return 'CORR(' + translateNOperator(exp[op], ',') + ')';
                 case '$first':
                     return '(ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useAlias) + '))[1]';
 //                    return 'FIRST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';

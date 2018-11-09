@@ -445,14 +445,14 @@ if(!(function(){return this;}).call(null).JSB){
 			if(!this.isString(cfg.$name)){
 				throw new Error("Class name required to create managed object");
 			}
-
+			
 			if(this.objects[cfg.$name]){
 				return;	// already created or in progress
 			} else {
 				// add to objects
 				this.objects[cfg.$name] = this;
 			}
-
+			
 			var _kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require', '$format', '$common'];
 			var self = this;
 			var logger = this.getLogger();
@@ -468,7 +468,7 @@ if(!(function(){return this;}).call(null).JSB){
 			this._ready = false;
 			this._readyState = 0;
 			this._reqState = 0;
-
+			
 			// build common section
 			var commonSection = this.$common;
 			if(!commonSection){
@@ -752,7 +752,7 @@ if(!(function(){return this;}).call(null).JSB){
 							})(mtdName);
 						}
 					}
-
+					
 					// propagate $current
 					$curFunc = function(inst){this.__instance = inst;};
 					for(var mtdName in body){
@@ -765,7 +765,7 @@ if(!(function(){return this;}).call(null).JSB){
 							}
 						})(mtdName);
 					}
-/*
+/*					
 					// propagate $server and $client
 					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_serverProcs; return new f();}
 					var $clientFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_clientProcs; return new f();}
@@ -818,18 +818,18 @@ if(!(function(){return this;}).call(null).JSB){
 						if(fName.length === 0){
 							fName = mtdName;
 						}
-
+						
 						var hasSuper = superRx.test(procStr);
 						var hasBase = baseRx.test(procStr);
 						var hasCurrent = currentRx.test(procStr);
 						var hasThis = thisRx.test(procStr);
-
-						var procDecl = 'function ' + fName + '(' + declM[2] + '){ ';
+						
+						var procDecl = 'function __' + fName + '(' + declM[2] + '){ ';
 						if(hasThis || (hasBase && isCtor)){
 							procDecl += 'var $this=this; ';
 						}
 						if(!isBootstrap){
-							if(parent){
+							if(parent){ 
 								if(hasSuper || (hasBase && !isCtor)){
 									procDecl += 'var $super = new $superFunc(this); ';
 								}
@@ -5835,17 +5835,17 @@ JSB({
 		},
 		
 		xhr: function(xhrObj){
-
+			
 			function setRunTag(runTag){
 				if(!runTag){
 					return;
 				}
 				if($this.runTag && runTag && $this.runTag != runTag){
 					$this.publish('JSB.AjaxProvider.serverReloaded', {oldTag: $this.runTag, newTag: runTag});
-				}
+				} 
 				$this.runTag = runTag;
 			}
-
+			
 			function getXHR(){
 				var xmlhttp;
 				try {

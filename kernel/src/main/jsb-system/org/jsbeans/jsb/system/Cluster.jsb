@@ -157,7 +157,7 @@
 			try {
 				res = JSB.getProvider().executeServerRpc(packet.instanceJsb, packet.instanceId, packet.proc, packet.params);
 				if(JSB.isFuture(res)){
-					res.await(function(res, fail){
+					res.wait(function(res, fail){
 						if(fail){
 							$this.respondRpc(packet, undefined, JSB().substComplexObjectInRpcResult(fail));	
 						} else {

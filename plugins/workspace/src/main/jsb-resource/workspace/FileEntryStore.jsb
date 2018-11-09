@@ -111,6 +111,7 @@
 				ext = this.options.workspaceExt || 'ws';
 			}
 			var eFileName = FileSystem.join(eDir, this.fixFileName(entry.getId()) + '.' + ext);
+			var eFileNameTmp = eFileName + '.tmp';
 			var mtxName = 'JSB.Workspace.FileEntryStore.' + entry.getId();
 			JSB.getLocker().lock(mtxName);
 			try {
@@ -118,7 +119,8 @@
 				FileSystem.createDirectory(eDir, true);
 
 				// write file
-				FileSystem.write(eFileName, JSON.stringify(entry.getEntryDoc(), null, 4));
+				FileSystem.write(eFileNameTmp, JSON.stringify(entry.getEntryDoc(), null, 4));
+				FileSystem.move(eFileNameTmp, eFileName);
 			} catch(e){
 				entry.getWorkspace().blockWithException(e);
 				throw e;
