@@ -2,15 +2,13 @@
 	$name: 'DataCube.SliceDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$require: ['JQuery.UI.Resizable', 
-	           'JSB.Widgets.ToolManager',
-	           'DataCube.Dialogs.SliceOptionsTool'],
+	           'JSB.Widgets.ToolManager'],
 	
 	$client: {
-		ready: false,
 		editor: null,
 		slice: null,
-		leftFieldConnectors: {},
-		rightFieldConnectors: {},
+
+		linksTo: {},
 		
 		options: {
 			onHighlight: function(bEnable){
@@ -26,16 +24,16 @@
 					return;
 				}
 				JSB.defer(function(){
-					self.editor.cubeEntry.server().updateSliceNodePosition(self.slice.getId(), {x: x, y: y});
+					//self.editor.cubeEntry.server().updateSliceNodePosition(self.slice.getId(), {x: x, y: y});
 				}, 500, 'posChanged_' + this.getId());
-				
 			}
 		},
 		
 		$constructor: function(diagram, key, opts){
 			$base(diagram, key, opts);
+
 			this.editor = opts.editor;
-			this.slice = opts.slice;
+			this.entry = opts.entry;
 
 			$jsb.loadCss('SliceDiagramNode.css');
 			this.addClass('sliceDiagramNode');
@@ -43,34 +41,74 @@
 			this.caption = this.$(`#dot
 				<div class="caption">
 					<div class="icon"></div>
-					<div class="name">{{=this.slice.getName()}}</div>
+					<div class="name">{{=this.entry.getName()}}</div>
 					
 					<div jsb="JSB.Widgets.Button" class="roundButton btnEdit btn10" tooltip="Редактировать срез"
-						onclick="{{=$this.callbackAttr(function(evt){ $this.publish('JSB.Workspace.Entry.open', $this.slice); })}}"></div>
+						onclick="{{=$this.callbackAttr(function(evt){ $this.publish('JSB.Workspace.Entry.open', $this.entry); })}}"></div>
 					<div jsb="JSB.Widgets.Button" class="roundButton btnDelete btn10" tooltip="Удалить срез"
 						onclick="{{=$this.callbackAttr(function(evt){ $this.removeSlice(evt); evt.stopPropagation(); })}}"></div>
 				</div>
 			`);
-			this.body = this.$(`
-				<div class="body">
-					<div class="message">Редактор срезов пока не реализован. Формируйте запрос в настройках.</div>
-				</div>
-			`);
-			this.status = this.$('<div class="status"></div>');
 			this.append(this.caption);
-			this.append(this.body);
-			this.append(this.status);
-			this.fieldList = this.$('<div class="fields"></div>');
-			this.body.append(this.fieldList);
 
+			var sourceSettings = this.$('<div class="sourceSettings"></div>');
+			this.append(sourceSettings);
+
+			sourceSettings.append('<header>Источник</header>');
+
+			this.sourceMessage = this.$('<span class="sourceName"></span>');
+			sourceSettings.append(this.sourceMessage);
+
+			this.entry.server().getSourceType(function(type, fail){
+			    if(fail){
+			        return;
+			    }
+
+			    $this.sourceMessage.text(type);
+			});
+
+			this.selectSettings = this.$('<div class="selectSettings"></div>');
+			this.append(this.selectSettings);
+
+			// install connectors
+			// todo: not create if slice cube id != editor cube id
+			var leftConnector = this.$('<div class="connector left"></div>');
+			this.caption.append(leftConnector);
+
+            this.leftConnector = $this.installConnector('sliceLeft', {
+                origin: leftConnector,
+                handle: [leftConnector, this.caption],
+                iri: 'connector/left/' + this.getId()
+            });
+/*
+			var rightConnector = this.$('<div class="connector right"></div>');
+			this.append(rightConnector);
+
+
+            this.rightConnector = $this.installConnector('sliceRight', {
+                origin: rightConnector,
+                handle: [rightConnector, this.caption],
+                iri: 'connector/right/' + this.getId()
+            });
+            */
 			// install drag-move selector
+			/*
 			this.installDragHandle('drag', {
 				selector: this.caption
 			});
-			
-			// install resize hande
+			*/
+
+			this.status = this.$('<div class="status"></div>');
+			this.append(this.status);
+
+			// install drag handle
+			this.installDragHandle('drag', {
+				selector: this.caption
+			});
+
+			// install resize handle
 			var rightBottomGripper = this.$('<div class="gripper cornerGripper rightBottomGripper"></div>');
-			this.append(rightBottomGripper);
+			this.status.append(rightBottomGripper);
 			
 			this.installResizeHandle('rightBottomGripper',{
 				selector: rightBottomGripper,
@@ -78,7 +116,6 @@
 			});
 			
 			$this.refresh();
-			$this.ready = true;
 			
 			this.subscribe('Slice.renameSlice', {session: true}, function(sender, msg, desc){
 				var entry = desc.entry;
@@ -88,7 +125,7 @@
 				$this.caption.find('.name').text(desc.name);
 			});
 		},
-		
+		/*
 		removeSlice: function(evt){
 			var elt = $this.$(evt.currentTarget);
 			ToolManager.showMessage({
@@ -113,7 +150,7 @@
 				}
 			});
 		},
-		
+
 		showSettings: function(evt){
 			var elt = this.$(evt.currentTarget);
 			ToolManager.activate({
@@ -144,10 +181,18 @@
 				}
 			});
 		},
-		
+		*/
+
+		createLink: function(link){
+		    var entry = link.target.node.entry;
+
+		    this.linksTo[entry.getFullId()] = {
+		        entry: link.target.node.entry
+		    }
+		},
+
 		refresh: function(){
-			this.fieldList.empty();
-			// TODO: redraw query editor
+		    //
 		},
 		
 		highlightNode: function(bEnable){
@@ -159,12 +204,18 @@
 		},
 
 		selectNode: function(bEnable){
+		    var obj = {
+                entry: this.entry,
+                node: this,
+                sources: this.linksTo
+		    };
+
 			if(bEnable){
 				this.addClass('selected');
-				this.editor.publish('DataCube.CubeEditor.sliceNodeSelected', this.slice);
+				this.publish('DataCube.CubeEditor.sliceNodeSelected', obj);
 			} else {
 				this.removeClass('selected');
-				this.editor.publish('DataCube.CubeEditor.sliceNodeDeselected', this.slice);
+				this.publish('DataCube.CubeEditor.sliceNodeDeselected', obj);
 			}
 		},
 		

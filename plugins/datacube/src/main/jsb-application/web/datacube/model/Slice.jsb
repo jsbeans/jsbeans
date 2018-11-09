@@ -19,7 +19,8 @@
 	},
 	
 	$server: {
-		$require: ['JSB.Workspace.WorkspaceController', 
+		$require: ['JSB.Workspace.WorkspaceController',
+		           'DataCube.Query.QuerySyntax',
 		           'DataCube.Query.QueryCache'],
 		
 		$bootstrap: function(){
@@ -65,6 +66,144 @@
 			});
 		},
 
+		executeQuery: function(opts){
+			$this.getCube().load();
+			var params = {};
+			var extQuery = (opts && opts.extQuery) || {};
+			var useCache = (opts && opts.useCache) || false;
+			var preparedQuery = JSB.clone(this.query);
+            if(!preparedQuery || Object.keys(preparedQuery).length == 0){
+            	preparedQuery = { $select: {}};
+            }
+            if(extQuery && Object.keys(extQuery).length > 0){
+            	var qDesc = this.cube.parametrizeQuery(extQuery);
+            	params = qDesc.params;
+
+            	// merge queries
+            	if(qDesc.query.$filter && Object.keys(qDesc.query.$filter).length > 0){
+            		if(preparedQuery.$filter){
+            			preparedQuery.$filter = {$and:[preparedQuery.$filter, qDesc.query.$filter]}
+            		} else {
+            			preparedQuery.$filter = qDesc.query.$filter;
+            		}
+            	}
+
+            	if(qDesc.query.$cubeFilter && Object.keys(qDesc.query.$cubeFilter).length > 0){
+            		if(preparedQuery.$cubeFilter){
+            			preparedQuery.$cubeFilter = {$and:[preparedQuery.$cubeFilter, qDesc.query.$cubeFilter]}
+            		} else {
+            			preparedQuery.$cubeFilter = qDesc.query.$cubeFilter;
+            		}
+            	}
+
+            	if(qDesc.query.$postFilter && Object.keys(qDesc.query.$postFilter).length > 0){
+            		if(preparedQuery.$postFilter){
+            			preparedQuery.$postFilter = {$and:[preparedQuery.$postFilter, qDesc.query.$postFilter]}
+            		} else {
+            			preparedQuery.$postFilter = qDesc.query.$postFilter;
+            		}
+            	}
+
+            	if(qDesc.query.$sort){
+            		preparedQuery.$sort = qDesc.query.$sort;
+            	}
+
+            	if(qDesc.query.$select){
+            		JSB.merge(preparedQuery.$select, qDesc.query.$select);
+            	}
+
+            	if(qDesc.query.$groupBy){
+            		if(!preparedQuery.$groupBy){
+            			preparedQuery.$groupBy = qDesc.query.$groupBy;
+            		} else {
+            			JSB.merge(preparedQuery.$groupBy, qDesc.query.$groupBy);
+            		}
+            	}
+
+            }
+            if(opts && opts.wrapQuery && Object.keys(opts.wrapQuery).length > 0){
+            	var q = JSB.clone(opts.wrapQuery);
+            	if(preparedQuery.$cubeFilter){
+            		if(q.$cubeFilter){
+            			q.$cubeFilter = {$and:[q.$cubeFilter, preparedQuery.$cubeFilter]};
+            		} else {
+            			q.$cubeFilter = preparedQuery.$cubeFilter;
+            		}
+            		delete preparedQuery.$cubeFilter;
+            	}
+            	q.$from = preparedQuery;
+            	preparedQuery = q;
+            }
+            if(useCache && this.cacheEnabled){
+            	this.ensureQueryCache();
+				return this.queryCache.executeQuery(preparedQuery, params);
+            }
+            return this.cube.executeQuery(preparedQuery, params);
+		},
+
+		ensureQueryCache: function(){
+			if(!this.queryCache){
+				var mtx = this.getId() + '_queryCache';
+				JSB.getLocker().lock(mtx);
+				if(!this.queryCache){
+					this.queryCache = new QueryCache(this, this.cube);
+				}
+				JSB.getLocker().unlock(mtx);
+			}
+			return this.queryCache;
+		},
+
+		getCubeFields: function(){
+			return this.getCube().getFields();
+		},
+
+		getCubeSlices: function(){
+			$this.getCube().load();
+			return $this.getCube().getSlices();
+		},
+
+        getSourceType: function(){
+            var fromKeys = QuerySyntax.getFromContext();
+
+            for(var i = 0; i < fromKeys.length; i++){
+                if(this.query[fromKeys[i]]){
+                    return fromKeys[i];
+                }
+            }
+
+            return 'Текущий куб';
+        },
+
+		getOutputFields: function(){
+			var fMap = {};
+			if(this.query && this.query.$select && Object.keys(this.query.$select).length > 0){
+				for(var fName in this.query.$select){
+					fMap[fName] = {
+						type: null,	// TODO: need to resolve
+						comment: null
+					}
+				}
+			}
+
+			return fMap;
+		},
+
+		invalidate: function(){
+			if(!this.cacheEnabled){
+				return;
+			}
+			this.ensureQueryCache();
+			this.queryCache.clear();
+		},
+
+		loadCacheFromCube: function(){
+			if(!this.cacheEnabled || !$this.getCube().queryCache){
+				return;
+			}
+			this.ensureQueryCache();
+			this.queryCache.copyFrom($this.getCube().queryCache, $this.query);
+		},
+
 		setName: function(name){
 			$base(name);
 			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
@@ -102,133 +241,6 @@
 		    if(isNeedUpdate){
 		        this.doSync();
 		    }
-		},
-
-		executeQuery: function(opts){
-			$this.getCube().load();
-			var params = {};
-			var extQuery = (opts && opts.extQuery) || {};
-			var useCache = (opts && opts.useCache) || false;
-			var preparedQuery = JSB.clone(this.query);
-            if(!preparedQuery || Object.keys(preparedQuery).length == 0){
-            	preparedQuery = { $select: {}};
-            }
-            if(extQuery && Object.keys(extQuery).length > 0){
-            	var qDesc = this.cube.parametrizeQuery(extQuery);
-            	params = qDesc.params;
-            	
-            	// merge queries
-            	if(qDesc.query.$filter && Object.keys(qDesc.query.$filter).length > 0){
-            		if(preparedQuery.$filter){
-            			preparedQuery.$filter = {$and:[preparedQuery.$filter, qDesc.query.$filter]}
-            		} else {
-            			preparedQuery.$filter = qDesc.query.$filter;
-            		}
-            	}
-
-            	if(qDesc.query.$cubeFilter && Object.keys(qDesc.query.$cubeFilter).length > 0){
-            		if(preparedQuery.$cubeFilter){
-            			preparedQuery.$cubeFilter = {$and:[preparedQuery.$cubeFilter, qDesc.query.$cubeFilter]}
-            		} else {
-            			preparedQuery.$cubeFilter = qDesc.query.$cubeFilter;
-            		}
-            	}
-
-            	if(qDesc.query.$postFilter && Object.keys(qDesc.query.$postFilter).length > 0){
-            		if(preparedQuery.$postFilter){
-            			preparedQuery.$postFilter = {$and:[preparedQuery.$postFilter, qDesc.query.$postFilter]}
-            		} else {
-            			preparedQuery.$postFilter = qDesc.query.$postFilter;
-            		}
-            	}
-            	
-            	if(qDesc.query.$sort){
-            		preparedQuery.$sort = qDesc.query.$sort;
-            	}
-            	
-            	if(qDesc.query.$select){
-            		JSB.merge(preparedQuery.$select, qDesc.query.$select);
-            	}
-
-            	if(qDesc.query.$groupBy){
-            		if(!preparedQuery.$groupBy){
-            			preparedQuery.$groupBy = qDesc.query.$groupBy;
-            		} else {
-            			JSB.merge(preparedQuery.$groupBy, qDesc.query.$groupBy);
-            		}
-            	}
-
-            }
-            if(opts && opts.wrapQuery && Object.keys(opts.wrapQuery).length > 0){
-            	var q = JSB.clone(opts.wrapQuery);
-            	if(preparedQuery.$cubeFilter){
-            		if(q.$cubeFilter){
-            			q.$cubeFilter = {$and:[q.$cubeFilter, preparedQuery.$cubeFilter]};
-            		} else {
-            			q.$cubeFilter = preparedQuery.$cubeFilter;
-            		}
-            		delete preparedQuery.$cubeFilter;
-            	}
-            	q.$from = preparedQuery;
-            	preparedQuery = q;
-            }
-            if(useCache && this.cacheEnabled){
-            	this.ensureQueryCache();
-				return this.queryCache.executeQuery(preparedQuery, params);
-            }
-            return this.cube.executeQuery(preparedQuery, params);
-		},
-		
-		loadCacheFromCube: function(){
-			if(!this.cacheEnabled || !$this.getCube().queryCache){
-				return;
-			}
-			this.ensureQueryCache();
-			this.queryCache.copyFrom($this.getCube().queryCache, $this.query);
-		},
-		
-		ensureQueryCache: function(){
-			if(!this.queryCache){
-				var mtx = this.getId() + '_queryCache';
-				JSB.getLocker().lock(mtx);
-				if(!this.queryCache){
-					this.queryCache = new QueryCache(this, this.cube);
-				}
-				JSB.getLocker().unlock(mtx);
-			}
-			return this.queryCache;
-		},
-		
-		getCubeFields: function(){
-			$this.getCube().load();
-			return $this.getCube().getOutputFields();
-		},
-		
-		getCubeSlices: function(){
-			$this.getCube().load();
-			return $this.getCube().getSlices();
-		},
-		
-		getOutputFields: function(){
-			var fMap = {};
-			if(this.query && this.query.$select && Object.keys(this.query.$select).length > 0){
-				for(var fName in this.query.$select){
-					fMap[fName] = {
-						type: null,	// TODO: need to resolve
-						comment: null
-					}
-				}
-			}
-			
-			return fMap;
-		},
-		
-		invalidate: function(){
-			if(!this.cacheEnabled){
-				return;
-			}
-			this.ensureQueryCache();
-			this.queryCache.clear();
 		},
 		
 		updateCache: function(){

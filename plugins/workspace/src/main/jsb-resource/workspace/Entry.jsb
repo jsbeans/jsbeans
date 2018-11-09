@@ -13,6 +13,10 @@
 	_childCount: 0,
 	_artifactCount: 0,
 	_shareCount: 0,
+
+	getFullId: function(){
+	    return this.getWorkspace().getId() + '/' + this.getId();
+	},
 	
 	getName: function(){
 		return this._name;

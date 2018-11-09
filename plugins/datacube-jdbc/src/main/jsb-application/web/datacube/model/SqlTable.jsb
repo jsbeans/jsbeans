@@ -9,7 +9,8 @@
 	},
 	
 	$server: {
-		$require: ['JSB.Workspace.WorkspaceController'],
+		$require: ['JSB.Workspace.WorkspaceController',
+		           'JSB.Store.Sql.JDBC'],
 		
 		descriptor: null,
 	
@@ -23,6 +24,8 @@
 				share: false,
 				rename: false
 			});
+
+			JDBC.loadDrivers(true);
 		},
 
 		$constructor: function(id, workspace, opts){
@@ -61,8 +64,13 @@
 			    fields = {};
 
             for(var i in columns){
+                var nativeType = columns[i].datatypeName;
+
+                // todo: name from comments
                 fields[i] = {
-                    type: columns[i].datatypeName
+                    name: i,
+                    nativeType: nativeType,
+                    type: JDBC.toJsonType(nativeType)
                 }
             }
 

@@ -4,6 +4,7 @@
     border: none !important;
     padding: 0;
     box-shadow: 1px 1px 1px #585858;
+    z-index: 40000;
 }
 
 .schemePopupTool {

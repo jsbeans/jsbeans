@@ -14,6 +14,13 @@
 	},
 	
 	$client: {
+	    _initializing: {
+	        connectors: 0,
+	        links: 0,
+	        nodes: 0,
+	        layouts: 0
+	    },
+
 		connectorDescs: {},
 		linkDescs: {},
 		nodeDescs: {},
@@ -232,10 +239,30 @@
 			
 			this.updateViewport();
 			this.useShape('highlightFilter');
-			
-			if($this.options.onInit){
-				$this.options.onInit.call($this);
-			}
+		},
+
+		_checkInit: function(){
+		    if(!this.options.onInit){
+		        return;
+		    }
+
+		    if(Object.keys(this.options.layouts).length !== this._initializing.layouts){
+		        return;
+		    }
+
+		    if(Object.keys(this.options.nodes).length !== this._initializing.nodes){
+		        return;
+		    }
+
+		    if(Object.keys(this.options.connectors).length !== this._initializing.connectors){
+		        return;
+		    }
+
+		    if(Object.keys(this.options.links).length !== this._initializing.links){
+		        return;
+		    }
+
+		    this.options.onInit.call(this);
 		},
 		
 		registerShape: function(key, createCallback){
@@ -394,6 +421,9 @@
 				var lmInst = new LayoutClass(self, opts);
 				self.layoutManagers[key] = lmInst;
 				lmInst.key = key;
+
+				$this._initializing.layouts++;
+				$this._checkInit();
 			}
 			
 			if(opts.jsb){
@@ -416,6 +446,9 @@
 					self.nodeDescs[key] = {};
 				}
 				self.nodeDescs[key].options = opts;
+
+				$this._initializing.nodes++;
+				$this._checkInit();
 			}
 			
 			if(opts.jsb){
@@ -439,7 +472,9 @@
 					self.connectorDescs[key] = {};
 				}
 				self.connectorDescs[key].options = opts;
-				
+
+				$this._initializing.connectors++;
+				$this._checkInit();
 			}
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
@@ -464,6 +499,9 @@
 				}
 				self.linkDescs[key].options = opts;
 				self.updateScheme();
+
+				$this._initializing.links++;
+				$this._checkInit();
 			}
 			
 			if(opts.jsb){
@@ -844,6 +882,7 @@
 		},
 		
 		select: function(node, bSelect){
+debugger;
 			if(!JSB.isDefined(bSelect)){
 				bSelect = true;
 			}
@@ -992,7 +1031,5 @@
 		        y: this.grid.height()
 		    };
 		}
-	},
-	
-	$server: {}
+	}
 }

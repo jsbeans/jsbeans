@@ -17,6 +17,21 @@
 		    throw new Error('Method "extractFields" should be overriden');
 		},
 
+		extractFieldsForDisplay: function(){
+            var fields = this.extractFields(),
+                fieldsArr = [];
+
+            for(var j in fields){
+                fieldsArr.push({
+                    key: j,
+                    name: fields[j].name,
+                    type: fields[j].type
+                });
+            }
+
+            return fieldsArr;
+		},
+
 		getStore: function(){
 			var sourceEntry = this.getWorkspace().entry(this.getParentId());
 			return sourceEntry.getStore();

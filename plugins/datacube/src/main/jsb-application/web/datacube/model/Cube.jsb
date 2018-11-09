@@ -41,7 +41,8 @@
 		loaded: false,
 
 		fields: {},
-		fieldMap: null,
+
+		dataSources: {},
 		slices: {},
 
 		$constructor: function(id, workspace, opts){
@@ -55,9 +56,6 @@
 			if(this.property('slices')){
 				this.sliceCount = this.property('slices');
 			}
-			if(this.property('fieldMap')){
-				this.fieldMap = this.property('fieldMap');
-			}
 		},
 		
 		destroy: function(){
@@ -66,11 +64,7 @@
 			}
 			$base();
 		},
-		
-		getFieldMap: function(){
-			return this.fieldMap;
-		},
-		
+
 		load: function(bRespond){
 			if(!this.loaded){
 			    var mtxName = 'load_' + this.getId();
@@ -100,10 +94,28 @@
 										continue;
 									}
 
-									this.slices[sDesc.id] = slice;
+									this.slices[sDesc.id] = {
+									    entry: slice,
+									    diagramOpts: sDesc.diagramOpts
+									};
 
 									this.fields = JSB.merge(this.fields, slice.getStructFields());
 								}
+							}
+
+							// load data sources
+							for(var i = 0; i < snapshot.dataSources.length; i++){
+							    var desc = snapshot.dataSources[i],
+							        idArr = desc.id.split('/');
+
+							    if(this.getWorkspace(idArr[0]).existsEntry(idArr[1])){
+							        var entry = this.getWorkspace(idArr[0]).entry(idArr[1]);
+
+                                    this.dataSources[desc.id] = {
+                                        entry: entry,
+                                        diagramOpts: desc.diagramOpts
+                                    }
+							    }
 							}
 						}
 						this.loaded = true;
@@ -118,23 +130,22 @@
 			if(!bRespond){
 				return;
 			}
-			
-			// construct response for drawing
-			var desc = {
-				fields: this.fields,
-				slices: []
-			};
 
-			for(var sId in this.slices){
-				desc.slices.push({
-					slice: this.slices[sId]
-				});
+			// prepare data source fields
+			for(var i in this.dataSources){
+			    this.dataSources[i].fields = this.dataSources[i].entry.extractFieldsForDisplay();
 			}
 
-			return desc;
+			return {
+			    cubeId: this.getId(),
+			    dataSources: this.dataSources,
+				fields: this.fields,
+				slices: this.slices
+			};
 		},
 		
 		fixupProviders: function(){
+return;
 			var bNeedSave = false;
 			for(pId in this.dataProviders){
 				var p = this.dataProviders[pId];
@@ -192,16 +203,24 @@
 			try {
 				// construct snapshot
 				var snapshot = {
+				    dataSources: [],
 					slices: []
 				};
 				
 				// prepare slices
-				for(var sId in this.slices){
-					var sDesc = {
-						id: sId,
-						name: this.slices[sId].getName()
-					}
-					snapshot.slices.push(sDesc);
+				for(var i in this.slices){
+					snapshot.slices.push({
+						id: i,
+                        diagramOpts: this.slices[i].diagramOpts
+					});
+				}
+
+				// prepare data sources
+				for(var i in this.dataSources){
+				    snapshot.dataSources.push({
+				        id: i,
+				        diagramOpts: this.dataSources[i].diagramOpts
+				    });
 				}
 				
 				this.storeArtifact('.cube', snapshot);
@@ -223,39 +242,24 @@
 		    // todo
 		},
 
-		prepareFieldName: function(name){
-			name = name.trim();
-			if(name.length == 0){
-				return name;
-			}
-			if(name[0] == '\"' || name[0] == '\''){
-				name = name.substr(1, name.length - 1);
-			}
-			if(name[name.length - 1] == '\"' || name[name.length - 1] == '\''){
-				name = name.substr(0, name.length - 1);
-			}
-			
-			if(name.indexOf('.') >= 0){
-				var parts = name.split(/[\.\s]/i);
-				name = '';
-				for(var i = 0; i < parts.length; i++){
-					var pName = parts[i];
-					if(i > 0){
-						pName = pName[0].toUpperCase() + pName.substr(1);
-					}
-					name += pName;
-				}
-			}
+		addDataSource: function(entry, diagramOpts){
+		    this.dataSources[entry.getFullId()] = {
+		        entry: entry,
+		        diagramOpts: diagramOpts
+		    };
 
-			return name;
+		    this.sourceCount = Object.keys(this.dataSources).length;
+
+			this.store();
+			this.doSync();
 		},
-		
+
 		addSlice: function(){
 			this.load();
 			// generate slice name map
 			var snMap = {};
 			for(var sId in this.slices){
-				snMap[this.slices[sId].getName()] = true;
+				snMap[this.slices[sId].entry.getName()] = true;
 			}
 			var sName = null;
 			for(var cnt = 1; ; cnt++){
@@ -267,7 +271,9 @@
 			var sId = JSB.generateUid();
 			var slice = new Slice(sId, this.getWorkspace(), this, sName);
 
-			this.slices[sId] = slice;
+			this.slices[sId] = {
+			    entry: slice
+			};
 			this.sliceCount = Object.keys(this.slices).length;
 			this.addChildEntry(slice);
 			this.publish('DataCube.Model.Cube.changed', {action: 'sliceAdded'}, {session: true});
@@ -276,40 +282,19 @@
 			return slice;
 		},
 		
-		removeChildEntry: function(e){
-			if(!this.hasChildEntry(e)){
-				return;
-			}
-			$base(e);
-
-			if(JSB.isString(e)){
-				e = this.getWorkspace().entry(e);
-			}
-			if(JSB.isInstanceOf(e, 'DataCube.Model.Slice')){
-				this.removeSlice(e.getId());
-			}
-		},
-		
 		removeSlice: function(sId){
 			this.load();
 			var slice = this.slices[sId];
+
 			if(!slice){
 				return;
 			}
+
 			delete this.slices[sId];
-			this.removeChildEntry(sId);
 			slice.remove();
 			this.publish('DataCube.Model.Cube.changed', {action: 'sliceRemoved'}, {session: true});
 			this.sliceCount = Object.keys(this.slices).length;
 			this.store();
-		},
-		
-		getSliceById: function(sId){
-			this.load();
-			if(!this.slices[sId]){
-				throw new Error('Unable to find slice with id: ' + sId);
-			}
-			return this.slices[sId];
 		},
 		
 		getSlices: function(){
@@ -326,29 +311,6 @@
 			this.load();
 
 			return this.getFields();
-		},
-		
-		getOutputFields: function(){
-			var fields = $this.getManagedFields();
-			var fMap = {};
-			for(var fName in fields){
-				fMap[fName] = {
-					type: fields[fName].type,
-					comment: fields[fName].comment
-				};
-			}
-			
-			return fMap;
-		},
-		
-		updateSliceSettings: function(sId, desc){
-			this.load();
-
-			this.getSliceById(sId).setSliceParams(desc);
-
-			this.publish('DataCube.Model.Cube.changed', {action: 'sliceChanged'}, {session: true});
-			this.store();
-			this.doSync();
 		},
 
 		parametrizeQuery: function(query){

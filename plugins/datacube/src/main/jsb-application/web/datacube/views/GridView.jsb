@@ -35,8 +35,8 @@
             this.error.append(this.errorText);
             this.append(this.error);
             // selected
-            this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, slice){
-                $this.updateData(slice);
+            this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, obj){
+                $this.updateData(obj.entry);
             });
 
             this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, obj){

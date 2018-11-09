@@ -14,10 +14,13 @@
 			this.subscribe('DataCube.Model.Cube.changed', {session: true}, function(sender, msg, params){
 				if($this.cubeFieldMap[sender.getId()]){
 					// update cube fields
+console.log('Need update method');
+debugger;
+                    /*
 					sender.server().getFieldMap(function(fm){
 						$this.cubeFieldMap[sender.getId()] = fm;	
 					});
-					 
+					 */
 				}
 			});
 		},
