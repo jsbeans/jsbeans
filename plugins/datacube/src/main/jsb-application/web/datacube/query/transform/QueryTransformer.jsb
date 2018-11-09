@@ -5,52 +5,90 @@
 	$server: {
 		$require: ['JSB.System.Config'],
 
-        transformerBeans: [],
-        transformers: [],
+        transformers: null,
         
         $constructor: function(){
         	$base();
         	
-        	this.transformersCfg = Config.get('datacube.query.transformers');
-        },
-        
-        register: function(transformerJsb){
-        	if(!transformerJsb instanceof JSB){
-			    throw new Error('Invalid transformer type');
-			}
-        	for(var i = 0; i < this.transformersCfg.length; i++){
-        		if(this.transformersCfg[i] == transformerJsb.$name){
-        			$this.transformerBeans[i] = transformerJsb;
-        			JSB.getLogger().debug('Registered transformer ' + transformerJsb.$name + ' with order: ' + i);
-        		}
-        	}
+        	this.mainTransformersConfig = Config.get('datacube.query.transformers');
+        	this.translatorsTransformersConfig = Config.get('datacube.query.translators');
         },
 
-		transform: function(dcQuery, cubeOrDataProvider){
-		    $this.initialize();
-		    for(var i in $this.transformers) {
-		        dcQuery = $this.transformers[i].transform(dcQuery, cubeOrDataProvider);
-		        if (!dcQuery) throw new Error('Failed transform ' + $this.transformers[i].getJsb().$name);
+		initialize: function(){
+		    if (!$this.transformers) {
+                JSB.locked($this, function(){
+		            if (!$this.transformers) {
+                        try {
+                            $this.transformers = {};
+
+                            for(var i = 0; i < $this.mainTransformersConfig.length; i++) {
+                                var transformerName = $this.mainTransformersConfig[i];
+                                var transformerJsb = JSB.get(transformerName);
+
+                                if(!transformerJsb){
+                                    throw new Error('Missing transformer: ' + transformerName);
+                                }
+
+                                var transformer = new (transformerJsb.getClass())();
+                                $this.transformers[transformerName] = transformer;
+                            }
+
+                            for(var translator in $this.translatorsTransformersConfig) {
+                                var transformers = $this.translatorsTransformersConfig[translator].transformers;
+
+                                for(var i = 0; i < transformers.length; i++) {
+                                    var transformerName = transformers[i];
+                                    var transformerJsb = JSB.get(transformerName);
+
+                                    if(!transformerJsb){
+                                        throw new Error('Missing transformer: ' + transformerName);
+                                    }
+
+                                    var transformer = new (transformerJsb.getClass())();
+                                    $this.transformers[transformerName] = transformer;
+                                }
+                            }
+                        }catch(e) {
+                            for(var name in $this.transformers) {
+                                $this.transformers[name].destroy();
+                                delete $this.transformers[name];
+                            }
+                            $this.transformers = {};
+                            throw e;
+                        }
+                    }
+                });
 		    }
+		},
+
+		transform: function(dcQuery, defaultCube){
+            for(var i = 0; i < $this.mainTransformersConfig.length; i++) {
+                var transformerName = $this.mainTransformersConfig[i];
+                var transformer = $this.transformers[transformerName];
+
+                dcQuery = transformer.transform(dcQuery, defaultCube);
+                if (!dcQuery) throw new Error('Failed transform ' + $this.transformers[i].getJsb().$name);
+            }
+            return dcQuery;
+		},
+
+		transformForTranslator: function(translatorName, dcQuery, defaultCube){
+            var transformers = $this.translatorsTransformersConfig[translatorName].transformers;
+
+            for(var i = 0; i < transformers.length; i++) {
+                var transformerName = transformers[i];
+                var transformer = $this.transformers[transformerName];
+
+                dcQuery = transformer.transform(dcQuery, defaultCube);
+                if (!dcQuery) throw new Error('Failed transform ' + $this.transformers[i].getJsb().$name);
+            }
 		    return dcQuery;
 		},
 
-		initialize: function(){
-		    if ($this.transformers.length == 0) {
-		        for(var i = 0; i < $this.transformersCfg.length; i++) {
-		            var transformerJsb = $this.transformerBeans[i];
-		            if(!transformerJsb){
-		            	throw new Error('Missing transformer: ' + $this.transformersCfg[i]);
-		            }
-		            var transformer = new (transformerJsb.getClass())();
-                    $this.transformers.push(transformer);
-		        }
-		    }
-		},
-
 		destroy: function(){
-            for(var i in $this.transformers) {
-                $this.transformers[i].destroy();
+            for(var name in $this.transformers) {
+                $this.transformers[name].destroy();
+                delete $this.transformers[name];
             }
 
 		    $base();

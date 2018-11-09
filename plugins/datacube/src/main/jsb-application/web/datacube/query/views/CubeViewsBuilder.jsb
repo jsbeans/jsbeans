@@ -68,7 +68,7 @@
             }
 
             // build join views (note: providers already ordered)
-            for(var p in $this.providers){
+            for(var p =0; p < $this.providers.length; p++){
                 if (($this.providers[p].getMode()||'union') == 'join') {
                     var provName = 'DataProvider['+p+'#'+(provIndexes[p]=(provIndexes[p]||0)+1)+']:' + $this.providers[p].id;
                     var providerView = $this._buildDataProviderView(provName, $this.providers[p], usedFields);
@@ -81,6 +81,7 @@
                         joinView.usedFields = usedFields;
                         joinView.setRightView(providerView);
                         leftView = joinView;
+                        $this._addJoinFields(joinView);
                     }
                 }
             }
@@ -120,5 +121,13 @@
 
 		    return view;
 		},
+		_addJoinFields: function(joinView) {
+		    var fields = joinView.listJoinFields();
+            for(var i = 0; i < fields.length; i++){
+                joinView.leftView.usedFields[fields[i]] = true;
+                joinView.rightView.usedFields[fields[i]] = true;
+
+            }
+		}
 	}
 }

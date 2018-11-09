@@ -9,10 +9,6 @@
 
 		    'DataCube.Query.Views.CubeViewsBuilder',
         ],
-        
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
 
 		transform: function(dcQuery, cube){
 		    function getView(name){

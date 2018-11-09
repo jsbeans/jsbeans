@@ -11,10 +11,6 @@
 
         $deprecated: 'код устарел относительно текущей версии движка',
 
-        $bootstrap: function(){
-        	QueryTransformer.register(this);
-        },
-
         config: {
             onlyFrom: false,
             verify: true,
