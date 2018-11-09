@@ -1311,7 +1311,10 @@
                                 }
 
                                 if($this._styles.regions[i].sourceColor){
-                                    regions[i].color = $this._styles.regions[i].sourceColor.value();
+                                    if(!regions[i].colors){
+                                        regions[i].colors = [];
+                                    }
+                                    regions[i].colors.push($this._styles.regions[i].sourceColor.value());
                                 }
                             }
                             /*********/
@@ -1689,13 +1692,17 @@
 
                 // add geojson layers
                 /*********/
-                function regionStyle(i, reg){
+                function regionStyle(i, reg, index){
                     if(!reg){
                         if($this._styles.regions[i].showEmptyRegions){
                             return {fillColor: $this._styles.regions[i].defaultColor, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
                         } else {
                             return {fillColor: 'transparent', color: 'transparent'};
                         }
+                    }
+
+                    if(data && data.regions[i].colors){
+                        return {fillColor: data.regions[i].colors[index], color: $this._styles.regions[i].borderColor, fillOpacity: 0.7};
                     }
 
                     if(data && data.regions[i].color){
@@ -1719,9 +1726,10 @@
                             $this._maps[i].map = L.geoJSON($this._maps[i].data, {
                                 onEachFeature: function(feature, layer){
                                     var regInfo = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data),
+                                        index = regInfo.index,
                                         reg = regInfo.region;
 
-                                    layer.setStyle(regionStyle(i, reg));
+                                    layer.setStyle(regionStyle(i, reg, index));
 
                                     // set values properties
                                     /*********/
@@ -1737,14 +1745,14 @@
                                                     $this._infoControl.update();
                                                 }
                                             });
-                                        })(i, regInfo.index);
+                                        })(i, index);
                                     } else {
                                         if(!reg){
                                             layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
                                             return;
                                         }
 
-                                        layer.bindPopup($this._format($this._styles.regions[i].displayContent, regInfo.index, {y: reg.value}), {closeButton: false, autoPan: false});
+                                        layer.bindPopup($this._format($this._styles.regions[i].displayContent, index, {y: reg.value}), {closeButton: false, autoPan: false});
 
                                         layer.on({
                                             mouseover: function(evt){
@@ -1759,7 +1767,7 @@
                                     }
 
                                     if($this._styles.regions[i].showValuesPermanent && reg){
-                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, regInfo.index, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, index, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 
