@@ -3,9 +3,9 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$require: ['JSB.Widgets.SplitBox', 
 	           'DataCube.GridView', 
-	           'JSB.Controls.ScrollBox', 
+	           'JSB.Controls.ScrollBox',
 	           'JSB.Widgets.PrimitiveEditor', 
-	           'JSB.Widgets.Button', 
+	           'JSB.Widgets.Button',
 	           'JSB.Widgets.MultiEditor', 
 	           'DataCube.Query.QueryEditor',
 	           'JSB.Widgets.ToolManager'],
@@ -30,14 +30,13 @@
                 cssClass: "btnOk",
                 caption: "Сохранить",
                 onClick: function(){
-// todo: check slice name
                 	$this.getElement().loader({message:'Сохранение...', onShow: function(){
-                        $this.slice.cube.server().updateSliceSettings($this.slice.getId(), {
+                	    $this.slice.server().setSliceParams({
                             name: $this.titleEditor.getData().getValue(),
                             structFields: $this.structFields,
                             query: $this.query
                         }, function(){
-                        	$this.getElement().loader('hide');
+                            $this.getElement().loader('hide');
                         });
                 	}});
                 }
@@ -147,12 +146,12 @@
 		},
 		
 		refresh: function(){
-		    // todo: one request
 			this.slice = this.getCurrentNode().getTargetEntry();
 			this.titleEditor.setData(this.slice.getName());
 			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
 				return;
 			}
+			// todo: one request
 			this.slice.server().getCubeFields(function(fields){
 				$this.query = JSB.clone($this.slice.getQuery());
 				$this.structFields = JSB.clone($this.slice.getStructFields());
@@ -160,7 +159,7 @@
 				$this.queryEditor.setOption('cube', $this.slice.getCube());
 				$this.queryEditor.setOption('structFields', $this.structFields);
 
-				$this.queryEditor.setOption('cubeFields', fields);
+				$this.queryEditor.setOption('cubeFields', fields || {});
 
 				$this.slice.server().getCubeSlices(function(slices){
 					$this.queryEditor.setOption('cubeSlices', slices);

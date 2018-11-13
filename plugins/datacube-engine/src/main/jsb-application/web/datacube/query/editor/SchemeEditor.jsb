@@ -1,9 +1,10 @@
 {
 	$name: 'DataCube.Query.SchemeEditor',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['DataCube.Query.QuerySyntax', 
-	           'JSB.Widgets.Button', 
-	           'JSB.Widgets.PrimitiveEditor', 
+	$require: ['DataCube.Query.QuerySyntax',
+	           'JSB.Widgets.Button',
+	           'JSB.Controls.Select',
+	           'JSB.Widgets.PrimitiveEditor',
 	           'DataCube.Query.SchemeMenuTool',
 	           'DataCube.Query.SchemePopupTool',
 	           'JSB.Widgets.ToolManager',
@@ -25,7 +26,6 @@
 		sourceFields: null,
 		sourceEditor: null,
 
-		fromContext: ['$from', '$join', '$union', '$provider'],
 		sourceEditorsList: ['$joinFilter'],
 
 		$constructor: function(opts){
@@ -39,6 +39,7 @@
 			$this.scope = opts.scope;
 			$this.scopeName = opts.scopeName;
 			$this.value = opts.value;
+			$this.allowNames = opts.allowNames;
 
 			$this.handle = $this.getElement();
 
@@ -1148,14 +1149,16 @@
 			// remove entry
 			var entryElt = $this.find('> .container > .entry[key="'+entryKey+'"]');
 			if(entryElt.length > 0){
-				var valueEditorElt = entryElt.find('> .schemeEditor');
+				var valueEditorElt = entryElt.find('> .schemeEditor'),
+				    fromContext = QuerySyntax.getFromContext();
+
 				if(valueEditorElt.jsb()){
 					valueEditorElt.jsb().destroy();
 				}
 
 				entryElt.remove();
 
-				if(this.fromContext.indexOf(entryKey) > -1 && this.fromContainer.is(':empty')){
+				if(fromContext.indexOf(entryKey) > -1 && this.fromContainer.is(':empty')){
 				    this.removeClass('hasFrom');
 				}
 			}
@@ -1654,9 +1657,10 @@
 		drawObjectEntry: function(valName, valScheme, opts){
 			opts = opts || {};
 
-			var container = this.container;
+			var container = this.container,
+			    fromContext = QuerySyntax.getFromContext();
 
-			if(this.fromContext.indexOf(valName) > -1 && this.schemeName === "$query"){
+			if(fromContext.indexOf(valName) > -1 && this.schemeName === "$query"){
 			    container = this.fromContainer;
 			    this.addClass('hasFrom');
 			}
@@ -1803,6 +1807,7 @@
 			entryElt.find('> .collapsedBox').remove();
 
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
+			    allowNames: false,
 				parent: $this,
 				acceptedSchemes: acceptedSchemes,
 				schemeName: valScheme,
@@ -1881,6 +1886,7 @@
 			$this.installHoverHandlers('entry', i, keyElt);
 
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
+			    allowNames: false,
 				parent: $this,
 				acceptedSchemes: acceptedSchemes,
 				schemeName: valScheme,
@@ -2012,7 +2018,12 @@
 					}
 
 					for(var i = 0; i < schemeValues.length; i++){
-						var vName = schemeValues[i];
+					    var vName = schemeValues[i];
+
+					    if(this.allowNames && !this.allowNames[vName]){
+					        continue;
+					    }
+
 						if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
 							for(var fName in $this.value){
 								// skip non-customs 
@@ -2146,68 +2157,81 @@
 					$this.container.append(valElt);
 				}
 			}  else if($this.scheme.expressionType == 'DropContainer'){
-			    this.dropContainer = this.$('<div class="dropContainer"></div>');
-			    this.container.append(this.dropContainer);
-
-			    function createValue(value, entry){
-			        $this.dropContainer.empty();
-
-			        function drawValue(entry){
-			            if(entry){
-			                $this.dropContainer.append(RendererRepository.createRendererFor(entry).getElement());
+			    if(this.options.mode === 'diagram'){
+debugger;
+			        var select = new Select({
+                        clearBtn: true,
+                        options: this.options.sourceSelectOptions,
+                        value: '', // this.value
+                        onchange: function(val){
+                            debugger;
                         }
-			        }
+			        });
+			        this.container.append(select.getElement());
+			    } else {
+                    this.dropContainer = this.$('<div class="dropContainer"></div>');
+                    this.container.append(this.dropContainer);
 
-			        if(!entry){
-			            $this.server().getDPEntry(value, function(entry){
-			                drawValue(entry);
-			            })
-			        } else {
-			            drawValue(entry);
-			        }
-			    }
+                    function createValue(value, entry){
+                        $this.dropContainer.empty();
 
-			    this.dropContainer.droppable({
-                    accept: function(d){
-                        if(d && d.length > 0 && d.get(0).draggingItems){
-                            for(var i in d.get(0).draggingItems){
-                                var obj = d.get(0).draggingItems[i].obj;
+                        function drawValue(entry){
+                            if(entry){
+                                $this.dropContainer.append(RendererRepository.createRendererFor(entry).getElement());
+                            }
+                        }
 
-                                if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
-                                    continue;
-                                }
+                        if(!entry){
+                            $this.server().getDPEntry(value, function(entry){
+                                drawValue(entry);
+                            })
+                        } else {
+                            drawValue(entry);
+                        }
+                    }
 
-                                for(var j = 0; j < $this.scheme.allowValues.length; j++){
-                                    if(JSB.isInstanceOf(obj.getTargetEntry(), $this.scheme.allowValues[j])){
-                                        return true;
+                    this.dropContainer.droppable({
+                        accept: function(d){
+                            if(d && d.length > 0 && d.get(0).draggingItems){
+                                for(var i in d.get(0).draggingItems){
+                                    var obj = d.get(0).draggingItems[i].obj;
+
+                                    if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+                                        continue;
+                                    }
+
+                                    for(var j = 0; j < $this.scheme.allowValues.length; j++){
+                                        if(JSB.isInstanceOf(obj.getTargetEntry(), $this.scheme.allowValues[j])){
+                                            return true;
+                                        }
                                     }
                                 }
                             }
+                            return false;
+                        },
+                        tolerance: 'pointer',
+                        greedy: true,
+                        activeClass : 'acceptDraggable',
+                        hoverClass: 'hoverDraggable',
+                        drop: function(evt, ui){
+                            var d = ui.draggable;
+
+                            for(var i in d.get(0).draggingItems){
+                                var entry = d.get(0).draggingItems[i].obj.getEntry(),
+                                    newVal = entry.getWorkspace().getId() + '/' + entry.getId();
+
+                                createValue(newVal, entry);
+
+                                $this.changeConstValue(newVal);
+                                break;
+                            }
                         }
-                        return false;
-                    },
-                    tolerance: 'pointer',
-                    greedy: true,
-                    activeClass : 'acceptDraggable',
-                    hoverClass: 'hoverDraggable',
-                    drop: function(evt, ui){
-                        var d = ui.draggable;
+                    });
 
-                        for(var i in d.get(0).draggingItems){
-                            var entry = d.get(0).draggingItems[i].obj.getEntry(),
-                                newVal = entry.getWorkspace().getId() + '/' + entry.getId();
-
-                            createValue(newVal, entry);
-
-                            $this.changeConstValue(newVal);
-                            break;
-                        }
+                    if(this.value){
+                        createValue(this.value);
                     }
-			    });
-
-			    if(this.value){
-			        createValue(this.value);
-			    }
+                }
 			} else {
 				throw new Error('Unknown expression type: ' + $this.scheme.expressionType);
 			}

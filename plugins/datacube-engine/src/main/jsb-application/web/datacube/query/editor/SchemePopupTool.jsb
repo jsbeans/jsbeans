@@ -19,7 +19,7 @@
 				id: 'schemePopupTool',
 				jso: self,
 				wrapperOpts: {
-					exclusive: true,
+					exclusive: 'schemePopupTool',
 					modal: false,
 					hideByOuterClick: true,
 					hideInterval: 0,

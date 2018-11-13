@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.DataProviderDiagramNode2',
+	$name: 'DataCube.DataSourceDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$client: {
 	    $require: ['JSB.Controls.Button',
@@ -21,7 +21,8 @@
 					return;
 				}
 				JSB.defer(function(){
-					self.editor.cubeEntry.server().updateDataProviderNodePosition(self.provider.getId(), {x: x, y: y});
+					//self.editor.cubeEntry.server().updateDataProviderNodePosition(self.entry.getId(), {x: x, y: y});
+					// todo
 				}, 500, 'dataProviderResize_' + this.getId());
 			}
 		},
@@ -29,20 +30,29 @@
 	    $constructor: function(diagram, key, opts){
 	        $base(diagram, key, opts);
 
-	        this.provider = opts.provider;
+	        this.entry = opts.entry;
 	        this.editor = opts.editor;
 	        this.fields = opts.fields;
 
-	        $jsb.loadCss('DataProviderDiagramNode.css');
-			this.addClass('dataProviderDiagramNode');
+	        $jsb.loadCss('DataSourceDiagramNode.css');
+			this.addClass('dataSourceDiagramNode');
 
 			// caption
 			this.caption = this.$('<div class="caption"></div>');
 			this.append(this.caption);
-			var renderer = RendererRepository.createRendererFor(this.provider.entry, {showSource: true});
+
+			// install drag-move selector
+			var dragElement = this.$('<div class="dragElement"></div>');
+			this.caption.append(dragElement);
+			this.installDragHandle('drag', {
+				selector: dragElement
+			});
+
+			var renderer = RendererRepository.createRendererFor(this.entry, {showSource: true});
 			this.caption.append(renderer.getElement());
 
 			// refresh btn
+			/*
 			var refreshButton = new Button({
 				cssClass: 'btnRefresh',
 				tooltip: 'Обновить схему данных',
@@ -58,34 +68,31 @@
 			});
 			this.caption.append(refreshButton.getElement());
 
-			// remove btn
-			this.removeButton = new Button({
-				cssClass: 'btnDelete',
-				tooltip: 'Удалить',
-				hasIcon: true,
-				hasCaption: false,
-				onClick: function(evt){
-					evt.stopPropagation();
 
-					ToolManager.showMessage({
-                        icon: 'removeDialogIcon',
-                        text: 'Вы уверены что хотите удалить провайдер?',
-                        buttons: [{text: 'Удалить', value: true},
-                                  {text: 'Нет', value: false}],
-                        target: {
-                            selector: this.getElement()
-                        },
-                        constraints: [{
-                            weight: 10.0,
-                            selector: this.getElement()
-                        }],
-                        callback: function(bDel){
-                            // todo: remove into provider entry
-                        }
-                    });
-				}
-			});
-			this.caption.append(this.removeButton.getElement());
+			// remove btn
+			var removeButton = $this.$('<i class="btn btnDelete fas fa-times-circle" title="Удалить"></i>');
+			removeButton.click(function(evt){
+			    evt.stopPropagation();
+
+                ToolManager.showMessage({
+                    icon: 'removeDialogIcon',
+                    text: 'Вы уверены что хотите удалить провайдер?',
+                    buttons: [{text: 'Удалить', value: true},
+                              {text: 'Нет', value: false}],
+                    target: {
+                        selector: $this.getElement()
+                    },
+                    constraints: [{
+                        weight: 10.0,
+                        selector: $this.getElement()
+                    }],
+                    callback: function(bDel){
+                        // todo: remove into provider entry
+                    }
+                });
+			})
+			this.caption.append(removeButton);
+			*/
 
 			// body
 			this.body = this.$('<div class="body"></div>');
@@ -98,10 +105,11 @@
 			this.body.append(this.failedMsg);
 
 			// toolbar
+			/*
 			this.toolbar = this.$('<div class="toolbar"></div>');
             this.append(this.toolbar);
 
-            /*
+
 			// search
             this.body.append(`#dot
                 <div class="search">
@@ -122,24 +130,33 @@
 			});
 			this.body.append(this.fieldList.getElement());
 
-			// install drag-move selector
-			this.installDragHandle('drag', {
-				selector: this.caption
-			});
+			this.status = this.$('<div class="status"></div>');
+			this.append(this.status);
 
 			// install resize hande
 			var rightBottomGripper = this.$('<div class="gripper cornerGripper rightBottomGripper"></div>');
-			this.append(rightBottomGripper);
+			this.status.append(rightBottomGripper);
 
 			this.installResizeHandle('rightBottomGripper',{
 				selector: rightBottomGripper,
 				resize: {right: true}
 			});
 
+			// install connector
+			var connector = this.$('<div class="connector right"></div>');
+			this.caption.append(connector);
+
+            this.rightConnector = $this.installConnector('providerRight', {
+                origin: connector,
+                handle: [connector, this.caption],
+                iri: 'connector/right/' + this.getId()
+            });
+
 			this.getElement().resize(function(){
 			    if($this.editor.cubeEntry){
                     JSB.defer(function(){
-                        $this.editor.cubeEntry.server().updateDataProviderNodePosition($this.provider.getId(), null, {width: $this.getElement().width()});
+                        //$this.editor.cubeEntry.server().updateDataProviderNodePosition($this.entry.getId(), null, {width: $this.getElement().width()});
+                        // todo
                     }, 300, 'dataProviderResize_' + $this.getId());
 			    }
 			});
@@ -147,46 +164,9 @@
 			this.refresh();
 	    },
 
-	    enableUseComments: function(isEnable){
-	        if(isEnable && this.fields.commentsType){
-	            if(!this.useCommentsBtn){
-                    this.useCommentsBtn = new Button({
-                        //
-                    });
-                    this.toolbar.append(useCommentsBtn.getElement());
-	            }
-
-	            if(!this.commentsList){
-                    this.commentsList = new Select({
-                        cssClass: 'commentsList',
-                        onchange: function(val){
-                            $this.refresh(true, {commentField: val.key});
-                            $this.provider.options.commentField = val.key; // todo
-                            /*
-                            $this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {commentField: val.key}, function(){
-                                $this.provider.options.commentField = val.key;
-                                $this.refreshScheme(true);
-                            });
-                            */
-                        }
-                    });
-                    this.toolbar.append(this.commentsList.getElement());
-                }
-	        } else {
-	            if(this.useCommentsBtn){
-	                this.useCommentsBtn.destroy();
-	            }
-
-	            if(this.commentsList){
-	                this.commentsList.destroy();
-	            }
-	        }
-	    },
-
-	    loadScheme: function(loadOpts, callback){
-//todo: loadOpts
+	    loadScheme: function(callback){
 	        this.loadingMsg.removeClass('hidden');
-			this.editor.cubeEntry.server().extractDataProviderFields($this.provider.getId(), function(fields, fail){
+			this.entry.server().extractFieldsForDisplay(function(fields, fail){
 			    $this.loadingMsg.addClass('hidden');
 
 				if(fail){
@@ -195,21 +175,22 @@
 					$this.failedMsg.find('.details').text(fail.message);
 				} else {
 				    $this.failedMsg.addClass('hidden');
+
 					$this.fields = fields;
 					callback.call($this);
 				}
 			});
 	    },
 
-	    refresh: function(needReload, reloadOpts){
+	    refresh: function(needReload){
 	        if(!this.fields || needReload){
-	            this.loadScheme(reloadOpts, this.refresh);
+	            this.loadScheme(this.refresh);
 	            return;
 	        }
 
 	        var fieldsElements = d3.select(this.fieldList.getElement().get(0));
 	        // enter
-	        fieldsElements.selectAll('div.field').data(this.fields.fields).enter().append('div').classed('field', true);
+	        fieldsElements.selectAll('div.field').data(this.fields).enter().append('div').classed('field', true);
 
             fieldsElements.selectAll('div.field')
 	            // name
@@ -219,18 +200,18 @@
 	            .append('div').classed('cell type', true);
 
 	        // update
-	        fieldsElements.selectAll('div.field').data(this.fields.fields).attr('key', function(d){
+	        fieldsElements.selectAll('div.field').data(this.fields).attr('key', function(d){
 	                return d.key;
 	            })
 	            .select('.name').text(function(d){
 	                return d.name;
 	            });
-            fieldsElements.selectAll('div.field').data(this.fields.fields).select('.type').text(function(d){
+            fieldsElements.selectAll('div.field').data(this.fields).select('.type').text(function(d){
 	                return d.type;
 	            });
 
 	        // exit
-	        fieldsElements.selectAll('div.field').data(this.fields.fields).exit().remove();
+	        fieldsElements.selectAll('div.field').data(this.fields).exit().remove();
 	    }
 	}
 }

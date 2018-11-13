@@ -65,7 +65,6 @@
 							key: 'workspaceBrowser',
 							widgets: 'workspaceBrowser'
 						}]
-						
 					}
 				},
 				widgets: {

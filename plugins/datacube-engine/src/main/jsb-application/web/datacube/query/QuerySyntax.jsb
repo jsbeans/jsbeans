@@ -6,7 +6,11 @@
 	},
 
 	schemeExpressions: {},
-	
+
+	getFromContext: function(){
+	    return ['$from', '$join', '$union', '$provider', '$recursive'];
+	},
+
 	getSchema: function (){
 	    return this.schemeExpressions;
 	},
@@ -144,7 +148,7 @@
 		        var _super = installSuper(this, new $this.EObject(desc));
 		    };
 
-		    /** Dropdown object
+		    /** Drag&Drop object
 		    */
 		    this.DropContainer = function(desc){
 		        desc.expressionType = desc.expressionType || 'DropContainer';
