@@ -271,12 +271,13 @@
                     });
                 }
             }
-
+// todo: исправить отображение фильтров
+/*
             if(!this._resolvePointFilters(this._schemeOpts.bindings)){
                 this.ready();
                 return;
             }
-
+*/
             var widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('chart colorScheme').value() },
                 data = {},
                 colorCount = 0;
