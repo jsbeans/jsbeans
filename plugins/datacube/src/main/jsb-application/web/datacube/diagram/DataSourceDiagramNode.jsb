@@ -3,15 +3,17 @@
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$client: {
 	    $require: ['JSB.Controls.Button',
-	               'JSB.Controls.Checkbox',
 	               'JSB.Controls.ScrollBox',
 	               'JSB.Controls.Select',
 	               'JSB.Widgets.RendererRepository',
 	               'JSB.Widgets.ToolManager'],
 
 		options: {
+			onHighlight: function(bEnable){
+				this.highlightNode(bEnable);
+			},
 			onSelect: function(bEnable){
-				//
+				this.selectNode(bEnable);
 			},
 			onRemove: function(){},
 			onPositionChanged: function(x, y){
@@ -67,31 +69,6 @@
 				}
 			});
 			this.caption.append(refreshButton.getElement());
-
-
-			// remove btn
-			var removeButton = $this.$('<i class="btn btnDelete fas fa-times-circle" title="Удалить"></i>');
-			removeButton.click(function(evt){
-			    evt.stopPropagation();
-
-                ToolManager.showMessage({
-                    icon: 'removeDialogIcon',
-                    text: 'Вы уверены что хотите удалить провайдер?',
-                    buttons: [{text: 'Удалить', value: true},
-                              {text: 'Нет', value: false}],
-                    target: {
-                        selector: $this.getElement()
-                    },
-                    constraints: [{
-                        weight: 10.0,
-                        selector: $this.getElement()
-                    }],
-                    callback: function(bDel){
-                        // todo: remove into provider entry
-                    }
-                });
-			})
-			this.caption.append(removeButton);
 			*/
 
 			// body
@@ -151,6 +128,10 @@
                 handle: [connector, this.caption],
                 iri: 'connector/right/' + this.getId()
             });
+
+			this.getElement().click(function(){
+			    $this.select(true);
+			});
 
 			this.getElement().resize(function(){
 			    if($this.editor.cubeEntry){
@@ -212,6 +193,24 @@
 
 	        // exit
 	        fieldsElements.selectAll('div.field').data(this.fields).exit().remove();
-	    }
+	    },
+
+		selectNode: function(bEnable){
+			if(bEnable){
+				this.addClass('selected');
+				this.editor.publish('DataCube.CubeEditor.providerNodeSelected', this.provider);
+			} else {
+				this.removeClass('selected');
+				this.editor.publish('DataCube.CubeEditor.providerNodeDeselected', this.provider);
+			}
+		},
+
+		highlightNode: function(bEnable){
+			if(bEnable){
+				this.addClass('highlighted');
+			} else {
+				this.removeClass('highlighted');
+			}
+		}
 	}
 }

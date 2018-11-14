@@ -1,0 +1,40 @@
+.sliceEditor > .toolbar {
+    height: 31px;
+    padding: 2.5px;
+    border-bottom: 1px solid grey;
+}
+
+.sliceEditor > .toolbar > .okBtn {
+    float: right;
+    color: #fff;
+    border-radius: 3px;
+    padding: 3px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    margin-left: 5px;
+    display: block;
+    background: #169F85;
+    border-color: #398439;
+    outline: none;
+}
+
+.sliceEditor > .toolbar > .okBtn:hover {
+    background: #218838;
+    border-color: #1e7e34;
+}
+
+.sliceEditor > .toolbar > span {
+    vertical-align: middle;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.sliceEditor > .selectMessage {
+    display: block;
+    text-align: center;
+    font-size: 2em;
+    color: darkgrey;
+    top: 45%;
+    position: relative;
+}

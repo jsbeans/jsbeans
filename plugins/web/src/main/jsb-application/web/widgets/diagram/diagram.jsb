@@ -882,7 +882,6 @@
 		},
 		
 		select: function(node, bSelect){
-debugger;
 			if(!JSB.isDefined(bSelect)){
 				bSelect = true;
 			}

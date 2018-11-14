@@ -261,7 +261,7 @@
                 switch(obj.type){
                     case 'cube':
                         if(!obj.query.$select){
-                            var fields = obj.cube.getFields();
+                            var fields = obj.cube.extractFields();
                             var q = {};
                             for(var i in fields){
                                 q[i] = i;

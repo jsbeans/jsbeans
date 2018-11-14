@@ -39,7 +39,7 @@
 			$this.scope = opts.scope;
 			$this.scopeName = opts.scopeName;
 			$this.value = opts.value;
-			$this.allowNames = opts.allowNames;
+			$this.allowNames = opts.allowNames; // todo: remove?
 
 			$this.handle = $this.getElement();
 
@@ -528,11 +528,17 @@
 		},
 
 		getCubeSlices: function(callback){
+		    // todo:
+		    /*
 			if($this.options.cube){
 				$this.options.cube.server().getSlices(callback);
 				return;
 			}
+
 			callback.call(this, $this.options.cubeSlices);
+			*/
+
+			callback.call(this, {});
 		},
 
 		chooseBestCubeField: function(){
@@ -1328,9 +1334,38 @@
 		},
 
 		combineCategoryMap: function(schemes){
-			var itemMap = {};
-			var chosenObjectKey = null;
-			var chooseType = 'key';
+			var itemMap = {},
+			    chosenObjectKey = null,
+			    chooseType = 'key',
+			    sources = this.options.sourceSelectOptions,
+			    skipSources = []; //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
+
+            if(this.options.mode === 'diagram'){
+                switch(Object.keys(sources).length){
+                    case 0:
+                        // current cube
+                        skipSources = ['$from', '$cube', '$join', '$union', '$provider', '$recursive'];
+                        break;
+                    case 1:
+                        skipSources = ['$from', '$cube', '$join', '$union', '$provider', '$recursive'];
+                        // provider || cube || slice
+                        for(var i in sources){
+                            if(JSB.isInstanceOf(sources[i].entry, 'DataCube.Model.DatabaseTable')){
+                                skipSources.splice(skipSources.indexOf('$provider'), 1);
+                                break;
+                            }
+
+                            // todo: cube, slice
+                        }
+                        break;
+                    case 2:
+                        skipSources = ['$from', '$cube', '$provider', '$recursive'];
+                        break;
+                    default: // 3 or more
+                        skipSources = ['$from', '$cube', '$join', '$provider', '$recursive'];
+                }
+            }
+
 			if(JSB.isArray(schemes)){
 				for(var i = 0; i < schemes.length; i++){
 					itemMap[schemes[i]] = schemes[i];
@@ -1347,6 +1382,10 @@
 				} else {
 					for(sName in schemes){
 						if($this.scheme.name == '$query'){
+						    if(this.options.mode === 'diagram' && skipSources.indexOf(sName) > -1){
+						        continue;
+						    }
+
 							itemMap[sName] = schemes[sName][0];
 						} else {
 							itemMap[sName] = sName;
@@ -2158,13 +2197,12 @@
 				}
 			}  else if($this.scheme.expressionType == 'DropContainer'){
 			    if(this.options.mode === 'diagram'){
-debugger;
 			        var select = new Select({
                         clearBtn: true,
                         options: this.options.sourceSelectOptions,
-                        value: '', // this.value
+                        value: this.value,
                         onchange: function(val){
-                            debugger;
+                            $this.changeConstValue(val.key);
                         }
 			        });
 			        this.container.append(select.getElement());

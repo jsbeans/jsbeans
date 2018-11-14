@@ -1,17 +1,23 @@
 {
-	$name: 'DataCube.CubeEditorNext',
+	$name: 'DataCube.CubeEditor',
 	$parent: 'JSB.Widgets.Widget',
 	$client: {
 	    $require: ['JSB.Widgets.Diagram',
 	               'DataCube.Providers.DataProviderRepository',
 	               'DataCube.SliceDiagramNode',
-	               'DataCube.DataSourceDiagramNode'],
+	               'DataCube.DataSourceDiagramNode',
+	               'JSB.Widgets.Button',
+	               'JSB.Widgets.ToolManager'],
+
+	    _cube: null,
+	    _dataSources: {},
+	    _slices: {},
 
 	    $constructor: function(opts){
 			$base(opts);
 
 			//$jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
-			$jsb.loadCss('CubeEditorNext.css');
+			$jsb.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
 
 			// create diagram
@@ -150,18 +156,77 @@
                 }
             });
 
+            var editTool = this.$('<div class="editTool hidden"></div>');
+            this.append(editTool);
+
+            var removeBtn = new Button({
+                cssClass: 'roundButton btnDelete btn10',
+                tooltip: 'Удалить элементы',
+                onClick: function(){
+                    ToolManager.showMessage({
+                        icon: 'removeDialogIcon',
+                        text: 'Вы уверены что хотите удалить выбранные элементы?',
+                        buttons: [{text: 'Удалить', value: true},
+                                  {text: 'Нет', value: false}],
+                        target: {
+                            selector: removeBtn.getElement()
+                        },
+                        constraints: [{
+                            weight: 10.0,
+                            selector: removeBtn.getElement()
+                        }],
+                        callback: function(bDel){
+                            if(bDel){
+                                for(var i in $this._selectedItems){
+                                    if(JSB.isInstanceOf($this._selectedItems[i], 'JSB.Widgets.Diagram.Link')){
+                                        continue;
+                                    }
+
+                                    if(JSB.isInstanceOf($this._selectedItems[i].entry, 'DataCube.Model.Slice') &&
+                                       $this._cube.getId() === $this._selectedItems[i].entry.getCube().getId()){
+                                        (function(node){
+                                            $this._selectedItems[i].server().remove(function(res, fail){
+                                                if(!fail){
+                                                    node.destroy();
+                                                }
+                                            });
+                                        })($this._selectedItems[i]);
+                                    } else {
+                                        (function(node){
+                                            $this._cube.server().removeDataSource($this._selectedItems[i].entry.getFullId(), function(res, fail){
+                                                if(!fail){
+                                                    node.destroy();
+                                                }
+                                            });
+                                        })($this._selectedItems[i]);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            editTool.append(removeBtn.getElement());
+
             this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
-                if(slice.cube === $this.cubeEntry){
+                if(slice.cube === $this._cube){
                     $this.addSlice(slice);
                 }
             });
+
+            this.subscribe('_jsb_diagramSelectionChanged', function(sender, msg, selectedItems){
+                if(Object.keys(selectedItems).length > 0){
+                    editTool.removeClass('hidden');
+                } else {
+                    editTool.addClass('hidden');
+                }
+
+                this._selectedItems = selectedItems;
+            });
 	    },
 
-	    _dataSources: {},
-	    _slices: {},
-
 	    addDataSource: function(entry, position){
-	        this.cubeEntry.server().addDataSource(entry, {position: position}, function(res, fail){
+	        this._cube.server().addDataSource(entry, {position: position}, function(res, fail){
 	            if(fail){
 	                // todo: error
 	                console.log('Error due create data source');
@@ -177,24 +242,14 @@
 
 		addSlice: function(slice){
             var sNode = $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this});
-
-            //this.cubeEntry.server().updateSliceSettings()
-            /*
-            var cubeRect = $this.cubeNode.getRect();
-            sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
-
-            $this.diagram.select($this.diagram.getNodes(), false);
-            $this.diagram.select($this.diagram.getLinks(), false);
-            sNode.select(true);
-            */
 		},
 
 	    constructCube: function(desc){
 	        function createNode(type, obj){
 	            var node = $this.diagram.createNode(type, {entry: obj.entry, editor: $this});
 
-                if(obj.diagramOpts && obj.diagramOpts.position){ // todo: remove 'if'
-	                node.setPosition(obj.diagramOpts.position.x, obj.diagramOpts.position.y);
+                if(obj.diagramOpts && obj.diagramOpts.position){
+	                node.setPosition(obj.diagramOpts.position.x, obj.diagramOpts.position.y, true);
                 }
 
                 return {
@@ -202,6 +257,8 @@
                     node: node
                 }
 	        }
+
+	        this._cubeId = desc.cubeId;
 
 	        // create sources' nodes
 	        for(var i in desc.dataSources){
@@ -214,11 +271,24 @@
 	        }
 
 	        // create links
-	        // todo
+	        for(var i in desc.links){
+	            for(var j = 0; j < desc.links[i].length; j++){
+	                var targetId = desc.links[i][j];
+
+                    this.diagram.createLink('bind', {
+                        sourceConnector: this._slices[i].node.leftConnector,
+                        targetConnector: this._slices[targetId] ? this._slices[targetId].node.rightConnector : this._dataSources[targetId].node.rightConnector
+                    });
+	            }
+	        }
 	    },
 
 	    createLink: function(link){
 	        link.source.node.createLink(link);
+	    },
+
+	    getCube: function(){
+	        return this._cube;
 	    },
 
 	    removeLink: function(link){
@@ -226,14 +296,14 @@
 	    },
 
 	    refresh: function(entry){
-			if(this.cubeEntry == entry){
+			if(this._cube == entry){
 				return;
 			}
 
-			this.cubeEntry = entry;
+			this._cube = entry;
 			this.diagram.clear();
 
-			this.cubeEntry.server().load(true, function(desc){
+			this._cube.server().load(true, function(desc){
 			    $this.ensureTrigger(['diagramReady'], function(){
 			        $this.constructCube(desc);
 			    });
