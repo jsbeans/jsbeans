@@ -414,6 +414,12 @@
                 };
 
                 JSB.merge(true, baseChartOpts, chartOpts);
+
+                for(var i = 0; i < chartOpts.series.length; i++){
+                    for(var j in chartOpts.series[i]){
+                        baseChartOpts.series[i][j] = chartOpts.series[i][j];
+                    }
+                }
             } catch(ex){
                 console.log('Sunburst build chart exception');
                 console.log(ex);
