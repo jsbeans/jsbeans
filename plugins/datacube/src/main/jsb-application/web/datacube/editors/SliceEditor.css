@@ -38,3 +38,11 @@
     top: 45%;
     position: relative;
 }
+
+.sliceEditor > .jsb-scrollBox {
+    height: calc(100% - 31px);
+}
+
+.sliceEditor > .jsb-scrollBox > .schemeEditor {
+    border: none;
+}

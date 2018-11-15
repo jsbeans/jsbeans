@@ -2197,6 +2197,17 @@
 				}
 			}  else if($this.scheme.expressionType == 'DropContainer'){
 			    if(this.options.mode === 'diagram'){
+			        var options = [];
+
+			        // todo: change
+			        for(var k = 0; k < this.options.sourceSelectOptions.length; k++){
+			            options.push({
+                            entry: this.options.sourceSelectOptions[k].entry,
+                            key: this.options.sourceSelectOptions[k].key,
+                            value: this.options.sourceSelectOptions[k].value.clone()
+			            });
+			        }
+
 			        var select = new Select({
                         clearBtn: true,
                         options: this.options.sourceSelectOptions,

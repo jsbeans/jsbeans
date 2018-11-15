@@ -19,12 +19,8 @@
 			onPositionChanged: function(x, y){
 			    var self = this;
 
-				if(this.editor.ignoreHandlers){
-					return;
-				}
 				JSB.defer(function(){
-					//self.editor.cubeEntry.server().updateDataProviderNodePosition(self.entry.getId(), {x: x, y: y});
-					// todo
+					self.editor.getCube().server().updateNodePosition(self.entry, {position: {x: x, y: y}});
 				}, 500, 'dataProviderResize_' + this.getId());
 			}
 		},
@@ -39,16 +35,17 @@
 	        $jsb.loadCss('DataSourceDiagramNode.css');
 			this.addClass('dataSourceDiagramNode');
 
+			// drag handle
+			var dragHandle = this.$('<div class="dragHandle"><div></div><div></div><div></div></div>');
+			this.append(dragHandle);
+
+			this.installDragHandle('drag', {
+				selector: dragHandle
+			});
+
 			// caption
 			this.caption = this.$('<div class="caption"></div>');
 			this.append(this.caption);
-
-			// install drag-move selector
-			var dragElement = this.$('<div class="dragElement"></div>');
-			this.caption.append(dragElement);
-			this.installDragHandle('drag', {
-				selector: dragElement
-			});
 
 			var renderer = RendererRepository.createRendererFor(this.entry, {showSource: true});
 			this.caption.append(renderer.getElement());
@@ -134,12 +131,9 @@
 			});
 
 			this.getElement().resize(function(){
-			    if($this.editor.cubeEntry){
-                    JSB.defer(function(){
-                        //$this.editor.cubeEntry.server().updateDataProviderNodePosition($this.entry.getId(), null, {width: $this.getElement().width()});
-                        // todo
-                    }, 300, 'dataProviderResize_' + $this.getId());
-			    }
+                JSB.defer(function(){
+                    $this.editor.getCube().server().updateNodePosition($this.entry, {size: {width: $this.getElement().width()}});
+                }, 300, 'dataProviderResize_' + $this.getId());
 			});
 
 			this.refresh();

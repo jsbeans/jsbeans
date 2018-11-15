@@ -33,8 +33,7 @@
 		},
 
 		getStore: function(){
-			var sourceEntry = this.getWorkspace().entry(this.getParentId());
-			return sourceEntry.getStore();
+			return this.getWorkspace().entry(this.getParentId()).getStore();
 		},
 
 		setMissing: function(bMissing){

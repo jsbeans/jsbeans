@@ -29,7 +29,29 @@
     z-index: 1000;
 }
 
-/* drag handles */
-.cubeEditor {
+/* dragHandle */
+.cubeEditor ._jsb_diagramNode > .dragHandle {
+    display: block;
+    height: 8px;
+    width: 100%;
+    cursor: move;
+    position: relative;
+}
 
+.cubeEditor ._jsb_diagramNode > .dragHandle > div {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 4px;
+    margin-top: -2px;
+}
+
+.cubeEditor ._jsb_diagramNode > .dragHandle > div:first-child {
+    left: calc(50% - 6px);
+}
+
+.cubeEditor ._jsb_diagramNode > .dragHandle > div:last-child {
+    left: calc(50% + 6px);
 }

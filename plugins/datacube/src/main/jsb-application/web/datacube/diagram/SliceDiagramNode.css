@@ -33,33 +33,13 @@
 
 /* dragHandle */
 .sliceDiagramNode > .dragHandle {
-    display: block;
-    height: 8px;
-    width: 100%;
     border-bottom: 1px solid #4b794e;
     background-color: #54c70a;
-    cursor: move;
-    position: relative;
 }
 
 .sliceDiagramNode > .dragHandle > div {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 4px;
-    height: 4px;
     border: 1px solid #0c4e10;
-    border-radius: 4px;
     background: #1b5a15;
-    margin-top: -2px;
-}
-
-.sliceDiagramNode > .dragHandle > div:first-child {
-    left: calc(50% - 6px);
-}
-
-.sliceDiagramNode > .dragHandle > div:last-child {
-    left: calc(50% + 6px);
 }
 
 /* header */

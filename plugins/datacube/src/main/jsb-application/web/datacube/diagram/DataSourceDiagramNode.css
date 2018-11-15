@@ -14,6 +14,17 @@
 	box-shadow: 0 0 1px 3px #3c6192;
 }
 
+/* dragHandle */
+.dataSourceDiagramNode > .dragHandle {
+    border-bottom: 1px solid #988e5f;
+    background-color: #d2ce07;
+}
+
+.dataSourceDiagramNode > .dragHandle > div {
+    border: 1px solid #524507;
+    background: #927903;
+}
+
 /* caption */
 .dataSourceDiagramNode > .caption,
 .dataSourceDiagramNode > .status {
@@ -65,10 +76,6 @@
 
 .dataSourceDiagramNode > .caption > .renderer > .renderer > .title {
 	padding-left: 20px;
-}
-
-.dataSourceDiagramNode > .caption > .roundButton.btnDelete {
-	right: 6px;
 }
 
 /* connector */
