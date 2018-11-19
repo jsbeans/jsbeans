@@ -16,7 +16,6 @@
 	    $constructor: function(opts){
 			$base(opts);
 
-			//$jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
 			$jsb.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
 
@@ -24,15 +23,6 @@
 			this.diagram = new Diagram({
 				minZoom: 0.25,
 				highlightSelecting: false,
-				onChange: function(changeType, item){
-				    if(changeType === 'createLink'){
-				        $this.createLink(item);
-				    }
-
-				    if(changeType === 'removeLink'){
-				        $this.removeLink(item);
-				    }
-				},
 				onInit: function(){
 				    $this.setTrigger('diagramReady');
 				},
@@ -62,7 +52,7 @@
 				connectors: {
 					sliceLeft: {
 						acceptLocalLinks: false,
-						userLink: true,
+						userLink: false,
 						align: 'left',
 						offsetX: 2,
 						wiringLink: {
@@ -73,7 +63,7 @@
 
 					providerRight: {
 						acceptLocalLinks: false,
-						userLink: true,
+						userLink: false,
 						offsetX: 2,
 						wiringLink: {
 							key: 'bind',
@@ -185,7 +175,7 @@
                                     if(JSB.isInstanceOf($this._selectedItems[i].entry, 'DataCube.Model.Slice') &&
                                        $this._cube.getId() === $this._selectedItems[i].entry.getCube().getId()){
                                         (function(node){
-                                            $this._selectedItems[i].server().remove(function(res, fail){
+                                            $this._selectedItems[i].entry.server().remove(function(res, fail){
                                                 if(!fail){
                                                     node.destroy();
                                                 }
@@ -236,17 +226,24 @@
                 if(JSB.isInstanceOf(entry, "DataCube.Model.DatabaseTable")){
                     var pNode = $this.diagram.createNode('dataSourceDiagramNode', {entry: entry, editor: $this});
                     pNode.setPosition(position.x, position.y);
+
+                    $this._dataSources[entry.getFullId()] = {
+                        entry: entry,
+                        node: pNode
+                    }
                 }
 	        });
 	    },
 
 		addSlice: function(slice){
-            var sNode = $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this});
+            $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this});
 		},
 
 	    constructCube: function(desc){
 	        function createNode(type, obj){
-	            var node = $this.diagram.createNode(type, {entry: obj.entry, editor: $this});
+	            var node = $this.diagram.createNode(type, JSB.merge({
+	                editor: $this
+	            }, obj));
 
                 if(obj.diagramOpts && obj.diagramOpts.position){
 	                node.setPosition(obj.diagramOpts.position.x, obj.diagramOpts.position.y, true);
@@ -258,8 +255,6 @@
                 }
 	        }
 
-	        this._cubeId = desc.cubeId;
-
 	        // create sources' nodes
 	        for(var i in desc.dataSources){
 	            this._dataSources[desc.dataSources[i].entry.getFullId()] = createNode('dataSourceDiagramNode', desc.dataSources[i]);
@@ -269,30 +264,22 @@
 	        for(var i in desc.slices){
 	            this._slices[desc.slices[i].entry.getFullId()] = createNode('sliceDiagramNode', desc.slices[i]);
 	        }
-
-	        // create links
-	        for(var i in desc.links){
-	            for(var j = 0; j < desc.links[i].length; j++){
-	                var targetId = desc.links[i][j];
-
-                    this.diagram.createLink('bind', {
-                        sourceConnector: this._slices[i].node.leftConnector,
-                        targetConnector: this._slices[targetId] ? this._slices[targetId].node.rightConnector : this._dataSources[targetId].node.rightConnector
-                    });
-	            }
-	        }
 	    },
 
-	    createLink: function(link){
-	        link.source.node.createLink(link);
+	    createLink: function(linkType, linkOpts){
+	        return this.diagram.createLink(linkType, linkOpts);
 	    },
 
 	    getCube: function(){
 	        return this._cube;
 	    },
 
-	    removeLink: function(link){
-	        //
+	    getSource: function(id){
+	        return this._dataSources[id] || this._slices[id];
+	    },
+
+	    getSources: function(){
+	        return JSB.merge(this._dataSources, this._slices);
 	    },
 
 	    refresh: function(entry){

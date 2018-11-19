@@ -43,7 +43,6 @@
 		fields: {},
 
 		dataSources: {},
-		links: {},
 		slices: {},
 
 		$constructor: function(id, workspace, opts){
@@ -102,7 +101,6 @@
 									};
 
 									this.fields = JSB.merge(this.fields, slice.getStructFields());
-									this.links[desc.id] = slice.extractSources();
 								}
 							}
 
@@ -136,11 +134,13 @@
 
 			// check all data sources exist
 			var isNeedStore = false;
-			for(var i in this.links){
-			    for(var j = 0; j < this.links[i].length; j++){
-			        var sourceId = this.links[i][j];
+			for(var i in this.slices){
+			    var sources = this.slices[i].entry.extractSources();
 
-			        if(this.slices[sourceId]){
+			    for(var j = 0; j < sources.length; j++){
+			        var sourceId = sources[j];
+
+			        if(this.dataSources[sourceId]){
 			            continue;
 			        }
 
@@ -158,6 +158,8 @@
                         isNeedStore = true;
 			        }
 			    }
+
+			    this.slices[i].sources = sources;
 			}
 
 			if(isNeedStore){
@@ -172,7 +174,6 @@
 			return {
 			    dataSources: this.dataSources,
 				fields: this.fields,
-				links: this.links,
 				slices: this.slices
 			};
 		},
@@ -372,7 +373,7 @@ return;
 		    if(this.hasChildEntry(entry)){
 		        this.slices[entryId].diagramOpts = JSB.merge(this.slices[entryId].diagramOpts, diagramOpts);
 		    } else if(this.dataSources[entryId]){
-		        this.dataSources[entryId] = JSB.merge(this.dataSources[entryId].diagramOpts, diagramOpts);
+		        this.dataSources[entryId].diagramOpts = JSB.merge(this.dataSources[entryId].diagramOpts, diagramOpts);
 		    } else {
 		        return;
 		    }

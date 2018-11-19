@@ -57,7 +57,7 @@
 .sliceDiagramNode > header > .caption {
     display: inline-block;
     position: relative;
-    width: calc(100% - 18px);
+    width: calc(100% - 20px);
 }
 
 .sliceDiagramNode > header > .connector {
@@ -75,7 +75,7 @@
 }
 
 .sliceDiagramNode > header > .connector.right {
-    right: -3px;
+    right: -4px;
 }
 
 .sliceDiagramNode > header > .caption > .icon {

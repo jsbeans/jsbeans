@@ -46,3 +46,7 @@
 .sliceEditor > .jsb-scrollBox > .schemeEditor {
     border: none;
 }
+
+.sliceEditor .entryRenderer {
+    width: 100%;
+}

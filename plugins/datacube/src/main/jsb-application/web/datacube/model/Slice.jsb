@@ -8,6 +8,45 @@
 	query: {},
 	structFields: {}, // todo: rename to measurements
 
+    extractSources: function(query){
+        var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
+            sources = [];
+
+        if(!query){
+            query = this.query;
+        }
+
+        for(var i = 0; i < fromKeys.length; i++){
+            if(query[fromKeys[i]]){
+                switch(fromKeys[i]){
+                    case '$from':
+                        // todo
+                        break;
+                    case '$cube':
+                    case '$provider':
+                        sources.push(query[fromKeys[i]]);
+                        break;
+                    case '$join':
+                        // todo: add cube
+                        var left = query.$join.$left.$provider,
+                            right = query.$join.$right.$provider;
+
+                        sources.push(left);
+                        sources.push(right);
+                        break;
+                    case '$union':
+                        // todo
+                        break;
+                    case '$recursive':
+                        // todo
+                        break;
+                }
+            }
+        }
+
+        return sources;
+    },
+
 	getStructFields: function(){
 	    return this.structFields;
 	},
@@ -164,41 +203,6 @@
 				JSB.getLocker().unlock(mtx);
 			}
 			return this.queryCache;
-		},
-
-		extractSources: function(){
-		    var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
-		        sources = [];
-
-            for(var i = 0; i < fromKeys.length; i++){
-                if(this.query[fromKeys[i]]){
-                    switch(fromKeys[i]){
-                        case '$from':
-                            // todo
-                            break;
-                        case '$cube':
-                        case '$provider':
-                            sources.push(this.query[fromKeys[i]]);
-                            break;
-                        case '$join':
-                            // todo: add cube
-                            var left = this.query.$join.$left.$provider,
-                                right = this.query.$join.$right.$provider;
-
-                            sources.push(left);
-                            sources.push(right);
-                            break;
-                        case '$union':
-                            // todo
-                            break;
-                        case '$recursive':
-                            // todo
-                            break;
-                    }
-                }
-            }
-
-		    return sources;
 		},
 
 		getCubeFields: function(){

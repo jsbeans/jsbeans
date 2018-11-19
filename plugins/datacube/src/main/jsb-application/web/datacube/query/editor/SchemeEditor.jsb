@@ -1336,35 +1336,7 @@
 		combineCategoryMap: function(schemes){
 			var itemMap = {},
 			    chosenObjectKey = null,
-			    chooseType = 'key',
-			    sources = this.options.sourceSelectOptions,
-			    skipSources = []; //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
-
-            if(this.options.mode === 'diagram'){
-                switch(Object.keys(sources).length){
-                    case 0:
-                        // current cube
-                        skipSources = ['$from', '$cube', '$join', '$union', '$provider', '$recursive'];
-                        break;
-                    case 1:
-                        skipSources = ['$from', '$cube', '$join', '$union', '$provider', '$recursive'];
-                        // provider || cube || slice
-                        for(var i in sources){
-                            if(JSB.isInstanceOf(sources[i].entry, 'DataCube.Model.DatabaseTable')){
-                                skipSources.splice(skipSources.indexOf('$provider'), 1);
-                                break;
-                            }
-
-                            // todo: cube, slice
-                        }
-                        break;
-                    case 2:
-                        skipSources = ['$from', '$cube', '$provider', '$recursive'];
-                        break;
-                    default: // 3 or more
-                        skipSources = ['$from', '$cube', '$join', '$provider', '$recursive'];
-                }
-            }
+			    chooseType = 'key';
 
 			if(JSB.isArray(schemes)){
 				for(var i = 0; i < schemes.length; i++){
@@ -1382,10 +1354,6 @@
 				} else {
 					for(sName in schemes){
 						if($this.scheme.name == '$query'){
-						    if(this.options.mode === 'diagram' && skipSources.indexOf(sName) > -1){
-						        continue;
-						    }
-
 							itemMap[sName] = schemes[sName][0];
 						} else {
 							itemMap[sName] = sName;
@@ -2197,19 +2165,9 @@
 				}
 			}  else if($this.scheme.expressionType == 'DropContainer'){
 			    if(this.options.mode === 'diagram'){
-			        var options = [];
-
-			        // todo: change
-			        for(var k = 0; k < this.options.sourceSelectOptions.length; k++){
-			            options.push({
-                            entry: this.options.sourceSelectOptions[k].entry,
-                            key: this.options.sourceSelectOptions[k].key,
-                            value: this.options.sourceSelectOptions[k].value.clone()
-			            });
-			        }
-
 			        var select = new Select({
                         clearBtn: true,
+                        cloneOptions: true,
                         options: this.options.sourceSelectOptions,
                         value: this.value,
                         onchange: function(val){

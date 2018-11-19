@@ -65,17 +65,23 @@
 	        }, function(res, err){
 	            if(!err && res.wasUpdated){
 	                $this.sliceData.node.refresh({
-	                    query: query
+	                    query: query,
+	                    updateLinks: true
 	                });
 	            }
 	        });
 	    },
 
 	    update: function(data){
-            var sources = data.sources,
+            var sliceId = data.entry.getId(),
+                sources = data.sources,
                 sourceSelectOptions = [];
 
             for(var i in sources){
+                if(sliceId === sources[i].entry.getId()){
+                    continue;
+                }
+
                 sourceSelectOptions.push({
                     entry: sources[i].entry,
                     key: i,

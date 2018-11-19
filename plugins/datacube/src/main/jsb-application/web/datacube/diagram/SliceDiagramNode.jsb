@@ -10,7 +10,7 @@
 		editor: null,
 		slice: null,
 
-		linksTo: {},
+		_sources: {},
 		
 		options: {
 			onHighlight: function(bEnable){
@@ -89,21 +89,19 @@
 
                 this.leftConnector = $this.installConnector('sliceLeft', {
                     origin: leftConnector,
-                    handle: [leftConnector, caption],
+                    handle: [leftConnector],
                     iri: 'connector/left/' + this.getId()
                 });
 			}
-/*
+
 			var rightConnector = this.$('<div class="connector right"></div>');
-			this.append(rightConnector);
+			header.append(rightConnector);
 
-
-            this.rightConnector = $this.installConnector('sliceRight', {
+            this.rightConnector = $this.installConnector('providerRight', {
                 origin: rightConnector,
-                handle: [rightConnector, this.caption],
+                handle: [rightConnector],
                 iri: 'connector/right/' + this.getId()
             });
-*/
 
 			this.status = this.$('<footer></footer>');
 			this.append(this.status);
@@ -112,7 +110,9 @@
 			    $this.select(true);
 			});
 
-			$this.refresh();
+			$this.refresh({
+			    sources: opts.sources
+			});
 			
 			this.subscribe('Slice.renameSlice', {session: true}, function(sender, msg, desc){
 				var entry = desc.entry;
@@ -123,14 +123,6 @@
 
 				caption.find('.name').text(desc.name);
 			});
-		},
-
-		createLink: function(link){
-		    var entry = link.target.node.entry;
-
-		    this.linksTo[entry.getFullId()] = {
-		        entry: link.target.node.entry
-		    }
 		},
 
 		refresh: function(opts){
@@ -149,6 +141,28 @@
 
 	        // exit
 	        fieldsElements.selectAll('div.field').data(fields).exit().remove();
+
+            // update links
+            var oldLinks = this._sources,
+                newLinks = opts && opts.sources || this.entry.extractSources(query);
+
+            for(var i in oldLinks){
+                if(!newLinks[i]){
+                    oldLinks[i].destroy();
+                    delete oldLinks[i];
+                }
+            }
+
+            for(var i = 0; i < newLinks.length; i++){
+                var id = newLinks[i];
+
+                if(!oldLinks[id]){
+                    oldLinks[id] = this.editor.createLink('bind', {
+                        sourceConnector: this.leftConnector,
+                        targetConnector: this.editor.getSource(id).node.rightConnector
+                    });
+                }
+            }
 		},
 		
 		highlightNode: function(bEnable){
@@ -163,7 +177,7 @@
 		    var obj = {
                 entry: this.entry,
                 node: this,
-                sources: this.linksTo
+                sources: this.editor.getSources()
 		    };
 
 			if(bEnable){
