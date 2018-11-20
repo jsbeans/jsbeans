@@ -177,7 +177,8 @@
 		    var obj = {
                 entry: this.entry,
                 node: this,
-                sources: this.editor.getSources()
+                sources: this.editor.getSources(),
+                slices: this.editor.getSlices()
 		    };
 
 			if(bEnable){

@@ -212,12 +212,20 @@
 		            '#outputFieldName': '$valueDefinition'
 		        },
 		    });
-
+		    /*
 		    new this.Group({
 		    	name: '$from',
 		        displayName: 'Источник запроса',
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query', '$viewName'],
+		    });
+		    */
+		    new this.DropContainer({
+		        name: '$from',
+		        category: 'Источник запроса',
+		        allowValues: ['DataCube.Model.Slice'],
+		        desc: 'Идентификатор первичного источника данных',
+		        values: []
 		    });
 
 		    new this.ComplexObject({

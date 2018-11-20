@@ -39,7 +39,6 @@
 			$this.scope = opts.scope;
 			$this.scopeName = opts.scopeName;
 			$this.value = opts.value;
-			$this.allowNames = opts.allowNames; // todo: remove?
 
 			$this.handle = $this.getElement();
 
@@ -374,7 +373,7 @@
 		},
 
 		generateQueryContextName: function(prefix){
-			prefix = prefix || 'sub';
+			prefix = (prefix || 'sub') + '_' + this.options.sliceId;
 			var queryMap = $this.combineQueries();
 			if(!queryMap[prefix]){
 				return prefix;
@@ -476,15 +475,17 @@
                         callback.call(this, sourceFields);
                     }
 
-                    if(this.scope.$provider || this.scope.$cube){
+                    var sources = this.scope.$provider || this.scope.$cube || this.scope.$from;
+
+                    if(sources){
                         if(this.sourceFields){
                             callback.call(this, this.sourceFields);
                         } else {
-                            sourceFields[this.scope.$provider || this.scope.$cube] = {
+                            sourceFields[sources] = {
                                 context: this.scope.$context
                             }
 
-                            loadSourceFields(this.scope.$provider || this.scope.$cube, sourceFields);
+                            loadSourceFields(sources, sourceFields);
                         }
                     }
                     break;
@@ -497,36 +498,6 @@
             }
 		},
 
-		getSourceFields: function(callback){
-			var curEditor = this;
-			while(curEditor && curEditor.scheme){
-				if(curEditor.scheme.name == '$query'){
-					var fromVal = curEditor.value['$from'];
-					if(JSB.isString(fromVal)){
-						var slice = curEditor.getSliceForName(fromVal);
-						if(slice){
-							slice.server().getOutputFields(callback);
-							return;
-						}
-					}
-				}
-				curEditor = curEditor.parent;
-			}
-			this.getCubeFields(callback);
-		},
-
-		getCubeFields: function(callback){
-			if($this.options.cubeFields){
-				callback.call(this, $this.options.cubeFields);
-				return;
-			}
-
-			if($this.options.cube){
-				$this.options.cube.server().getOutputFields(callback);
-				return;
-			}
-		},
-
 		getCubeSlices: function(callback){
 		    // todo:
 		    /*
@@ -537,12 +508,12 @@
 
 			callback.call(this, $this.options.cubeSlices);
 			*/
-
+console.log('getCubeSlices');
 			callback.call(this, {});
 		},
 
 		chooseBestCubeField: function(){
-			var sourceFields = $this.options.cubeFields;
+			var sourceFields = $this.options.cubeFields || {};
 			return Object.keys(sourceFields)[0];
 		},
 
@@ -1397,7 +1368,7 @@
 					category = 'Столбцы среза';
 					valObj = item;
 					bHasColumns = true;
-				} else if(item == '$viewName' || item == '$from') {
+				} else if(item == '$viewName') { // || item == '$from'
 					if(bHasSlices){
 						continue;
 					}
@@ -1814,7 +1785,6 @@
 			entryElt.find('> .collapsedBox').remove();
 
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
-			    allowNames: false,
 				parent: $this,
 				acceptedSchemes: acceptedSchemes,
 				schemeName: valScheme,
@@ -1893,7 +1863,6 @@
 			$this.installHoverHandlers('entry', i, keyElt);
 
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
-			    allowNames: false,
 				parent: $this,
 				acceptedSchemes: acceptedSchemes,
 				schemeName: valScheme,
@@ -2027,10 +1996,6 @@
 					for(var i = 0; i < schemeValues.length; i++){
 					    var vName = schemeValues[i];
 
-					    if(this.allowNames && !this.allowNames[vName]){
-					        continue;
-					    }
-
 						if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
 							for(var fName in $this.value){
 								// skip non-customs 
@@ -2163,12 +2128,12 @@
 					valElt.text($this.value);
 					$this.container.append(valElt);
 				}
-			}  else if($this.scheme.expressionType == 'DropContainer'){
+			}  else if(this.scheme.expressionType == 'DropContainer'){
 			    if(this.options.mode === 'diagram'){
 			        var select = new Select({
                         clearBtn: true,
                         cloneOptions: true,
-                        options: this.options.sourceSelectOptions,
+                        options: this.scheme.name === '$from' ? this.options.sliceSelectOptions : this.options.sourceSelectOptions,
                         value: this.value,
                         onchange: function(val){
                             $this.changeConstValue(val.key);

@@ -140,23 +140,21 @@
 			    for(var j = 0; j < sources.length; j++){
 			        var sourceId = sources[j];
 
-			        if(this.dataSources[sourceId]){
+			        if(this.dataSources[sourceId] || this.slices[sourceId]){
 			            continue;
 			        }
 
-			        if(!this.dataSources[sourceId]){
-			            var idArr = sourceId.split('/');
+                    var idArr = sourceId.split('/');
 
-                        if(this.getWorkspace(idArr[0]).existsEntry(idArr[1])){
-                            var entry = this.getWorkspace(idArr[0]).entry(idArr[1]);
+                    if(this.getWorkspace(idArr[0]).existsEntry(idArr[1])){
+                        var entry = this.getWorkspace(idArr[0]).entry(idArr[1]);
 
-                            this.dataSources[sourceId] = {
-                                entry: entry
-                            }
+                        this.dataSources[sourceId] = {
+                            entry: entry
                         }
+                    }
 
-                        isNeedStore = true;
-			        }
+                    isNeedStore = true;
 			    }
 
 			    this.slices[i].sources = sources;

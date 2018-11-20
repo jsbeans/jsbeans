@@ -122,7 +122,7 @@
 
             this.rightConnector = $this.installConnector('providerRight', {
                 origin: connector,
-                handle: [connector, this.caption],
+                handle: [connector],
                 iri: 'connector/right/' + this.getId()
             });
 

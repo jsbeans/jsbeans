@@ -10,7 +10,7 @@
 	$client: {
 		
 		cubeFieldsCat: 'Поля источника',
-		sliceFieldsCat: 'Столбцы среза',
+		sliceFieldsCat: 'Поля среза',
 		
 		$bootstrap: function(){
 			// register tooltip

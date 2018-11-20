@@ -278,8 +278,12 @@
 	        return this._dataSources[id] || this._slices[id];
 	    },
 
+	    getSlices: function(){
+	        return this._slices;
+	    },
+
 	    getSources: function(){
-	        return JSB.merge(this._dataSources, this._slices);
+	        return this._dataSources;
 	    },
 
 	    refresh: function(entry){

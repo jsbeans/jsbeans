@@ -68,6 +68,8 @@
 	                    query: query,
 	                    updateLinks: true
 	                });
+
+	                //$this.publish('DataCube.CubeEditor.sliceUpdated');
 	            }
 	        });
 	    },
@@ -75,24 +77,36 @@
 	    update: function(data){
             var sliceId = data.entry.getId(),
                 sources = data.sources,
-                sourceSelectOptions = [];
+                slices = data.slices,
+                sourceSelectOptions = [],
+                sliceSelectOptions = [];
+
+            function createElement(obj, key){
+                return {
+                    entry: obj.entry,
+                    key: key,
+                    value: RendererRepository.createRendererFor(obj.entry, {showSource: true}).getElement()
+                }
+            }
 
             for(var i in sources){
-                if(sliceId === sources[i].entry.getId()){
+                sourceSelectOptions.push(createElement(sources[i], i));
+            }
+
+            for(var i in slices){
+                if(sliceId === slices[i].entry.getId()){
                     continue;
                 }
 
-                sourceSelectOptions.push({
-                    entry: sources[i].entry,
-                    key: i,
-                    value: RendererRepository.createRendererFor(sources[i].entry, {showSource: true}).getElement()
-                });
+                sliceSelectOptions.push(createElement(slices[i], i));
             }
 
             this.query = JSB.clone(data.entry.getQuery());
             this.sliceData = data;
 
+            this.queryEditor.setOption('sliceId', sliceId);
             this.queryEditor.setOption('sourceSelectOptions', sourceSelectOptions);
+            this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
 
             this.queryEditor.set(this.query);
 	    }

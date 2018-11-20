@@ -146,28 +146,33 @@
 		},
 		
 		refresh: function(){
-			this.slice = this.getCurrentNode().getTargetEntry();
-			this.titleEditor.setData(this.slice.getName());
-			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
+		    var entry = this.getCurrentNode().getTargetEntry();
+
+			if(!JSB.isInstanceOf(entry, 'DataCube.Model.Slice')){
 				return;
 			}
-			// todo: one request
-			this.slice.server().getCubeFields(function(fields){
-				$this.query = JSB.clone($this.slice.getQuery());
-				$this.structFields = JSB.clone($this.slice.getStructFields());
 
-				$this.queryEditor.setOption('cube', $this.slice.getCube());
-				$this.queryEditor.setOption('structFields', $this.structFields);
+			this.slice = entry;
+			this.titleEditor.setData(this.slice.getName());
 
-				$this.queryEditor.setOption('cubeFields', fields || {});
+			this.query = JSB.clone(this.slice.getQuery());
+            this.structFields = JSB.clone(this.slice.getStructFields());
 
-				$this.slice.server().getCubeSlices(function(slices){
-					$this.queryEditor.setOption('cubeSlices', slices);
-					
-					$this.updateQuery();
-					$this.updateTextQuery();
-					$this.updateGrid();
-				});
+            this.queryEditor.setOption('cube', this.slice.getCube());
+            this.queryEditor.setOption('structFields', this.structFields);
+
+			this.slices.server().getEditorData(function(data, fail){
+			    if(fail){
+			        // todo: error
+			        return;
+			    }
+
+			    $this.queryEditor.setOption('cubeFields', data.cubeFields);
+			    $this.queryEditor.setOption('cubeSlices', data.cubeSlices);
+
+                $this.updateQuery();
+                $this.updateTextQuery();
+                $this.updateGrid();
 			});
 		},
 		

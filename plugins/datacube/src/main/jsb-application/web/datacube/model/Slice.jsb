@@ -20,8 +20,6 @@
             if(query[fromKeys[i]]){
                 switch(fromKeys[i]){
                     case '$from':
-                        // todo
-                        break;
                     case '$cube':
                     case '$provider':
                         sources.push(query[fromKeys[i]]);
@@ -118,6 +116,18 @@
 			});
 		},
 
+		ensureQueryCache: function(){
+			if(!this.queryCache){
+				var mtx = this.getId() + '_queryCache';
+				JSB.getLocker().lock(mtx);
+				if(!this.queryCache){
+					this.queryCache = new QueryCache(this, this.cube);
+				}
+				JSB.getLocker().unlock(mtx);
+			}
+			return this.queryCache;
+		},
+
 		executeQuery: function(opts){
 			$this.getCube().load();
 			var params = {};
@@ -193,25 +203,26 @@
             return this.cube.executeQuery(preparedQuery, params);
 		},
 
-		ensureQueryCache: function(){
-			if(!this.queryCache){
-				var mtx = this.getId() + '_queryCache';
-				JSB.getLocker().lock(mtx);
-				if(!this.queryCache){
-					this.queryCache = new QueryCache(this, this.cube);
-				}
-				JSB.getLocker().unlock(mtx);
-			}
-			return this.queryCache;
+		extractFields: function(){
+		    var fields = {};
+
+		    if(this.query.$select){
+		        for(var i in this.query.$select){
+		            fields[i] = i;
+		        }
+		    }
+
+		    return fields;
 		},
 
-		getCubeFields: function(){
-			return this.getCube().extractFields();
-		},
+		getEditorData: function(){
+		    //todo: cubeFields & cubeSlices
+		    var cube = this.getCube();
 
-		getCubeSlices: function(){
-			$this.getCube().load();
-			return $this.getCube().getSlices();
+		    return {
+		        cubeFields: cube.extractFields(),
+		        cubeSlices: cube.getSlices()
+		    }
 		},
 
 		getOutputFields: function(){
