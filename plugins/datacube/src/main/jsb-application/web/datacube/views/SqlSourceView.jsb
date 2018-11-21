@@ -20,23 +20,25 @@
 						<div class="option connectionString">
 							<div class="icon"></div>
 							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Строка соединения"
-								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+								onchange="{{=this.callbackAttr(function(val){$this.updateButtons()})}}"></div>
 						</div>
 						
 						<div class="option user">
 							<div class="icon"></div>
 							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Имя пользователя"
-								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+								onchange="{{=this.callbackAttr(function(val){$this.updateButtons()})}}"></div>
 						</div>
 						
 						<div class="option password">
 							<div class="icon"></div>
 							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Пароль" password="true"
-								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+								onchange="{{=this.callbackAttr(function(val){$this.updateButtons()})}}"></div>
 						</div>
 						
 						<div class="option buttons">
-							<div jsb="JSB.Widgets.Button" class="roundButton btnOk btn16" caption="Проверить соединение"
+							<div jsb="JSB.Widgets.Button" class="roundButton btnSave btn16" caption="Сохранить"
+								onclick="{{=this.callbackAttr(function(evt){$this.updateSettings()})}}"></div>
+							<div jsb="JSB.Widgets.Button" class="roundButton btnOk btn16" caption="Сохранить и проверить соединение"
 								onclick="{{=this.callbackAttr(function(evt){$this.testConnection()})}}"></div>
 							<div class="message"></div>
 						</div>
@@ -46,7 +48,7 @@
 						<div class="option filter">
 							<div class="icon"></div>
 							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Фильтр"
-								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+								onchange="{{=this.callbackAttr(function(val){$this.updateButtons()})}}"></div>
 						</div>
 						<div class="option buttons">
 							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnLoadScheme" caption="Загрузить схему"
@@ -126,6 +128,7 @@
 		updateButtons: function(){
 			var bEnable = this.find('.connectionString > .editor').jsb().getData().getValue().trim().length > 0;
 			this.find('.btnOk').jsb().enable(bEnable);
+			this.find('.btnSave').jsb().enable(bEnable);
 			this.find('.btnLoadScheme').jsb().enable(bEnable);
 		},
 		
@@ -158,7 +161,8 @@
 		
 		extractScheme: function(){
 			var entry = $this.node.getTargetEntry();
-			entry.server().extractScheme(function(details, fail){
+			var settings = $this.collectSettings();
+			entry.server().extractScheme(settings, function(details, fail){
 				if(fail){
 					$this.find('.scheme .status').addClass('fail').removeClass('progress').removeClass('ok');
 					$this.find('.scheme .status > .message').text(fail.message);

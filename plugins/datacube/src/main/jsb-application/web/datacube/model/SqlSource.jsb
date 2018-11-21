@@ -104,7 +104,8 @@
 			$this.publish('DataCube.Model.SqlSource.updateCache');
 		},
 		
-		extractScheme: function(){
+		extractScheme: function(settings){
+			this.updateSettings(settings);
 			var mtx = 'DataCube.Model.SqlSource.extractScheme.' + this.getId();
 			JSB.getLocker().lock(mtx);
 			try {
