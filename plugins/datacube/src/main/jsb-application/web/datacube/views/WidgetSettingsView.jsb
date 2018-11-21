@@ -24,23 +24,25 @@
             this.titleEditor = new PrimitiveEditor();
             this.titleBlock.append(this.titleEditor.getElement());
 
-            this.saveBtn = new Button({
-                cssClass: "btnOk",
-                caption: "Сохранить",
-                onClick: function(){
-                    $this.applySettings();
-                }
-            });
-            this.titleBlock.append(this.saveBtn.getElement());
+            if(!$this.options.dontSave){
+	            var saveBtn = new Button({
+	                cssClass: "btnOk",
+	                caption: "Сохранить",
+	                onClick: function(){
+	                    $this.applySettings();
+	                }
+	            });
+	            this.titleBlock.append(saveBtn.getElement());
+            }
 
-            this.saveBtn = new Button({
+            var updateBtn = new Button({
                 cssClass: "btnUpdate",
                 caption: "Обновить",
                 onClick: function(){
                     $this.setChanges(true);
                 }
             });
-            this.titleBlock.append(this.saveBtn.getElement());
+            this.titleBlock.append(updateBtn.getElement());
             
             var splitBox = new SplitBox({
 				type: 'vertical',
@@ -64,7 +66,8 @@
 		},
 
 		refresh: function(){
-			this.entry = this.node.getTargetEntry();
+			this.entry = this.getCurrentEntry();
+//			this.entry = this.node.getTargetEntry();
 
             if(this.wrapper) {
                 this.wrapper.destroy();
@@ -115,6 +118,9 @@
 		},
 
 		applySettings: function(){
+			if($this.options.dontSave){
+				return;
+			}
 		    var values = this.widgetSchemeRenderer.getValues();
 
 		    var sourcesIds = this.extractSourceIds();

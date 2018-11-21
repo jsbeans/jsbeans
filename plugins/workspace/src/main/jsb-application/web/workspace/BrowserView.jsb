@@ -8,6 +8,7 @@
 	
 	$client: {
 		node: null,
+		entry: null,
 		workspace: null,
 		
 		$constructor: function(opts){
@@ -16,6 +17,12 @@
 			$jsb.loadCss('BrowserView.css');
 			this.addClass('workspaceBrowserView');
 			
+		},
+		
+		setCurrentEntry: function(entry){
+			this.entry = entry;
+			this.workspace = this.entry.getWorkspace();
+			this.refresh();
 		},
 		
 		setCurrentNode: function(node, workspace){
@@ -29,6 +36,13 @@
 		
 		getCurrentNode: function(){
 			return this.node;
+		},
+		
+		getCurrentEntry: function(){
+			if(!this.entry){
+				this.entry = this.getCurrentNode().getTargetEntry();
+			}
+			return this.entry;
 		},
 		
 		refresh: function(){
