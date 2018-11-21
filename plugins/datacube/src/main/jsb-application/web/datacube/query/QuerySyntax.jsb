@@ -185,7 +185,7 @@
 		        optional: ['$context', '$filter', '$groupBy', '$distinct',
 		                '$postFilter', '$cubeFilter', '$sort', '$finalize',
 		                '$sql','$limit', '$offset', '$views',
-		                '$from', '$join', '$union', , '$recursive', '$cube', '$provider'],
+		                '$from', '$join', '$union', '$select', '$recursive', '$cube', '$provider'],
 		        incompatible: [
 		            ['$from', '$join', '$union', '$recursive', '$cube', '$provider']
 		        ]
@@ -915,7 +915,7 @@
 		        desc: 'Задает в качестве источника запроса объединение результатов нескольких запросов',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$query'],
+		        values: ['$query']
 		    });
 
 		    new this.ComplexObject({
