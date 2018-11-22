@@ -100,7 +100,7 @@
 									    diagramOpts: desc.diagramOpts
 									};
 
-									this.fields = JSB.merge(this.fields, slice.getStructFields());
+									this.fields = JSB.merge(this.fields, slice.getMeasurements());
 								}
 							}
 
@@ -311,6 +311,16 @@ return;
 			return slice;
 		},
 
+		executeQuery: function(query, params, bUseCache){
+		    this.load();
+
+		    if(bUseCache && this.queryCache){
+		    	return this.queryCache.executeQuery(query, params);
+		    } else {
+		    	return this.queryEngine.query(query, params);
+		    }
+		},
+
 		extractFields: function(){
 		    this.load();
 
@@ -441,16 +451,6 @@ return;
 				query: newQuery,
 				params: params
 			}
-		},
-
-		// check necessity
-		executeQuery: function(query, params, provider, bUseCache){
-		    this.load();
-		    if(bUseCache && this.queryCache){
-		    	return this.queryCache.executeQuery(query, params, provider);
-		    } else {
-		    	return this.queryEngine.query(query, params, provider);
-		    }
 		},
 
 		// check necessity

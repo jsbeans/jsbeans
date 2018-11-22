@@ -6,7 +6,7 @@
 
 	cube: null,
 	query: {},
-	structFields: {}, // todo: rename to measurements
+	measurements: {},
 
     extractSources: function(query){
         var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
@@ -45,8 +45,8 @@
         return sources;
     },
 
-	getStructFields: function(){
-	    return this.structFields;
+	getMeasurements: function(){
+	    return this.measurements;
 	},
 
 	getQuery: function(){
@@ -102,8 +102,8 @@
 					this.query = this.property('query');
 				}
 
-				if(this.property('structFields')){
-					this.structFields = this.property('structFields');
+				if(this.property('measurements')){
+					this.measurements = this.property('measurements');
 				}
 			}
 
@@ -288,9 +288,9 @@
 		        isNeedUpdate = true;
 		    }
 
-		    if(JSB.isDefined(params.structFields) && !JSB.isEqual(this.structFields, params.structFields)){
-                this.structFields = params.structFields;
-                this.property('structFields', this.structFields);
+		    if(JSB.isDefined(params.measurements) && !JSB.isEqual(this.measurements, params.measurements)){
+                this.measurements = params.measurements;
+                this.property('measurements', this.measurements);
 
 		        isNeedUpdate = true;
 		    }

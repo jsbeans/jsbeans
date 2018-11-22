@@ -14,7 +14,7 @@
 		options: {
 			schemeName: null,
 			expanded: false,
-			structFields: {},
+			measurements: {},
 			
 			onChange: function(){}
 		},
@@ -24,28 +24,30 @@
 		hoverEntries: {},
 		hoverValues: {},
 		sourceFields: null,
-		sourceEditor: null,
 
-		sourceEditorsList: ['$joinFilter'],
+		sourceBeans: ['$from', '$provider', '$cube'],
 
 		$constructor: function(opts){
 			$base(opts);
 			$jsb.loadCss('SchemeEditor.css')
 			this.addClass('schemeEditor');
 
-			$this.parent = opts.parent;
-			$this.acceptedSchemes = opts.acceptedSchemes;
-			$this.schemeName = opts.schemeName;
-			$this.scope = opts.scope;
-			$this.scopeName = opts.scopeName;
-			$this.value = opts.value;
+			this.parent = opts.parent;
+			this.acceptedSchemes = opts.acceptedSchemes;
+			this.schemeName = opts.schemeName;
+			this.scope = opts.scope;
+			this.scopeName = opts.scopeName;
+			this.value = opts.value;
+			this.sourceFieldsEditors = opts.sourceFieldsEditors;
 
-			$this.handle = $this.getElement();
+			this.handle = $this.getElement();
 
-            if(this.sourceEditorsList.indexOf(this.schemeName) > -1){
-                this.sourceEditor = this;
-            } else {
-                this.sourceEditor = opts.sourceEditor;
+			if(!this.parent){
+			    this.sourceFieldsEditors = {};
+			}
+
+            if(this.sourceBeans.indexOf(this.schemeName) > -1){
+                this.sourceFieldsEditors[this.getId()] = this;
             }
 
 			// 'from' query
@@ -104,6 +106,10 @@
 
 		destroy: function(){
 			this.destroyNestedEditors();
+
+			if(this.sourceBeans.indexOf(this.schemeName) > -1){
+			    delete this.sourceFieldsEditors[this.getId()];
+			}
 
 			$base();
 		},
@@ -409,95 +415,31 @@
 		},
 
 		getSourceSelectFields: function(callback){
-		    function loadSourceFields(source, sourceFields){
-                $this.server().getEntryFields(source, function(res, fail){
-                    if(fail){
-                        return;
-                    }
+		    var sourcesArr = [],
+		        sources = {};
 
-                    sourceFields[source].fields = res;
-                    $this.sourceFields = sourceFields;
-                    callback.call($this, sourceFields);
-                });
+		    for(var i in this.sourceFieldsEditors){
+		        sourcesArr.push(this.sourceFieldsEditors[i]);
 		    }
 
-            switch(this.schemeName){
-                case '$joinFilter':
-                    var sources = [this.scope.$left.$provider || this.scope.$left.$cube,
-                                   this.scope.$right.$provider || this.scope.$right.$cube],
-                        sourceFields = {};
+		    JSB.chain(sourcesArr, function(source, c){
+		        var sourceId = source.getValue(),
+		            context = source.scope.$context;
 
-                    sourceFields[sources[0]] = {
-                        context: this.scope.$left.$context,
-                        fields: this.scope.$left.$select,
-                        sourceName: 'Левый источник'
+                $this.server().getEntryFields(sourceId, function(res, fail){
+                    if(!fail){
+                        sources[sourceId] = {
+                            context: context,
+                            entry: res.entry,
+                            fields: res.fields
+                        };
                     }
 
-                    sourceFields[sources[1]] = {
-                        context: this.scope.$right.$context,
-                        fields: this.scope.$right.$select,
-                        sourceName: 'Правый источник'
-                    }
-
-                    callback.call(this, sourceFields);
-                    break;
-                case '$sourceSelect':
-                    if(this.sourceFields){
-                        callback.call(this, this.sourceFields);
-                        break;
-                    }
-
-                    var source = this.scope.$provider || this.scope.$cube,
-                        sourceFields = {};
-
-                    sourceFields[source] = {
-                        context: this.scope.$context,
-                        sourceName: '<Имя источника>'
-                    }
-
-                    loadSourceFields(source, sourceFields);
-                    break;
-                case '$select':
-                    var sourceFields = {};
-
-                    if(this.scope.$join){
-                        sourceFields['left'] = {
-                            context: this.scope.$join.$left.$context,
-                            fields: this.scope.$join.$left.$select,
-                            sourceName: '$left'
-                        }
-
-                        sourceFields['right'] = {
-                            context: this.scope.$join.$right.$context,
-                            fields: this.scope.$join.$right.$select,
-                            sourceName: '$right'
-                        }
-
-                        this.sourceFields = sourceFields;
-                        callback.call(this, sourceFields);
-                    }
-
-                    var sources = this.scope.$provider || this.scope.$cube || this.scope.$from;
-
-                    if(sources){
-                        if(this.sourceFields){
-                            callback.call(this, this.sourceFields);
-                        } else {
-                            sourceFields[sources] = {
-                                context: this.scope.$context
-                            }
-
-                            loadSourceFields(sources, sourceFields);
-                        }
-                    }
-                    break;
-                default:
-                    if(this.sourceEditor){
-                        this.sourceEditor.getSourceSelectFields(callback);
-                    } else {
-                        debugger;
-                    }
-            }
+                    c.call();
+                });
+		    }, function(){
+		        callback.call($this, sources);
+		    });
 		},
 
 		getCubeSlices: function(callback){
@@ -512,6 +454,10 @@
 			*/
 console.log('getCubeSlices');
 			callback.call(this, {});
+		},
+
+		getValue: function(){
+		    return this.value;
 		},
 
 		chooseBestCubeField: function(){
@@ -800,6 +746,8 @@ console.log('getCubeSlices');
 		},
 
 		getDefaultAggregateForCubeField: function(cubeField){
+		    // todo
+		    /*
 			var fType = $this.options.cubeFields[cubeField].type;
 			if(fType){
 				fType = fType.toLowerCase();
@@ -809,6 +757,7 @@ console.log('getCubeSlices');
 					return '$sum';
 				}
 			}
+			*/
 			return null;
 		},
 
@@ -1542,7 +1491,7 @@ console.log('getCubeSlices');
 						editor: $this,
 						entryType: entryType,
 						entryKey: entryKey,
-						isStruct: $this.options.structFields[entryKey],
+						isStruct: $this.options.measurements[entryKey],
 						actions: {
 							allowEdit: allowEdit,
 							allowRemove: allowRemove,
@@ -1592,16 +1541,16 @@ console.log('getCubeSlices');
 		},
 
 		setStructField: function(elt, entryKey){
-		    var isStruct = this.options.structFields[entryKey];
+		    var isStruct = this.options.measurements[entryKey];
 
 		    elt.toggleClass('struct');
 
 		    if(isStruct){
-		        if(this.options.structFields[entryKey]){
-		            delete this.options.structFields[entryKey];
+		        if(this.options.measurements[entryKey]){
+		            delete this.options.measurements[entryKey];
 		        }
 		    } else {
-		        this.options.structFields[entryKey] = true;
+		        this.options.measurements[entryKey] = true;
 		    }
 		},
 
@@ -1655,7 +1604,7 @@ console.log('getCubeSlices');
 				entryElt.attr('key', valName);
 				container.append(entryElt);
 
-				if(this.scopeName === '$select' && this.options.structFields[valName]){
+				if(this.scopeName === '$select' && this.options.measurements[valName]){
 				    entryElt.addClass('struct');
                 }
 			}
@@ -1796,10 +1745,11 @@ console.log('getCubeSlices');
 				scopeName: valName,
 				scope: $this.value,
 				value: $this.value[valName],
-				expanded: false,
-				sourceEditor: this.sourceEditor
+				sourceFieldsEditors: this.sourceFieldsEditors,
+				expanded: false
 			}));
-			valueEditor.setOption('structFields', this.options.structFields);
+			valueEditor.setOption('measurements', this.options.measurements);
+
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
 
@@ -1876,10 +1826,11 @@ console.log('getCubeSlices');
 				scopeName: i,
 				scope: $this.value,
 				value: curVal,
-				expanded: false,
-				sourceEditor: this.sourceEditor
+				sourceFieldsEditors: this.sourceFieldsEditors,
+				expanded: false
 			}));
-			valueEditor.setOption('structFields', this.options.structFields);
+			valueEditor.setOption('measurements', this.options.measurements);
+
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
 
@@ -2172,7 +2123,7 @@ console.log('getCubeSlices');
                         }
 
                         if(!entry){
-                            $this.server().getDPEntry(value, function(entry){
+                            $this.server().getDataSourceEntry(value, function(entry){
                                 drawValue(entry);
                             })
                         } else {
@@ -2548,7 +2499,7 @@ debugger;
 	$server: {
 	    $require: ['JSB.Workspace.WorkspaceController'],
 
-	    getDPEntry: function(value){
+	    getDataSourceEntry: function(value){
 	        value = value.split('/');
 
 	        return WorkspaceController.getWorkspace(value[0]).entry(value[1]);
@@ -2563,7 +2514,10 @@ debugger;
 	            return;
 	        }
 
-	        return entry.extractFields();
+	        return {
+	            fields: entry.extractFields(),
+	            entry: entry
+	        }
 	    }
     }
 }

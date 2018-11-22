@@ -16,6 +16,9 @@
 	        var toolbar = this.$('<div class="toolbar"></div>');
 	        this.append(toolbar);
 
+	        var icon = this.$('<div class="icon"></div>');
+	        toolbar.append(icon);
+
 	        var caption = this.$('<span>Редактор среза</span>');
 	        toolbar.append(caption);
 
@@ -69,7 +72,10 @@
 	                    updateLinks: true
 	                });
 
-	                //$this.publish('DataCube.CubeEditor.sliceUpdated');
+	                $this.publish('DataCube.CubeEditor.sliceUpdated', {
+	                    slice: $this.sliceData.entry,
+	                    query: query
+	                });
 	            }
 	        });
 	    },

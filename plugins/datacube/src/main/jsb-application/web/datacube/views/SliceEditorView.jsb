@@ -12,7 +12,7 @@
 	$client: {
 		ready: false,
 		ignoreHandlers: false,
-		structFields: {},
+		measurements: {},
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -33,7 +33,7 @@
                 	$this.getElement().loader({message:'Сохранение...', onShow: function(){
                 	    $this.slice.server().setSliceParams({
                             name: $this.titleEditor.getData().getValue(),
-                            structFields: $this.structFields,
+                            measurements: $this.measurements,
                             query: $this.query
                         }, function(){
                             $this.getElement().loader('hide');
@@ -114,7 +114,7 @@
 			
 			this.queryEditor = new QueryEditor({
 			    editorView: $this,
-			    structFields: this.structFields,
+			    measurements: this.measurements,
 				onChange: function(){
 					$this.updateTextQuery();
 				}
@@ -156,12 +156,12 @@
 			this.titleEditor.setData(this.slice.getName());
 
 			this.query = JSB.clone(this.slice.getQuery());
-            this.structFields = JSB.clone(this.slice.getStructFields());
+            this.measurements = JSB.clone(this.slice.getMeasurements());
 
             this.queryEditor.setOption('cube', this.slice.getCube());
-            this.queryEditor.setOption('structFields', this.structFields);
+            this.queryEditor.setOption('measurements', this.measurements);
 
-			this.slices.server().getEditorData(function(data, fail){
+			this.slice.server().getEditorData(function(data, fail){
 			    if(fail){
 			        // todo: error
 			        return;

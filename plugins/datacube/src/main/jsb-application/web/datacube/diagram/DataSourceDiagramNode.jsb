@@ -192,10 +192,13 @@
 		selectNode: function(bEnable){
 			if(bEnable){
 				this.addClass('selected');
-				this.editor.publish('DataCube.CubeEditor.providerNodeSelected', this.provider);
+				this.editor.publish('DataCube.CubeEditor.dataSourceNodeSelected', {
+				    cube: this.editor.getCube(),
+				    source: this.entry
+				});
 			} else {
 				this.removeClass('selected');
-				this.editor.publish('DataCube.CubeEditor.providerNodeDeselected', this.provider);
+				this.editor.publish('DataCube.CubeEditor.dataSourceNodeDeselected');
 			}
 		},
 

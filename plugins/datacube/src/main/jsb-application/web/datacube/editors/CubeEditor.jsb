@@ -3,7 +3,6 @@
 	$parent: 'JSB.Widgets.Widget',
 	$client: {
 	    $require: ['JSB.Widgets.Diagram',
-	               'DataCube.Providers.DataProviderRepository',
 	               'DataCube.SliceDiagramNode',
 	               'DataCube.DataSourceDiagramNode',
 	               'JSB.Widgets.Button',

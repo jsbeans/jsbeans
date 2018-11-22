@@ -10,13 +10,14 @@
 		
 		$constructor: function(id, pEntry, cube, opts){
 			$base(id, pEntry, cube, opts);
-			
+			/*
 			(function(){
 				`#include 'loki.js'`;
 			}).call(this);
 			var Loki = this.loki;
 			this.db = new Loki(id, {env:'BROWSER'});
 			this.collection = this.db.addCollection('coll');
+			*/
 		},
 		
 		detectFieldType: function(obj){

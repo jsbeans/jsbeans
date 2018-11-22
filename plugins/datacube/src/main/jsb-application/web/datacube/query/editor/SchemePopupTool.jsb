@@ -19,7 +19,7 @@
 				id: 'schemePopupTool',
 				jso: self,
 				wrapperOpts: {
-					exclusive: 'schemePopupTool',
+					exclusive: false, //'schemePopupTool',
 					modal: false,
 					hideByOuterClick: true,
 					hideInterval: 0,
@@ -215,24 +215,20 @@
 				if(item == '#fieldName' || item == '$fieldName' || item == '$fieldExpr'){
 				    editor.getSourceSelectFields(function(sources){
 				        for(var j in sources){
-				            var fields = sources[j].fields;
+				            var fields = sources[j].fields,
+				                el = $this.$('<div class="sourceName" title="' + j + '"></div>');
 
-				            if(sources[j].sourceName){
-                                $this.itemsListBox.addItem({
-                                    allowHover: false,
-                                    allowSelect: false,
-                                    key: j,
-                                    value: j,
-                                    scheme: item,
-                                    desc: null,
-                                    element: `#dot
-                                        <div class="sourceName" title="{{=j}}">
-                                            <div class="icon"></div>
-                                            <div class="name">{{=(sources[j].sourceName)}}</div>
-                                        </div>
-                                    `
-                                });
-                            }
+                            el.append(RendererRepository.createRendererFor(sources[j].entry).getElement());
+
+                            $this.itemsListBox.addItem({
+                                allowHover: false,
+                                allowSelect: false,
+                                key: j,
+                                value: j,
+                                scheme: item,
+                                desc: null,
+                                element: el
+                            });
 
                             for(var i in fields){
                                 var element = $this.$('<div class="field" title="' + i + '"> <div class="icon"></div><div class="name">' + i + '</div></div>');
