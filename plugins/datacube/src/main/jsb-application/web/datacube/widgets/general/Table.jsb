@@ -245,6 +245,33 @@
                         	name: 'Отображать количество дочерних строк',
                         	editor: 'none',
                         	optional: 'checked'
+                        },
+                        treeState: {
+                        	render: 'select',
+                        	name: 'Начальное состояние',
+                        	items: {
+                        		stateCollapsed: {
+                        			name: 'Свернутое',
+                        			items: {
+                        				expandWithContextFilter: {
+                            				render: 'item',
+                            				name: 'Разворачивать при контекстном поиске',
+                            				optional: 'checked',
+                            				editor: 'none'
+                        				},
+                        				expandWithGlobalFilter: {
+                            				render: 'item',
+                            				name: 'Разворачивать при глобальной фильтрации',
+                            				optional: true,
+                            				editor: 'none'
+                        				},
+                        			}
+                        		},
+                        		stateExpanded: {
+                        			render: 'item',
+                                	name: 'Развернутое'
+                        		}
+                        	}
                         }
 	                }
 	            },
@@ -1491,7 +1518,7 @@
 				}
 				
 				$this.rowAppending = false;
-				if(!$this.useTree && pRows.length > 0){
+				if(/*!$this.useTree &&*/ pRows.length > 0){
 					var lastRow = $this.rows[$this.rows.length - 1];
 					var lastRowElt = $this.find('.row[key="'+lastRow.key+'"]');
 					JSB.deferUntil(function(){
@@ -1560,7 +1587,10 @@
 					parentField: parentField,
 					idField: idField,
 					expanded: expandedVals,
-					collapsed: collapsedVals
+					collapsed: collapsedVals,
+					openExpanded: $this.openExpanded,
+					expandByContextFilter: $this.expandByContextFilter,
+					expandByGlobalFilter: $this.expandByGlobalFilter
 				};
 			}
 			
@@ -1735,7 +1765,7 @@
 					}
 					rows.push(rDesc);
 					
-					if(rows.length >= batchSize && !$this.useTree){
+					if(rows.length >= batchSize /*&& !$this.useTree*/){
 						if($this.usePrefetch){
 							$this.stopPreFetch = false;
 							preFetch();
@@ -2715,6 +2745,9 @@
 				} else {
 					this.removeClass('showChildCount');
 				}
+				this.openExpanded = this.getContext().find('treeState').value() == 'stateExpanded';
+				this.expandByContextFilter = this.getContext().find('expandWithContextFilter').checked();
+				this.expandByGlobalFilter = this.getContext().find('expandWithGlobalFilter').checked();
 			} else {
 				this.removeClass('useTree');
 			}
@@ -3023,7 +3056,11 @@
 					// construct rows
 					function serializeNode(node){
 						$this.rows.push(node.row);
-						if(!node.matched && !expandedMap[node.id] && !hasContextFilter){
+						if(!node.matched 
+							&& !expandedMap[node.id] 
+							&& !opts.treeOpts.openExpanded 
+							&& (!opts.treeOpts.expandByContextFilter || !hasContextFilter)
+							&& (!opts.treeOpts.expandByGlobalFilter || !hasCubeFilter)){
 							return;
 						}
 						if(collapsedMap[node.id]){
@@ -3042,7 +3079,9 @@
 
 
 					// translate tree
-					if(hasContextFilter || hasCubeFilter){
+					if(opts.treeOpts.openExpanded 
+						|| (opts.treeOpts.expandByContextFilter && hasContextFilter) 
+						|| (opts.treeOpts.expandByGlobalFilter && hasCubeFilter)){ // expanded
 	
 						
 						// combine leafs matching filter
@@ -3093,7 +3132,7 @@
 						
 						serializeTree();
 						
-					} else {
+					} else {	// collapsed
 						// open only specified nodes
 						var treeFilter = {$or:[]};
 
