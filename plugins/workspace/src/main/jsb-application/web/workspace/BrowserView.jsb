@@ -7,7 +7,7 @@
 	           'JQuery.UI.Effects'],
 	
 	$client: {
-		node: null,
+//		node: null,
 		entry: null,
 		workspace: null,
 		
@@ -21,15 +21,20 @@
 		
 		setCurrentEntry: function(entry){
 			this.entry = entry;
-			this.workspace = this.entry.getWorkspace();
+			if(this.entry){
+				this.workspace = this.entry.getWorkspace();
+			} else {
+				this.workspace = null;
+			}
 			this.refresh();
 		},
-		
+/*		
 		setCurrentNode: function(node, workspace){
 			if(this.node == node){
 				return;
 			}
 			this.node = node;
+			this.entry = this.node.getTargetEntry();
 			this.workspace = workspace;
 			this.refresh();
 		},
@@ -37,11 +42,8 @@
 		getCurrentNode: function(){
 			return this.node;
 		},
-		
+*/		
 		getCurrentEntry: function(){
-			if(!this.entry){
-				this.entry = this.getCurrentNode().getTargetEntry();
-			}
 			return this.entry;
 		},
 		

@@ -265,7 +265,7 @@
 			});
 
 			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
-			    if(node.workspace !== $this.currentWorkspace) {return};
+			    if(!node || node.workspace !== $this.currentWorkspace) {return};
 
 			    var nodeKey = $this.wTreeMap[node.descriptor.entry.getId()] ? $this.wTreeMap[node.descriptor.entry.getId()].key : null;
 			    if(!nodeKey) return;

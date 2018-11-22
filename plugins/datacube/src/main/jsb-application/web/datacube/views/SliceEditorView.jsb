@@ -145,7 +145,7 @@
 		},
 		
 		refresh: function(){
-			this.slice = this.getCurrentNode().getTargetEntry();
+			this.slice = this.getCurrentEntry();
 			this.titleEditor.setData(this.slice.getName());
 			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
 				return;
