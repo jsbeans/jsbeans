@@ -119,7 +119,7 @@
 	        }
 	        
 	        function collectCubeFields(desc, items){
-	        	if(!desc.cubeFields || Object.keys(desc.cubeFields).length == 0){
+	        	if(!desc || !desc.cubeFields || Object.keys(desc.cubeFields).length == 0){
 	        		return;
 	        	}
 	        	for(var cubeField in desc.cubeFields){

@@ -20,6 +20,9 @@
 		},
 		
 		setCurrentEntry: function(entry){
+			if(this.entry == entry){
+				return;
+			}
 			this.entry = entry;
 			if(this.entry){
 				this.workspace = this.entry.getWorkspace();
