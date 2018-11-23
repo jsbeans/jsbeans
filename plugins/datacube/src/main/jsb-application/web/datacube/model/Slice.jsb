@@ -1,13 +1,52 @@
 {
 	$name: 'DataCube.Model.Slice',
 	$parent: 'JSB.Workspace.Entry',
-	
+
+	$require: ['DataCube.Query.QuerySyntax'],
+
 	cube: null,
 	query: {},
-	structFields: {},
+	measurements: {},
 
-	getStructFields: function(){
-	    return this.structFields;
+    extractSources: function(query){
+        var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
+            sources = [];
+
+        if(!query){
+            query = this.query;
+        }
+
+        for(var i = 0; i < fromKeys.length; i++){
+            if(query[fromKeys[i]]){
+                switch(fromKeys[i]){
+                    case '$from':
+                    case '$cube':
+                    case '$provider':
+                        sources.push(query[fromKeys[i]]);
+                        break;
+                    case '$join':
+                        // todo: add cube
+                        var left = query.$join.$left.$provider,
+                            right = query.$join.$right.$provider;
+
+                        sources.push(left);
+                        sources.push(right);
+                        break;
+                    case '$union':
+                        // todo
+                        break;
+                    case '$recursive':
+                        // todo
+                        break;
+                }
+            }
+        }
+
+        return sources;
+    },
+
+	getMeasurements: function(){
+	    return this.measurements;
 	},
 
 	getQuery: function(){
@@ -17,10 +56,21 @@
 	getCube: function(){
 		return this.cube;
 	},
+
+    getSourceType: function(){
+        var fromKeys = QuerySyntax.getFromContext();
+
+        for(var i = 0; i < fromKeys.length; i++){
+            if(this.query[fromKeys[i]]){
+                return fromKeys[i];
+            }
+        }
+
+        return 'Текущий куб';
+    },
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'DataCube.Query.QuerySyntax',
 		           'DataCube.Query.QueryCache'],
 		
 		$bootstrap: function(){
@@ -52,8 +102,8 @@
 					this.query = this.property('query');
 				}
 
-				if(this.property('structFields')){
-					this.structFields = this.property('structFields');
+				if(this.property('measurements')){
+					this.measurements = this.property('measurements');
 				}
 			}
 
@@ -64,6 +114,18 @@
 					$this.publish('DataCube.Model.Slice.updated');
 				}
 			});
+		},
+
+		ensureQueryCache: function(){
+			if(!this.queryCache){
+				var mtx = this.getId() + '_queryCache';
+				JSB.getLocker().lock(mtx);
+				if(!this.queryCache){
+					this.queryCache = new QueryCache(this, this.cube);
+				}
+				JSB.getLocker().unlock(mtx);
+			}
+			return this.queryCache;
 		},
 
 		executeQuery: function(opts){
@@ -141,38 +203,27 @@
             return this.cube.executeQuery(preparedQuery, params);
 		},
 
-		ensureQueryCache: function(){
-			if(!this.queryCache){
-				var mtx = this.getId() + '_queryCache';
-				JSB.getLocker().lock(mtx);
-				if(!this.queryCache){
-					this.queryCache = new QueryCache(this, this.cube);
-				}
-				JSB.getLocker().unlock(mtx);
-			}
-			return this.queryCache;
+		extractFields: function(){
+		    var fields = {};
+
+		    if(this.query.$select){
+		        for(var i in this.query.$select){
+		            fields[i] = i;
+		        }
+		    }
+
+		    return fields;
 		},
 
-		getCubeFields: function(){
-			return this.getCube().getFields();
+		getEditorData: function(){
+		    //todo: cubeFields & cubeSlices
+		    var cube = this.getCube();
+
+		    return {
+		        cubeFields: cube.extractFields(),
+		        cubeSlices: cube.getSlices()
+		    }
 		},
-
-		getCubeSlices: function(){
-			$this.getCube().load();
-			return $this.getCube().getSlices();
-		},
-
-        getSourceType: function(){
-            var fromKeys = QuerySyntax.getFromContext();
-
-            for(var i = 0; i < fromKeys.length; i++){
-                if(this.query[fromKeys[i]]){
-                    return fromKeys[i];
-                }
-            }
-
-            return 'Текущий куб';
-        },
 
 		getOutputFields: function(){
 			var fMap = {};
@@ -204,6 +255,12 @@
 			this.queryCache.copyFrom($this.getCube().queryCache, $this.query);
 		},
 
+		remove: function(){
+		    this.cube.removeSlice(this.getFullId());
+
+		    $base();
+		},
+
 		setName: function(name){
 			$base(name);
 			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
@@ -213,7 +270,7 @@
 		setSliceParams: function(params){
 		    var isNeedUpdate = false;
 
-		    if(!JSB.isEqual(this.getName(), params.name)){
+		    if(JSB.isDefined(params.name) && !JSB.isEqual(this.getName(), params.name)){
 		        $super.setName(params.name);
 
 		        this.publish('DataCube.Model.Slice.renameSlice', { name: params.name }, {session: true});
@@ -221,7 +278,7 @@
 		        isNeedUpdate = true;
 		    }
 
-		    if(!JSB.isEqual(this.query, params.query)){
+		    if(JSB.isDefined(this.getName(params.query)) && !JSB.isEqual(this.query, params.query)){
                 this.query =  params.query;
                 this.property('query', this.query);
 
@@ -231,15 +288,23 @@
 		        isNeedUpdate = true;
 		    }
 
-		    if(!JSB.isEqual(this.structFields, params.structFields)){
-                this.structFields = params.structFields;
-                this.property('structFields', this.structFields);
+		    if(JSB.isDefined(params.measurements) && !JSB.isEqual(this.measurements, params.measurements)){
+                this.measurements = params.measurements;
+                this.property('measurements', this.measurements);
 
 		        isNeedUpdate = true;
 		    }
 
 		    if(isNeedUpdate){
 		        this.doSync();
+
+		        return {
+		            wasUpdated: true
+		        }
+		    }
+
+		    return {
+		        wasUpdated: false
 		    }
 		},
 		

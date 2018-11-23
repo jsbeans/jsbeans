@@ -85,21 +85,22 @@
 
 							// construct slices
 							for(var i = 0; i < snapshot.slices.length; i++){
-								var sDesc = snapshot.slices[i];
+								var desc = snapshot.slices[i],
+								    idArr = desc.id.split('/');
 
-								if(this.getWorkspace().existsEntry(sDesc.id)){
-									var slice = this.getWorkspace().entry(sDesc.id);
+								if(this.getWorkspace(idArr[0]).existsEntry(idArr[1])){
+									var slice = this.getWorkspace(idArr[0]).entry(idArr[1]);
 
 									if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
 										continue;
 									}
 
-									this.slices[sDesc.id] = {
+									this.slices[desc.id] = {
 									    entry: slice,
-									    diagramOpts: sDesc.diagramOpts
+									    diagramOpts: desc.diagramOpts
 									};
 
-									this.fields = JSB.merge(this.fields, slice.getStructFields());
+									this.fields = JSB.merge(this.fields, slice.getMeasurements());
 								}
 							}
 
@@ -131,19 +132,51 @@
 				return;
 			}
 
+			// check all data sources exist
+			var isNeedStore = false;
+			for(var i in this.slices){
+			    var sources = this.slices[i].entry.extractSources();
+
+			    for(var j = 0; j < sources.length; j++){
+			        var sourceId = sources[j];
+
+			        if(this.dataSources[sourceId] || this.slices[sourceId]){
+			            continue;
+			        }
+
+                    var idArr = sourceId.split('/');
+
+                    if(this.getWorkspace(idArr[0]).existsEntry(idArr[1])){
+                        var entry = this.getWorkspace(idArr[0]).entry(idArr[1]);
+
+                        this.dataSources[sourceId] = {
+                            entry: entry
+                        }
+                    }
+
+                    isNeedStore = true;
+			    }
+
+			    this.slices[i].sources = sources;
+			}
+
+			if(isNeedStore){
+			    this.store();
+            }
+
 			// prepare data source fields
 			for(var i in this.dataSources){
 			    this.dataSources[i].fields = this.dataSources[i].entry.extractFieldsForDisplay();
 			}
 
 			return {
-			    cubeId: this.getId(),
 			    dataSources: this.dataSources,
 				fields: this.fields,
 				slices: this.slices
 			};
 		},
-		
+
+		// check necessity
 		fixupProviders: function(){
 return;
 			var bNeedSave = false;
@@ -238,10 +271,6 @@ return;
 			}
 		},
 
-		extractFields: function(){
-		    // todo
-		},
-
 		addDataSource: function(entry, diagramOpts){
 		    this.dataSources[entry.getFullId()] = {
 		        entry: entry,
@@ -268,10 +297,10 @@ return;
 					break;
 				}
 			}
-			var sId = JSB.generateUid();
-			var slice = new Slice(sId, this.getWorkspace(), this, sName);
 
-			this.slices[sId] = {
+			var slice = new Slice(JSB.generateUid(), this.getWorkspace(), this, sName);
+
+			this.slices[slice.getFullId()] = {
 			    entry: slice
 			};
 			this.sliceCount = Object.keys(this.slices).length;
@@ -280,6 +309,53 @@ return;
 			this.store();
 			this.doSync();
 			return slice;
+		},
+
+		executeQuery: function(query, params, bUseCache){
+		    this.load();
+
+		    if(bUseCache && this.queryCache){
+		    	return this.queryCache.executeQuery(query, params);
+		    } else {
+		    	return this.queryEngine.query(query, params);
+		    }
+		},
+
+		extractFields: function(){
+		    this.load();
+
+		    return this.fields;
+		},
+
+		// Dima use it
+		getManagedFields: function(){
+			return this.extractFields();
+		},
+
+		getSlices: function(){
+			this.load();
+
+			var slices = {};
+
+			for(var i in this.slices){
+			    slices[i] = this.slices[i].entry;
+			}
+
+			return slices;
+		},
+
+		removeDataSource: function(sId){
+		    this.load();
+
+		    if(!this.dataSources[sId]){
+		        return;
+		    }
+
+		    delete this.dataSources[sId];
+
+			this.sourceCount = Object.keys(this.dataSources).length;
+
+			this.store();
 		},
 		
 		removeSlice: function(sId){
@@ -291,28 +367,29 @@ return;
 			}
 
 			delete this.slices[sId];
-			slice.remove();
-			this.publish('DataCube.Model.Cube.changed', {action: 'sliceRemoved'}, {session: true});
+
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceRemoved'}, {session: true}); // todo: remove?
+
 			this.sliceCount = Object.keys(this.slices).length;
+
 			this.store();
 		},
-		
-		getSlices: function(){
-			this.load();
-			return this.slices;
-		},
-		
-		getFields: function(){
-			this.load();
-			return this.fields;
-		},
-		
-		getManagedFields: function(){   // Dima use it
-			this.load();
 
-			return this.getFields();
+		updateNodePosition: function(entry, diagramOpts){
+		    var entryId = entry.getFullId();
+
+		    if(this.hasChildEntry(entry)){
+		        this.slices[entryId].diagramOpts = JSB.merge(this.slices[entryId].diagramOpts, diagramOpts);
+		    } else if(this.dataSources[entryId]){
+		        this.dataSources[entryId].diagramOpts = JSB.merge(this.dataSources[entryId].diagramOpts, diagramOpts);
+		    } else {
+		        return;
+		    }
+
+		    this.store();
 		},
 
+		// check necessity
 		parametrizeQuery: function(query){
 			var newQuery = JSB.clone(query);
 			var params = {};
@@ -375,16 +452,8 @@ return;
 				params: params
 			}
 		},
-		
-		executeQuery: function(query, params, provider, bUseCache){
-		    this.load();
-		    if(bUseCache && this.queryCache){
-		    	return this.queryCache.executeQuery(query, params, provider);
-		    } else {
-		    	return this.queryEngine.query(query, params, provider);
-		    }
-		},
-		
+
+		// check necessity
 		invalidate: function(){
 			$this.publish('DataCube.Model.Cube.status', {status: 'Очистка кэша', success: true}, {session: true});
 			JSB.defer(function(){
@@ -402,7 +471,8 @@ return;
 				$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
 			}, 300, 'invalidate_' + this.getId());
 		},
-		
+
+		// check necessity
 		updateCache: function(){
 			JSB.defer(function(){
 				$this.load();

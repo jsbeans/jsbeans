@@ -83,12 +83,19 @@
 		
 		installJoint: function(){},
 		
-		destroy: function(){
+		destroy: function(hideEvent){
 			if(this.diagram && this.diagram.hasLink(this)){
-				this.diagram.removeLink(this);
-				return;
+				this.diagram._removeLink(this, hideEvent);
 			}
-			
+
+			// unselect & unhighlight
+			this.select(false);
+			this.highlight(false);
+
+			if(this.options.onRemove && !hideEvent){
+				this.options.onRemove.call(this);
+			}
+
 			// unbind connectors
 			if(JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') && this.source.links[this.getId()]){
 				this.source.removeLink(this);
@@ -104,7 +111,7 @@
 			if(this.group){
 				this.group.remove();
 			}
-			
+
 			$base();
 		},
 		
@@ -409,7 +416,6 @@
 				self.diagram.publish('_jsb_diagramHighlightChanged', self.diagram.getHighlighted());
 			}, 100, '_jsb_notifyUpdateHighlighted');
 		},
-
 		
 		isSelected: function(){
 			if(this.diagram.selected[this.getId()]){

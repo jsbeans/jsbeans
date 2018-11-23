@@ -186,7 +186,7 @@
 		},
 
 		_createHeaderCellCallback: function(i){
-            return this.callbacks.createHeader.call(this, i, this.columns[i].data);
+            return this.callbacks.createHeader.call(this, i, this.columns[i] ? this.columns[i].data : undefined);
 		},
 
 		clear: function(){

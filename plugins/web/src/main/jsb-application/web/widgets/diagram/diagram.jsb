@@ -676,6 +676,7 @@
 		
 		removeLink: function(linkVal, hideEvent){
 			var link = null;
+
 			if(JSB().isString(linkVal)){
 				link = this.links[linkVal];
 				if(!node){
@@ -693,23 +694,20 @@
 					throw 'ERROR(removeLink): Unknown link argument passed: ' + JSON.stringify(linkVal);
 				}
 			}
-			
-			if(link.options.onRemove && !hideEvent){
-				link.options.onRemove.call(link);
-			}
+
+			link.destroy(hideEvent);
+		},
+
+		_removeLink: function(link, hideEvent){
 			if(this.options.onChange && !hideEvent){
 				this.options.onChange.call(this, 'removeLink', link);
 			}
+
 			if(this.options.onRemove && !hideEvent){
 				this.options.onRemove.call(this, link);
 			}
-			
-			// unselect & unhighlight
-			link.select(false);
-			link.highlight(false);
 
-			delete this.links[link.getId()];
-			link.destroy();
+		    delete this.links[link.getId()];
 		},
 		
 		getLinks: function(){
@@ -882,7 +880,6 @@
 		},
 		
 		select: function(node, bSelect){
-debugger;
 			if(!JSB.isDefined(bSelect)){
 				bSelect = true;
 			}

@@ -1,32 +1,27 @@
 {
-	$name: 'DataCube.CubeEditorNext',
+	$name: 'DataCube.CubeEditor',
 	$parent: 'JSB.Widgets.Widget',
 	$client: {
 	    $require: ['JSB.Widgets.Diagram',
-	               'DataCube.Providers.DataProviderRepository',
 	               'DataCube.SliceDiagramNode',
-	               'DataCube.DataSourceDiagramNode'],
+	               'DataCube.DataSourceDiagramNode',
+	               'JSB.Widgets.Button',
+	               'JSB.Widgets.ToolManager'],
+
+	    _cube: null,
+	    _dataSources: {},
+	    _slices: {},
 
 	    $constructor: function(opts){
 			$base(opts);
 
-			//$jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
-			$jsb.loadCss('CubeEditorNext.css');
+			$jsb.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
 
 			// create diagram
 			this.diagram = new Diagram({
 				minZoom: 0.25,
 				highlightSelecting: false,
-				onChange: function(changeType, item){
-				    if(changeType === 'createLink'){
-				        $this.createLink(item);
-				    }
-
-				    if(changeType === 'removeLink'){
-				        $this.removeLink(item);
-				    }
-				},
 				onInit: function(){
 				    $this.setTrigger('diagramReady');
 				},
@@ -56,7 +51,7 @@
 				connectors: {
 					sliceLeft: {
 						acceptLocalLinks: false,
-						userLink: true,
+						userLink: false,
 						align: 'left',
 						offsetX: 2,
 						wiringLink: {
@@ -67,7 +62,7 @@
 
 					providerRight: {
 						acceptLocalLinks: false,
-						userLink: true,
+						userLink: false,
 						offsetX: 2,
 						wiringLink: {
 							key: 'bind',
@@ -150,18 +145,77 @@
                 }
             });
 
+            var editTool = this.$('<div class="editTool hidden"></div>');
+            this.append(editTool);
+
+            var removeBtn = new Button({
+                cssClass: 'roundButton btnDelete btn10',
+                tooltip: 'Удалить элементы',
+                onClick: function(){
+                    ToolManager.showMessage({
+                        icon: 'removeDialogIcon',
+                        text: 'Вы уверены что хотите удалить выбранные элементы?',
+                        buttons: [{text: 'Удалить', value: true},
+                                  {text: 'Нет', value: false}],
+                        target: {
+                            selector: removeBtn.getElement()
+                        },
+                        constraints: [{
+                            weight: 10.0,
+                            selector: removeBtn.getElement()
+                        }],
+                        callback: function(bDel){
+                            if(bDel){
+                                for(var i in $this._selectedItems){
+                                    if(JSB.isInstanceOf($this._selectedItems[i], 'JSB.Widgets.Diagram.Link')){
+                                        continue;
+                                    }
+
+                                    if(JSB.isInstanceOf($this._selectedItems[i].entry, 'DataCube.Model.Slice') &&
+                                       $this._cube.getId() === $this._selectedItems[i].entry.getCube().getId()){
+                                        (function(node){
+                                            $this._selectedItems[i].entry.server().remove(function(res, fail){
+                                                if(!fail){
+                                                    node.destroy();
+                                                }
+                                            });
+                                        })($this._selectedItems[i]);
+                                    } else {
+                                        (function(node){
+                                            $this._cube.server().removeDataSource($this._selectedItems[i].entry.getFullId(), function(res, fail){
+                                                if(!fail){
+                                                    node.destroy();
+                                                }
+                                            });
+                                        })($this._selectedItems[i]);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            editTool.append(removeBtn.getElement());
+
             this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
-                if(slice.cube === $this.cubeEntry){
+                if(slice.cube === $this._cube){
                     $this.addSlice(slice);
                 }
             });
+
+            this.subscribe('_jsb_diagramSelectionChanged', function(sender, msg, selectedItems){
+                if(Object.keys(selectedItems).length > 0){
+                    editTool.removeClass('hidden');
+                } else {
+                    editTool.addClass('hidden');
+                }
+
+                this._selectedItems = selectedItems;
+            });
 	    },
 
-	    _dataSources: {},
-	    _slices: {},
-
 	    addDataSource: function(entry, position){
-	        this.cubeEntry.server().addDataSource(entry, {position: position}, function(res, fail){
+	        this._cube.server().addDataSource(entry, {position: position}, function(res, fail){
 	            if(fail){
 	                // todo: error
 	                console.log('Error due create data source');
@@ -171,30 +225,27 @@
                 if(JSB.isInstanceOf(entry, "DataCube.Model.DatabaseTable")){
                     var pNode = $this.diagram.createNode('dataSourceDiagramNode', {entry: entry, editor: $this});
                     pNode.setPosition(position.x, position.y);
+
+                    $this._dataSources[entry.getFullId()] = {
+                        entry: entry,
+                        node: pNode
+                    }
                 }
 	        });
 	    },
 
 		addSlice: function(slice){
-            var sNode = $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this});
-
-            //this.cubeEntry.server().updateSliceSettings()
-            /*
-            var cubeRect = $this.cubeNode.getRect();
-            sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
-
-            $this.diagram.select($this.diagram.getNodes(), false);
-            $this.diagram.select($this.diagram.getLinks(), false);
-            sNode.select(true);
-            */
+            $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this});
 		},
 
 	    constructCube: function(desc){
 	        function createNode(type, obj){
-	            var node = $this.diagram.createNode(type, {entry: obj.entry, editor: $this});
+	            var node = $this.diagram.createNode(type, JSB.merge({
+	                editor: $this
+	            }, obj));
 
-                if(obj.diagramOpts && obj.diagramOpts.position){ // todo: remove 'if'
-	                node.setPosition(obj.diagramOpts.position.x, obj.diagramOpts.position.y);
+                if(obj.diagramOpts && obj.diagramOpts.position){
+	                node.setPosition(obj.diagramOpts.position.x, obj.diagramOpts.position.y, true);
                 }
 
                 return {
@@ -212,28 +263,37 @@
 	        for(var i in desc.slices){
 	            this._slices[desc.slices[i].entry.getFullId()] = createNode('sliceDiagramNode', desc.slices[i]);
 	        }
-
-	        // create links
-	        // todo
 	    },
 
-	    createLink: function(link){
-	        link.source.node.createLink(link);
+	    createLink: function(linkType, linkOpts){
+	        return this.diagram.createLink(linkType, linkOpts);
 	    },
 
-	    removeLink: function(link){
-	        //
+	    getCube: function(){
+	        return this._cube;
+	    },
+
+	    getSource: function(id){
+	        return this._dataSources[id] || this._slices[id];
+	    },
+
+	    getSlices: function(){
+	        return this._slices;
+	    },
+
+	    getSources: function(){
+	        return this._dataSources;
 	    },
 
 	    refresh: function(entry){
-			if(this.cubeEntry == entry){
+			if(this._cube == entry){
 				return;
 			}
 
-			this.cubeEntry = entry;
+			this._cube = entry;
 			this.diagram.clear();
 
-			this.cubeEntry.server().load(true, function(desc){
+			this._cube.server().load(true, function(desc){
 			    $this.ensureTrigger(['diagramReady'], function(){
 			        $this.constructCube(desc);
 			    });

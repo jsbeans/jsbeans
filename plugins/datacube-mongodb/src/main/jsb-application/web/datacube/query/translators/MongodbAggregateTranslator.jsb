@@ -6,7 +6,6 @@
 		
 		$require: [
 		    'DataCube.Query.Translators.TranslatorRegistry',
-		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
 		    'JSB.Store.Mongodb.Mongodb',

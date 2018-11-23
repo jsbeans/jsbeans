@@ -61,7 +61,7 @@
 			var resp = {};
 			switch(list){
 			case 'fields':
-				var fields = cube.getFields();
+				var fields = cube.extractFields();
 				resp = [];
 				for(var fName in fields){
 					var fDesc = {

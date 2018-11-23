@@ -1,0 +1,57 @@
+.cubeEditor {}
+
+.cubeEditor > ._jsb_diagram.acceptDraggable {
+	box-shadow: inset 0 0 2px #6478A0;
+    background-color: #C8DDF9;
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="bind"] > path {
+	stroke: #915a96;
+	stroke-width: 2px;
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="bind"] > .head.target > .shape {
+	fill: #915a96;
+    stroke: #915a96;
+    transform: scale(0.5);
+    stroke-width: 2px;
+}
+
+.cubeEditor > .editTool {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    border-radius: 6px 6px 0 0;
+    background: rgb(241, 223, 198);
+    border: 1px solid rgb(189, 150, 131);
+    padding: 4px;
+    box-shadow: none;
+    z-index: 1000;
+}
+
+/* dragHandle */
+.cubeEditor ._jsb_diagramNode > .dragHandle {
+    display: block;
+    height: 8px;
+    width: 100%;
+    cursor: move;
+    position: relative;
+}
+
+.cubeEditor ._jsb_diagramNode > .dragHandle > div {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 4px;
+    margin-top: -2px;
+}
+
+.cubeEditor ._jsb_diagramNode > .dragHandle > div:first-child {
+    left: calc(50% - 6px);
+}
+
+.cubeEditor ._jsb_diagramNode > .dragHandle > div:last-child {
+    left: calc(50% + 6px);
+}

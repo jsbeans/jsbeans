@@ -28,7 +28,6 @@
 .sqlTableRenderer.showSource > .title {
 	display: inline-block;
 	vertical-align: middle;
-	max-width: 60%;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }

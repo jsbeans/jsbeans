@@ -3,26 +3,24 @@
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$client: {
 	    $require: ['JSB.Controls.Button',
-	               'JSB.Controls.Checkbox',
 	               'JSB.Controls.ScrollBox',
 	               'JSB.Controls.Select',
 	               'JSB.Widgets.RendererRepository',
 	               'JSB.Widgets.ToolManager'],
 
 		options: {
+			onHighlight: function(bEnable){
+				this.highlightNode(bEnable);
+			},
 			onSelect: function(bEnable){
-				//
+				this.selectNode(bEnable);
 			},
 			onRemove: function(){},
 			onPositionChanged: function(x, y){
 			    var self = this;
 
-				if(this.editor.ignoreHandlers){
-					return;
-				}
 				JSB.defer(function(){
-					//self.editor.cubeEntry.server().updateDataProviderNodePosition(self.entry.getId(), {x: x, y: y});
-					// todo
+					self.editor.getCube().server().updateNodePosition(self.entry, {position: {x: x, y: y}});
 				}, 500, 'dataProviderResize_' + this.getId());
 			}
 		},
@@ -37,16 +35,17 @@
 	        $jsb.loadCss('DataSourceDiagramNode.css');
 			this.addClass('dataSourceDiagramNode');
 
+			// drag handle
+			var dragHandle = this.$('<div class="dragHandle"><div></div><div></div><div></div></div>');
+			this.append(dragHandle);
+
+			this.installDragHandle('drag', {
+				selector: dragHandle
+			});
+
 			// caption
 			this.caption = this.$('<div class="caption"></div>');
 			this.append(this.caption);
-
-			// install drag-move selector
-			var dragElement = this.$('<div class="dragElement"></div>');
-			this.caption.append(dragElement);
-			this.installDragHandle('drag', {
-				selector: dragElement
-			});
 
 			var renderer = RendererRepository.createRendererFor(this.entry, {showSource: true});
 			this.caption.append(renderer.getElement());
@@ -67,31 +66,6 @@
 				}
 			});
 			this.caption.append(refreshButton.getElement());
-
-
-			// remove btn
-			var removeButton = $this.$('<i class="btn btnDelete fas fa-times-circle" title="Удалить"></i>');
-			removeButton.click(function(evt){
-			    evt.stopPropagation();
-
-                ToolManager.showMessage({
-                    icon: 'removeDialogIcon',
-                    text: 'Вы уверены что хотите удалить провайдер?',
-                    buttons: [{text: 'Удалить', value: true},
-                              {text: 'Нет', value: false}],
-                    target: {
-                        selector: $this.getElement()
-                    },
-                    constraints: [{
-                        weight: 10.0,
-                        selector: $this.getElement()
-                    }],
-                    callback: function(bDel){
-                        // todo: remove into provider entry
-                    }
-                });
-			})
-			this.caption.append(removeButton);
 			*/
 
 			// body
@@ -148,17 +122,18 @@
 
             this.rightConnector = $this.installConnector('providerRight', {
                 origin: connector,
-                handle: [connector, this.caption],
+                handle: [connector],
                 iri: 'connector/right/' + this.getId()
             });
 
+			this.getElement().click(function(){
+			    $this.select(true);
+			});
+
 			this.getElement().resize(function(){
-			    if($this.editor.cubeEntry){
-                    JSB.defer(function(){
-                        //$this.editor.cubeEntry.server().updateDataProviderNodePosition($this.entry.getId(), null, {width: $this.getElement().width()});
-                        // todo
-                    }, 300, 'dataProviderResize_' + $this.getId());
-			    }
+                JSB.defer(function(){
+                    $this.editor.getCube().server().updateNodePosition($this.entry, {size: {width: $this.getElement().width()}});
+                }, 300, 'dataProviderResize_' + $this.getId());
 			});
 
 			this.refresh();
@@ -212,6 +187,27 @@
 
 	        // exit
 	        fieldsElements.selectAll('div.field').data(this.fields).exit().remove();
-	    }
+	    },
+
+		selectNode: function(bEnable){
+			if(bEnable){
+				this.addClass('selected');
+				this.editor.publish('DataCube.CubeEditor.dataSourceNodeSelected', {
+				    cube: this.editor.getCube(),
+				    source: this.entry
+				});
+			} else {
+				this.removeClass('selected');
+				this.editor.publish('DataCube.CubeEditor.dataSourceNodeDeselected');
+			}
+		},
+
+		highlightNode: function(bEnable){
+			if(bEnable){
+				this.addClass('highlighted');
+			} else {
+				this.removeClass('highlighted');
+			}
+		}
 	}
 }

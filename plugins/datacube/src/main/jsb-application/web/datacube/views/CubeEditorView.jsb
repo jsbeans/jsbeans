@@ -8,6 +8,7 @@
 		$constructor: function(opts){
 			$base(opts);
 
+			$jsb.loadCss('CubeEditorView.css');
 			this.addClass('cubeEditorView');
 
 			this.layoutManager = new SplitLayoutManager({
@@ -17,7 +18,7 @@
 						split: 'vertical',
 						panes: [{
 							key: 'leftPane',
-							size: 0.8,
+							size: 0.7,
 							split: 'horizontal',
 							panes: [{
                                 key: 'cubeEditor',
@@ -44,7 +45,7 @@
 				},
 				widgets: {
 					cubeEditor: {
-						jsb: 'DataCube.CubeEditorNext',
+						jsb: 'DataCube.CubeEditor',
 					},
 					gridView: {
 						jsb: 'DataCube.GridView',

@@ -42,21 +42,21 @@
 				this.missing = this.property('missing') || false;
 				this.view = this.descriptor.isView || false;
 			}
-			
+			/*
 			this.subscribe(['DataCube.Model.SqlSource.updateSettings','DataCube.Model.SqlSource.clearCache'], function(sender){
 				if($this.getParent() != sender){
 					return;
 				}
-				$this.publish('DataCube.Model.SqlTable.updated');
+				// $this.getCube().invalidate();
 			});
 			
 			this.subscribe('DataCube.Model.SqlSource.updateCache', function(sender){
 				if($this.getParent() != sender){
 					return;
 				}
-				$this.publish('DataCube.Model.SqlTable.updateCache');
+				// $this.getCube().updateCache();
 			});
-
+			*/
 		},
 
 		extractFields: function(opts){

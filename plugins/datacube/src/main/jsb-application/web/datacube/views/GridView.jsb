@@ -34,6 +34,7 @@
             this.errorText = this.$('<span class="errorText"></span>');
             this.error.append(this.errorText);
             this.append(this.error);
+
             // selected
             this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, obj){
                 $this.updateData(obj.entry);
@@ -43,29 +44,38 @@
                 $this.updateData(obj.cube, obj.query);
             });
 
-            this.subscribe('DataCube.CubeEditor.providerNodeSelected', function(editor, msg, provider){
-                $this.updateData(provider);
+            this.subscribe('DataCube.CubeEditor.dataSourceNodeSelected', function(editor, msg, obj){
+                $this.updateData(obj.source, undefined, obj.cube);
             });
 
             this.subscribe('DataCube.CubeEditor.sliceNodeEdit', function(editor, msg, slice){
-                $this._updateData(slice);
+                $this.updateData(slice);
             });
 
             // deselected
-            this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(editor, msg, slice){
+            this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(editor, msg, obj){
                 $this.clear();
             });
 
-            this.subscribe('DataCube.CubeEditor.cubeNodeDeselected', function(editor, msg, slice){
+            this.subscribe('DataCube.CubeEditor.cubeNodeDeselected', function(editor, msg, obj){
                 $this.clear();
             });
 
-            this.subscribe('DataCube.CubeEditor.providerNodeDeselected', function(editor, msg, slice){
+            this.subscribe('DataCube.CubeEditor.dataSourceNodeDeselected', function(editor, msg, obj){
                 $this.clear();
+            });
+
+            // update
+            this.subscribe('DataCube.CubeEditor.sliceUpdated', function(editor, msg, obj){
+                $this.updateData(obj.slice, obj.query);
             });
 		},
 
 		clear: function(){
+            if(!this.getElement().is(':visible')){
+                return;
+            }
+
 		    this.error.addClass('hidden');
             this.table.clear();
             // this.server().clearIterator();
@@ -159,7 +169,11 @@
             this._updateData(this.curData, true);
 		},
 		
-		updateData: function(source, query){
+		updateData: function(source, query, cube){
+            if(!this.getElement().is(':visible')){
+                return;
+            }
+
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 			    this._updateData({
 			    	cube: source.getCube(),
@@ -167,9 +181,9 @@
 			    	slice: source,
 			    	type: 'slice'
 			    });
-			} else if(JSB.isInstanceOf(source, 'DataCube.Providers.DataProvider')){
+			} else if(JSB.isInstanceOf(source, 'DataCube.Model.DatabaseTable')){
 			    this._updateData({
-			        cube: source.cube,
+			        cube: cube,
 			        provider: source,
                     query: query,
                     type: 'dataProvider'
@@ -261,7 +275,7 @@
                 switch(obj.type){
                     case 'cube':
                         if(!obj.query.$select){
-                            var fields = obj.cube.getFields();
+                            var fields = obj.cube.extractFields();
                             var q = {};
                             for(var i in fields){
                                 q[i] = i;
@@ -270,7 +284,7 @@
                                 $select: q
                             });
                         }
-                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
+                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, true);
                         break;
                     case 'dataProvider':
                         var fields = obj.provider.extractFields();
@@ -279,15 +293,16 @@
                             q[i] = i;
                         }
                         obj.query = JSB.merge(obj.query, {
+                            $provider: obj.provider.getFullId(),
                             $select: q
                         });
-                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
+                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, true);
                         break;
                     case 'slice':
                     	if(JSB.isEqual(obj.query, obj.slice.getQuery())){
                     		this.it = obj.slice.executeQuery({useCache: true});
                     	} else {
-                    		this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
+                    		this.it = obj.cube.executeQuery(obj.query, obj.queryParams, true);
                     	}
                         break;
                     default:
@@ -359,7 +374,7 @@
 	        var it = null;
 
             try{
-                it = this.exportObj.cube.executeQuery(this.exportObj.query, this.exportObj.queryParams, this.exportObj.provider);
+                it = this.exportObj.cube.executeQuery(this.exportObj.query, this.exportObj.queryParams);
 
                 var res = [];
 

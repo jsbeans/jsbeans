@@ -14,7 +14,7 @@
 		options: {
 			schemeName: null,
 			expanded: false,
-			structFields: {},
+			measurements: {},
 			
 			onChange: function(){}
 		},
@@ -24,29 +24,30 @@
 		hoverEntries: {},
 		hoverValues: {},
 		sourceFields: null,
-		sourceEditor: null,
 
-		sourceEditorsList: ['$joinFilter'],
+		sourceBeans: ['$from', '$provider', '$cube'],
 
 		$constructor: function(opts){
 			$base(opts);
 			$jsb.loadCss('SchemeEditor.css')
 			this.addClass('schemeEditor');
 
-			$this.parent = opts.parent;
-			$this.acceptedSchemes = opts.acceptedSchemes;
-			$this.schemeName = opts.schemeName;
-			$this.scope = opts.scope;
-			$this.scopeName = opts.scopeName;
-			$this.value = opts.value;
-			$this.allowNames = opts.allowNames;
+			this.parent = opts.parent;
+			this.acceptedSchemes = opts.acceptedSchemes;
+			this.schemeName = opts.schemeName;
+			this.scope = opts.scope;
+			this.scopeName = opts.scopeName;
+			this.value = opts.value;
+			this.sourceFieldsEditors = opts.sourceFieldsEditors;
 
-			$this.handle = $this.getElement();
+			this.handle = $this.getElement();
 
-            if(this.sourceEditorsList.indexOf(this.schemeName) > -1){
-                this.sourceEditor = this;
-            } else {
-                this.sourceEditor = opts.sourceEditor;
+			if(!this.parent){
+			    this.sourceFieldsEditors = {};
+			}
+
+            if(this.sourceBeans.indexOf(this.schemeName) > -1){
+                this.sourceFieldsEditors[this.getId()] = this;
             }
 
 			// 'from' query
@@ -63,7 +64,9 @@
 				tooltip: 'Добавить поле',
 				onClick: function(evt){
 					evt.stopPropagation();
-					$this.doAdd($this.$(evt.currentTarget));
+					$this.showPopupTool($this.combineAcceptedSchemes(), $this.$(evt.currentTarget), null, null, null, function(chosenObj){
+					    $this.doAdd(chosenObj);
+					});
 				}
 			});
 			$this.append($this.btnAdd);
@@ -103,6 +106,10 @@
 
 		destroy: function(){
 			this.destroyNestedEditors();
+
+			if(this.sourceBeans.indexOf(this.schemeName) > -1){
+			    delete this.sourceFieldsEditors[this.getId()];
+			}
 
 			$base();
 		},
@@ -374,7 +381,7 @@
 		},
 
 		generateQueryContextName: function(prefix){
-			prefix = prefix || 'sub';
+			prefix = (prefix || 'sub') + '_' + this.options.sliceId;
 			var queryMap = $this.combineQueries();
 			if(!queryMap[prefix]){
 				return prefix;
@@ -408,135 +415,53 @@
 		},
 
 		getSourceSelectFields: function(callback){
-		    function loadSourceFields(source, sourceFields){
-                $this.server().getEntryFields(source, function(res, fail){
-                    if(fail){
-                        return;
-                    }
+		    var sourcesArr = [],
+		        sources = {};
 
-                    sourceFields[source].fields = res;
-                    $this.sourceFields = sourceFields;
-                    callback.call($this, sourceFields);
-                });
+		    for(var i in this.sourceFieldsEditors){
+		        sourcesArr.push(this.sourceFieldsEditors[i]);
 		    }
 
-            switch(this.schemeName){
-                case '$joinFilter':
-                    var sources = [this.scope.$left.$provider || this.scope.$left.$cube,
-                                   this.scope.$right.$provider || this.scope.$right.$cube],
-                        sourceFields = {};
+		    JSB.chain(sourcesArr, function(source, c){
+		        var sourceId = source.getValue(),
+		            context = source.scope.$context;
 
-                    sourceFields[sources[0]] = {
-                        context: this.scope.$left.$context,
-                        fields: this.scope.$left.$select,
-                        sourceName: 'Левый источник'
+                $this.server().getEntryFields(sourceId, function(res, fail){
+                    if(!fail){
+                        sources[sourceId] = {
+                            context: context,
+                            entry: res.entry,
+                            fields: res.fields
+                        };
                     }
 
-                    sourceFields[sources[1]] = {
-                        context: this.scope.$right.$context,
-                        fields: this.scope.$right.$select,
-                        sourceName: 'Правый источник'
-                    }
-
-                    callback.call(this, sourceFields);
-                    break;
-                case '$sourceSelect':
-                    if(this.sourceFields){
-                        callback.call(this, this.sourceFields);
-                        break;
-                    }
-
-                    var source = this.scope.$provider || this.scope.$cube,
-                        sourceFields = {};
-
-                    sourceFields[source] = {
-                        context: this.scope.$context,
-                        sourceName: '<Имя источника>'
-                    }
-
-                    loadSourceFields(source, sourceFields);
-                    break;
-                case '$select':
-                    var sourceFields = {};
-
-                    if(this.scope.$join){
-                        sourceFields['left'] = {
-                            context: this.scope.$join.$left.$context,
-                            fields: this.scope.$join.$left.$select,
-                            sourceName: '$left'
-                        }
-
-                        sourceFields['right'] = {
-                            context: this.scope.$join.$right.$context,
-                            fields: this.scope.$join.$right.$select,
-                            sourceName: '$right'
-                        }
-
-                        this.sourceFields = sourceFields;
-                        callback.call(this, sourceFields);
-                    }
-
-                    if(this.scope.$provider || this.scope.$cube){
-                        if(this.sourceFields){
-                            callback.call(this, this.sourceFields);
-                        } else {
-                            sourceFields[this.scope.$provider || this.scope.$cube] = {
-                                context: this.scope.$context
-                            }
-
-                            loadSourceFields(this.scope.$provider || this.scope.$cube, sourceFields);
-                        }
-                    }
-                    break;
-                default:
-                    if(this.sourceEditor){
-                        this.sourceEditor.getSourceSelectFields(callback);
-                    } else {
-                        debugger;
-                    }
-            }
-		},
-
-		getSourceFields: function(callback){
-			var curEditor = this;
-			while(curEditor && curEditor.scheme){
-				if(curEditor.scheme.name == '$query'){
-					var fromVal = curEditor.value['$from'];
-					if(JSB.isString(fromVal)){
-						var slice = curEditor.getSliceForName(fromVal);
-						if(slice){
-							slice.server().getOutputFields(callback);
-							return;
-						}
-					}
-				}
-				curEditor = curEditor.parent;
-			}
-			this.getCubeFields(callback);
-		},
-
-		getCubeFields: function(callback){
-			if($this.options.cubeFields){
-				callback.call(this, $this.options.cubeFields);
-				return;
-			}
-
-			if($this.options.cube){
-				$this.options.cube.server().getOutputFields(callback);
-				return;
-			}
+                    c.call();
+                });
+		    }, function(){
+		        callback.call($this, sources);
+		    });
 		},
 
 		getCubeSlices: function(callback){
+		    // todo:
+		    /*
 			if($this.options.cube){
 				$this.options.cube.server().getSlices(callback);
 				return;
 			}
+
 			callback.call(this, $this.options.cubeSlices);
+			*/
+console.log('getCubeSlices');
+			callback.call(this, {});
+		},
+
+		getValue: function(){
+		    return this.value;
 		},
 
 		chooseBestCubeField: function(){
-			var sourceFields = $this.options.cubeFields;
+			var sourceFields = $this.options.cubeFields || {};
 			return Object.keys(sourceFields)[0];
 		},
 
@@ -821,6 +746,8 @@
 		},
 
 		getDefaultAggregateForCubeField: function(cubeField){
+		    // todo
+		    /*
 			var fType = $this.options.cubeFields[cubeField].type;
 			if(fType){
 				fType = fType.toLowerCase();
@@ -830,172 +757,176 @@
 					return '$sum';
 				}
 			}
+			*/
 			return null;
 		},
 
-		doAdd: function(targetElt){
-			$this.showPopupTool($this.combineAcceptedSchemes(), targetElt, null, null, null, function(chosenObj){
-				if($this.scheme.expressionType == 'ComplexObject'){
-					function generateColumnName(prefix){
-						if(prefix && !$this.value[prefix]){
-							return prefix;
-						}
-						prefix = prefix || 'Столбец';
-						for(var idx = 2;; idx++){
-							var suggestedName = prefix + '_' + idx;
-							if(!$this.value[suggestedName]){
-								return suggestedName;
-							}
-						}
-					}
+		doAdd: function(chosenObj){
+		    var child;
 
-					function generateViewName(prefix){
-						if(prefix && !$this.value[prefix]){
-							return prefix;
-						}
-						prefix = prefix || 'Вид';
-						for(var idx = 2;; idx++){
-							var suggestedName = prefix + '_' + idx;
-							if(!$this.value[suggestedName]){
-								return suggestedName;
-							}
-						}
-					}
+            if($this.scheme.expressionType == 'ComplexObject'){
+                function generateColumnName(prefix){
+                    if(prefix && !$this.value[prefix]){
+                        return prefix;
+                    }
+                    prefix = prefix || 'Столбец';
+                    for(var idx = 2;; idx++){
+                        var suggestedName = prefix + '_' + idx;
+                        if(!$this.value[suggestedName]){
+                            return suggestedName;
+                        }
+                    }
+                }
 
-					var colName = null;
-					var value = undefined;
-					var schemeName = null;
-					var context = null;
-					var askRename = false;
-					var bGroupByChanged = false;
+                function generateViewName(prefix){
+                    if(prefix && !$this.value[prefix]){
+                        return prefix;
+                    }
+                    prefix = prefix || 'Вид';
+                    for(var idx = 2;; idx++){
+                        var suggestedName = prefix + '_' + idx;
+                        if(!$this.value[suggestedName]){
+                            return suggestedName;
+                        }
+                    }
+                }
 
-					// detect key
-					if(JSB.isString(chosenObj.key)){
-						if(($this.scheme.name == '$select' || $this.scheme.name === '$sourceSelect') && chosenObj.key == '#outputFieldName'){
-							// autogenerate column name
-							var prefix = null;
-							if(chosenObj.value && (chosenObj.value.scheme == '$fieldName' || chosenObj.value.scheme == '$fieldExpr')){
-								prefix = chosenObj.value.value;
-							}
-							colName = generateColumnName(prefix);
-							askRename = true;
-						} else if($this.scheme.name == '$views' && chosenObj.key == '#viewName') {
-							// autogenerate view name
-							var prefix = null;
-							colName = generateViewName(prefix);
-							askRename = true;
-						} else {
-							throw new Error('Unexpected key: ' + chosenObj.key);
-						}
-					} else if(JSB.isObject(chosenObj.key)) {
-						if(chosenObj.key.scheme == '$viewName' && $this.scheme.name == '$query'){
-							colName = '$from';
-							schemeName = chosenObj.key.scheme;
-							value = chosenObj.key.value;
-						} else  {
-							colName = chosenObj.key.value;
+                var colName = null;
+                var value = undefined;
+                var schemeName = null;
+                var context = null;
+                var askRename = false;
+                var bGroupByChanged = false;
 
-							if($this.scheme.name == '$query' && colName == '$groupBy'){
-								bGroupByChanged = true;
-							}
-						}
-					}
+                // detect key
+                if(JSB.isString(chosenObj.key)){
+                    if(($this.scheme.name == '$select' || $this.scheme.name === '$sourceSelect') && chosenObj.key == '#outputFieldName'){
+                        // autogenerate column name
+                        var prefix = null;
+                        if(chosenObj.value && (chosenObj.value.scheme == '$fieldName' || chosenObj.value.scheme == '$fieldExpr')){
+                            prefix = chosenObj.value.value;
+                        }
+                        colName = generateColumnName(prefix);
+                        askRename = true;
+                    } else if($this.scheme.name == '$views' && chosenObj.key == '#viewName') {
+                        // autogenerate view name
+                        var prefix = null;
+                        colName = generateViewName(prefix);
+                        askRename = true;
+                    } else {
+                        throw new Error('Unexpected key: ' + chosenObj.key);
+                    }
+                } else if(JSB.isObject(chosenObj.key)) {
+                    if(chosenObj.key.scheme == '$viewName' && $this.scheme.name == '$query'){
+                        colName = '$from';
+                        schemeName = chosenObj.key.scheme;
+                        value = chosenObj.key.value;
+                    } else  {
+                        colName = chosenObj.key.value;
 
-					// detect value
-					if(!JSB.isDefined(value)){
-						if(chosenObj.value){
-							// resolve via value scheme
-							schemeName = chosenObj.value.scheme;
-							value = chosenObj.value.value;
-							context = chosenObj.value.context;
-							if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-								if($this.scheme.name == '$select'){
-									// check for field is not existed in groupBy section
-									if($this.parent.value.$groupBy && $this.parent.value.$groupBy.length > 0){
-										var bGroupExisted = false;
-										for(var i = 0; i < $this.parent.value.$groupBy.length; i++){
-											var groupByField = $this.parent.value.$groupBy[i];
-											if(groupByField == value){
-												bGroupExisted = true;
-												break;
-											}
-										}
-										if(!bGroupExisted){
-											// setup default aggregate function for field
-											var aggFunc = $this.getDefaultAggregateForCubeField(value);
-											if(aggFunc){
-												var val = {};
-												val[aggFunc] = value;
-												value = val;
-												schemeName = aggFunc;
-											}
-										}
-									}
-								}
-							} else if(schemeName == '$fieldExpr') {
-								value = {
-									$field: value,
-									$context: context
-								};
-							} else {
-								value = $this.constructEmptyValue(schemeName);
-							}
-						} else if(chosenObj) {
-							// detect via key scheme
-							schemeName = $this.combineAcceptedSchemes(chosenObj.key.scheme)[0];
-							context = chosenObj.key.context;
-							value = $this.constructEmptyValue(schemeName);
-						}
-					}
+                        if($this.scheme.name == '$query' && colName == '$groupBy'){
+                            bGroupByChanged = true;
+                        }
+                    }
+                }
 
+                // detect value
+                if(!JSB.isDefined(value)){
+                    if(chosenObj.value){
+                        // resolve via value scheme
+                        schemeName = chosenObj.value.scheme;
+                        value = chosenObj.value.value;
+                        context = chosenObj.value.context;
+                        if(schemeName == '#fieldName' || schemeName == '$fieldName') {
+                            if($this.scheme.name == '$select'){
+                                // check for field is not existed in groupBy section
+                                if($this.parent.value.$groupBy && $this.parent.value.$groupBy.length > 0){
+                                    var bGroupExisted = false;
+                                    for(var i = 0; i < $this.parent.value.$groupBy.length; i++){
+                                        var groupByField = $this.parent.value.$groupBy[i];
+                                        if(groupByField == value){
+                                            bGroupExisted = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!bGroupExisted){
+                                        // setup default aggregate function for field
+                                        var aggFunc = $this.getDefaultAggregateForCubeField(value);
+                                        if(aggFunc){
+                                            var val = {};
+                                            val[aggFunc] = value;
+                                            value = val;
+                                            schemeName = aggFunc;
+                                        }
+                                    }
+                                }
+                            }
+                        } else if(schemeName == '$fieldExpr') {
+                            value = {
+                                $field: value,
+                                $context: context
+                            };
+                        } else {
+                            value = $this.constructEmptyValue(schemeName);
+                        }
+                    } else if(chosenObj) {
+                        // detect via key scheme
+                        schemeName = $this.combineAcceptedSchemes(chosenObj.key.scheme)[0];
+                        context = chosenObj.key.context;
+                        if(this.scheme.optional && this.scheme.optional.indexOf(chosenObj.key.scheme) === -1){
+                            value = $this.constructEmptyValue(schemeName);
+                        }
+                    }
+                }
 
-					$this.value[colName] = value;
-					// draw entry
-					$this.drawObjectEntry(colName, schemeName, {expanded: true});
-					if(askRename){
-						$this.doEdit('entry', colName);
-					}
-					if(bGroupByChanged && $this.scheme.name == '$query'){
-						var selectEditor = $this.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
-						if(selectEditor){
-							selectEditor.updateSelectFieldsUsingGroup();
-						}
-					}
-					$this.updateButtons();
-					$this.notifyChanged();
-				} else if($this.scheme.expressionType == 'EArray') {
-					var value = chosenObj.value.value;
-					var context = chosenObj.value.context;
-					var schemeName = chosenObj.value.scheme;
-					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-					} else if(schemeName == '$fieldExpr') {
-						value = {
-							$field: value,
-							$context: context
-						};
-					} else if(schemeName == '$sortField'){
-						var v = {};
-						v[value] = 1;
-						value = v;
-					} else {
-						value = $this.constructEmptyValue(schemeName);
-					}
+                $this.value[colName] = value;
+                // draw entry
+                child = $this.drawObjectEntry(colName, schemeName, {expanded: true});
+                if(askRename){
+                    $this.doEdit('entry', colName);
+                }
+                if(bGroupByChanged && $this.scheme.name == '$query'){
+                    var selectEditor = $this.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
+                    if(selectEditor){
+                        selectEditor.updateSelectFieldsUsingGroup();
+                    }
+                }
+                $this.updateButtons();
+                $this.notifyChanged();
+            } else if($this.scheme.expressionType == 'EArray') {
+                var value = chosenObj.value.value;
+                var context = chosenObj.value.context;
+                var schemeName = chosenObj.value.scheme;
+                if(schemeName == '#fieldName' || schemeName == '$fieldName') {
+                } else if(schemeName == '$fieldExpr') {
+                    value = {
+                        $field: value,
+                        $context: context
+                    };
+                } else if(schemeName == '$sortField'){
+                    var v = {};
+                    v[value] = 1;
+                    value = v;
+                } else {
+                    value = $this.constructEmptyValue(schemeName);
+                }
 
-					$this.value.push(value);
-					// draw entry
-					$this.drawArrayEntry($this.value.length - 1, schemeName, {expanded: true});
-					if($this.scheme.name == '$groupBy'){
-						var selectEditor = $this.parent.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
-						if(selectEditor){
-							selectEditor.updateSelectFieldsUsingGroup();
-						}
-					}
-					$this.updateButtons();
-					$this.notifyChanged();
-				} else {
-					throw new Error('Unable to add something in ' + $this.scheme.expressionType);
-				}
-			});
+                $this.value.push(value);
+                // draw entry
+                child = $this.drawArrayEntry($this.value.length - 1, schemeName, {expanded: true});
+                if($this.scheme.name == '$groupBy'){
+                    var selectEditor = $this.parent.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
+                    if(selectEditor){
+                        selectEditor.updateSelectFieldsUsingGroup();
+                    }
+                }
+                $this.updateButtons();
+                $this.notifyChanged();
+            } else {
+                throw new Error('Unable to add something in ' + $this.scheme.expressionType);
+            }
+
+            return child;
 		},
 
 		doReplace: function(targetElt, entryType, entryKey, bWrap){
@@ -1328,9 +1259,10 @@
 		},
 
 		combineCategoryMap: function(schemes){
-			var itemMap = {};
-			var chosenObjectKey = null;
-			var chooseType = 'key';
+			var itemMap = {},
+			    chosenObjectKey = null,
+			    chooseType = 'key';
+
 			if(JSB.isArray(schemes)){
 				for(var i = 0; i < schemes.length; i++){
 					itemMap[schemes[i]] = schemes[i];
@@ -1390,7 +1322,7 @@
 					category = 'Столбцы среза';
 					valObj = item;
 					bHasColumns = true;
-				} else if(item == '$viewName' || item == '$from') {
+				} else if(item == '$viewName') { // || item == '$from'
 					if(bHasSlices){
 						continue;
 					}
@@ -1559,7 +1491,7 @@
 						editor: $this,
 						entryType: entryType,
 						entryKey: entryKey,
-						isStruct: $this.options.structFields[entryKey],
+						isStruct: $this.options.measurements[entryKey],
 						actions: {
 							allowEdit: allowEdit,
 							allowRemove: allowRemove,
@@ -1609,16 +1541,16 @@
 		},
 
 		setStructField: function(elt, entryKey){
-		    var isStruct = this.options.structFields[entryKey];
+		    var isStruct = this.options.measurements[entryKey];
 
 		    elt.toggleClass('struct');
 
 		    if(isStruct){
-		        if(this.options.structFields[entryKey]){
-		            delete this.options.structFields[entryKey];
+		        if(this.options.measurements[entryKey]){
+		            delete this.options.measurements[entryKey];
 		        }
 		    } else {
-		        this.options.structFields[entryKey] = true;
+		        this.options.measurements[entryKey] = true;
 		    }
 		},
 
@@ -1672,7 +1604,7 @@
 				entryElt.attr('key', valName);
 				container.append(entryElt);
 
-				if(this.scopeName === '$select' && this.options.structFields[valName]){
+				if(this.scopeName === '$select' && this.options.measurements[valName]){
 				    entryElt.addClass('struct');
                 }
 			}
@@ -1807,17 +1739,17 @@
 			entryElt.find('> .collapsedBox').remove();
 
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
-			    allowNames: false,
 				parent: $this,
 				acceptedSchemes: acceptedSchemes,
 				schemeName: valScheme,
 				scopeName: valName,
 				scope: $this.value,
 				value: $this.value[valName],
-				expanded: false,
-				sourceEditor: this.sourceEditor
+				sourceFieldsEditors: this.sourceFieldsEditors,
+				expanded: false
 			}));
-			valueEditor.setOption('structFields', this.options.structFields);
+			valueEditor.setOption('measurements', this.options.measurements);
+
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
 
@@ -1860,6 +1792,8 @@
 			} else {
 				$this.installHoverHandlers('value', valName, null, {acceptedSchemes: acceptedSchemes});
 			}
+
+			return valueEditor;
 		},
 
 		drawArrayEntry: function(i, valScheme, opts){
@@ -1886,17 +1820,17 @@
 			$this.installHoverHandlers('entry', i, keyElt);
 
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
-			    allowNames: false,
 				parent: $this,
 				acceptedSchemes: acceptedSchemes,
 				schemeName: valScheme,
 				scopeName: i,
 				scope: $this.value,
 				value: curVal,
-				expanded: false,
-				sourceEditor: this.sourceEditor
+				sourceFieldsEditors: this.sourceFieldsEditors,
+				expanded: false
 			}));
-			valueEditor.setOption('structFields', this.options.structFields);
+			valueEditor.setOption('measurements', this.options.measurements);
+
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
 
@@ -1915,6 +1849,7 @@
 				$this.installHoverHandlers('value', i, null, {acceptedSchemes: acceptedSchemes});
 			}
 
+			return valueEditor;
 		},
 
 		getHandle: function(){
@@ -2019,10 +1954,6 @@
 
 					for(var i = 0; i < schemeValues.length; i++){
 					    var vName = schemeValues[i];
-
-					    if(this.allowNames && !this.allowNames[vName]){
-					        continue;
-					    }
 
 						if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
 							for(var fName in $this.value){
@@ -2156,15 +2087,25 @@
 					valElt.text($this.value);
 					$this.container.append(valElt);
 				}
-			}  else if($this.scheme.expressionType == 'DropContainer'){
+			}  else if(this.scheme.expressionType == 'DropContainer'){
 			    if(this.options.mode === 'diagram'){
-debugger;
 			        var select = new Select({
                         clearBtn: true,
-                        options: this.options.sourceSelectOptions,
-                        value: '', // this.value
+                        cloneOptions: true,
+                        options: this.scheme.name === '$from' ? this.options.sliceSelectOptions : this.options.sourceSelectOptions,
+                        value: this.value,
                         onchange: function(val){
-                            debugger;
+                            $this.changeConstValue(val.key);
+
+                            if(!$this.scope.$select || Object.keys($this.scope.$select).length === 0){
+                                val.options.entry.server().extractFields(function(fields, fail){
+                                    if(fail){
+                                        return;
+                                    }
+
+                                    $this.parent.addSelectFromSource(val, fields);
+                                });
+                            }
                         }
 			        });
 			        this.container.append(select.getElement());
@@ -2182,7 +2123,7 @@ debugger;
                         }
 
                         if(!entry){
-                            $this.server().getDPEntry(value, function(entry){
+                            $this.server().getDataSourceEntry(value, function(entry){
                                 drawValue(entry);
                             })
                         } else {
@@ -2498,13 +2439,18 @@ debugger;
 				}
 				return {obj:res, w: extractIntegratedWeight(res, true), scheme: schemeName};
 			case 'Group':
-				var curDesc = {w: 0};
+				var curDesc = {w: 0},
+				    wDesc;
+
 				for(var i = 0; i < scheme.values.length; i++){
 					var curScheme = scheme.values[i];
+
 					if(!curScheme){
 						continue;
 					}
-					var wDesc = this.resolve(curScheme, value);
+
+					wDesc = this.resolve(curScheme, value);
+
 					if(wDesc.w > curDesc.w){
 						if(!wDesc.scheme){
 							wDesc.scheme = curScheme;
@@ -2515,6 +2461,10 @@ debugger;
 						}
 					}
 				}
+
+				if(!curDesc.scheme){
+				    curDesc = wDesc;
+				}
 				
 				return curDesc;
             case 'DropContainer':
@@ -2522,13 +2472,34 @@ debugger;
 			default:
 				throw new Error('Unexpected expression type: ' + scheme.expressionType);
 			}
+		},
+
+		addSelectFromSource: function(value, fields){
+		    var child;
+
+		    if(!$this.scope.$select){
+		        child = this.doAdd({"key":{"scheme":"$select","value":"$select"},"value":null});
+            } else {
+debugger;
+            }
+
+		    for(var i in fields){
+		        child.doAdd({
+		            key: '#outputFieldName',
+		            value: {
+		                scheme: '$fieldExpr',
+		                value: i,
+		                context: this.scope.context
+                    }
+                });
+		    }
 		}
 	},
 
 	$server: {
 	    $require: ['JSB.Workspace.WorkspaceController'],
 
-	    getDPEntry: function(value){
+	    getDataSourceEntry: function(value){
 	        value = value.split('/');
 
 	        return WorkspaceController.getWorkspace(value[0]).entry(value[1]);
@@ -2543,7 +2514,10 @@ debugger;
 	            return;
 	        }
 
-	        return entry.extractFields();
+	        return {
+	            fields: entry.extractFields(),
+	            entry: entry
+	        }
 	    }
     }
 }

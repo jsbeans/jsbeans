@@ -74,7 +74,7 @@
 			$base();
 		},
 		
-		setPosition: function(x, y){
+		setPosition: function(x, y, hideEvent){
 			if(JSB().isObject(x)){
 				y = x.y;
 				x = x.x;
@@ -90,7 +90,7 @@
 			
 			this.updateLinks();
 			this.diagram.updateLayout(this);
-			if(this.options.onPositionChanged){
+			if(this.options.onPositionChanged && !hideEvent){
 				this.options.onPositionChanged.call(this, this.position.x, this.position.y);
 			}
 //			console.log('setPosition X:' + this.position.x + '; Y:' + this.position.y);
