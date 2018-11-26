@@ -60,6 +60,9 @@
 		},
 		
 		updateDescriptor: function(desc){
+			if(!desc || JSB.isEqual(desc, this.descriptor)){
+				return;
+			}
 			this.descriptor = desc;
 			this.property('descriptor', this.descriptor);
 			this.view = this.descriptor.isView || false;
