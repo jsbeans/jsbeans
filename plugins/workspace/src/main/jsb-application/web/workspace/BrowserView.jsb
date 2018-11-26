@@ -31,21 +31,7 @@
 			}
 			this.refresh();
 		},
-/*		
-		setCurrentNode: function(node, workspace){
-			if(this.node == node){
-				return;
-			}
-			this.node = node;
-			this.entry = this.node.getTargetEntry();
-			this.workspace = workspace;
-			this.refresh();
-		},
 		
-		getCurrentNode: function(){
-			return this.node;
-		},
-*/		
 		getCurrentEntry: function(){
 			return this.entry;
 		},
