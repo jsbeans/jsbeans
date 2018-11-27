@@ -442,6 +442,28 @@
 		    });
 		},
 
+		getSliceFields: function(callback){
+		    function findSliceFields(item){
+		        if(!item.parent){
+		            var fieldsArr = item.value.$select ? Object.keys(item.value.$select) : [],
+		                fields = {};
+
+		            for(var i = 0; i < fieldsArr.length; i++){
+		                fields[fieldsArr[i]] = fieldsArr[i];
+		            }
+
+		            return {
+		                //context: item.value.$context,
+		                fields: fields
+		            }
+		        }
+
+		        return findSliceFields(item.parent);
+            }
+
+		    callback.call(this, findSliceFields(this));
+		},
+
 		getCubeSlices: function(callback){
 		    // todo:
 		    /*
@@ -1592,7 +1614,7 @@ console.log('getCubeSlices');
 			var container = this.container,
 			    fromContext = QuerySyntax.getFromContext();
 
-			if(fromContext.indexOf(valName) > -1 && this.schemeName === "$query"){
+			if(fromContext.indexOf(valName) > -1 && this.schemeName === "$query"){ // && !this.scopeName
 			    container = this.fromContainer;
 			    this.addClass('hasFrom');
 			}
@@ -1748,7 +1770,7 @@ console.log('getCubeSlices');
 				sourceFieldsEditors: this.sourceFieldsEditors,
 				expanded: false
 			}));
-			valueEditor.setOption('measurements', this.options.measurements);
+			valueEditor.setOption('measurements', this.options.measurements || {});
 
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
@@ -1829,7 +1851,7 @@ console.log('getCubeSlices');
 				sourceFieldsEditors: this.sourceFieldsEditors,
 				expanded: false
 			}));
-			valueEditor.setOption('measurements', this.options.measurements);
+			valueEditor.setOption('measurements', this.options.measurements || {});
 
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
@@ -2465,7 +2487,7 @@ console.log('getCubeSlices');
 				if(!curDesc.scheme){
 				    curDesc = wDesc;
 				}
-				
+
 				return curDesc;
             case 'DropContainer':
                 return {w: 1, scheme: schemeName};

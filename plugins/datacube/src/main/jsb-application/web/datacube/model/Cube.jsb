@@ -40,7 +40,8 @@
 		
 		loaded: false,
 
-		fields: {},
+		dimensions: {},
+		fields: [],
 
 		dataSources: {},
 		slices: {},
@@ -50,9 +51,11 @@
 			if(this.property('sources')){
 				this.sourceCount = this.property('sources');
 			}
+
 			if(this.property('fields')){
 				this.fieldCount = this.property('fields');
 			}
+
 			if(this.property('slices')){
 				this.sliceCount = this.property('slices');
 			}
@@ -99,8 +102,6 @@
 									    entry: slice,
 									    diagramOpts: desc.diagramOpts
 									};
-
-									this.fields = JSB.merge(this.fields, slice.getMeasurements());
 								}
 							}
 
@@ -118,6 +119,9 @@
                                     }
 							    }
 							}
+
+							// load dimensions
+							this.dimensions = snapshot.dimensions || {};
 						}
 						this.loaded = true;
 						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
@@ -171,6 +175,7 @@
 
 			return {
 			    dataSources: this.dataSources,
+			    dimensions: this.dimensions,
 				fields: this.fields,
 				slices: this.slices
 			};
@@ -237,6 +242,7 @@ return;
 				// construct snapshot
 				var snapshot = {
 				    dataSources: [],
+				    dimensions: this.dimensions,
 					slices: []
 				};
 				
@@ -283,6 +289,11 @@ return;
 			this.doSync();
 		},
 
+		addDimension: function(field){
+		    this.dimensions[field] = true;
+		    this.store();
+		},
+
 		addSlice: function(){
 			this.load();
 			// generate slice name map
@@ -325,6 +336,10 @@ return;
 		    this.load();
 
 		    return this.fields;
+		},
+
+		getDimensions: function(){
+		    return this.dimensions;
 		},
 
 		// Dima use it
@@ -373,6 +388,12 @@ return;
 			this.sliceCount = Object.keys(this.slices).length;
 
 			this.store();
+		},
+
+		updateMeasurements: function(){
+		    for(var i in this.slices){
+		        //
+		    }
 		},
 
 		updateNodePosition: function(entry, diagramOpts){

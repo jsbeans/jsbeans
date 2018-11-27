@@ -62,14 +62,17 @@
 	    },
 
 	    apply: function(){
-	        var query = this.query;
+	        var query = this.query,
+	            measurements = this.measurements;
+
 	        this.sliceData.entry.server().setSliceParams({
+	            measurements: measurements,
 	            query: query
 	        }, function(res, err){
 	            if(!err && res.wasUpdated){
 	                $this.sliceData.node.refresh({
-	                    query: query,
-	                    updateLinks: true
+	                    measurements: measurements,
+	                    query: query
 	                });
 
 	                $this.publish('DataCube.CubeEditor.sliceUpdated', {
@@ -108,9 +111,11 @@
             }
 
             this.query = JSB.clone(data.entry.getQuery());
+            //this.measurements = JSB.clone(data.entry.getMeasurements());
             this.sliceData = data;
 
             this.queryEditor.setOption('sliceId', sliceId);
+            this.queryEditor.setOption('measurements', this.measurements);
             this.queryEditor.setOption('sourceSelectOptions', sourceSelectOptions);
             this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
 

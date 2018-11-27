@@ -18,6 +18,8 @@
 			$jsb.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
 
+			// todo: add toolbar
+
 			// create diagram
 			this.diagram = new Diagram({
 				minZoom: 0.25,
@@ -123,7 +125,6 @@
 
                             var entry = obj.getTargetEntry();
                             if(JSB.isInstanceOf(entry, 'DataCube.Model.DatabaseTable')){
-                            // todo: add cube & slice
                             // JSB.isInstanceOf(entry,'DataCube.Model.Slice')
                                 return true;
                             }
@@ -254,6 +255,9 @@
                 }
 	        }
 
+	        this._dataSources = {};
+	        this._slices = {};
+
 	        // create sources' nodes
 	        for(var i in desc.dataSources){
 	            this._dataSources[desc.dataSources[i].entry.getFullId()] = createNode('dataSourceDiagramNode', desc.dataSources[i]);
@@ -263,6 +267,10 @@
 	        for(var i in desc.slices){
 	            this._slices[desc.slices[i].entry.getFullId()] = createNode('sliceDiagramNode', desc.slices[i]);
 	        }
+
+	        this.options.layoutManager.ensureInitialize(function(){
+                $this.options.layoutManager.getWidget('cubePanel').refresh($this.getCube(), desc.dimensions);
+	        });
 	    },
 
 	    createLink: function(linkType, linkOpts){

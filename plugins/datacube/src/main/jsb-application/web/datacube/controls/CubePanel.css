@@ -1,5 +1,30 @@
 .cubePanel {
-    display: inline-block;
-    width: 20%;
-    border-left: 1px solid lightgrey;
+}
+
+.cubePanel > header {
+    height: 31px;
+    padding: 7px 2.5px 0 2.5px;
+    border-bottom: 1px solid grey;
+    vertical-align: middle;
+    color: #555;
+    font-size: 14px;
+}
+
+.cubePanel > .jsb-scrollBox {
+    height: calc(100% - 60px);
+}
+
+.cubePanel > ._dwp_button.roundButton.btnCreate {
+    margin-left: 5px;
+	width: 25px;
+    height: 25px;
+    margin-left: 5px;
+    background-color: #1c78c0b8;
+}
+
+.cubePanel > ._dwp_button.roundButton.btn10 > ._dwp_icon {
+	width: 15px;
+    height: 15px;
+    left: 5px;
+    top: 5px;
 }

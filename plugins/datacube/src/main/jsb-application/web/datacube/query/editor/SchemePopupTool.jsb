@@ -77,10 +77,6 @@
 			// create item list
 			$this.itemsListBox = new ListBox({
 				onSelectionChanged: function(key, item){
-					if($this.ignoreHandlers){
-						return;
-					}
-
 					$this.data.callback.call($this, {scheme: item.scheme, value: item.value, context: item.context});
 					$this.close();
 				}
@@ -212,7 +208,8 @@
 
 			for(var i = 0; i < items.length; i++){
 				var item = items[i];
-				if(item == '#fieldName' || item == '$fieldName' || item == '$fieldExpr'){
+
+				if(item == '#fieldName' || item == '$fieldName'){ //  || item == '$fieldExpr'
 				    editor.getSourceSelectFields(function(sources){
 				        for(var j in sources){
 				            var fields = sources[j].fields,
@@ -246,11 +243,34 @@
                                     element: element
                                 });
                                 if(selected && selected.scheme == item && selected.value == i){
-                                    $this.itemsListBox.selectItem(listItem.key);
+                                    $this.itemsListBox.selectItem(listItem.key, null, null, null, true);
                                     $this.itemsListBox.scrollTo(listItem.key);
                                 }
                             }
 				        }
+				    });
+				} else if(item == '$fieldExpr'){
+				    editor.getSliceFields(function(result){
+                        for(var i in result.fields){
+                            var element = $this.$('<div class="field" title="' + i + '"> <div class="icon"></div><div class="name">' + i + '</div></div>');
+
+                            if(result.fields[i].type){
+                                element.append('<div class="type">' + result.fields[i].type.toLowerCase() + '</div>');
+                            }
+
+                            var listItem = $this.itemsListBox.addItem({
+                                context: result.context,
+                                key: result.context + '_' + i,
+                                value: i,
+                                scheme: item,
+                                desc: null,
+                                element: element
+                            });
+                            if(selected && selected.scheme == item && selected.value == i){
+                                $this.itemsListBox.selectItem(listItem.key, null, null, null, true);
+                                $this.itemsListBox.scrollTo(listItem.key);
+                            }
+                        }
 				    });
 				} else if(item == '#outputFieldName' || item == '$sortField') { //|| item == '$fieldExpr'
 					var colMap = editor.combineColumns();
@@ -281,7 +301,6 @@
 
 				} else if(item == '$viewName') {
 					editor.getCubeSlices(function(slices){
-						$this.ignoreHandlers = true;
 						var sArr = Object.keys(slices);
 						sArr.sort(function(a, b){
 							return slices[a].getName().localeCompare(slices[b].getName());
@@ -305,7 +324,7 @@
 								});
 								if(selected && selected.scheme == item && selected.value == viewName){
 //									chosenListItem = listItem;
-									$this.itemsListBox.selectItem(listItem.key);
+									$this.itemsListBox.selectItem(listItem.key, null, null, null, true);
 									$this.itemsListBox.scrollTo(listItem.key);
 								}
 							}
@@ -328,11 +347,10 @@
 							});
 							if(selected && selected.scheme == item && selected.value == sliceName){
 //								chosenListItem = listItem;
-								$this.itemsListBox.selectItem(listItem.key);
+								$this.itemsListBox.selectItem(listItem.key, null, null, null, true);
 								$this.itemsListBox.scrollTo(listItem.key);
 							}
 						}
-						$this.ignoreHandlers = false;
 					});
 				} else {
 					var listItem = $this.itemsListBox.addItem({
@@ -353,18 +371,14 @@
 				}
 			}
 			
-			$this.ignoreHandlers = true;
-			
 			if(chosenListItem){
-				$this.itemsListBox.selectItem(chosenListItem.key);
+				$this.itemsListBox.selectItem(chosenListItem.key, null, null, null, true);
 				$this.itemsListBox.scrollTo(chosenListItem.key);
 			}
 			
 			JSB.defer(function(){
 				$this.searchEditor.setFocus();	
 			}, 300);
-
-			$this.ignoreHandlers = false;
 		}
 	}
 }

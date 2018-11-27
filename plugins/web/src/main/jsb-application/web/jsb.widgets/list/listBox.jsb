@@ -387,7 +387,7 @@
 			return itemObj;
 		},
 		
-		selectItem: function(key, evt, keepSelection, unselect){
+		selectItem: function(key, evt, keepSelection, unselect, hideEvent){
 			var selectedCls = 'selected';
 			
 			if(!key){
@@ -461,8 +461,10 @@
 					}
 				}
 			}
-			
-			this.notifySelChanged(evt);
+
+			if(!hideEvent){
+			    this.notifySelChanged(evt);
+            }
 		},
 		
 		notifySelChanged: function(evt){

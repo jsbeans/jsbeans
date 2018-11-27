@@ -123,24 +123,56 @@
 
 				caption.find('.name').text(desc.name);
 			});
+
+            this.subscribe('DataCube.CubeEditor.startAddDimension', function(sender, msg, obj){
+                $this.addClass('addDimension');
+            });
+
+            this.subscribe('DataCube.CubeEditor.stopAddDimension', function(sender, msg, obj){
+                $this.removeClass('addDimension');
+            });
+
+            this.subscribe('DataCube.CubeEditor.addDimension', function(sender, msg, field){
+                $this.addDimension(field);
+            });
+		},
+
+		addDimension: function(field){
+		    if(this.fields[field]){
+		        this.fieldList.find('.field[key="' + field + '"]').addClass('dimension');
+		    }
 		},
 
 		refresh: function(opts){
 		    var query = opts && opts.query || this.entry.getQuery(),
 		        fields = query.$select ? Object.keys(query.$select) : [];
 
-	        var fieldsElements = d3.select(this.fieldList.getElement().get(0));
-	        // enter
-	        fieldsElements.selectAll('div.field').data(fields).enter().append('div').classed('field', true);
+            if(fields.length !== 0){
+                var fieldsElements = d3.select(this.fieldList.getElement().get(0));
+                // enter
+                fieldsElements.selectAll('div.field').data(fields).enter().append('div').classed('field', true);
 
-	        // update
-	        fieldsElements.selectAll('div.field').data(fields)
-	            .text(function(d){
-	                return d;
-	            });
+                // update
+                fieldsElements.selectAll('div.field').data(fields)
+                    .text(function(d){
+                        return d;
+                    });
 
-	        // exit
-	        fieldsElements.selectAll('div.field').data(fields).exit().remove();
+                // exit
+                fieldsElements.selectAll('div.field').data(fields).exit().remove();
+
+                // set measurements
+                this.fieldList.getElement().find('div.field').click(function(evt){
+                    if($this.hasClass('addDimension')){
+                        evt.stopPropagation();
+
+                        $this.publish('DataCube.CubeEditor.stopAddDimension', {
+                            field: $this.$(evt.target).text(),
+                            slice: $this.entry
+                        });
+                    }
+                });
+	        }
 
             // update links
             var oldLinks = this._sources,
@@ -163,6 +195,14 @@
                     });
                 }
             }
+
+            this.fields = query.$select || {};
+		},
+
+		removeDimension: function(field){
+		    if(this.fields[field]){
+		        this.fieldList.find('.field[key="' + field + '"]').removeClass('dimension');
+		    }
 		},
 		
 		highlightNode: function(bEnable){
