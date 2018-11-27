@@ -481,17 +481,15 @@
 		},
 
 		exportData: function(format){
-            switch(format){
-                case 'xls':
-                case 'csv':
-                case 'json':
-                    this.getBindingsData(function(data){
-                        Export.exportData(format, data, $this.wrapper.title);
-                    });
-                    break;
-                case 'png':
-                    Export.exportData(format, this.getElement().get(0), this.wrapper.title);
-            }
+			if(format == 'png'){
+				Export.exportData(format, this.getElement().get(0), this.getWrapper().getTitle());
+			} else {
+				var sourceBindings = this.getContext('export').findRendersByName('sourceBinding');
+    			var item = sourceBindings[0].binding();
+    			$this.server().doExport(format, this.getWrapper().getTitle(), $this.getEntry(), item.source, $this.getLayerQuery('main', item.source), function(dh, fail){
+    				dh.download();
+    			});
+			}
 		},
 
         fetch: function(selector, opts, callback){
@@ -672,7 +670,7 @@
             this.getElement().loader();
             fetch(true);
 		},
-
+		
 		getContext: function(ctxName){
 			if(!ctxName){
 				ctxName = 'main';
@@ -968,7 +966,12 @@
 	},
 
 	$server: {
-		$require: ['DataCube.Widgets.WidgetRegistry', 'JSB.Crypt.MD5', 'JSB.Workspace.WorkspaceController', 'Unimap.ValueSelector'],
+		$require: ['DataCube.Widgets.WidgetRegistry', 
+		           'JSB.Crypt.MD5', 
+		           'JSB.Workspace.WorkspaceController', 
+		           'Unimap.ValueSelector',
+		           'JSB.Web.Download',
+		           'DataCube.Export.ExportManager'],
 
 		iterators: {},
 		needBreak: false,
@@ -1025,6 +1028,10 @@
 				var context = 'main';
 				if(opts.context){
 					context = opts.context;
+				}
+				var useCache = true;
+				if(JSB.isDefined(opts.useCache)){
+					useCache = opts.useCache;
 				}
 	
 				this.needBreak = false;
@@ -1112,7 +1119,7 @@
 							var extQuery = opts.layers[layerName],
 							    wrapQuery = opts.wrapQuery;
 
-	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: true});
+	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: useCache});
 							$this.completed[iteratorId] = false;
 						} else {
 							// TODO
@@ -1314,10 +1321,14 @@
 				if(opts.reset){
 					this.needBreak = true;
 				}
+				var useCache = true;
+				if(JSB.isDefined(opts.useCache)){
+					useCache = opts.useCache;
+				}
 				
 				this.needBreak = false;
 				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-	            	it = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: true});
+	            	it = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: useCache});
 				} else {
 					// TODO
 				}
@@ -1331,7 +1342,11 @@
 					if(!el){
 						break;
 					}
-					data.push(el);
+					if(opts.rowCallback){
+						opts.rowCallback.call(this, el);
+					} else {
+						data.push(el);
+					}
 				}
 			} finally {
 				if(it){
@@ -1341,6 +1356,32 @@
 			}
 			
 			return data;
+		},
+		
+		doExport: function(format, name, entry, sourceId, query){
+			var fileName = ExportManager.getExportFileName(format, name);
+			var ct = ExportManager.getContentType(format);
+			var mode = ExportManager.getContentMode(format);
+			var encoding = ExportManager.getEncoding(format);
+			var dh = new Download(fileName, {mode: mode, contentType: ct, encoding: encoding}, function(stream){
+				var exporter = ExportManager.createExporter(format, stream, {name: name, file: fileName});
+				// write into download stream
+				try {
+					exporter.begin();
+					$this.executeQuery(sourceId, entry, {
+						extQuery: query || {},
+						useCache: false,
+						rowCallback: function(item){
+							exporter.write(item);
+						}
+					});
+					exporter.end();
+				} finally {
+					exporter.destroy();
+				}
+			});
+			
+			return dh;
 		}
 	}
 }
