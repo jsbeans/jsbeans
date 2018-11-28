@@ -1355,7 +1355,7 @@
 				return;
 			}
 			this.rowAppending = true;
-			var fetchSize = 30;
+			var fetchSize = 50;
 			
 			if(bRefresh){
 				if(this.rows.length > fetchSize){
@@ -3027,6 +3027,7 @@
 							if(pIdMap[id]){
 								node.children = pIdMap[id];
 								delete pIdMap[id];
+/*								
 								if(!node.matched){
 									for(var c = 0; c < node.children.length; c++){
 										if(node.children[c].matched){
@@ -3035,11 +3036,12 @@
 										}
 									}
 								}
+*/								
 							}
 							if(parentId != opts.treeOpts.rootRowKeyValue){
 								if(idMap[parentId]){
 									idMap[parentId].children.push(node);
-									idMap[parentId].matched = idMap[parentId].matched || node.matched;
+//									idMap[parentId].matched = idMap[parentId].matched || node.matched;
 								} else {
 									if(!pIdMap[parentId]){
 										pIdMap[parentId] = [];
@@ -3056,6 +3058,11 @@
 					// construct rows
 					function serializeNode(node){
 						$this.rows.push(node.row);
+						
+						if(collapsedMap[node.id]){
+							return;
+						}
+						
 						if(!node.matched 
 							&& !expandedMap[node.id] 
 							&& !opts.treeOpts.openExpanded 
@@ -3063,9 +3070,7 @@
 							&& (!opts.treeOpts.expandByGlobalFilter || !hasCubeFilter)){
 							return;
 						}
-						if(collapsedMap[node.id]){
-							return;
-						}
+						
 						for(var i = 0; i < node.children.length; i++){
 							serializeNode(node.children[i]);
 						}
@@ -3079,10 +3084,7 @@
 
 
 					// translate tree
-					if(opts.treeOpts.openExpanded 
-						|| (opts.treeOpts.expandByContextFilter && hasContextFilter) 
-						|| (opts.treeOpts.expandByGlobalFilter && hasCubeFilter)){ // expanded
-	
+					if(opts.treeOpts.openExpanded || hasContextFilter || hasCubeFilter){ // expanded
 						
 						// combine leafs matching filter
 						var allRows = [];
@@ -3094,8 +3096,6 @@
 							}
 							allRows = allRows.concat(rows);
 						}
-						
-						
 						
 						// collect parent nodes
 						var curRows = allRows;
@@ -3165,6 +3165,7 @@
 							}
 							allRows = allRows.concat(rows);
 						}
+						
 						appendToTree(allRows);
 						serializeTree();
 					}
