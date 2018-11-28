@@ -135,6 +135,11 @@
             this.subscribe('DataCube.CubeEditor.addDimension', function(sender, msg, field){
                 $this.addDimension(field);
             });
+
+            this.subscribe('DataCube.CubeEditor.dimensionHighlighted', function(sender, msg, obj){
+                //todo
+                // obj: { isHighlighted: <bool>, key: <string> }
+            });
 		},
 
 		addDimension: function(field){

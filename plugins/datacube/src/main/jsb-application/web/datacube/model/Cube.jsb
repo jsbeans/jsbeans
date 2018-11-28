@@ -372,6 +372,20 @@ return;
 
 			this.store();
 		},
+
+		removeDimension: function(fields){
+		    if(!JSB.isArray(fields)){
+		        fields = [fields];
+		    }
+
+		    for(var i = 0; i < fields.length; i++){
+		        if(this.dimensions[fields[i]]){
+		            delete this.dimensions[fields[i]];
+		        }
+		    }
+
+		    this.store();
+		},
 		
 		removeSlice: function(sId){
 			this.load();
@@ -388,12 +402,6 @@ return;
 			this.sliceCount = Object.keys(this.slices).length;
 
 			this.store();
-		},
-
-		updateMeasurements: function(){
-		    for(var i in this.slices){
-		        //
-		    }
 		},
 
 		updateNodePosition: function(entry, diagramOpts){
