@@ -371,8 +371,8 @@
 				'object': 'table'
 			},
 			'ClickHouse': {
-				'integer': 'int32',
-				'int': 'int32',
+				'integer': 'int64',
+				'int': 'int64',
 				'boolean': 'boolean',
 				'nvarchar': 'string',
 				'varchar': 'string',
