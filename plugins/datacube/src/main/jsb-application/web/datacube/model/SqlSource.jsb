@@ -54,7 +54,7 @@
 			}, settings);
 			
 			// compare with old settings
-			if(JSB.isEqual(newSettings, this.settings)){
+			if(JSB.isEqual(newSettings, this.settings||{})){
 				return;
 			}
 			this.settings = newSettings;

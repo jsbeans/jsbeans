@@ -26,7 +26,8 @@
             PostgreSQL: "org.postgresql.Driver",
             H2:         "org.h2.Driver",
             SQLServer:  "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-            Oracle:     "oracle.jdbc.driver.OracleDriver"
+            Oracle:     "oracle.jdbc.driver.OracleDriver",
+            ClickHouse: "ru.yandex.clickhouse.ClickHouseDriver",
 		},
 
 		RowExtractors: {
@@ -368,7 +369,24 @@
 				'timestamp': 'timestamp',
 				'array': 'table',
 				'object': 'table'
-			}
+			},
+			'ClickHouse': {
+				'integer': 'int32',
+				'int': 'int32',
+				'boolean': 'boolean',
+				'nvarchar': 'string',
+				'varchar': 'string',
+				'string': 'string',
+				'float': 'real',
+				'double': 'double precision',
+				'number': 'numeric',
+				'date': 'date',
+				'time': 'datetime',
+				'datetime': 'datetime',
+				'timestamp': 'datetime',
+				'array': '_text',
+				'object': 'text'
+			},
 		},
 		
 		translateType: function(jsonType, vendor){
