@@ -198,7 +198,9 @@
                                     color: {
                                         render: 'item',
                                         name: 'Цвет',
-                                        editor: 'JSB.Widgets.ColorEditor'
+                                        editor: 'JSB.Widgets.ColorEditor',
+                                        valueType: 'string',
+                                        defaultValue: '#000000'
                                     }
                                 }
                             },
@@ -208,12 +210,16 @@
                                     startColor: {
                                         render: 'item',
                                         name: 'Начальный цвет',
-                                        editor: 'JSB.Widgets.ColorEditor'
+                                        editor: 'JSB.Widgets.ColorEditor',
+                                        valueType: 'string',
+                                        defaultValue: '#000000'
                                     },
                                     endColor: {
                                         render: 'item',
                                         name: 'Конечный цвет',
-                                        editor: 'JSB.Widgets.ColorEditor'
+                                        editor: 'JSB.Widgets.ColorEditor',
+                                        valueType: 'string',
+                                        defaultValue: '#000000'
                                     },
                                     functionType: {
                                         render: 'select',
@@ -276,7 +282,9 @@
                      defaultColor: {
                         render: 'item',
                         name: 'Цвет заливки регионов без данных',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        valueType: 'string',
+                        defaultValue: 'transparent'
                      },
                      borderColor: {
                         render: 'item',
@@ -310,12 +318,16 @@
                             selectColor: {
                                 render: 'item',
                                 name: 'Цвет заливки регионов',
-                                editor: 'JSB.Widgets.ColorEditor'
+                                editor: 'JSB.Widgets.ColorEditor',
+                                valueType: 'string',
+                                defaultValue: 'transparent'
                             },
                             selectBorderColor: {
                                 render: 'item',
                                 name: 'Цвет границ регионов',
-                                editor: 'JSB.Widgets.ColorEditor'
+                                editor: 'JSB.Widgets.ColorEditor',
+                                valueType: 'string',
+                                defaultValue: 'transparent'
                             }
                          }
                      },
@@ -436,7 +448,7 @@
                                                             name: 'Цвет',
                                                             editor: 'JSB.Widgets.ColorEditor',
                                                             valueType: 'string',
-                                                            defaultValue: '#000'
+                                                            defaultValue: '#000000'
                                                         }
                                                     }
                                                 },
@@ -453,14 +465,14 @@
                                                             name: 'Начальный цвет',
                                                             editor: 'JSB.Widgets.ColorEditor',
                                                             valueType: 'string',
-                                                            defaultValue: '#000'
+                                                            defaultValue: '#000000'
                                                         },
                                                         endColor: {
                                                             render: 'item',
                                                             name: 'Конечный цвет',
                                                             editor: 'JSB.Widgets.ColorEditor',
                                                             valueType: 'string',
-                                                            defaultValue: '#000'
+                                                            defaultValue: '#000000'
                                                         },
                                                         functionType: {
                                                             render: 'select',
@@ -760,6 +772,7 @@
                     render: 'item',
                     name: 'Цвет шрифта',
                     editor: 'JSB.Widgets.ColorEditor',
+                    valueType: 'string',
                     defaultValue: '#333333'
                 },
                 fontSize: {
@@ -981,7 +994,7 @@
                                 break;
                             case 'rangeColor':
                                 var isStepGrad = colorSelector.find('stepGradation').checked();
-
+debugger;
                                 this._styles.regions[i] = {
                                     rangeColor: {
                                         startColor: colorSelector.find('startColor').value(),
