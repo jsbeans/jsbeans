@@ -183,8 +183,12 @@
 					var wDesc = self.options.widgets[desc.defaultWidget];
 					ctrl.switchWidget(wDesc.jsb);
 
-                    if(self._widgetsReadyCount === self._widgetsCount && JSB.isFunction(self.options.widgetsReadyCallback)){
-                        self.options.widgetsReadyCallback.call(self);
+                    if(self._widgetsReadyCount === self._widgetsCount){
+                        if(JSB.isFunction(self.options.widgetsReadyCallback)){
+                            self.options.widgetsReadyCallback.call(self);
+                        }
+
+                        $this.setTrigger('initialized');
                     }
 				}
 
@@ -207,7 +211,7 @@
 							}
 							JSB().lookup(wDesc.jsb, function(wCls){
 								if(!JSB().isBean(wDesc.jsb)){
-									wDesc.jsb = JSB().isBean(wCls) ? wCls : new wCls(wDesc.options || {});
+									wDesc.jsb = JSB().isBean(wCls) ? wCls : new wCls(JSB.merge({ layoutManager: $this }, wDesc.options));
 									self._widgetsReadyCount++;
 								}
 								_checkWidgetInstances();
@@ -219,6 +223,10 @@
 			} else {
 				throw 'Invalid layout descriptor specified: ' + JSON.stringify(desc);
 			}
+		},
+
+		ensureInitialize: function(callback){
+		    this.ensureTrigger('initialized', callback);
 		},
 		
 		updateArea: function(desc){

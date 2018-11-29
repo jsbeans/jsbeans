@@ -156,7 +156,7 @@
 			this.titleEditor.setData(this.slice.getName());
 
 			this.query = JSB.clone(this.slice.getQuery());
-            this.measurements = JSB.clone(this.slice.getMeasurements());
+            //this.measurements = JSB.clone(this.slice.getMeasurements());
 
             this.queryEditor.setOption('cube', this.slice.getCube());
             this.queryEditor.setOption('measurements', this.measurements);

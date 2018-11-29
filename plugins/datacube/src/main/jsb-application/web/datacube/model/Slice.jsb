@@ -6,7 +6,6 @@
 
 	cube: null,
 	query: {},
-	measurements: {},
 
     extractSources: function(query){
         var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
@@ -44,10 +43,6 @@
 
         return sources;
     },
-
-	getMeasurements: function(){
-	    return this.measurements;
-	},
 
 	getQuery: function(){
 		return this.query;
@@ -100,10 +95,6 @@
 
 				if(this.property('query')){
 					this.query = this.property('query');
-				}
-
-				if(this.property('measurements')){
-					this.measurements = this.property('measurements');
 				}
 			}
 
@@ -284,13 +275,6 @@
 
     			this.invalidate();
     			this.loadCacheFromCube();
-
-		        isNeedUpdate = true;
-		    }
-
-		    if(JSB.isDefined(params.measurements) && !JSB.isEqual(this.measurements, params.measurements)){
-                this.measurements = params.measurements;
-                this.property('measurements', this.measurements);
 
 		        isNeedUpdate = true;
 		    }
