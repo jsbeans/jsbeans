@@ -23,6 +23,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			
+			$jsb.loadCss('../Editor.css');
 			$jsb.loadCss('CubeApiView.css');
 			this.addClass('cubeApiView');
 			
@@ -142,7 +143,7 @@
 		
 		updateRequest: function(){
 			// construct slice request
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			var wid = entry.getWorkspace().getId();
 			var eid = entry.getId();
 			
@@ -198,7 +199,7 @@
 		},
 		
 		fillSettings: function(fields, slices){
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			this.requestOpts = {
 				query: {$select:{}, $groupBy:[], $filter:{}, $sort:[]},
 				skip: 0,
@@ -243,7 +244,7 @@
 				return;
 			}
 			
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			entry.server().getOutputFields(function(fields){
 				entry.server().getSlices(function(slices){
 					$this.fillSettings(fields, slices);	

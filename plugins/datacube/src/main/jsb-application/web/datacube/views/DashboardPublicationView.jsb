@@ -54,7 +54,7 @@
 		},
 		
 		fillSettings: function(){
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			$this.ignoreHandlers = true;
 			var wid = entry.getWorkspace().getId();
 			var eid = entry.getId();

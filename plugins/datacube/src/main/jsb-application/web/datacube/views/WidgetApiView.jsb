@@ -89,7 +89,7 @@
 		},
 
 		fillSettings: function(){
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			$this.ignoreHandlers = true;
 			var wid = entry.getWorkspace().getId();
 			var eid = entry.getId();
@@ -227,7 +227,10 @@
 			this.find('.htmlView div[jsb="JSB.Widgets.MultiEditor"]').jsb().setData(html);
 			
 			$this.ignoreHandlers = false;
-			$this.updateFrame();
+			JSB.defer(function(){
+				$this.updateFrame();	
+			});
+			
 		},
 		
 		updateFrame: function(){

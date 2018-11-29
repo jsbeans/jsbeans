@@ -6,6 +6,7 @@
 	display: inline-block;
 	border-radius: 4px;
 	vertical-align: middle;
+	white-space: nowrap;
 }
 
 ._dwp_button {

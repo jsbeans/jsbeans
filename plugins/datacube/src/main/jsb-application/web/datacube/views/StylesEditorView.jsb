@@ -93,7 +93,7 @@
         },
 
         refresh: function(){
-            var entry = this.node.getTargetEntry();
+            var entry = this.getCurrentEntry();
 
             entry.getStyles(function(styles, fail){
                 if(fail) { return; };
@@ -118,7 +118,7 @@
 
         saveSettings: function(){
             this.getElement().loader({message:'Сохранение...'});
-            this.node.getTargetEntry().server().setStyles($this.styleScheme.getValues().values, function(){
+            this.getCurrentEntry().server().setStyles($this.styleScheme.getValues().values, function(){
                 $this.getElement().loader('hide');
             });
         },

@@ -73,7 +73,8 @@
 		           'JSB.Widgets.ToolManager',
 		           'JSB.Controls.Navigator',
 		           'DataCube.Controls.WidgetFilterSelector',
-		           'JSB.Widgets.RendererRepository'],
+		           'JSB.Widgets.RendererRepository',
+		           'DataCube.Export.ExportManager'],
 
 		attached: false,
 		childWidgets: [],
@@ -276,38 +277,42 @@
 		    if(!this.getContainer()){
 		        return;
 		    }
-
-		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText'),
-		        keys = [{
-                            key: 'xls',
-                            element: 'Excel'
-                        },{
-                            key: 'csv',
-                            element: 'CSV'
-                        },{
-                            key: 'json',
-                            element: 'JSON'
-                        },{
-                            key: 'png',
-                            element: 'Изображение'
-                        }];
+		    
+		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText');
 
             var exportBtn = new Button({
                 cssClass: 'roundButton btnExport btn10',
                 tooltip: 'Экспорт',
                 onClick: function(evt){
-                    ToolManager.activate({
-                        id: '_dwp_droplistTool',
-                        cmd: 'show',
-                        data: keys,
-                        target: {
-                            selector: exportBtn.getElement(),
-                            dock: 'bottom'
-                        },
-                        callback: function(key, item, evt){
-                            $this.mainWidget.exportData(key);
-                        }
-                    });
+                	ExportManager.ensureSynchronized(function(){
+                		var exporters = ExportManager.listExporters();
+            		    var keys = [];
+            		    
+            		    for(var eKey in exporters){
+            		    	var eDesc = exporters[eKey];
+            		    	keys.push({
+            		    		key: eKey,
+            		    		element: eDesc.name
+            		    	});
+            		    }
+            		    keys.push({
+                            key: 'png',
+                            element: 'Изображение'
+                        });
+            		    
+	                    ToolManager.activate({
+	                        id: '_dwp_droplistTool',
+	                        cmd: 'show',
+	                        data: keys,
+	                        target: {
+	                            selector: exportBtn.getElement(),
+	                            dock: 'bottom'
+	                        },
+	                        callback: function(key, item, evt){
+	                            $this.mainWidget.exportData(key);
+	                        }
+	                    });
+                	});
                 }
             });
             tab.append(exportBtn.getElement());
@@ -319,6 +324,7 @@
                     $this.getContainer().toggleClass('fullScreenMode');
                 }
             });
+            
             tab.append(fullScreenBtn.getElement());
 		},
 

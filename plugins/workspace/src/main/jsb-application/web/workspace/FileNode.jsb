@@ -43,6 +43,19 @@
 					$this.uploadFile.trigger('click');
 				}
 			});
+			items.push({
+				key: 'fileDownload',
+				element: '<div class="icon"></div><div class="text">Скачать файл</div>',
+				allowHover: true,
+				allowSelect: true,
+				callback: function(){
+					$this.getTargetEntry().server().downloadFile(function(dh, fail){
+						if(dh){
+							dh.download();
+						}
+					});
+				}
+			});
 			return items;
 		},
 		
