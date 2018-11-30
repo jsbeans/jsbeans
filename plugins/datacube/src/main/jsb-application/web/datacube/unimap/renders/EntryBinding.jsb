@@ -1,12 +1,12 @@
 {
-	$name: 'Unimap.Render.DatabaseBinding',
+	$name: 'Unimap.Render.EntryBinding',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
 	    $require: ['JSB.Widgets.RendererRepository'],
 
 	    construct: function(){
-	        this.addClass('databaseBindingRender');
-	        $jsb.loadCss('DatabaseBinding.css');
+	        this.addClass('entryBindingRender');
+	        $jsb.loadCss('EntryBinding.css');
 
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
 	        this.append(name);
@@ -20,22 +20,42 @@
 	            this.addItem();
 	        }
 	    },
+	    
+	    generateEmptyName: function(){
+	    	if(this._scheme.emptyText){
+	    		return this._scheme.emptyText;
+	    	}
+	    	return 'Перетащите сюда объект';
+	    },
 
 	    addItem: function(values){
-	        this._item = this.$('<div class="item"></div>');
+	        this._item = this.$('<div class="item"></div>').text($this.generateEmptyName());
 
             this._item.droppable({
                 accept: function(d){
                     if(d && d.length > 0 && d.get(0).draggingItems){
                         for(var i in d.get(0).draggingItems){
                             var obj = d.get(0).draggingItems[i].obj;
-                            if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+                            if(!JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
                                 continue;
                             }
                             var entry = obj.getTargetEntry();
-                            if(JSB.isInstanceOf(entry,'DataCube.Model.DatabaseSource')){
-                                return true;
+                            if($this._scheme.accept){
+                            	var acceptArr = [];
+                            	if(!JSB.isArray($this._scheme.accept)){
+                            		acceptArr.push($this._scheme.accept);
+                            	}
+                            	for(var i = 0; i < acceptArr.length; i++){
+                            		if(JSB.isInstanceOf(entry, acceptArr[i])){
+                                        return true;
+                                    }
+                            	}
+                            	return false;
+                            } else {
+                            	return true;
                             }
+                            
+                            
                         }
                     }
                     return false;
@@ -49,7 +69,7 @@
 
                     for(var i in d.get(0).draggingItems){
 						var obj = d.get(0).draggingItems[i].obj;
-						if(!JSB().isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+						if(!JSB().isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
 							continue;
 						}
 						$this.setValueFromEntry(obj.getTargetEntry());
@@ -88,13 +108,14 @@
             function createValue(entry){
             	$this._item.addClass('filled');
                 $this._render = RendererRepository.createRendererFor(entry);
+                $this._item.empty();
                 $this._item.append($this._render.getElement());
 
                 var removeButton = $this.$('<i class="btn btnDelete fas fa-times" title="Удалить"></i>');
                 removeButton.click(function(evt){
                     evt.stopPropagation();
-                    $this.setValue(null);
-                    $this.onchange();
+                    $this.removeBinding();
+                    
                 });
                 $this._item.append(removeButton);
             }
@@ -102,23 +123,36 @@
             if(this._render){
                 this._render.destroy();
             }
+            
             this._item.empty();
-
             this._item.removeClass('filled');
-	        if(val){
+            $this._item.text($this.generateEmptyName());
+            
+	        if(val && Object.keys(val).length > 0){
 	            if(entry){
 	                createValue(entry);
 	            } else {
 	                this.server().getEntry(val, function(entry, error){
 	                	if(entry){
 	                		createValue(entry);
-	                	}/* else {
-	                		$this._item.append('<span class="error">База не задана</span>')
-	                	}*/
+	                	} else {
+	                		
+	                	}
 	                });
 	            }
 	        }
 	    },
+	    
+	    removeBinding: function(){
+            this._render.destroy();
+            this._item.find('.btnDelete').remove();
+            this._item.removeClass('filled');
+            
+            $this.setValue(null);
+            $this.onchange();
+            
+            this._item.text($this.generateEmptyName());
+        },
 	    
 	    getValue: function(){
 	    	if(this._values.values.length > 0 && this._values.values[0].value){

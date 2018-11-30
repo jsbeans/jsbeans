@@ -305,6 +305,7 @@
 	display: block;
 }
 
+.parserView[stage="import"] .scheme > [key="batchSettings"],
 .parserView[stage="import"] .scheme > [key="importSettings"] {
 	display: block;
 }

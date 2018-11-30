@@ -23,6 +23,10 @@
 	},
 	
 	$server: {
+		$require: ['DataCube.MaterializationEngine',
+		           'JSB.Workspace.WorkspaceController',
+		           'JSB.Crypt.MD5'],
+		           
 		parsers: {},
 		
 		registerParser: function(parserJsb, opts){
@@ -135,13 +139,73 @@
 				JSB.defer(function(){
 					entry.property('values', values);
 					entry.property('status', 'importing');
-					JSB.getLogger().debug('Importing: ' + entry.getName());
 					$this.client().onStatusChanged(entry);
+					
+					var mInst = null;
+					
 					try {
-						$this.logAppend(entry, 'info', 'Импорт файла: ' + entry.getName());
-						pInst.import();
-						JSB.getLogger().debug('Import complete for: ' + entry.getName());
-						$this.logAppend(entry, 'ok', 'Импорт файла ' + entry.getName() + ' успешно завершен');
+						// prepare batch
+						var batch = [], importTables = {}, lastParser = null;
+						
+						if(pInst.getContext().find('useBatch').checked() && pInst.getContext().find('batchFolder').getEntry()){
+							// combine items in folder
+							var entries = $this._combineEntriesInFolder(pInst.getContext().find('batchFolder').getEntry(), pInst);
+							for(var i = 0; i < entries.length; i++){
+								var curEntry = entries[i];
+								batch.push({
+									rootEntry: entry,
+									entry: curEntry,
+									cancelFlag: false,
+									importTables: importTables,
+								});
+							}
+						} else {
+							batch.push({
+								rootEntry: entry,
+								entry: entry,
+								parser: pInst,
+								cancelFlag: false,
+								importTables: importTables,
+							});
+						}
+						
+						if(batch.length > 0){
+							// create materializer
+							var dbSource = pInst.getContext().find('databaseEntry').getEntry();
+/*							var dbVal = pInst.getContext().find('databaseEntry').value();
+							var dbSource = WorkspaceController.getWorkspace(dbVal.workspaceId).entry(dbVal.entryId);*/
+							$this.logAppend(entry, 'info', 'Создание материализатора для источника "' + dbSource.getName() + '"');
+							mInst = MaterializationEngine.createMaterializer(dbSource);
+
+							for(var i = 0; i < batch.length; i++){
+								var b = batch[i];
+								b.mInst = mInst;
+								if(b.rootEntry != b.entry){
+									if(!b.parser){
+										lastParser = b.parser = $this.createParser(b.entry, parser, values);
+									}
+									b.entry.property('values', values);
+									b.entry.property('status', 'importing');
+									$this.client().onStatusChanged(b.entry);
+								} else {
+									if(!b.parser){
+										b.parser = pInst;
+									}
+								}
+								
+								$this._import(b);
+								
+								if(b.rootEntry != b.entry){
+									b.parser.destroy();
+									lastParser = null;
+									b.entry.property('status', 'ready');
+									$this.client().onStatusChanged(b.entry);
+								}
+							}
+							
+							dbSource.extractScheme();
+						}
+
 					} catch(e){
 						if(e == 'Break'){
 							// Do nothing
@@ -153,6 +217,12 @@
 							throw e;
 						}
 					} finally {
+						if(mInst){
+							mInst.destroy();
+						}
+						if(lastParser){
+							lastParser.destroy();
+						}
 						entry.property('status', 'ready');
 						$this.client().onStatusChanged(entry);
 						pInst.destroy();
@@ -165,6 +235,187 @@
 				throw e;
 			}
 		},
+		
+		_import: function(importContext){
+			var batchSize = 100;
+			var mInst = importContext.mInst;
+			
+			$this.logAppend(importContext.rootEntry, 'info', 'Импорт файла: ' + importContext.entry.getName());
+			
+			importContext.localTablesStats = {};
+			
+			importContext.parser.parse(function(tableDesc, rowData){
+				if(importContext.parser.cancelFlag || importContext.cancelFlag){
+					throw 'Cancel';
+				}
+				if(!importContext.importTables){
+					importContext.importTables = {};
+				}
+				if(!importContext.importTables[tableDesc.table]){
+					importContext.importTables[tableDesc.table] = {
+						created: false,
+						columns: {},
+						rows: [],
+						total: 0
+					}
+				}
+				if(!importContext.localTablesStats[tableDesc.table]){
+					importContext.localTablesStats[tableDesc.table] = {
+						created: false,
+						columns: {},
+						total: 0
+					}
+				}
+				
+				var tDesc = importContext.importTables[tableDesc.table];
+				var tStatDesc = importContext.localTablesStats[tableDesc.table];
+				
+				// update columns
+				if(!tDesc.created){
+					for(var c in tableDesc.columns){
+						tDesc.columns[c] = tableDesc.columns[c];
+						if(!tDesc.columns[c].type){
+							// detect type
+							var type = importContext.parser.detectValueTable(rowData[c]);
+							if(type != 'null'){
+								tDesc.columns[c].type = type;
+							}
+						}
+					}	
+				}
+				if(!tStatDesc.created){
+					for(var c in tableDesc.columns){
+						tStatDesc.columns[c] = tableDesc.columns[c];
+					}
+					tStatDesc.created = true;
+				}
+				
+				
+				// update rows
+				tDesc.rows.push(rowData);
+				if(tDesc.rows.length >= batchSize){
+					$this._storeBatch(importContext);
+				}
+			});
+			$this._storeBatch(importContext);
+			
+			var entry = importContext.entry;
+			
+			// store tables count
+			entry.tables = Object.keys(importContext.localTablesStats).length;
+			entry.property('tables', entry.tables);
+			
+			// store records count
+			var records = 0, columns = 0;
+			for(var t in importContext.localTablesStats){
+				records += importContext.localTablesStats[t].total;
+				columns += Object.keys(importContext.localTablesStats[t].columns).length;
+			}
+			
+			entry.records = records;
+			entry.property('records', entry.records);
+
+			entry.columns = columns;
+			entry.property('columns', entry.columns);
+			
+			entry.lastTimestamp = Date.now();
+			entry.property('lastTimestamp', entry.lastTimestamp);
+			
+			$this.logAppend(importContext.rootEntry, 'ok', 'Импорт файла ' + entry.getName() + ' успешно завершен');
+		},
+		
+		_storeBatch: function(importContext){
+			var mInst = importContext.mInst;
+			if(!importContext.importOpts){
+				importContext.importOpts = {
+					schema: importContext.parser.getContext().find('databaseScheme').value() || 'public',
+					treatEmptyStringsAsNull: importContext.parser.options.treatEmptyStringsAsNull
+				};
+			}
+			for(var t in importContext.importTables){
+				var tDesc = importContext.importTables[t];
+				var tStatDesc = importContext.localTablesStats[t];
+				
+				if(!tDesc.created){
+					// check for all columns are filled
+					var bColumnsCorrect = true;
+					for(var c in tDesc.columns){
+						if(!tDesc.columns[c] || !tDesc.columns[c].type){
+							bColumnsCorrect = false;
+							break;
+						}
+					}
+					if(bColumnsCorrect){
+						if(importContext.parser.getContext().find('removeOldTable').checked()){
+							this.logAppend(importContext.rootEntry, 'info', 'Удаление старой таблицы: ' + t);
+							mInst.removeTable(t, importContext.importOpts);
+						}
+						// create table in db
+						this.logAppend(importContext.rootEntry, 'info', 'Создание таблицы: ' + t);
+						var res = mInst.createTable(t, tDesc.columns, importContext.importOpts);
+						if(res){
+							tDesc.table = res.table;
+							tDesc.fieldMap = res.fieldMap;
+							tDesc.created = true;
+							this.logAppend(importContext.rootEntry, 'info', 'Таблица "'+tDesc.table+'" успешно создана');
+						}
+					} else {
+						continue;
+					}
+				}
+				
+				// upload rows
+				if(tDesc.rows.length == 0){
+					continue;
+				}
+				
+				var translatedRows = [];
+				for(var i = 0; i < tDesc.rows.length; i++){
+					var row = tDesc.rows[i];
+					var nRow = {};
+					for(var j in row){
+						nRow[tDesc.fieldMap[j]] = row[j];
+					}
+					translatedRows.push(nRow);
+				}
+				mInst.insert(tDesc.table, translatedRows, importContext.importOpts);
+				tDesc.total += translatedRows.length;
+				tStatDesc.total += translatedRows.length;
+				this.logAppend(importContext.rootEntry, 'info', 'В таблицу "'+tDesc.table+'" записано ' + tDesc.total + ' строк', MD5.md5('rowsWritten' + tDesc.table));
+				tDesc.rows = [];
+			}
+		},
+		
+		_combineEntriesInFolder: function(folderEntry, pInst){
+			var entries = [];
+			var bRecursive = pInst.getContext().find('batchRecursive').checked();
+			
+			function proceedFolder(f){
+				var chDesc = f.getChildren();
+				for(var chId in chDesc){
+					var chObj = chDesc[chId];
+					if(bRecursive && JSB.isInstanceOf(chObj, 'JSB.Workspace.FolderEntry')){
+						proceedFolder(chObj);
+					}
+					if(!JSB.isInstanceOf(chObj, 'JSB.Workspace.FileEntry')){
+						continue;
+					}
+					var supported = $this.getSupportedParsers(chObj);
+					for(var i = 0; i < supported.length; i++){
+						var sJsbName = supported[i].jsb;
+						if(pInst.getJsb().$name == sJsbName){
+							entries.push(chObj);
+							break;
+						}
+					}
+				}
+			}
+			
+			proceedFolder(folderEntry);
+			
+			return entries;
+		},
+
 		
 		loadSourcePreview: function(entry, parser, values){
 			var pInst = this.createParser(entry, parser, values);
