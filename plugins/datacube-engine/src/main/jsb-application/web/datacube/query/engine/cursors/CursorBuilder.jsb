@@ -116,7 +116,7 @@
 
                 /// build nested sub-queries in expressions
                 QueryUtils.walkQueries(
-                    JSB.merge({},query,{$from:null}),
+                    JSB.merge({}, query, {$from:null}),
                     {
                         depth : 1,
                         findView: function(context){

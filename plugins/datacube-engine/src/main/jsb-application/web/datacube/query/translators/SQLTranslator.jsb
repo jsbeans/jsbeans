@@ -11,14 +11,17 @@
 		    'DataCube.Query.QuerySyntax',
 		    'JSB.Store.Sql.JDBC'
         ],
+
+        _translatedContexts: {},
         
         $bootstrap: function(){
-//        	TranslatorRegistry.register(this);
+        	TranslatorRegistry.register(this);
         },
 
 		$constructor: function(providerOrProviders, cube){
 		    $base(providerOrProviders, cube);
-		    $this.cubeFields = $this.cube.getManagedFields();
+		    $this.config = {
+		    }
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
@@ -62,7 +65,58 @@
 		    };
 		},
 
-        _translatedContexts: {},
+		translateQuery: function() {
+		    // translate query
+		    var sql = $this.translateQueryExpression($this.dcQuery, true);
+		    QueryUtils.logDebug('\n[qid="{}"] Translated SQL Query (2): \n{}', $this.dcQuery.$id, sql);
+            return sql;
+		},
+
+		translateQueryExpression: function(query, asRoot) {
+
+            var sqlSource = $this._translateSourceQueryExpression(query, asRoot);
+
+            var sql = '';
+
+            if (asRoot || QueryUtils.queryHasBody(query)) {
+                var selectSql = '';
+                for(var alias in query.$select) {
+                    var exp = query.$select[alias];
+                    if (selectSql.length > 0) selectSql += ', ';
+                    selectSql += $this._translateExpression(exp, query);
+                    selectSql += ' AS ' + $this._quotedName(alias);
+                }
+                sql += '('
+                sql += $this._translatePart('WITH\n', function(){
+                    return $this._translateWith(query);
+                }, '\n');
+                sql += 'SELECT ' + (query.$distinct ? 'DISTINCT ' : '') + selectSql + ' FROM ';
+                sql += sqlSource;
+
+                sql += $this._translatePart(' WHERE ', function(){
+                    return $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, true));
+                });
+                sql += $this._translatePart(' GROUP BY ', function(){
+                    return $this._translateGroup(query);
+                });
+                sql += $this._translatePart(' HAVING ', function(){
+                    return query.$groupBy && query.$groupBy.length > 0
+                        ? $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, false))
+                        : null;
+                });
+                sql += $this._translatePart(' ORDER BY ', function(){
+                    return $this._translateOrder(query);
+                });
+                sql += ')'
+                if (!asRoot) {
+                    sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
+                }
+            } else {
+                sql += sqlSource;
+            }
+
+            return sql;
+		},
 
         _translateContext: function(context) {
 //            return context;
@@ -79,6 +133,7 @@
             //return JSB.generateUid();
             return '' + (this.lastId = (this.lastId||0) + 1);
         },
+
         _extractViewKey: function (query, global){
             var key = {
                 $groupBy: query.$groupBy,
@@ -461,383 +516,6 @@
             return '"' + name + '"';
         },
 
-        _translateQueryCubeView: function(query) {
-            function collectProvidersAndFields(allFields, providers) {
-                QueryUtils.walkCubeFields(
-                    query, /**includeSubQueries=*/false, $this.cube,
-                    function (cubeField, context, fieldQuery, binding) {
-                        // пропустить поля из других запросов
-                        if (fieldQuery == query) {
-                            allFields[cubeField] = false;
-                            var foundProvider = false;
-                            for (var i in binding) {
-                                if ($this.providers.indexOf(binding[i].provider) != -1) {
-                                    foundProvider = true;
-                                    var id = binding[i].provider.id;
-                                    var prov = providers[id] = providers[id] || {
-                                        provider: binding[i].provider,
-                                        isJoinedProvider: (binding[i].provider.getMode()||'union') == 'join',
-                                        cubeFields: {/**hasOtherBinding*/},
-                                        providerFields: {/**providerField: cubeField*/}
-                                    };
-                                    var hasOtherBinding = binding.length > 1;
-                                    prov.cubeFields[cubeField] = hasOtherBinding;
-                                    prov.providerFields[binding[i].field] = cubeField;
-                                }
-                            }
-                            if (!foundProvider) throw Error('Illegal iterator provider ' + binding[i].provider.name + ' for field ' + cubeField);
-                        }
-                    }
-                );
-            }
-            function buildSingleTableAndFieldsMap(allFields, providers, fieldsMap){
-                var singleProv = providers[Object.keys(providers)[0]];
-                forEachCubeFieldBinding(allFields, function(cubeField, binding){
-                    // if current provider build fieldsMap
-                    if (singleProv.provider == binding.provider) {
-                        fieldsMap[cubeField] = {
-                            context: query.$context,
-                            cubeField: cubeField,
-
-                            providerField: binding.field,
-                            providerTable: binding.provider.getTableFullName(),
-
-                            tableAlias: query.$context,
-                            fieldAlias: binding.field
-                        };
-                        return true;
-                    }
-                });
-                var sql = $this._printTableName(singleProv.provider.getTableFullName()) + ' AS ' + $this._translateContext($this._quotedName(query.$context));
-                return sql;
-            }
-            function addJoinOnFields(allFields, providers){
-                var managedFields = $this.cubeFields;
-                for(var cubeField in managedFields){
-                    var binding = managedFields[cubeField].binding;
-                    if (binding.length > 1) {
-                        // TODO: оставить только поля, участвующие в JOIN
-                        var hasJoin = false;
-                        for(var r = 0; r < binding.length; r++) {
-                            if ($this.providers.indexOf(binding[r].provider) != -1
-                                    && binding[r].provider.getMode() == 'join') {
-                                hasJoin = true;
-                                break;
-                            }
-                        }
-                        if (hasJoin) {
-                            for(var r = 0; r < binding.length; r++) {
-                                if ($this.providers.indexOf(binding[r].provider) != -1) {
-                                    allFields[cubeField] = false;
-                                    var hasOtherBinding = binding.length > 1;
-                                    providers[binding[r].provider.id].cubeFields[cubeField] = hasOtherBinding;
-                                    providers[binding[r].provider.id].providerFields[binding[r].field] = cubeField;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            function forEachCubeFieldBinding(allFields, callback){
-                for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
-                    var binding = $this.cubeFields[cubeField].binding;
-                    for (var i in binding) {
-                        if(callback(cubeField, binding[i])) {
-                            break;
-                        }
-                    }
-                }
-
-            }
-            function setIsJoinedFields(allFields) {
-                var managedFields = $this.cubeFields;
-                for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
-                    var isJoined = true;
-                    var managedField = managedFields[cubeField];
-                    var binding = managedField.binding;
-                    for (var i in binding) {
-                        if ($this.providers.indexOf(binding[i].provider) != -1) {
-                            if (binding[i].provider.getMode() != 'join') {
-                                isJoined = false;
-                            }
-                        }
-                    }
-                    allFields[cubeField] = isJoined;
-                }
-            }
-            function isProviderHasCubeField(providerFields, cubeField) {
-                for(var f in providerFields) if(providerFields.hasOwnProperty(f)) {
-                    if (providerFields[f] == cubeField) return true;
-                }
-                return false;
-            }
-            function forEachViewColumn(allFields, prov, visitField){
-                for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
-                    var isNull = !isProviderHasCubeField(prov.providerFields, cubeField);
-                    var visited = false;
-                    var binding = $this.cubeFields[cubeField].binding;
-                    for (var i in binding) {
-                        if (binding[i].provider == prov.provider) {
-                            visitField(cubeField, isNull, binding[i]);
-                            visited = true;
-                            break;
-                        }
-                    }
-                    if (!visited) {
-                        visitField(cubeField, isNull, null);
-                    }
-                }
-
-            }
-            function buildUNIONsSqlAndFieldsMap(allFields, providers, unionsAlias, unionsFields) {
-                var sqlUnions = '';
-                var unionsCount = 0;
-                var lastProv;
-                for(var id in providers) if(providers.hasOwnProperty(id)) {
-                    var prov = providers[id];
-                    if ((prov.provider.getMode()||'union') != 'union') continue;
-                    unionsCount++;
-                    lastProv = prov;
-                }
-                if (unionsCount == 1) {
-                    forEachCubeFieldBinding(allFields, function(cubeField, binding){
-                        // if current provider build fieldsMap
-                        if (lastProv.provider == binding.provider) {
-                            fieldsMap[cubeField] = {
-                                context: query.$context,
-                                cubeField: cubeField,
-
-                                providerField: binding.field,
-                                providerTable: binding.provider.getTableFullName(),
-
-                                tableAlias: unionsAlias,
-                                fieldAlias: binding.field
-                            };
-                            unionsFields[cubeField] = binding.field;
-                            return true;
-                        }
-                    });
-                    sqlUnions += $this._printTableName(lastProv.provider.getTableFullName());
-
-                } else {
-
-                    for(var id in providers) if(providers.hasOwnProperty(id)) {
-                        var prov = providers[id];
-                        if ((prov.provider.getMode()||'union') != 'union') continue;
-                        if (sqlUnions .length > 0) sqlUnions  += ' UNION ALL ';
-
-                        // print unions view columns and build fieldsMap
-                        var fieldsSql = '';
-                        var skipNulls = false;
-                        forEachViewColumn(allFields, prov,
-                            function visitField(cubeField, isNull, binding){
-                                if (skipNulls && isNull) {
-                                    // skip field if skipNulls
-                                    return;
-                                }
-                                if (allFields[cubeField]) {
-                                    // skip isJoined fields
-                                    return;
-                                }
-
-                                if (fieldsSql.length > 0) fieldsSql += ', ';
-                                if (isNull) {
-                                    var fieldType = QueryUtils.getFieldJdbcType($this.cube || $this.providers[0], cubeField);
-                                    fieldsSql += 'CAST(NULL AS ' + JDBC.translateType(fieldType, $this.vendor) + ')';
-                                } else {
-                                    fieldsSql += $this._quotedName(binding.field);
-                                }
-                                fieldsSql += ' AS ' + $this._quotedName(cubeField);
-
-                                fieldsMap[cubeField] = isNull && fieldsMap[cubeField] || {
-                                    context: query.$context,
-                                    cubeField: cubeField,
-
-                                    providerField: binding && binding.field || null,
-                                    providerTable: binding && binding.provider.getTableFullName() || null,
-
-                                    tableAlias: unionsAlias,
-                                    fieldAlias: cubeField
-                                };
-                                unionsFields[cubeField] = cubeField;
-                            }
-                        );
-
-                        sqlUnions += '(SELECT ' + fieldsSql + ' FROM '+
-                            $this._printTableName(prov.provider.getTableFullName()) + ')';
-                    }
-                }
-                if (unionsCount > 1) {
-                    var sql = '(' + sqlUnions + ') AS ' + $this._translateContext($this._quotedName(unionsAlias));
-                } else if (unionsCount > 0) {
-                    var sql = sqlUnions + ' AS ' + $this._translateContext($this._quotedName(unionsAlias));
-                } else {
-                    var sql = '';
-                }
-                return sql;
-            }
-            function extractJoinOnCubeFields(provider) {
-                var fields = {};
-                var managedFields = $this.cubeFields;
-                for(var f in managedFields){
-                    var binding = managedFields[f].binding;
-                    if (binding.length > 1) {
-                        for(var r = 0; r < binding.length; r++) {
-                            if (binding[r].provider == provider) {
-                                fields[f] = true;
-                            }
-                        }
-                    }
-                }
-                return Object.keys(fields);
-            }
-            function buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, hasUnions, unionsFields) {
-                var sqlJoins = '';
-                var firstProv;
-                for (var p in $this.providers) if(providers.hasOwnProperty($this.providers[p].id) && $this.providers[p].getMode() == 'join') {
-                    var prov = providers[$this.providers[p].id];
-                    firstProv = firstProv || prov;
-
-                    if (sqlJoins.length > 0) sqlJoins += ' LEFT JOIN ';
-
-                    var joinedViewAlias = query.$context + '_joined_' + $this.providers.indexOf(prov.provider);
-
-                    sqlJoins += $this._printTableName(prov.provider.getTableFullName());
-                    sqlJoins += ' AS ' + $this._translateContext($this._quotedName(joinedViewAlias));
-
-                    forEachViewColumn(allFields, prov,
-                        function visitField(cubeField, isNull, binding){
-                            if (isNull) {
-                                // skip null fields
-                                return;
-                            }
-
-                            var isJoinedField = allFields[cubeField];
-                            fieldsMap[cubeField] = {
-                                context: query.$context,
-                                cubeField: cubeField,
-
-                                providerField: binding && binding.field || null,
-                                providerTable: binding && binding.provider.getTableFullName() || null,
-
-                                tableAlias: isJoinedField ? joinedViewAlias : unionsAlias,
-                                fieldAlias: isJoinedField ? binding.field : unionsFields[cubeField],
-
-                                joinOn: fieldsMap[cubeField] && fieldsMap[cubeField].joinOn || binding && {
-                                        tableAlias: joinedViewAlias,
-                                        fieldAlias: binding.field
-                                    } || null
-                            };
-                        }
-                    );
-
-                    var sqlOn = '';
-                    var joinOnFields = extractJoinOnCubeFields(prov.provider);
-                    for (var i in joinOnFields) {
-                        var cubeField = joinOnFields[i];
-                        // is joined and without UNIONs - skip first ON
-                        if (!unionsFields[cubeField] && firstProv == prov) continue;
-
-                        if (sqlOn.length > 0) sqlOn  += ' AND ';
-                        var providerField = fieldsMap[cubeField].providerField;
-                        sqlOn += unionsFields[cubeField]
-                                ? $this._translateContext($this._quotedName(unionsAlias)) + '.' + $this._quotedName(unionsFields[cubeField])
-                                : $this._translateContext($this._quotedName(fieldsMap[cubeField].joinOn.tableAlias)) + '.' + $this._quotedName(fieldsMap[cubeField].joinOn.fieldAlias);
-                        sqlOn += ' = ';
-                        sqlOn += $this._translateContext($this._quotedName(joinedViewAlias)) + '.' + $this._quotedName(providerField);
-                    }
-                    if (sqlOn) {
-                        sqlJoins += ' ON ' + sqlOn;
-                    }
-                }
-
-                var sql = '';
-                if (sqlJoins.length > 0) {
-                    if (hasUnions) {
-                        sql += ' LEFT JOIN ' + sqlJoins;
-                    } else {
-                        sql += sqlJoins;
-                    }
-                }
-                return sql;
-            }
-// debugger;
-            //      begin ...
-
-            this.contextFieldsMap = this.contextFieldsMap || {/**queryContext: {}*/};
-            var fieldsMap = this.contextFieldsMap[query.$context] = this.contextFieldsMap[query.$context] || {};
-
-            //      collect providers and fields
-            var providers = {/**providerId: {provider, providerFields:{providerField: cubeField}, cubeFields: {hasOtherBinding}}*/};
-            var allFields = {/**cubeField: isJoined*/}; /**isJoined=true when field from only joined provider*/
-            collectProvidersAndFields(allFields, providers);
-
-            //      if single provider - simple SELECT from provider`s table
-            if (Object.keys(providers).length == 1) {
-                return sql;
-            }
-
-            //      if some providers - build UNION view and JOIN ON tables
-
-            // and add joinOn (join keys) fields to allFields, providers.(providerFields, cubeFields)
-            addJoinOnFields(allFields, providers);
-
-            // set isJoined for allFields
-            setIsJoinedFields(allFields);
-
-            // build UNIONs
-            var unionsAlias = query.$context + '_unions';
-            var unionsFields = {};
-            var sqlUnions = buildUNIONsSqlAndFieldsMap(allFields, providers, unionsAlias, unionsFields);
-
-            // build JOINs
-            var sqlJoins = buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, sqlUnions.length > 0, unionsFields);
-
-            var sql = sqlUnions + sqlJoins;
-            return sql.match(/^\s+$/) ? '' : sql;
-        },
-
-        _translateQueryDataProviderView: function(query) {
-//debugger;
-            this.contextFieldsMap = this.contextFieldsMap || {/**queryContext: {}*/};
-            var fieldsMap = this.contextFieldsMap[query.$context] = this.contextFieldsMap[query.$context] || {};
-
-            if (this.providers.length != 1) {
-                throw new Error('Multiple or not defined provider');
-            }
-            var allFields = {/**cubeField: true*/};
-		    QueryUtils.walkDataProviderFields(
-		        query, /**includeSubQueries=*/false, this.providers[0],
-		        function(field, context, fieldQuery){
-		            if (fieldQuery == query) {
-                        allFields[field] = (allFields[field]||0) + 1;
-                    }
-                }
-            );
-            var sql = '(SELECT ';
-            var fieldsSql = '';
-            for(var providerField in allFields) if(allFields.hasOwnProperty(providerField)) {
-                if (fieldsSql.length > 0) fieldsSql += ', ';
-                fieldsSql += this._quotedName(providerField);
-                fieldsSql += ' AS ' + this._quotedName(providerField);
-                fieldsMap[providerField] = {
-                    context: query.$context,
-                    cubeField: providerField,
-
-                    providerField: providerField,
-                    providerTable: this.providers[0].getTableFullName(),
-
-                    tableAlias: query.$context,
-                    fieldAlias: providerField
-                };
-            }
-            if (fieldsSql.length == 0) fieldsSql += 'NULL';
-
-            sql += fieldsSql + ' FROM ' + $this._printTableName(this.providers[0].getTableFullName());
-            sql += ') AS ' + $this._translateContext(this._quotedName(query.$context));
-            return sql;
-        },
-
         _translateWhere: function(query, filterExp) {
 
             function translateAndOrExpressions(exps, op) {
@@ -999,5 +677,459 @@
 		close: function() {
 		    $base();
 		},
+
+        _findQueryView: function(context){
+            var queryView = $this.contextQueryViews[context];
+            if (!queryView) {
+                throw new Error('Internal error: Cannot find View for query ' + context);
+            }
+            return queryView;
+        },
+
+		_translateSourceQueryExpression: function(query, asRoot) {
+            var sqlSource = '';
+            if (typeof query === 'string') {
+                sqlSource += $this._quotedName($this._translateContext(query));
+                sqlSource +=  ' AS ' + $this._quotedName($this._translateContext(query));
+            } else if (query.$provider) {
+                sqlSource += $this._translateQueryProvider(query, asRoot);
+                sqlSource += '';
+            } else if (query.$from) {
+                sqlSource += $this.translateQueryExpression(query.$from);
+                sqlSource += '';
+            } else if (query.$join) {
+                sqlSource += $this._translateJoin(query);
+                sqlSource += '';
+            } else if (query.$union) {
+                sqlSource += $this._translateUnion(query);
+                sqlSource += '';
+            } else if (query.$recursive) {
+                sqlSource += $this._translateRecursive(query);
+                sqlSource +=  ' AS ' + $this._quotedName($this._translateContext(query.$context));
+            } else {
+                QueryUtils.throwError(0, 'Invalid source in query "{}"', query.$context);
+            }
+            return sqlSource;
+		},
+
+//		_getProvider: function(id) {
+//		    var provider = $this.cube.getProviderById(id);
+//		    QueryUtils.throwError(provider, 'Data provider with id "{}" is undefined', id);
+//		    return provider;
+//		},
+
+        _translatePart: function(prefix, valueCallback, suffix) {
+            var value = valueCallback();
+            return value ? (prefix||'') + value + (suffix||'') : '';
+        },
+
+        _translateWith: function(query) {
+            var sql = '';
+
+            for(var name in query.$views) {
+                var viewQuery = query.$views[name];
+                if (sql.length != 0) sql += ',\n';
+
+                /// first translate query only then context name
+
+                var sqlView = $this.translateQueryExpression(viewQuery, true);
+
+                sql += $this._quotedName($this._translateContext(name));
+                sql += ' AS ';
+                sql += sqlView;
+            }
+
+            return sql;
+        },
+
+		_translateQueryProvider: function(query, asRoot){
+		    var sql = '';
+            /// поля датапровайдеров/таблиц без запроса отображаются напрямую
+            sql += $this._printTableName(QueryUtils.getQueryDataProvider(query.$provider, $this.cube).getTableFullName());
+            sql +=  ' AS ' + $this._quotedName($this._translateContext(query.$context));
+            return sql;
+		},
+
+        _extractWhereOrHavingFilter: function(query, whereOrHaving /*where is true, having is false*/) {
+            function isHaving(filteredField, filteredExpr){
+                // is aggregated alias
+                if (query.$select[filteredField]) {
+                    var e = query.$select[filteredField];
+                    if(QueryUtils.isAggregatedExpression(e)) {
+                        // if source field
+                        if (query.$from) {
+                            var sourceQuery = JSB.isObject(query.$from) ? query.$from : $this.contextQueries[query.$from];
+                            if (sourceQuery.$select[filteredField]) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
+                // is not simple cube field
+                if (filteredExpr == filteredField || filteredExpr.$field == filteredField) {
+                    return false;
+                }
+                // is in groupBy expression
+                for(var i in query.$groupBy) {
+                    var groupByExpr = query.$groupBy[i];
+                    if (JSB.isEqual(groupByExpr, filteredExpr)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            var filter = QueryUtils.filterFilterByFields(query.$filter || {}, query, function(filteredField, filteredExpr){
+                return whereOrHaving
+                        ? !isHaving.call(null, filteredField, filteredExpr)
+                        : isHaving.call(null, filteredField, filteredExpr);
+            });
+            return filter ? filter : {};
+        },
+
+		_translateJoin: function(query) {
+		    var sql = '';
+
+		    sql += $this.translateQueryExpression(query.$join.$left);
+		    sql += ' ' + query.$join.$joinType.toUpperCase().replace('INNER','') + ' JOIN ';
+		    sql += $this.translateQueryExpression(query.$join.$right);
+            sql += $this._translatePart(' ON ', function(){
+                return $this._translateWhere(query, query.$join.$filter);
+            });
+
+		    return sql;
+		},
+
+		_translateUnion: function(query) {
+		    function getQuery(ctx){
+		        return $this.contextQueries[ctx];
+		    }
+
+		    var sql = '';
+
+		    for(var i = 0; i < query.$union.length; i++) {
+		        var subQuery = query.$union[i];
+		        var fixedSubQuery = JSB.clone(subQuery);
+		        for(var alias in query.$select) {
+		            if (!fixedSubQuery.$select[alias]) {
+		                fixedSubQuery.$select[alias] = {
+		                    $const: null,
+		                    $type: QueryUtils.extractType(query.$select[alias], query, $this.cube, getQuery),
+                        };
+		            }
+		        }
+                if (sql.length > 0) sql += ' UNION ALL ';
+		        sql += $this.translateQueryExpression(fixedSubQuery, true);
+		    }
+
+		    sql = '(' + sql + ') AS ' + $this._quotedName($this._translateContext(query.$context));
+		    return sql;
+		},
+
+		_translateRecursive: function(query) {
+
+		    var sql = '';
+		    sql += 'WITH RECURSIVE ' + $this._quotedName($this._translateContext(query.$context)) + ' AS (';
+		    sql += $this.translateQueryExpression(query.$recursive.$start, true);
+		    sql += ' UNION ALL ';
+		    sql += $this.translateQueryExpression(query.$recursive.$joinedNext, true);
+		    QueryUtils.throwError(sql.endsWith(')'), 'Internal error: invalid SQL format in recursive query');
+		    sql = sql.substring(0, sql.length-1) + ' JOIN ' + $this._quotedName($this._translateContext(query.$context));
+            sql += ' ON ' + $this._translateWhere(query, query.$recursive.$filter) + ')';
+		    sql += ') ';
+		    sql += 'SELECT * FROM ' + $this._quotedName($this._translateContext(query.$context));
+
+		    return '(' + sql + ')';
+		},
+
+        _translateRecursiveSelect: function (exp, dcQuery) {
+            // this operator deprecated and created as macro $recursiveSelect
+            throw new Error('Illegal state exception');
+        },
+
+//        _translateRecursiveSelect: function (exp, dcQuery) {
+//
+//            function translateRecursive(){
+//                var firstQuery = {
+//                    $context: 'start:' + dcQuery.$context,
+//                    $select: {
+//                        id: exp.$idField.$field||exp.$idField,
+//                        parentId: exp.$parentIdField.$field||exp.$parentIdField,
+//                        value: exp.$aggregateExpr[aggFunc],
+//                        depth: {$const: 0, $type: 'double'},
+//                    },
+//                    $filter: {
+//                        $eq: [
+//                            exp.$idField.$field||exp.$idField,
+//                            {$field:exp.$idField.$field||exp.$idField, $context: dcQuery.$context},
+//                        ]
+//                    }
+//                };
+//                var recursiveQuery = {
+//                    $context: 'recursive:' + dcQuery.$context,
+//                    $select: {
+//                        id: exp.$idField.$field||exp.$idField,
+//                        parentId: exp.$parentIdField.$field||exp.$parentIdField,
+//                        value: exp.$aggregateExpr[aggFunc],
+//                        depth: {$add: [{$field:"depth"}, {$const:1}]}
+//                    }
+//                };
+//                if (dcQuery.$from) {
+//                    firstQuery.$from = dcQuery.$from;
+//                    firstQuery.$views = $this.dcQuery.$views;
+//                    recursiveQuery.$from = dcQuery.$from;
+//                    recursiveQuery.$views = $this.dcQuery.$views;
+//                }
+//                try {
+//                    var builder1 = new QueryViewsBuilder(firstQuery, $this.cube, $this.providers);
+//                    var startView = builder1.build();
+//
+//                    var builder2 = new QueryViewsBuilder(recursiveQuery, $this.cube, $this.providers);
+//                    var recursiveView = builder2.build();
+//
+//                    JSB.merge($this.contextQueryViews, builder1.getContextQueryViews());
+//                    JSB.merge($this.contextQueryViews, builder2.getContextQueryViews());
+//
+//                } finally {
+//                    builder1 && builder1.destroy();
+//                    builder2 && builder2.destroy();
+//                }
+//
+//                var sql = '';
+//                sql += $this._translateAnyView(startView);
+//                sql += ' UNION ALL ';
+//                sql += $this._translateAnyView(recursiveView);
+//                if(sql.endsWith(')')) {
+//                    // HACK: remove ')'
+//                    sql = sql.substring(0, sql.length-1);
+//                    sql += ' JOIN ' + $this._quotedName(treeContext);
+//                    sql += ' ON ' + $this._translateField(exp.$parentIdField.$field||exp.$parentIdField, recursiveView.name)
+//                        + ' = '
+//                        + $this._quotedName(treeContext) + '.id';
+//                    sql += ')';
+//                } else {
+//                    throw new Error('Internal error: Invalid query format, unexpected end');
+//                }
+//                return sql;
+//            }
+//
+//            var aggFunc = Object.keys(exp.$aggregateExpr)[0];
+//            if (!QuerySyntax.schemaAggregateOperators[aggFunc]) {
+//                throw new Error('Operator $recursiveSelect supports only aggregate function in $aggregateExpr');
+//            }
+//
+//            var view = $this._findQueryView(dcQuery.$context);
+//            if (!view) {
+//                throw new Error('Query view not found: ' + dcQuery.$context);
+//            }
+//
+//            if (!(JSB.isString(exp.$idField) || exp.$idField.$field)
+//                && !(JSB.isString(exp.$parentIdField) || exp.$parentIdField.$field)
+//                ) {
+//                throw new Error('Operator $recursiveSelect supports only fields in $idField and $parentIdField');
+//            }
+//
+//            var treeContext = 'tree:' + dcQuery.$context;
+//            var sql = '';
+//            sql += 'WITH RECURSIVE ' +  $this._quotedName(treeContext) + ' AS (';
+//            sql += translateRecursive();
+//            sql += ')';
+//            sql += ' SELECT ' + $this._translateExpression((function(){
+//                var val = {};
+//                val[aggFunc] = {$const:'#####'}; // HACK
+//                return val;
+//            })(), dcQuery).replace("'#####'", '"Q".value');
+//            sql += ' FROM ' + $this._quotedName(treeContext) + ' AS "Q"';
+////            if (exp.$onlyLeafs) {
+////                throw 'TODO';
+////                sql += ' INNER JOIN ' + $this._translateFrom(dcQuery) + ' AS ' + $this._quotedName(dcQuery.$context);
+////                sql += ' ON "Q".id = ' + $this._translateExpression(exp.$parentIdField.$field||exp.$parentIdField, dcQuery);
+////            }
+//            if (exp.$onlyLeafs || exp.$depth && (exp.$depth.$max >= 0 || exp.$depth.$min >= 0)) {
+//                sql += ' WHERE' ;
+//                if (exp.$onlyLeafs) {
+//                    sql += ' "Q".id NOT IN (';
+//                    sql += 'SELECT ' + $this._translateExpression(exp.$parentIdField.$field||exp.$parentIdField, dcQuery);
+//                    sql += ' FROM ' + $this._translateFrom(dcQuery) + ' AS ' + $this._quotedName(dcQuery.$context);
+//                    var where = $this._translateWhere(dcQuery, $this._extractWhereOrHavingFilter(dcQuery, true));
+//                    if (where) sql += 'WHERE ' + where;
+//                    sql += ')';
+//                }
+//                if (exp.$depth && exp.$depth.$max >= 0 ) {
+//                    if (exp.$onlyLeafs) sql += ' AND ';
+//                    sql += ' "Q".depth <= ' + exp.$depth.$max;
+//                }
+//                if (exp.$depth && exp.$depth.$min >= 0) {
+//                    if (exp.$onlyLeafs || exp.$depth.$max >= 0 ) sql += ' AND ';
+//                    sql += ' "Q".depth >= ' + exp.$depth.$min;
+//                }
+//            }
+//
+//            return '(' + sql + ')';
+//        },
+
+        _translateField: function(field, context, useAlias, callerContext) {
+            var sql = $this._translateFieldInternal(field, context, useAlias, callerContext);
+            var query = $this.contextQueries[context];
+//            QueryUtils.logDebug(
+//                    '\t field={}\tcontext={}\tcaller={}\talias={}\tsource={}\tsql={}',
+//                    field, context, callerContext, useAlias,
+//                    query.$from ? '$from' : query.$join ? '$join' : query.$union ? '$union' : query.$provider ? '$provider' : '',
+//                    sql
+//            );
+//if (sql =='"parentId"') {
+//    debugger;
+//    $this._translateFieldInternal(field, context, useAlias, callerContext);
+//}
+            return sql;
+        },
+
+        _translateFieldInternal: function(field, context, useAlias, callerContext) {
+            var query = $this.contextQueries[context];
+            QueryUtils.throwError(query, 'Query context is undefined: {}', context);
+
+            if (useAlias) {
+                for(var alias in query.$select) {
+                    if (alias == field) {
+                        return $this._quotedName(field);
+                    }
+                }
+            }
+
+            if (query.$from) {
+
+                var sourceQuery = JSB.isObject(query.$from) ? query.$from : $this.contextQueries[query.$from];
+                QueryUtils.throwError(sourceQuery, 'Source query is undefined with context: {}', query.$from.$context||query.$from);
+
+                /// is source field
+                if (sourceQuery.$select[field]) {
+                    if (!sourceQuery.$from && !QueryUtils.queryHasBody(sourceQuery)) {
+                        return $this._translateExpression(sourceQuery.$select[field], sourceQuery);
+                    }
+                    return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);
+                }
+
+            } else if (query.$join) {
+
+                /// is source field
+                if (query.$join.$left.$select[field]) {
+                    return $this._translateExpression(query.$join.$left.$select[field], query.$join.$left);
+                }
+                if (query.$join.$right.$select[field]) {
+                    return $this._translateExpression(query.$join.$right.$select[field], query.$join.$right);
+                }
+
+            } else if (query.$union) {
+                return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
+            } else if (query.$provider) {
+
+                var provider = QueryUtils.getQueryDataProvider(query.$provider, $this.cube);
+
+                /// is source field (of provider)
+                var providerField = provider.extractFields()[field];
+                if (providerField) {
+                    return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
+                }
+
+            } else if (query.$recursive) {
+                return $this._quotedName($this._translateContext(context)) + "." + $this._quotedName(field);
+            } else {
+                QueryUtils.throwError(false, 'Undefined source of query with context: {}', context);
+            }
+
+            if (context != callerContext) {
+                var callerQuery = $this.contextQueries[callerContext];
+                QueryUtils.throwError(callerQuery, 'Caller query context is undefined: {}', callerContext);
+                // is join filter (link to $left or $right query)
+                if (callerQuery.$join && (query == callerQuery.$join.$left || query == callerQuery.$join.$right)) {
+                    return $this._translateExpression(query.$select[field], query);
+                } else if (callerQuery.$recursive) {
+                    return $this._translateExpression(query.$select[field], query);
+                }
+            }
+
+            /// is export alias
+            QueryUtils.throwError(context == callerContext, 'Field context not equals query context for field {}.{} (caller {})', context, field, callerContext);
+            return $this._quotedName(field);
+        },
+
+		translateError: function(error) {
+		    // TODO: translateError
+		    return error;
+		},
+
+//		translateError: function(error) {
+//            function buildInfo(){
+//                if (this.providerField) {
+//                    try {
+//                        var cubeField = $this.cubeFields[this.field];
+//                        for(var b = 0; b < cubeField.binding.length; b++) {
+//                            var bind = cubeField.binding[b];
+//                            if (bind.provider.id == this.providerId) {
+//                                var provider = bind.provider;
+//                                var field = provider.extractFields({comment:true})[this.providerField];
+//                                if (field) {
+//                                    if (field.comment && field.comment.name && this.providerField != field.comment.name) {
+//                                        return 'cube field "'+this.field+'" (provider "'+provider.name+'", name "'+field.comment.name+'", column "'+this.origName+'")';
+//                                    } else {
+//                                        return 'cube field "'+this.field+'" (provider "'+provider.name+'", column "'+this.origName+'")';
+//                                    }
+//                                } else {
+//                                    // not existed in provider
+//                                    return 'cube field "'+this.field+'" (provider "'+provider.name+'", column "'+this.origName+'")';
+//                                }
+//                            }
+//                        }
+//                    }catch(e) {
+//                        Log.error(e);
+//                        return 'field "' + this.field + '" (context "' + this.queryContext + '", SQL column "' + this.origName + '")';
+//                    }
+//                } else {
+//                    return 'field "' + this.field + '" (context "' + this.queryContext + '", SQL column "' + this.origName + '")';
+//                }
+//            }
+//
+//            function findInfo(origName) {
+//                for(var context in $this.contextQueryViews) {
+//                    var queryView = $this.contextQueryViews[context];
+//                    var sourceView = queryView.getSourceView();
+//                    if (sourceView) {
+//                        var sourceFields = sourceView.listFields();
+//                        for(var f = 0; f < sourceFields.length; f++) {
+//                            var sourceField = sourceView.getField(sourceFields[f]);
+//                            var sourceOriginalField = sourceView.getOriginalField(sourceFields[f]) || sourceField;
+//
+//                            if (sourceField && origName == sourceField.context + '.' + sourceField.providerField
+//                                    || sourceOriginalField && origName == sourceOriginalField.context + '.' + sourceOriginalField.providerField) {
+//
+//                                return buildInfo.call({
+//                                    origName: origName,
+//                                    field: sourceFields[f],
+//                                    queryContext: queryView.getContext(),
+//                                    providerId: sourceOriginalField.providerId,
+//                                    providerField: sourceOriginalField.providerField,
+//                                });
+//                            }
+//                        }
+//
+//                    }
+//                }
+//                return null;
+//            }
+//
+//
+//            var reg = /column\s*\"?(.*?[^\"].*?)\"?\s/g;
+//            var message = error.message.replace(reg, function(s, name) {
+//                var info = findInfo(name);
+//                return info ? info : name;
+//            });
+//
+//            message = message.replace(/\sPosition:\s*(\d*)/, function(s, pos){
+//                return "SQL position: " + pos + ' (for get SQL use analyze)';
+//            });
+//
+//		    return new Error(message);
+//		},
 	}
 }

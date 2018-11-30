@@ -8,36 +8,40 @@
 		    'DataCube.Query.Transforms.QueryTransformer'
         ],
 
-        /** patch links to aliases if alias is source field */
-		transform: function(dcQuery, cube){
-		    function getView(name){
-		        return dcQuery.$views[name];
-		    }
+        /** Производит замену
+        */
+		transform: function(rootQuery, cube){
 
-		    QueryUtils.walkQueries(dcQuery, {}, null, function (query){
+		    QueryUtils.walkQueries(rootQuery, {}, null, function (query){
                 var directAliases = {};
                 for(var alias in query.$select) {
                     var e = query.$select[alias];
                     if (e.$field && (!e.$context || e.$context == query.$context) || JSB.isString(e)) {
-                        directAliases[alias] = e.$field || e;
+                        directAliases[alias] = JSB.isString(e) ? {$field: e} : JSB.clone(e);
                     }
                 }
 
-                var sourceFields = QueryUtils.extractSourceFields(query, cube, getView);
-                var outputFields = QueryUtils.extractOutputFields(query, cube, getView);
-                QueryUtils.walkInputFieldsCandidates(query, cube, getView, function (field, context, q, isExp) {
-                    if (outputFields[field]/**isAlias*/ && directAliases[field] && directAliases[field] != field) {
-                        var newField = {$field:directAliases[field]};
-                        if (context != query.$context) {
-                            newField.$context = context;
-                        }
-                        return newField; // replace
+                QueryUtils.walkFields(query, function fieldsCallback(field, context, q, path){
+                    if (directAliases[field] && (!context || context == query.$context)) {
+                        return directAliases[field];
                     }
-
-                    QueryUtils.throwError(sourceFields[field] || outputFields[field] || !isExp, 'Field "{}" is not defined in source or query', field);
                 });
+
+//                var sourceFields = QueryUtils.extractSourceFields(query, cube, rootQuery);
+//                var outputFields = QueryUtils.extractOutputFields(query);
+//                QueryUtils.walkInputFieldsCandidates(query, cube, {rootQuery:rootQuery}, function (field, context, q, isExp) {
+//                    if (outputFields[field]/**isAlias*/ && directAliases[field] && directAliases[field] != field) {
+//                        var newField = {$field:directAliases[field]};
+//                        if (context != query.$context) {
+//                            newField.$context = context;
+//                        }
+//                        return newField; // replace
+//                    }
+//
+//                    QueryUtils.throwError(sourceFields[field] || outputFields[field] || !isExp, 'Field "{}" is not defined in source or query', field);
+//                });
             });
-		    return dcQuery;
+		    return rootQuery;
 		},
 	}
 }

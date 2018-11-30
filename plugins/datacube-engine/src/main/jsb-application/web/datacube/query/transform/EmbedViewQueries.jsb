@@ -19,6 +19,7 @@
 //            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before EmbedViewQueries: ' + JSON.stringify(dcQuery));
 
 		    $this._embedViews(dcQuery);
+		    // TODO реализовать через walkQuery и findView на выходе с удалением $views
 
 		    return dcQuery;
 		},
@@ -39,11 +40,32 @@
                         }
 
                         // if query to view
-                        if (exp.$from && typeof exp.$from === 'string') {
+                        if (exp.$from && JSB.isString(exp.$from)) {
                             // embed view query to $from
                             var view = views[exp.$from];
                             QueryUtils.throwError(view, 'Internal error: EmbedViewQueries: View not found: ' + exp.$from);
-                            exp.$from = JSB.clone(view);
+                            exp.$from = JSB.clone(view); // TODO change uniq context name and use QueryUtils.copyQuery
+                        }
+                        if (exp.$join) {
+                            if (JSB.isString(exp.$join.$left)) {
+                                var view = views[exp.$join.$left];
+                                QueryUtils.throwError(view, 'Internal error: EmbedViewQueries: View not found: ' + exp.$from);
+                                exp.$join.$left = QueryUtils.copyQuery(view, exp.$join.$left);
+                            }
+                            if (JSB.isString(exp.$join.$right)) {
+                                var view = views[exp.$join.$right];
+                                QueryUtils.throwError(view, 'Internal error: EmbedViewQueries: View not found: ' + exp.$from);
+                                exp.$join.$right = QueryUtils.copyQuery(view, exp.$join.$right);
+                            }
+                        }
+                        if (exp.$union) {
+                            for(var i = 0; i < exp.$union.length; i++) {
+                                if (JSB.isString(exp.$union[i])) {
+                                    var view = views[exp.$union[i]];
+                                    QueryUtils.throwError(view, 'Internal error: EmbedViewQueries: View not found: ' + exp.$from);
+                                    exp.$union[i] = JSB.clone(view);
+                                }
+                            }
                         }
                     }
                     for(var i in exp) if (exp.hasOwnProperty(i)) {

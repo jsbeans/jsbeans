@@ -1525,6 +1525,7 @@
 		    $id: true,
 		    $analyze: true,
 		    $context: true,
+
 		    $const: true,
 		    $type: true,
 		    $joinType: true,
@@ -1532,6 +1533,15 @@
 		    $pattern: true,
 		    $replacementString: true,
 		    $flags: true,
+		},
+
+		queryOperators: {
+		    $cube: true,
+		    $provider: true,
+		    $from: true,
+		    $left: true,
+		    $right: true,
+		    $union: true,
 		},
 		
 		registerMacros: function(def, structure, objectGenerator) {

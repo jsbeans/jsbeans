@@ -188,11 +188,7 @@
             );
 
             //collect subquery Views
-            QueryUtils.walkQueries(query, {
-                    findView: function(name) {
-                        return $this.query.$views[name];
-                    }
-                }, null, function(subQuery){
+            QueryUtils.walkQueries(query, {rootQuery: $this.query}, null, function(subQuery){
                     if (subQuery != query) {
                         var subView = $this.contextViews[subQuery.$context];
                         if (!subView) throw new Error('Internal error: unknown view context ' + subQuery.$context);

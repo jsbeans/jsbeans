@@ -62,6 +62,7 @@
 		},
 
 		transform: function(dcQuery, defaultCube){
+		    $this.initialize();
             for(var i = 0; i < $this.mainTransformersConfig.length; i++) {
                 var transformerName = $this.mainTransformersConfig[i];
                 var transformer = $this.transformers[transformerName];

@@ -94,6 +94,25 @@
             return provider;
         },
 
+        /** Slice by id :
+        *  a) 'sliceId' - in defaultCube
+        *  b) 'wsId/sliceId' - in custom workspace
+        */
+        getQuerySlice: function(sliceId, defaultCube) {
+            var ids = sliceId.split('/');
+             if (ids.length == 2) {
+                var wid = ids[0];
+                var sid = ids[1];
+                var ws = WorkspaceController.getWorkspace(wid);
+                var provider = ws.entry(sid);
+            } else {
+                var sid = ids[0];
+                var provider = defaultCube.getWorkspace().entry(sid);
+            }
+            $this.throwError(provider, 'Slice with id "{}" is undefined', sliceId);
+            return provider;
+        },
+
         hasDeclaredSource: function(query) {
             return query.$cube || !query.$provider
                 && !query.$from
@@ -101,9 +120,41 @@
                 && !query.$recursive;
         },
 
+        findView: function(name, rootQuery){
+            var view;
+            $this.walkQueries(rootQuery, {},
+                function(query){
+                    if(query == rootQuery || query.$context == dcQuery.$context) {
+                        // stop and go back
+                        return false;
+                    }
+                },
+                function(query){
+                    if (!view) {
+                        view = query.$views[name];
+                    }
+                    if (view) {
+                        return false;
+                    }
+                }
+            );
+            return view;
+        },
+
         walkQueries: function (dcQuery, options, enterCallback, leaveCallback/**false=break: callback(q) and this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}*/) {
-            options = options || {depth:0, findView: null};
+            options = JSB.merge({
+                depth:0,
+                findView: null,
+                rootQuery: null,
+                getExternalView: function(name){
+                    debugger
+                    findView.call(this, name);
+                    $this.throwError(0, 'View "{}" is not defined', name);
+                    return null;
+                }
+            }, options);
             var queryDepth = -1;
+            var trace = options.trace || false;
             var trace = options.trace || false;
             var visitedQueries = new HashMap();
             var path = [];
@@ -124,8 +175,29 @@
             }
 
             var findView = options.findView || function(name) {
-                var view = dcQuery.$views[name];
-                $this.throwError(view, 'View "{} "is not defined', name);
+                var view;
+                for(var i = this.path.length - 1; i >= 0 ; i-- ){
+                    if(this.path[i].$views) {
+                        view = this.path[i].$views[name];
+                        if (view) break;
+                    }
+                }
+                if (!view && dcQuery.$views) {
+                    view = dcQuery.$views[name];
+                }
+
+                if (!view) {
+                    if (options.rootQuery && options.rootQuery != dcQuery) {
+                        $this.walkQueries(options.rootQuery, {}, function(query){
+                            view = query.$views[name];
+                            if (view || query == options.rootQuery || query.$context == dcQuery.$context) {
+                                return false;
+                            }
+                        });
+                    }
+                }
+
+
                 return view;
             };
 
@@ -164,6 +236,10 @@
                         var fromQuery = typeof query.$from === 'string'
                                 ? findView.call(this, query.$from) : query.$from;
 
+                        if (!fromQuery) {
+                            fromQuery = options.getExternalView.call(this, query.$from);
+                        }
+
                         if (JSB.isEqual(fromQuery, {})) {
                             return true;
                         }
@@ -191,6 +267,7 @@
                     for (var i = 0; i < keys.length; i++) if (query[keys[i]] != null) {
                         var res = walkExpression.call(
                             {
+                                query: query,
                                 nestedPath: this.nestedPath.concat([keys[i]]),
                                 fromPath: this.fromPath,
                                 inJoin: keys[i] == '$join',
@@ -219,6 +296,27 @@
 
             function walkExpression(exp, key) {
                 if (exp == null) {
+                } else if (JSB.isString(exp) && (this.inJoin || this.inUnion)) {
+                    var fromQuery = findView.call(this, exp);
+                    if (!fromQuery) {
+                        fromQuery = options.getExternalView.call(this, exp);
+                    }
+                    var res = walkQuery.call(
+                        {
+                            query : fromQuery,
+                            nestedPath: this.nestedPath.concat([key]),
+                            fromPath: this.fromPath.concat([fromQuery]), // check ???
+                            isView : true,
+                            isValueQuery: false,
+                            inFrom : false,
+                            inJoin: this.inJoin,
+                            inUnion: this.inUnion,
+                            inRecursive: this.inRecursive,
+                            path: path
+                        },
+                        fromQuery
+                    );
+                    if (res === false) return false;
                 } else if (JSB.isObject(exp)) {
                     if (exp.$select) {
                         var res = walkQuery.call(
@@ -241,6 +339,7 @@
                         for (var f in exp) if (typeof exp[f] !== 'undefined') {
                             var res = walkExpression.call(
                                 {
+                                    query: this.query,
                                     nestedPath: this.nestedPath.concat([f]),
                                     fromPath: this.fromPath,
                                     inJoin: this.inJoin && (f === '$left' || f === '$right'),
@@ -257,6 +356,7 @@
                     for (var i = 0; i < exp.length; i++) {
                         var res = walkExpression.call(
                             {
+                                query: this.query,
                                 nestedPath: this.nestedPath.concat([i]),
                                 fromPath: this.fromPath,
                                 inUnion: this.inUnion,
@@ -289,6 +389,7 @@
                 )
                 : walkExpression.call(
                     {
+                        query: dcQuery,
                         nestedPath: [],
                         fromPath: [],
                         path: path
@@ -304,9 +405,8 @@
 
         /** Обходит все, что может являться используемым полем источника запроса. Если callback возвращает выражение, то производится замена старого выражения на новое.
         */
-		walkInputFieldsCandidates: function(query, cube, getView, callback) {
-            var sourceFields = $this.extractSourceFields(query, cube, getView);
-		    $this.walkQueries(query, {findView:getView}, null, function (q){
+		walkInputFieldsCandidates: function(query, cube, opts, callback) {
+            $this.walkQueries(query, opts, null, function (q){
                 (function walkExpression(exp){
                     if (JSB.isObject(exp)) {
                         if (exp.$field) {
@@ -325,7 +425,7 @@
                             }
                         } else if (!exp.$select || exp == q) {
                             for(var i in exp) if (exp[i] != null) {
-                                if (typeof exp[i] !== "string" || !QuerySyntax.constValueOperators[i]) {
+                                if (typeof exp[i] !== "string" || !QuerySyntax.constValueOperators[i] && !QuerySyntax.queryOperators[i]) {
                                     var resultField = walkExpression(exp[i]);
                                     if (resultField) {
                                         exp[i] = resultField;
@@ -353,17 +453,81 @@
             });
 		},
 
+
+        /**Обходит все выражения в запросе на предмет нахождения полей
+          (поля текущего запроса + поля текущего запроса в подзапросах-ражениях).
+          Попутно позволяет заменить поле на выражение, если калбек вернул значение:
+          - выражение - производится замена
+          - null/undefined - поле остается без изменений.
+        */
+		walkFields: function(dcQuery, fieldsCallback/**(field, context, query, path)*/) {
+            function walkExpressionFields(exp, query, path) {
+                if (JSB.isString(exp) && !exp.startsWith('$')) {
+                    var res = fieldsCallback(exp, null, query, path);
+                    if (res) return res;
+                } else if (JSB.isObject(exp) && exp.$field) {
+                    var isSelfOrInSubQuery = exp.$context && exp.$context == query.$context || !exp.$context && query == dcQuery;
+                    var isJoinSource = exp.$context && query.$join && (
+                        exp.$context == (JSB.isString(query.$join.$left) ? query.$join.$left : query.$join.$left.$context)
+                        ||
+                        exp.$context == (JSB.isString(query.$join.$right) ? query.$join.$right: query.$join.$right.$context)
+                    );
+                    if (isSelfOrInSubQuery || isJoinSource) {
+                        var res = fieldsCallback(exp.$field, exp.$context, query, path);
+                        if (res) {
+                            $this.jsonReplaceBody(exp, res);
+                        }
+                    }
+                } else if (JSB.isObject(exp)) {
+                    if (!exp.$select) {
+                        // value-expression
+                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+                            if (!JSB.isString(exp[f]) || !QuerySyntax.queryOperators[f]) {
+                                var res = walkExpressionFields(exp[f], query, path.concat([f]));
+                                if (res) {
+                                    exp[f] = res;
+                                }
+                            }
+                        }
+                    } else if (exp == query){
+                        // self query
+                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+                            if (!JSB.isString(exp[f]) || !QuerySyntax.queryOperators[f]) {
+                                walkExpressionFields(exp[f], query, path.concat([f]));
+                            }
+                        }
+                    } else {
+                         // query-expression
+                         if (exp.$context == dcQuery.$context) {
+                            // if redefined context - break
+                            return;
+                         }
+                         walkExpressionFields(exp, exp, path);
+                     }
+                } else if (JSB.isArray(exp)) {
+                    for (var i = 0 ; i < exp.length; i++) {
+                        var res = walkExpressionFields(exp[i], query, path.concat([i]));
+                        if (res) {
+                            exp[i] = res;
+                        }
+                    }
+                }
+            }
+
+            walkExpressionFields(dcQuery, dcQuery, []);
+		},
+
         /** Возвращает выходные поля источника запроса.
         */
-		extractSourceFields: function(query, cube, getView) {
+		extractSourceFields: function(query, cube, rootQuery) {
 		    if (query.$cube) {
-		        var sourceFields = cube.getManagedFields();
+		        var sourceFields = $this.getQueryCube(query.$cube, cube).getManagedFields();
 		    } else if (query.$provider){
 		        var provider = $this.getQueryDataProvider(query.$provider, cube);
 		        var sourceFields = provider.extractFields();
 		    } else if (query.$from) {
                 if (JSB.isString(query.$from)) {
-                    var fromQuery = getView(query.$from);
+                    var fromQuery = query.$views ? query.$views[query.$from] : $this.findView(query.$from, rootQuery);
                     $this.throwError(!!fromQuery, 'View "{}" is not defined', query.$from);
                     var sourceFields = $this.extractOutputFields(fromQuery);
                 } else if (Object.keys(query.$from).length > 0) {
@@ -385,18 +549,26 @@
             return sourceFields;
 		},
 
-        /** {field: any}. Возвращает поля источника, которые используются в запросе или во вложенных запросах, привязанных к текущему.
+        /** Возвращает массив полей источника, которые используются в запросе или во вложенных запросах, привязанных к текущему.
         */
-		extractInputFields: function(query, cube, getView) {
-            var sourceFields = $this.extractSourceFields(query, cube, getView);
-            var inputFields = {};
-            $this.walkInputFieldsCandidates(query, cube, getView, function (field, context, q, isExp) {
-                if (sourceFields[field]) {
-                    inputFields[field] = true;
+		extractInputFields: function(query) {
+		    var inputFields = {};
+		    var array = [];
+		    $this.walkFields(query, function fieldsCallback(field, context, query, path){
+		        if (!inputFields[context+field]) {
+		            var f = inputFields[context+field] = {$field: field, $context: context};
+		            array.push(f);
                 }
-                $this.throwError(sourceFields[field] || !isExp, 'Field "{}" is not defined in source', field);
-            });
-            return inputFields;
+		    });
+//            var sourceFields = $this.extractSourceFields(query, cube, rootQuery);
+//            var inputFields = {};
+//            $this.walkInputFieldsCandidates(query, cube, {rootQuery:rootQuery}, function (field, context, q, isExp) {
+//                if (sourceFields[field]) {
+//                    inputFields[field] = true;
+//                }
+//                $this.throwError(sourceFields[field] || !isExp, 'Field "{}" is not defined in source', field);
+//            });
+            return array;
 		},
 
         /** {field: expr}: Возвращает выходные поля запроса, по сути $select.
@@ -404,6 +576,59 @@
 		extractOutputFields: function(query) {
             return query.$select;
 		},
+
+        walkExpressionFields: function(valueExp, query, skipSubQuery, callback) {
+            function collect(exp, fixedContext) {
+                if (JSB.isString(exp) && !exp.startsWith('$')) {
+                    if (!fixedContext) {
+                        return callback(exp, query.$context||query.$context, query, false);
+                    }
+                } else if (JSB.isObject(exp) && exp.$field) {
+                    $this.throwError(JSB.isString(exp.$field), 'Invalid $field value type "{}"', typeof exp.$field);
+                    if (exp.$context) {
+                        if (query.$context == exp.$context || !fixedContext) {
+                            return callback(exp.$field, exp.$context, query, true);
+                        } else if (query.$join && (query.$join.$left.$context == exp.$context || query.$join.$right.$context == exp.$context)) {
+                            return callback(exp.$field, exp.$context, query, true);
+                        }
+                    } else {
+                        return callback(exp.$field, query.$context, query, true);
+                    }
+                    if (exp.$context && fixedContext && query.$context == exp.$context) {
+                        return callback(exp.$field, exp.$context, query, true);
+                    } else if (!exp.$context && !fixedContext) {
+                        return callback(exp.$field, exp.$context||query.$context, query, true);
+                    }
+                } else if (JSB.isObject(exp)) {
+                    if (exp == query || !exp.$select) {
+                        // if start query or any expression
+                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+                            var res = collect(exp[f], fixedContext);
+                            if (res) {
+                                exp[f] = res;
+                            }
+                        }
+                    } else if(exp.$select && !skipSubQuery) {
+                        // if enabled sub-query
+                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+                            var res = collect(exp[f], true);
+                            if (res) {
+                                exp[f] = res;
+                            }
+                        }
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for (var i = 0 ; i < exp.length; i++) {
+                        var res = collect(exp[i], fixedContext);
+                        if (res) {
+                            exp[i] = res;
+                        }
+                    }
+                }
+            }
+
+            return collect(valueExp, false);
+        },
 
         walkExpressionFields: function(valueExp, query, skipSubQuery, callback) {
             function collect(exp, fixedContext) {
@@ -570,6 +795,185 @@
             return filtered;
         },
 
+        /** Позволяет обойти выражения, выражения-подзапросы и поля фильтра.
+            Если любой из калбеков возвращает:
+         - null - условие удаляется,
+         - undefined - остается как было,
+         - новое выражение - производятся замена.
+        */
+        rebuildFilter: function(filter, fieldsCallback /**(field, context, opPath)*/, expressionCallback/**(expr, opPath)*/) {
+            function walkExpressionFields(exp, path) {
+                if (JSB.isString(exp) && !exp.startsWith('$')) {
+                    var res = fieldsCallback(exp, null, path);
+                    return res;
+                } else if (JSB.isObject(exp) && exp.$field) {
+                    var res = fieldsCallback(exp.$field, exp.$context, path);
+                    if (res === null) return null;
+                    if (res === undefined) return;
+                    $his.jsonReplaceBody(exp, res);
+                    return exp;
+                } else if (JSB.isObject(exp)) {
+                    // if or not embedded query-expression
+                    if (!exp.$select) {
+                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+                            var res = walkExpressionFields(exp[f], path.concat([f]));
+                            if (res) {
+                                exp[f] = res;
+                            } else {
+                                // если удаляется хоть одно поле, то удалить все выражение
+                                return null;
+                            }
+                        }
+                    } else {
+                        if (JSB.isFunction(expressionCallback)) {
+                            var newExp = expressionCallback(exp, path);
+                            if (newExp === undefined){
+                                return;
+                            }
+                            if (newExp == null) {
+                                return null;
+                            }
+                            return newExp;
+                        }
+                    }
+                    return exp;
+                } else if (JSB.isArray(exp)) {
+                    for (var i = 0 ; i < exp.length; i++) {
+                        var res = walkExpressionFields(exp[i], path.concat([i]));
+                        if (res) {
+                            exp[i] = res;
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+            }
+            function walkExpression(exp, path) {
+                if (JSB.isFunction(expressionCallback)) {
+                    var newExp = expressionCallback(exp, path);
+                    if (newExp === undefined){
+                        return;
+                    }
+                    if (newExp == null) {
+                        return null;
+                    }
+                    exp = newExp;
+                } else {
+                    // clone for changing in walkExpressionFields
+                    exp = JSB.clone(exp);
+                }
+
+                var newExp = walkExpressionFields(exp, path);
+                return newExp;
+            }
+            function walkBinaryCondition(op, args, path) {
+                var newArgs = [];
+                var notChanged = true;
+                for (var i in args) {
+                    var e = walkExpression(args[i], path.concat([i]));
+                    if (e || e === undefined) {
+                        notChanged = notChanged && e === undefined;
+                        newArgs.push(e);
+                    }
+                }
+                if (notChanged) {
+                    return;
+                }
+                return newArgs.length  == args.length ? newArgs : null;
+            }
+            function walkAndOr(array, path) { /// returns args/null/undefined
+                if (!JSB.isArray(array)) {
+                    throw new Error('Unsupported expression type for operator $and/$or');
+                }
+
+                var args = [];
+                var notChanged = true;
+                for (var i in array) {
+                    var e = walkMultiFilter(array[i], path);
+                    if (e || e === undefined) {
+                        notChanged = notChanged && e === undefined;
+                        args.push(e?e:array[i]);
+                    }
+                }
+                if (notChanged) {
+                    return;
+                }
+                return args.length > 0 ? args : null;
+            }
+            function walkMultiFilter(exps, path) { /// returns exp/null/undefined
+                if (!JSB.isObject(exps)) {
+                    throw new Error('Unsupported expression type ' + exps);
+                }
+
+                var newFilter = {$and:[]};
+                var notChanged = true;
+                for (var field in exps) if (exps[field] != null) {
+                    if (field.startsWith('$')) {
+                        var op = field;
+                        switch(op) {
+                            case '$or':
+                            case '$and':
+                                var args = walkAndOr(exps[op], path.concat([op]));
+                                if (args || args === undefined) {
+                                    notChanged = notChanged && args === undefined;
+                                    if (op == '$or') {
+                                        if (args.length == 1) {
+                                            newFilter.$and.push(args[0]);
+                                        } else {
+                                            newFilter.$and.push({$or: args?args:exps.$or});
+                                        }
+                                    } else {
+                                        newFilter.$and = newFilter.$and.concat(args?args:exps.$and);
+                                    }
+                                }
+                                break;
+                            case '$not':
+                                var e = walkMultiFilter(exps[op], path.concat([op]));
+                                if (e || e === undefined) {
+                                 notChanged = notChanged && e === undefined;
+                                    newFilter.$and.push({$not: e?e:exps.$not});
+                                }
+                                break;
+                            default:
+                                // $op: [left, right] expression
+                                var args = walkBinaryCondition(op, exps[op], path.concat([op]));
+                                if (args || args === undefined) {
+                                    notChanged = notChanged && args === undefined;
+                                    var e = {};
+                                    e[op] = args?args: exps[op];
+                                    newFilter.$and.push(e);
+                                }
+                        }
+                    } else {
+                        // field: {$eq: expr}
+                        var opp = Object.keys(exps[field])[0];
+                        var rightExpr = exps[field][opp];
+                        // $op: [left, right] expression
+                        var e = {};
+                        e[oop] = [{$field:field}, rightExpr];
+                        var args = walkBinaryCondition(oop, e[oop], path.concat([oop]));
+                        if (args || args === undefined) {
+                            notChanged = notChanged && args === undefined;
+                            var e = {};
+                            e[op] = args?args: exps[op];
+                            newFilter.$and.push(e);
+                        }
+                    }
+                }
+                if (notChanged) {
+                    return;
+                }
+                switch(Object.keys(newFilter.$and).length){
+                    case 0 : return null;
+                    case 1 : return newFilter.$and[0];
+                }
+                return newFilter;
+            }
+
+            var newFilter = walkMultiFilter(filter, ['$and']);
+            return newFilter;
+        },
+
 		isAggregatedExpression: function(expr){
 		    function findAggregated(e) {
                 if (JSB.isPlainObject(e)) {
@@ -590,7 +994,7 @@
 		    return findAggregated(expr);
 		},
 
-        extractCubeProvidersInQuery: function(query, cube, getView) {
+        extractCubeProvidersInQuery: function(query, cube, rootQuery) {
             $this.throwError(
                 !query.$cube || query.$from || query.$provider || query.$join || query.$union || query.$recursive,
                 'Query "{}" has not cube source', query.$context);
@@ -598,7 +1002,7 @@
 
             var cubeFields = cube.getManagedFields();
             var provs = {}; // id: {provider, cubeFields}
-            $this.walkInputFieldsCandidates(query, cube, getView, function (field, context, q, isExp) {
+            $this.walkInputFieldsCandidates(query, cube, {rootQuery:rootQuery}, function (field, context, q, isExp) {
                 var cubeField = cubeFields[field];
                 if (!cubeField && query.$select[field]) {
                     // skip alias
@@ -642,149 +1046,179 @@
             return queries;
         },
 
-        defineContextQueries: function(dcQuery, getContextName) {
-            /// первым делом обойти и при встрече дублирующегося контекста (если один запрос - колонровать) переименовать
-            /// считается, что при встрече неуникального контекста, то на него "сверху", кробе юниона и джоина, никто не ссылается
-            /// следовательно переименовать надо все вложенное
-            var idx = 0;
-            var contextsMap = {};
-            function getContextNameNumbered(oldName){
-                if (!oldName) {
-                    var context = 'Q' + idx++;
-                    return contextsMap[context] = context;
-                }
-                if(!contextsMap[oldName]) {
-                    contextsMap[oldName] = 'Q' + idx++;
-                }
-
-                return contextsMap[oldName];
-
-            }
-            function getContextNameUNumbered(oldName) {
-                if (!oldName) {
-                    oldName = JSB.generateUid();
-                }
-                if(!contextsMap[oldName]) {
-                    if (this.path.length == 1) {
-                        return contextsMap[oldName] = 'RootQuery';
-                    }
-                    if (!this.inFrom && !this.inJoin && !this.inUnion) {
-                        var name = 'Expression';
-                    }
-                    if (this.query.$join) {
-                        var name = (name||'') + 'JoinQuery';
-                    } else if (this.query.$union) {
-                        var name = (name||'') + 'UnionQuery';
-                    } else if (this.query.$recursive) {
-                        var name = (name||'') + 'RecursiveQuery';
-                    } else if (!name) {
-                        var name = 'Query';
-                    }
-
-                    if(!contextsMap[name]) contextsMap[name] = 0;
-                    name += contextsMap[name]++;
-
-                    if (this.inJoin) {
-                        name += '-join-' + this.nestedPath[this.nestedPath.length -1].substring(1);
-                    } else if (this.inUnion) {
-                        name += '-union-' + this.nestedPath[this.nestedPath.length -1].substring(1);
-                    }
-                    return contextsMap[oldName] = name;
-                }
-                return contextsMap[oldName];
-            }
-
-            function walkExpression(exp, oldContext, newContext){
-                if (JSB.isObject(exp)) {
-                    if (exp.$from) {
-                        var sourceQuery = JSB.isString(exp.$from) ? dcQuery.$views[exp.$from] : exp.$from;
-                        walkExpression(sourceQuery, oldContext, newContext);
-                    }
-                    if (exp.$join || exp.$union || exp.$recursive) {
-                        walkExpression(exp.$join || exp.$union || exp.$recursive, oldContext, newContext);
-                    }
-                    for(var i in exp) {
-                        if (i !=='$from' && i !=='$join' && i !=='$union'
-                                && typeof exp[i] === "object" && exp[i] != null
-                        ) {
-                            walkExpression(exp[i], oldContext, newContext);
-                        }
-                    }
-                    if (exp.$context == oldContext) {
-                        exp.$context = newContext;
-                    }
-                } else if (JSB.isArray(exp)) {
-                    for(var i=0;i<exp.length;i++){
-                        if (typeof exp[i] === "object" && exp[i] != null) {
-                            walkExpression(exp[i], oldContext, newContext);
-                        }
-                    }
-                }
-            }
-
-            var getContextName = getContextName || getContextNameUNumbered;
-            var oldContexts = {};
-            $this.walkQueries(dcQuery, {},
-                function enterCallback(query){
-                    /// на входе собрать названия контекстов и посчитать
-                    if (!query.$context) {
-                        query.$context = JSB.generateUid();
-                    }
-
-                    if (!oldContexts[query.$context]) {
-                        oldContexts[query.$context] = 1;
-                    } else if (!this.isView) {
-                        oldContexts[query.$context] += 1;
-                    }
-                }
-            );
-
-            var contextQueriesMap = {};
-//            var oldViews = {};
-            var withFrom = {};
-            $this.walkQueries(dcQuery, {}, null,
-                function leaveCallback(query){
-                    var startQuery = !this.inJoin ? query : this.path[this.path.length-2];
-
-                    if (oldContexts[query.$context] > 1) {
-                        var newContext = getContextName.call(this, null);
-//                        oldViews[query.$context] = newContext;
-                        walkExpression(startQuery, query.$context, newContext);
-                    }
-
-//                    if (!this.isView || !oldViews[query.$context]) {
-//                        var newContext = oldContexts[query.$context] > 1
-//                                ? getContextName.call(this, query.$context)
-//                                : getContextName.call(this, null);
-//                        if (this.isView) {
-//                            oldViews[query.$context] = newContext;
-//                        }
-//                        walkExpression(startQuery, query.$context, newContext);
+//        defineContextQueries: function(dcQuery, getContextName) {
+//            /// первым делом обойти и при встрече дублирующегося контекста (если один запрос - колонровать) переименовать
+//            /// считается, что при встрече неуникального контекста, то на него "сверху", кробе юниона и джоина, никто не ссылается
+//            /// следовательно переименовать надо все вложенное
+//            var idx = 0;
+//            var contextsMap = {};
+//            function getContextNameNumbered(oldName){
+//                if (!oldName) {
+//                    var context = 'Q' + idx++;
+//                    return contextsMap[context] = context;
+//                }
+//                if(!contextsMap[oldName]) {
+//                    contextsMap[oldName] = 'Q' + idx++;
+//                }
 //
-//                        contextQueriesMap[query.$context] = query;
+//                return contextsMap[oldName];
+//
+//            }
+//            function getContextNameUNumbered(oldName) {
+//                if (!oldName) {
+//                    oldName = JSB.generateUid();
+//                }
+//                if(!contextsMap[oldName]) {
+//                    if (this.path.length == 1) {
+//                        return contextsMap[oldName] = 'RootQuery';
 //                    }
-
-                    if (typeof query.$from === 'string') {
-                        withFrom[query.$context] = query;
-                    }
-                }
-            );
-
-
-            var names = Object.keys(dcQuery.$views||{});
-            for(var i = 0; i < names.length; i++) {
-                var query = dcQuery.$views[names[i]];
-                delete dcQuery.$views[names[i]];
-                dcQuery.$views[query.$context] = query;
-                for(var ctx in withFrom) {
-                    if (withFrom[ctx].$from == names[i]) {
-                        withFrom[ctx].$from = query.$context;
-                    }
-                }
-            }
-
-            return contextQueriesMap;
-        },
+//                    if (!this.inFrom && !this.inJoin && !this.inUnion) {
+//                        var name = 'Expression';
+//                    }
+//                    if (this.query.$join) {
+//                        var name = (name||'') + 'JoinQuery';
+//                    } else if (this.query.$union) {
+//                        var name = (name||'') + 'UnionQuery';
+//                    } else if (this.query.$recursive) {
+//                        var name = (name||'') + 'RecursiveQuery';
+//                    } else if (!name) {
+//                        var name = 'Query';
+//                    }
+//
+//                    if(!contextsMap[name]) contextsMap[name] = 0;
+//                    name += contextsMap[name]++;
+//
+//                    if (this.inJoin) {
+//                        name += '-join-' + this.nestedPath[this.nestedPath.length -1].substring(1);
+//                    } else if (this.inUnion) {
+//                        name += '-union-' + this.nestedPath[this.nestedPath.length -1].substring(1);
+//                    }
+//                    return contextsMap[oldName] = name;
+//                }
+//                return contextsMap[oldName];
+//            }
+//
+//            function walkExpression(exp, oldContext, newContext){
+//                if (JSB.isObject(exp)) {
+//                    if (exp.$from) {
+//                        var sourceQuery = JSB.isString(exp.$from) ? dcQuery.$views[exp.$from] : exp.$from;
+//                        walkExpression(sourceQuery, oldContext, newContext);
+//                    }
+//                    if (exp.$join || exp.$union || exp.$recursive) {
+//                        walkExpression(exp.$join || exp.$union || exp.$recursive, oldContext, newContext);
+//                    }
+//                    for(var i in exp) {
+//                        if (i !=='$from' && i !=='$join' && i !=='$union'
+//                                && typeof exp[i] === "object" && exp[i] != null
+//                        ) {
+//                            walkExpression(exp[i], oldContext, newContext);
+//                        }
+//                    }
+//                    if (exp.$context == oldContext) {
+//                        exp.$context = newContext;
+//                    }
+//                } else if (JSB.isArray(exp)) {
+//                    for(var i=0;i<exp.length;i++){
+//                        if (typeof exp[i] === "object" && exp[i] != null) {
+//                            walkExpression(exp[i], oldContext, newContext);
+//                        }
+//                    }
+//                }
+//            }
+//debugger
+//            var getContextName = getContextName || getContextNameUNumbered;
+//            var oldContexts = {};
+//            $this.walkQueries(dcQuery, {},
+//                function enterCallback(query){
+//                    /// на входе собрать названия контекстов и посчитать
+//                    if (!query.$context) {
+//                        query.$context = JSB.generateUid();
+//                    }
+//
+//                    if (!oldContexts[query.$context]) {
+//                        oldContexts[query.$context] = 1;
+//                    } else if (!this.isView) {
+//                        oldContexts[query.$context] += 1;
+//                    }
+//                }
+//            );
+//
+//            var contextQueriesMap = {};
+////            var oldViews = {};
+//            var withView = {};
+//            $this.walkQueries(dcQuery, {}, null,
+//                function leaveCallback(query){
+//                    var startQuery = !this.inJoin ? query : this.path[this.path.length-2];
+//
+//                    if (oldContexts[query.$context] > 1) {
+//                        var newContext = getContextName.call(this, null);
+////                        oldViews[query.$context] = newContext;
+//                        walkExpression(startQuery, query.$context, newContext);
+//                    }
+//
+////                    if (!this.isView || !oldViews[query.$context]) {
+////                        var newContext = oldContexts[query.$context] > 1
+////                                ? getContextName.call(this, query.$context)
+////                                : getContextName.call(this, null);
+////                        if (this.isView) {
+////                            oldViews[query.$context] = newContext;
+////                        }
+////                        walkExpression(startQuery, query.$context, newContext);
+////
+////                        contextQueriesMap[query.$context] = query;
+////                    }
+//
+//                    if (typeof query.$from === 'string') {
+//                        withView[query.$context] = query;
+//                    }
+//                    if (query.$join && (JSB.isString(query.$join.$left) || JSB.isString(query.$join.$right))) {
+//                        withView[query.$context] = query;
+//                    }
+//                    if (query.$union) {
+//                        for(var i = 0; i < query.$union.length; i++) {
+//                            if (JSB.isString(query.$union[i])) {
+//                                withView[query.$context] = query;
+//                                break;
+//                            }
+//                        }
+//                    }
+//                }
+//            );
+//
+//debugger
+//            var names = Object.keys(dcQuery.$views||{});
+//            for(var i = 0; i < names.length; i++) {
+//                var name = names[i];
+//                var query = dcQuery.$views[name];
+//                delete dcQuery.$views[name];
+//                dcQuery.$views[query.$context] = query;
+//                for(var ctx in withView) {
+//                    var q = withView[ctx];
+//                    if (q.$from == name) {
+//                        q.$from = query.$context;
+//                    }
+//                    if (q.$join) {
+//                        if (q.$join.$left == name) {
+//                            q.$join.$left = query.$context;
+//                        }
+//                        if (q.$join.$right == name) {
+//                            q.$join.$right = query.$context;
+//                        }
+//                    }
+//                    if (q.$union) {
+//                        for(var i = 0; i < q.$union.length; i++) {
+//                            if (q.$union[i] == name) {
+//                                q.$union[i] = query.$context;
+//                            }
+//                        }
+//                    }
+//                }
+//                // TODO поддержкать вьюхи в $left/$right/$union
+//
+//            }
+//
+//            return contextQueriesMap;
+//        },
 
         /** Удаляет провайдеры, все поля которых есть в других JOIN провайдерах, исключает лишние JOIN и UNION.
         Если поле есть и в UNION и в JOIN провайдерах, то приоритет отдается UNION провайдерам, т.к. они слева в LEFT JOIN.
@@ -1063,11 +1497,7 @@ throw 'TODO';
             );
 
             // lookup fields from outer context
-            $this.walkQueries(query, {
-                    findView: function(name){
-                        return rootQuery.$views[name];
-                    }
-                }, null,
+            $this.walkQueries(query, {rootQuery:rootQuery}, null,
                 function(query){
                     $this.walkQueryForeignFields(query, function (field, context, q){
                         if (outerContexts[context||q.$context]) {
@@ -1088,16 +1518,7 @@ throw 'TODO';
             return fields.length > 0 ? fields : null;
         },
 
-        jsonReplaceBody: function(target, source) {
-            for(var alias in target) {
-                delete target[alias];
-            }
-            for(var alias in source) {
-                target[alias] = source[alias];
-            }
-        },
-
-        walkFilterExpressions: function(filter, callback/*(exp, path)*/) {
+        walkFilterExpressions: function(filter, opCallback/**()*/, exprCallback/*(exp, path)*/) {
 
             function walkAndOr(array, path) {
                 $this.throwError(JSB.isArray(array), 'Unsupported expression type for operator $and/$or');
@@ -1110,7 +1531,7 @@ throw 'TODO';
             function walkBinaryCondition(op, args, path) {
                 for (var i = 0; i < args.length; i++) {
 debugger
-                    var res = callback(args[i], path.concat([i]));
+                    var res = exprCallback(args[i], path.concat([i]));
                     if (res) {
                         args[i] = res;
                     }
@@ -1152,6 +1573,122 @@ debugger
 
             walkMultiFilter(filter,[]);
         },
+
+//        renameViews: function(dcQuery, callback/**(oldName, path):newName*/){
+//            function renameView(query, path){
+//                debugger;
+//            }
+//            function walkExpression(exp, path) {
+//                if (JSB.isObject(exp)) {
+//                    // if or not embedded query-expression
+//                    if (exp.$select) {
+//                        if (exp.$from && JSB.string(exp.$from)) {
+//                            var newName = callback(exp.$from, path);
+//                            renameView(exp,path);
+//                        }
+//                        if (exp.)
+//                    }
+//                    for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+//                        walkExpression(exp[f], path.concat([f]));
+//                    }
+//                } else if (JSB.isArray(exp)) {
+//                    for (var i = 0 ; i < exp.length; i++) {
+//                        walkExpression(exp[i], path.concat([i]));
+//                    }
+//                }
+//            }
+//            walkExpression(dcQuery, []);
+//        },
+
+		copyQuery: function(dcQuery, context) {
+		    var dcQuery = JSB.merge(true, {}, dcQuery);
+		    var oldContext = dcQuery.$context;
+
+		    function walk(e) {
+		        if (e == null) {
+		        } else if(JSB.isObject(e)) {
+		            for(var i in e) if (e.hasOwnProperty(i)) {
+		                if (i == '$context') {
+		                    if (e[i] == oldContext) {
+		                        e[i] = context;
+		                    } else {
+		                        e[i] = context + '_' + e[i];
+                            }
+		                } else {
+		                    walk(e[i]);
+		                }
+		            }
+		        } else if(JSB.isArray(e)) {
+		            for(var i = 0; i < e.length; i++) {
+		                walk(e[i]);
+		            }
+                }
+		    }
+
+		    walk(dcQuery);
+		    return dcQuery;
+		},
+
+        jsonReplaceBody: function(target, source) {
+            for(var alias in target) {
+                delete target[alias];
+            }
+            for(var alias in source) {
+                target[alias] = source[alias];
+            }
+        },
+
+		extractSliceDimensions: function(slice) {
+
+		    // TODO move to slice.extractDimensions() + updated cache
+		    var sliceDimensions = {};
+		    var sliceQuery = slice.getQuery();
+
+		    // collect self slice`s dimensions
+		    var dimensions = $this.extractCubeDimensions(slice.getCube());
+		    var outputFields = $this.extractOutputFields(sliceQuery);
+		    for(var field in outputFields) {
+		        if(dimensions[field]) {
+		            sliceDimensions[field] = [slice.getId()];
+		        }
+		    }
+
+            // recursively collect sub-slices`s dimensions
+		    $this.walkQueries(sliceQuery, {
+		        getExternalView : function(name) {
+		            var subSlice = $this.getQuerySlice(name, slice.getCube());
+		            var subDims = $this.extractSliceDimensions(subSlice);
+		            // merge sub-dimensions
+		            for(var field in subDims) {
+		                if (!sliceDimensions[field]) {
+		                    sliceDimensions[field] = [subSlice.getId()];
+		                } else if (sliceDimensions[field].indexOf(subSlice.getId()) == -1) {
+		                    sliceDimensions[field] = sliceDimensions[field].concat(subDims[field]);
+		                }
+
+		            }
+		            return {};
+		        }
+		    }, function(){});
+
+		    return sliceDimensions;
+		},
+
+		extractReplacementSlices: function(slice) {
+		    // TODO
+		    return slice.getReplacementSlices ? slice.getReplacementSlices() : {};
+		},
+
+		extractCubeDimensions: function(cube) {
+		    // TODO
+		    return cube.getDimensions? cube.getDimensions() : {
+		        "INN": "INN",
+		        "KPP": "KPP",
+		        "OGRN":  "OGRN",
+		        "LegalOrganization": "LegalOrganization",
+		        "ChiefName":"ChiefName",
+		    };
+		},
 
 
 	}
