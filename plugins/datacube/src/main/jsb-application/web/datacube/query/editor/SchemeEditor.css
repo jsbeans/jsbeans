@@ -422,7 +422,7 @@
 }
 
 
-.schemeEditor > .context {
+.schemeEditor > .container > .context {
 	position: absolute;
     right: 0;
     top: 0;
@@ -435,6 +435,17 @@
     border-bottom: 1px solid #c5ab95;
 }
 
+.schemeEditor[heuristic="true"] > .container > .value {
+    width: inherit;
+    margin-right: 5px;
+}
+
+.schemeEditor[heuristic="true"] > .container > .context {
+    position: relative;
+    display: inline-block;
+    background-color: transparent;
+    border: none;
+}
 
 /* SingleObject */
 .schemeEditor[etype = "SingleObject"] {

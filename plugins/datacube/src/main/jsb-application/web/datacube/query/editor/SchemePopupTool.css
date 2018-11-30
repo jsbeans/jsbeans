@@ -189,6 +189,7 @@
 
 .schemePopupTool > .items li._dwp_listBoxItem > .field > .type,
 .schemePopupTool > .items li._dwp_listBoxItem > .column > .qname {
+    margin-left: 5px;
 	display: inline-block;
 	vertical-align: middle;
 	font-size: 11px;

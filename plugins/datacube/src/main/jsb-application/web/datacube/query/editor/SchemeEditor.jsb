@@ -1040,9 +1040,7 @@ console.log('getCubeSlices');
 					var value = chosenObj.value.value;
 					var context = chosenObj.value.context;
 					var schemeName = chosenObj.value.scheme;
-					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-
-					} else if(schemeName == '$fieldExpr') {
+					if(schemeName == '#fieldName' || schemeName == '$fieldName' || schemeName == '$fieldExpr') {
 						value = {
 							$field: value,
 							$context: context
@@ -1396,6 +1394,7 @@ console.log('getCubeSlices');
 		},
 
 		showPopupTool: function(schemes, targetElt, entryType, entryKey, existedObj, callback){
+debugger;
 			// prepare list for dialog
 			var acceptedDesc = $this.combineCategoryMap(schemes);
 			if(!acceptedDesc){
@@ -1513,7 +1512,7 @@ console.log('getCubeSlices');
 						editor: $this,
 						entryType: entryType,
 						entryKey: entryKey,
-						isStruct: $this.options.measurements[entryKey],
+						isStruct: $this.options.measurements ? $this.options.measurements[entryKey] : false,
 						actions: {
 							allowEdit: allowEdit,
 							allowRemove: allowRemove,
@@ -1893,11 +1892,7 @@ console.log('getCubeSlices');
 		},
 
 		constructHeuristic: function(){
-			if($this.scheme.name == '$fieldName'){
-				var valElt = $this.$('<div class="value"></div>').text($this.value).attr('title', $this.value);
-				$this.container.append(valElt);
-				return true;
-			} else if($this.scheme.name == '$fieldExpr'){
+			if($this.scheme.name == '$fieldName' || $this.scheme.name == '$fieldExpr'){
 				$this.container.append($this.$('<div class="value"></div>').text($this.value['$field']).attr('title', $this.value['$field']));
 				$this.container.append($this.$('<div class="context"></div>').text($this.value['$context']));
 				return true;
@@ -1964,8 +1959,9 @@ console.log('getCubeSlices');
 								ctxName = $this.value['$context'] = $this.generateQueryContextName();
 							}
 						}
+
 						var ctxElt = $this.$('<div class="context"></div>').text(ctxName);
-						$this.append(ctxElt);
+						$this.container.append(ctxElt);
 						usedFields['$context'] = true;
 					}
 
