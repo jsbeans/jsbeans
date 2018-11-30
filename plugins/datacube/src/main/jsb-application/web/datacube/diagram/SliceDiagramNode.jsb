@@ -53,10 +53,12 @@
 			var caption = this.$(`#dot
 				<div class="caption">
 					<div class="icon"></div>
-					<div class="name">{{=this.entry.getName()}}</div>
 				</div>
 			`);
 			header.append(caption);
+
+			this.sliceName = this.$('<div class="name">' + this.entry.getName() + '</div>');
+			caption.append(this.sliceName);
 
 			var editBtn = new Button({
 			    cssClass: 'roundButton btnEdit btn10',
@@ -140,6 +142,12 @@
                 //todo
                 // obj: { isHighlighted: <bool>, key: <string> }
             });
+
+            this.subscribe('DataCube.CubeEditor.sliceUpdated', function(sender, msg, obj){
+                if(obj.slice.getId() === $this.entry.getId()){
+                    $this.refresh(obj);
+                }
+            });
 		},
 
 		addDimension: function(field){
@@ -202,6 +210,10 @@
             }
 
             this.fields = query.$select || {};
+
+            if(opts && opts.name){
+                this.sliceName.text(opts.name);
+            }
 		},
 
 		removeDimension: function(field){

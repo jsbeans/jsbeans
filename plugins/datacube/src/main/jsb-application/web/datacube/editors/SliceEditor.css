@@ -1,3 +1,13 @@
+.sliceEditor:not(.active) > .jsb-scrollBox,
+.sliceEditor:not(.active) > .toolbar > .sliceName {
+    display: none;
+}
+
+.sliceEditor.active > .toolbar > .caption,
+.sliceEditor.active > .selectMessage {
+    display: none;
+}
+
 .sliceEditor > .toolbar {
     height: 31px;
     padding: 2.5px;
@@ -35,6 +45,10 @@
     display: inline-block;
     color: #555;
     font-size: 14px;
+}
+
+.sliceEditor > .toolbar > .sliceName {
+    margin-top: 2px;
 }
 
 .sliceEditor > .selectMessage {
