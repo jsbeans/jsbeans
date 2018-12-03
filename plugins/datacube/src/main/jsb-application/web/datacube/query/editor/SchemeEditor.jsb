@@ -919,8 +919,8 @@ console.log('getCubeSlices');
                 var value = chosenObj.value.value;
                 var context = chosenObj.value.context;
                 var schemeName = chosenObj.value.scheme;
-                if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-                } else if(schemeName == '$fieldExpr') {
+                if(schemeName == '#fieldName') {
+                } else if(schemeName == '$fieldExpr' || schemeName == '$fieldName') {
                     value = {
                         $field: value,
                         $context: context
@@ -1053,18 +1053,27 @@ console.log('getCubeSlices');
 
 					} else {
 						var oldValue = $this.value[entryKey];
+
 						if(bWrap){
 							value = $this.constructEmptyValue(schemeName, [oldValue]);
 						} else {
 							var subValues = [];
-							if(JSB.isObject(oldValue) && Object.keys(oldValue).length == 1 /* single object */){
-								for(var sKey in oldValue){
-									subValues.push(oldValue[sKey]);
+							if(JSB.isObject(oldValue)){ //single object
+								if(Object.keys(oldValue).length == 1){
+                                    for(var sKey in oldValue){
+                                        subValues.push(oldValue[sKey]);
+                                    }
+								}
+
+								if(Object.keys(oldValue).length == 2 && oldValue['$context'] && oldValue['$field']){
+								    subValues.push(oldValue);
 								}
 							}
+
 							value = $this.constructEmptyValue(schemeName, subValues);
 						}
 					}
+
 					$this.value[entryKey] = value;
 					if(JSB.isArray($this.value)){
 						$this.drawArrayEntry(entryKey, schemeName, {expanded: true});
@@ -1394,7 +1403,6 @@ console.log('getCubeSlices');
 		},
 
 		showPopupTool: function(schemes, targetElt, entryType, entryKey, existedObj, callback){
-debugger;
 			// prepare list for dialog
 			var acceptedDesc = $this.combineCategoryMap(schemes);
 			if(!acceptedDesc){
@@ -1893,8 +1901,8 @@ debugger;
 
 		constructHeuristic: function(){
 			if($this.scheme.name == '$fieldName' || $this.scheme.name == '$fieldExpr'){
-				$this.container.append($this.$('<div class="value"></div>').text($this.value['$field']).attr('title', $this.value['$field']));
-				$this.container.append($this.$('<div class="context"></div>').text($this.value['$context']));
+                $this.container.append($this.$('<div class="value"></div>').text($this.value['$field']).attr('title', $this.value['$field']));
+                $this.container.append($this.$('<div class="context"></div>').text($this.value['$context']));
 				return true;
 			} else if($this.scheme.name == '$sortTypeAsc') {
 				$this.container.append($this.$('<div class="value fixed">По возрастанию</div>'));
@@ -2507,7 +2515,7 @@ debugger;
 		            value: {
 		                scheme: '$fieldExpr',
 		                value: i,
-		                context: this.scope.context
+		                context: value.options.entry.getMainContext() //this.scope.context
                     }
                 });
 		    }

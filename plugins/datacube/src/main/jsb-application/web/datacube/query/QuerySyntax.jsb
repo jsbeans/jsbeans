@@ -1496,7 +1496,7 @@
 		},
 		
 		macros: {},
-		
+
 		schemaAggregateOperators: {
 		    $corr: {},
 		    $any: {},

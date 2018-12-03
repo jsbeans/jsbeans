@@ -44,13 +44,17 @@
         return sources;
     },
 
-	getQuery: function(){
-		return this.query;
-	},
-	
 	getCube: function(){
 		return this.cube;
 	},
+
+    getMainContext: function(){
+        var query = this.getQuery();
+
+        if(query){
+            return query.$context;
+        }
+    },
 
     getSourceType: function(){
         var fromKeys = QuerySyntax.getFromContext();
@@ -63,6 +67,10 @@
 
         return 'Текущий куб';
     },
+
+	getQuery: function(){
+		return this.query;
+	},
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
@@ -207,7 +215,6 @@
 		},
 
 		getEditorData: function(){
-		    //todo: cubeFields & cubeSlices
 		    var cube = this.getCube();
 
 		    return {

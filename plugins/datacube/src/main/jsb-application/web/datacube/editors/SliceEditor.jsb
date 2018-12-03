@@ -5,6 +5,7 @@
 	    $require: ['JSB.Controls.Button',
 	               'JSB.Controls.ScrollBox',
                    'DataCube.Query.QueryEditor',
+                   'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.RendererRepository'],
 
 	    $constructor: function(opts){
@@ -19,8 +20,13 @@
 	        var icon = this.$('<div class="icon"></div>');
 	        toolbar.append(icon);
 
-	        var caption = this.$('<span>Редактор среза</span>');
-	        toolbar.append(caption);
+	        this.caption = this.$('<span class="caption">Редактор среза</span>');
+	        toolbar.append(this.caption);
+
+            this.sliceName = new PrimitiveEditor({
+                cssClass: 'sliceName'
+            });
+            toolbar.append(this.sliceName.getElement());
 
 			var okBtn = new Button({
 			    caption: 'Сохранить',
@@ -38,7 +44,9 @@
 			var message = this.$('<span class="selectMessage">Выберите срез</span>');
 			this.append(message);
 
-			var scrollBox = new ScrollBox();
+			var scrollBox = new ScrollBox({
+			    xAxisScroll: false
+			});
 			this.append(scrollBox);
 
 			this.queryEditor = new QueryEditor({
@@ -48,34 +56,39 @@
 			scrollBox.append(this.queryEditor);
 
 			this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(sender, msg, obj){
-			    message.addClass('hidden');
-			    $this.queryEditor.removeClass('hidden');
+			    $this.addClass('active');
+
 			    okBtn.enable(true);
 			    $this.update(obj);
 			});
 
 			this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(sender, msg, obj){
-			    message.removeClass('hidden');
-			    $this.queryEditor.addClass('hidden');
+			    $this.removeClass('active');
+
 			    okBtn.enable(false);
 			});
 	    },
 
 	    apply: function(){
 	        var query = this.query,
-	            measurements = this.measurements;
+	            measurements = this.measurements,
+	            name = this.sliceName.getData().getValue();
 
 	        this.sliceData.entry.server().setSliceParams({
+	            name: name,
 	            measurements: measurements,
 	            query: query
 	        }, function(res, err){
 	            if(!err && res.wasUpdated){
+	                /*
 	                $this.sliceData.node.refresh({
 	                    measurements: measurements,
 	                    query: query
 	                });
-
+	                */
 	                $this.publish('DataCube.CubeEditor.sliceUpdated', {
+	                    measurements: measurements,
+	                    name: name,
 	                    slice: $this.sliceData.entry,
 	                    query: query
 	                });
@@ -109,6 +122,8 @@
 
                 sliceSelectOptions.push(createElement(slices[i], i));
             }
+
+            this.sliceName.setData(data.entry.getName());
 
             this.query = JSB.clone(data.entry.getQuery());
             //this.measurements = JSB.clone(data.entry.getMeasurements());
