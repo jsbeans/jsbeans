@@ -326,10 +326,13 @@
 		
 		_storeBatch: function(importContext){
 			var mInst = importContext.mInst;
+			var pCtx = importContext.parser.getContext();
 			if(!importContext.importOpts){
 				importContext.importOpts = {
-					schema: importContext.parser.getContext().find('databaseScheme').value() || 'public',
-					treatEmptyStringsAsNull: importContext.parser.options.treatEmptyStringsAsNull
+					schema: pCtx.find('databaseScheme').value() || 'public',
+					treatEmptyStringsAsNull: importContext.parser.options.treatEmptyStringsAsNull,
+					useExistingTable: pCtx.find('existingTableAction').value() == 'databaseTableAppend',
+					skipExistingRows: pCtx.find('existingTableAction').value() == 'databaseTableAppend' && pCtx.find('skipExistingRows').checked()
 				};
 			}
 			for(var t in importContext.importTables){
@@ -346,18 +349,24 @@
 						}
 					}
 					if(bColumnsCorrect){
-						if(importContext.parser.getContext().find('removeOldTable').checked()){
+						if(pCtx.find('existingTableAction').value() == 'databaseTableOverwrite'){
 							this.logAppend(importContext.rootEntry, 'info', 'Удаление старой таблицы: ' + t);
 							mInst.removeTable(t, importContext.importOpts);
 						}
 						// create table in db
-						this.logAppend(importContext.rootEntry, 'info', 'Создание таблицы: ' + t);
+						var createTableInfoText = 'Создание таблицы: ' + t;
+						if(importContext.importOpts.useExistingTable){
+							createTableInfoText = 'Актуализация таблицы: ' + t;
+						}
+						this.logAppend(importContext.rootEntry, 'info', createTableInfoText);
 						var res = mInst.createTable(t, tDesc.columns, importContext.importOpts);
 						if(res){
 							tDesc.table = res.table;
 							tDesc.fieldMap = res.fieldMap;
 							tDesc.created = true;
-							this.logAppend(importContext.rootEntry, 'info', 'Таблица "'+tDesc.table+'" успешно создана');
+							if(!importContext.importOpts.useExistingTable){
+								this.logAppend(importContext.rootEntry, 'info', 'Таблица "'+tDesc.table+'" успешно создана');
+							}
 						}
 					} else {
 						continue;
@@ -378,9 +387,9 @@
 					}
 					translatedRows.push(nRow);
 				}
-				mInst.insert(tDesc.table, translatedRows, importContext.importOpts);
-				tDesc.total += translatedRows.length;
-				tStatDesc.total += translatedRows.length;
+				var written = mInst.insert(tDesc.table, translatedRows, importContext.importOpts);
+				tDesc.total += written;
+				tStatDesc.total += written;
 				this.logAppend(importContext.rootEntry, 'info', 'В таблицу "'+tDesc.table+'" записано ' + tDesc.total + ' строк', MD5.md5('rowsWritten' + tDesc.table));
 				tDesc.rows = [];
 			}

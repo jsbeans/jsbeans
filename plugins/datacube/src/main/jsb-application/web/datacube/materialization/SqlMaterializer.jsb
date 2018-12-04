@@ -47,7 +47,22 @@
 				var i = 2;
 				while(true){
 					var rs = databaseMetaData.getTables(null, schema, suggestedName, null);
-					if(rs.next()){
+					var curTabRecord = rs.next();
+					if(curTabRecord){
+						if(opts.useExistingTable){
+							// extract columns and return current name
+							var columns = databaseMetaData.getColumns(null, schema, suggestedName, null);
+							while(columns.next()) {
+								var columnName = ''+columns.getString("COLUMN_NAME");
+								if(fields[columnName]){
+									fieldMap[columnName] = columnName;
+								} else {
+									throw new Error('Invalid column name: ' + columnName);
+								}
+							}
+							
+							return {table: suggestedName, fieldMap: fieldMap};
+						}
 						suggestedName = cName + '_' + i++;
 						continue;
 					}
@@ -233,6 +248,7 @@
 					var obj = objArr[b];
 					var fNameArr = Object.keys(obj);
 					var sql = 'insert into "' + schema + '"."' + tName + '" (';
+					var checkSql = 'select count(*) as count from "' + schema + '"."' + tName + '" where ';
 					var bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
 						if(JSB.isNull(obj[fNameArr[i]])){
@@ -240,8 +256,10 @@
 						}
 						if(!bFirst){
 							sql += ',';
+							checkSql += ' and ';
 						}
 						sql += '"' + fNameArr[i] + '"';
+						checkSql += '"' + fNameArr[i] + '" = ?'
 						bFirst = false;
 					}
 					if(bFirst){
@@ -264,6 +282,25 @@
 						bFirst = false;
 					}
 					sql += ')';
+					
+					if(opts.skipExistingRows){
+						var checkIt = null, existedCount = 0;
+						try {
+							checkIt = JDBC.iteratedQuery(connection, checkSql, values);
+							var checkRes = checkIt.next();
+							existedCount = checkRes && checkRes.count && checkRes.count || 0;
+						} catch(e) {
+							existedCount = 0;
+						} finally {
+							if(checkIt){
+								checkIt.close();
+							}
+						}
+						
+						if(existedCount > 0){
+							continue;
+						}
+					}
 					batch.push({
 						sql: sql,
 						values: values
@@ -272,9 +309,11 @@
 				if(batch.length > 0){
 					JDBC.executeUpdate(connection, batch);
 				}
+				return batch.length;
 			} finally {
 				connWrap.close();
 			}
+			return 0;
 		}
 	}
 }

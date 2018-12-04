@@ -349,11 +349,31 @@
 	        						name: 'Схема',
 	        						value: 'public'
 	        					},
-	        					removeOldTable: {
-	        						render: 'item',
-	        						name: 'Перезаписать существующие таблицы',
-	        						optional: 'checked',
-	        						editor: 'none'
+	        					existingTableAction: {
+	        						render: 'select',
+	        						name: 'Если таблица существует - ',
+	        						items: {
+	        							databaseTableOverwrite: {
+	        								render: 'item',
+	    	        						name: 'Перезаписать',
+	        							},
+	        							databaseTableNew: {
+	        								render: 'item',
+	    	        						name: 'Создать новую',
+	        							},
+	        							databaseTableAppend: {
+	        								render: 'group',
+	    	        						name: 'Добавить в существующую',
+	    	        						items: {
+	    	        							skipExistingRows: {
+	    	        								render: 'item',
+	    	    	        						name: 'Пропускать существующие записи',
+	    	    	        						optional: 'checked',
+	    	    	        						editor: 'none'
+	    	        							}
+	    	        						}
+	        							},
+	        						}
 	        					}
 	        				}
 	        			}
