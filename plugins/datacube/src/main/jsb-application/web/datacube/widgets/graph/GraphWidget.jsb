@@ -276,7 +276,9 @@
         }
     },
 	$client: {
-        $require: ['JSB.Widgets.Diagram', 'JSB.Widgets.CheckBox'],
+        $require: ['JSB.Widgets.Diagram', 
+                   'JSB.Widgets.CheckBox',
+                   'css:GraphWidget.css'],
 
         embeddedBindings: [],
         _nodeList: {},
@@ -284,7 +286,6 @@
 
         $constructor: function(opts){
             $base(opts);
-            $jsb.loadCss('GraphWidget.css');
             this.addClass('graphWidget');
 
             JSB().loadScript('tpl/d3/d3.min.js', function(){

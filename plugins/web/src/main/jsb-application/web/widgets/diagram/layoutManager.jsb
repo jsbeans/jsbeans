@@ -112,7 +112,10 @@
 				}
 				var animOpt = this.getOption(node, 'animate');
 				if(!animOpt){
-					node.setPosition(newPt.x, newPt.y);
+					node.setPosition({
+					    x: newPt.x,
+					    y: newPt.y
+					});
 				} else {
 					// do animation
 					(function(node, newPt){
@@ -130,7 +133,10 @@
 							cssObj[self.getStyleProperty('transform')] = '';
 							
 							elt.css(cssObj);
-							node.setPosition(newPt.x, newPt.y);
+							node.setPosition({
+							    x: newPt.x,
+							    y: newPt.y
+							});
 							delete waitMap[node.getId()];
 							if(Object.keys(waitMap).length === 0){
 								self.busy = false;

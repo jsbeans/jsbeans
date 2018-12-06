@@ -108,8 +108,8 @@
 	                        size: ''+columns.getString("COLUMN_SIZE"),
 	                        decimalDigits: ''+columns.getString("DECIMAL_DIGITS"),
 	                        comment: '' + columns.getString("REMARKS"),
-	                        nullable: columns.getString("IS_NULLABLE").equalsIgnoreCase('YES'),
-	                        autoIncrment: columns.getString("IS_AUTOINCREMENT").equalsIgnoreCase('YES'),
+	                        nullable: (columns.getString("IS_NULLABLE")||'').equalsIgnoreCase('YES'),
+	                        autoIncrment: (columns.getString("IS_AUTOINCREMENT")||'').equalsIgnoreCase('YES'),
 	                    }, tableDesc.columns[columnName]);
                     } catch(e){
                     	JSB.getLogger().warn('Column "'+columnName+'" skipped due to following error: ' + e.message);

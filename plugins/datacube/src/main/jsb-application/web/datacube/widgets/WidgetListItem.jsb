@@ -3,11 +3,11 @@
 	$parent: 'JSB.Widgets.ListItem',
 	
 	$client: {
+		$require: ['css:WidgetListItem.css'],
 		descriptor: null,
 
 		$constructor: function(opts, desc){
 			$base(opts);
-			$jsb.loadCss('WidgetListItem.css');
 			this.addClass('widgetListItem');
 			this.descriptor = desc;
 			this.attr('key', this.descriptor.jsb);

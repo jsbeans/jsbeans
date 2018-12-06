@@ -2,10 +2,11 @@
 	$name: 'DataCube.ExcelFileNode',
 	$parent: 'JSB.Workspace.FileNode',
 	$client: {
+		$require: ['css:ExcelFileNode.css'],
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('ExcelFileNode.css');
 			this.addClass('excelFileNode');
 			
 			this.append(`#dot

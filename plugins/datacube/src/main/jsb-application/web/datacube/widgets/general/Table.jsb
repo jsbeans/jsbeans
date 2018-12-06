@@ -245,6 +245,33 @@
                         	name: 'Отображать количество дочерних строк',
                         	editor: 'none',
                         	optional: 'checked'
+                        },
+                        treeState: {
+                        	render: 'select',
+                        	name: 'Начальное состояние',
+                        	items: {
+                        		stateCollapsed: {
+                        			name: 'Свернутое',
+                        			items: {
+                        				expandWithContextFilter: {
+                            				render: 'item',
+                            				name: 'Разворачивать при контекстном поиске',
+                            				optional: 'checked',
+                            				editor: 'none'
+                        				},
+                        				expandWithGlobalFilter: {
+                            				render: 'item',
+                            				name: 'Разворачивать при глобальной фильтрации',
+                            				optional: true,
+                            				editor: 'none'
+                        				},
+                        			}
+                        		},
+                        		stateExpanded: {
+                        			render: 'item',
+                                	name: 'Развернутое'
+                        		}
+                        	}
                         }
 	                }
 	            },
@@ -716,7 +743,8 @@
 		           'JSB.Crypt.MD5',
 		           'DataCube.Controls.SortSelector',
 		           'DataCube.Controls.FilterEntry',
-		           'JSB.Utils.Formatter'],
+		           'JSB.Utils.Formatter',
+		           'css:Table.css'],
 		
 		_ready: false,
 		headerDesc: [],
@@ -741,7 +769,6 @@
 			$base(opts);
 			
 			this.addClass('tableWidget');
-			$jsb.loadCss('Table.css');
 /*			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
@@ -1328,7 +1355,7 @@
 				return;
 			}
 			this.rowAppending = true;
-			var fetchSize = 30;
+			var fetchSize = 50;
 			
 			if(bRefresh){
 				if(this.rows.length > fetchSize){
@@ -1491,7 +1518,7 @@
 				}
 				
 				$this.rowAppending = false;
-				if(!$this.useTree && pRows.length > 0){
+				if(/*!$this.useTree &&*/ pRows.length > 0){
 					var lastRow = $this.rows[$this.rows.length - 1];
 					var lastRowElt = $this.find('.row[key="'+lastRow.key+'"]');
 					JSB.deferUntil(function(){
@@ -1560,7 +1587,10 @@
 					parentField: parentField,
 					idField: idField,
 					expanded: expandedVals,
-					collapsed: collapsedVals
+					collapsed: collapsedVals,
+					openExpanded: $this.openExpanded,
+					expandByContextFilter: $this.expandByContextFilter,
+					expandByGlobalFilter: $this.expandByGlobalFilter
 				};
 			}
 			
@@ -1735,7 +1765,7 @@
 					}
 					rows.push(rDesc);
 					
-					if(rows.length >= batchSize && !$this.useTree){
+					if(rows.length >= batchSize /*&& !$this.useTree*/){
 						if($this.usePrefetch){
 							$this.stopPreFetch = false;
 							preFetch();
@@ -2715,6 +2745,9 @@
 				} else {
 					this.removeClass('showChildCount');
 				}
+				this.openExpanded = this.getContext().find('treeState').value() == 'stateExpanded';
+				this.expandByContextFilter = this.getContext().find('expandWithContextFilter').checked();
+				this.expandByGlobalFilter = this.getContext().find('expandWithGlobalFilter').checked();
 			} else {
 				this.removeClass('useTree');
 			}
@@ -2994,6 +3027,7 @@
 							if(pIdMap[id]){
 								node.children = pIdMap[id];
 								delete pIdMap[id];
+/*								
 								if(!node.matched){
 									for(var c = 0; c < node.children.length; c++){
 										if(node.children[c].matched){
@@ -3002,11 +3036,12 @@
 										}
 									}
 								}
+*/								
 							}
 							if(parentId != opts.treeOpts.rootRowKeyValue){
 								if(idMap[parentId]){
 									idMap[parentId].children.push(node);
-									idMap[parentId].matched = idMap[parentId].matched || node.matched;
+//									idMap[parentId].matched = idMap[parentId].matched || node.matched;
 								} else {
 									if(!pIdMap[parentId]){
 										pIdMap[parentId] = [];
@@ -3023,12 +3058,19 @@
 					// construct rows
 					function serializeNode(node){
 						$this.rows.push(node.row);
-						if(!node.matched && !expandedMap[node.id] && !hasContextFilter){
-							return;
-						}
+						
 						if(collapsedMap[node.id]){
 							return;
 						}
+						
+						if(!node.matched 
+							&& !expandedMap[node.id] 
+							&& !opts.treeOpts.openExpanded 
+							&& (!opts.treeOpts.expandByContextFilter || !hasContextFilter)
+							&& (!opts.treeOpts.expandByGlobalFilter || !hasCubeFilter)){
+							return;
+						}
+						
 						for(var i = 0; i < node.children.length; i++){
 							serializeNode(node.children[i]);
 						}
@@ -3042,8 +3084,7 @@
 
 
 					// translate tree
-					if(hasContextFilter || hasCubeFilter){
-	
+					if(opts.treeOpts.openExpanded || hasContextFilter || hasCubeFilter){ // expanded
 						
 						// combine leafs matching filter
 						var allRows = [];
@@ -3055,8 +3096,6 @@
 							}
 							allRows = allRows.concat(rows);
 						}
-						
-						
 						
 						// collect parent nodes
 						var curRows = allRows;
@@ -3093,7 +3132,7 @@
 						
 						serializeTree();
 						
-					} else {
+					} else {	// collapsed
 						// open only specified nodes
 						var treeFilter = {$or:[]};
 
@@ -3126,6 +3165,7 @@
 							}
 							allRows = allRows.concat(rows);
 						}
+						
 						appendToTree(allRows);
 						serializeTree();
 					}

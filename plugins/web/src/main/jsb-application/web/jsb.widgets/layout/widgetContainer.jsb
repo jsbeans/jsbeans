@@ -5,13 +5,13 @@
 		TabView: 'JSB.Widgets.TabView'
 	},
 	$client: {
+		$require: ['css:widgetContainer.css'],
 		widgets: {},
 		
 		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('widgetContainer.css');
 			this.getElement().addClass('_dwp_widgetContainer');
 			
 			var twOpts = {

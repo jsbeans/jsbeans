@@ -8,7 +8,9 @@
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.MultiEditor', 
 	           'DataCube.Query.QueryEditor',
-	           'JSB.Widgets.ToolManager'],
+	           'JSB.Widgets.ToolManager',
+	           'DataCube.Export.ExportManager',
+	           'css:SliceEditorView.css'],
 	$client: {
 		ready: false,
 		ignoreHandlers: false,
@@ -17,7 +19,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('SliceEditorView.css');
 			this.addClass('sliceEditorView');
 
 			this.titleBlock = this.$('<div class="titleBlock"></div>');
@@ -63,20 +64,41 @@
             });
             this.titleBlock.append(this.analyzeBtn.getElement());
 
-            var keys = [{
-                    key: 'xls',
-                    element: 'Excel'
-                },{
-                    key: 'csv',
-                    element: 'CSV'
-                },{
-                    key: 'json',
-                    element: 'JSON'
-                }],
                 exportBtn = new Button({
                     cssClass: 'btnUpdate',
                     caption: "Экспорт",
                     onClick: function(evt){
+                    	ExportManager.ensureSynchronized(function(){
+                    		var exporters = ExportManager.listExporters();
+                		    var keys = [];
+                		    
+                		    for(var eKey in exporters){
+                		    	var eDesc = exporters[eKey];
+                		    	keys.push({
+                		    		key: eKey,
+                		    		element: eDesc.name
+                		    	});
+                		    }
+                		    
+    	                    ToolManager.activate({
+    	                        id: '_dwp_droplistTool',
+    	                        cmd: 'show',
+    	                        data: keys,
+    	                        target: {
+    	                            selector: exportBtn.getElement(),
+    	                            dock: 'bottom'
+    	                        },
+    	                        callback: function(key, item, evt){
+    	                        	exportBtn.getElement().loader();
+                                    $this.gridView.exportData(key, $this.slice && $this.slice.getName(), function(){
+                                        exportBtn.getElement().loader('hide');
+                                    });
+    	                        }
+    	                    });
+                    	});
+                    	
+                    	
+/*                    	
                         ToolManager.activate({
                             id: '_dwp_droplistTool',
                             cmd: 'show',
@@ -92,6 +114,7 @@
                                 });
                             }
                         });
+*/                        
                     }
                 });
             this.titleBlock.append(exportBtn.getElement());
@@ -146,13 +169,12 @@
 		},
 		
 		refresh: function(){
-		    var entry = this.getCurrentNode().getTargetEntry();
-
-			if(!JSB.isInstanceOf(entry, 'DataCube.Model.Slice')){
+			this.slice = this.getCurrentEntry();
+			this.titleEditor.setData(this.slice.getName());
+			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
 				return;
 			}
 
-			this.slice = entry;
 			this.titleEditor.setData(this.slice.getName());
 
 			this.query = JSB.clone(this.slice.getQuery());

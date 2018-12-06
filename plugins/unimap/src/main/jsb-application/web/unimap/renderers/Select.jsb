@@ -1,13 +1,13 @@
 {
 	$name: 'Unimap.Render.Select',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Select'],
+	$require: ['JSB.Controls.Select',
+	           'css:Select.css'],
 	$client: {
 	    _selectors: [],
 
 	    construct: function(){
 	        this.addClass('selectRender');
-	        $jsb.loadCss('Select.css');
 
 	        this.createOptionsList();
 

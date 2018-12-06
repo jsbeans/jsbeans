@@ -2,6 +2,8 @@
 	$name: 'JSB.Controls.ScrollBox',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+		$require: ['css:scrollBox.css'],
+		
 		_oldScroll:{
 			x: 0,
 			y: 0
@@ -10,7 +12,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('jsb-scrollBox');
-			$jsb.loadCss('scrollBox.css');
 
             if(!this.options.xAxisScroll){
                 this.getElement().css('overflow-x', 'hidden');

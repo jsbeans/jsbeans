@@ -2,11 +2,11 @@
 	$name: 'JSB.Workspace.FolderRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$client: {
+		$require: ['css:FolderRenderer.css'],
 		$constructor: function(entry, opts){
 			var self = this;
 			$base(entry, opts);
 			this.addClass('folderRenderer');
-			$jsb.loadCss('FolderRenderer.css');
 		}
 	},
 	

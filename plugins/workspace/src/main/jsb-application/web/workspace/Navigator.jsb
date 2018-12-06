@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Control',
 	
 	$require: ['JSB.Workspace.WorkspaceController',
-	           'JSB.Widgets.RendererRepository'],
+	           'JSB.Widgets.RendererRepository',
+	           'css:Navigator.css'],
 	
 	$client: {
 		wmKey: null,
@@ -11,8 +12,6 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			
-			$jsb.loadCss('Navigator.css');
 			this.addClass('workspaceNavigator');
 			
 			if(this.options.wmKey){

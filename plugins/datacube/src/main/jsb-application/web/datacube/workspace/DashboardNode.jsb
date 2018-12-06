@@ -2,9 +2,10 @@
 	$name: 'DataCube.DashboardNode',
 	$parent: 'JSB.Workspace.EntryNode',
 	$client: {
+		$require: ['css:DashboardNode.css'],
+		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('DashboardNode.css');
 			this.addClass('dashboardNode');
 			
 			this.append(`#dot

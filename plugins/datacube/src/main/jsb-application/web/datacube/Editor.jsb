@@ -7,6 +7,7 @@
 		'JSB.Widgets.SplitLayoutManager',
 		'JSB.Widgets.ToolBar',
 		'JSB.Widgets.ToolManager',
+		'css:Editor.css'
 	],
 	
 	$html: {
@@ -19,7 +20,6 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('Editor.css');
 			this.addClass('dataCubeEditor');
 			$this.server().getVersion(function(v){
 				$this.dcVersion = v;

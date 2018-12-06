@@ -2,10 +2,11 @@
 	$name: 'DataCube.XmlFileNode',
 	$parent: 'JSB.Workspace.FileNode',
 	$client: {
+		$require: ['css:XmlFileNode.css'],
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('XmlFileNode.css');
 			this.addClass('xmlFileNode');
 			
 			this.append(`#dot

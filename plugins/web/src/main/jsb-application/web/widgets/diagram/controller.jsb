@@ -433,7 +433,7 @@
 		select: function(objMap, bEnable){
 			for(var objId in objMap){
 				var obj = objMap[objId];
-				obj.select(bEnable);
+				obj.select(bEnable, true);
 			}
 		}
 	}

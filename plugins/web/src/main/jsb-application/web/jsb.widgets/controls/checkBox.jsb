@@ -3,10 +3,10 @@
 	$parent: 'JSB.Widgets.Control',
 	
 	$client: {
+		$require: ['css:checkBox.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('checkBox.css');
 			this.addClass('_dwp_checkBox');
 			
 			// construct

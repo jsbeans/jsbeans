@@ -2,10 +2,10 @@
 	$name: 'DataCube.Export.Export',
 	$client: {
 	    $singleton: true,
+	    $require: ['script:htmlToCanvas.js'],
+	    
 	    $constructor: function(opts){
 	        $base(opts);
-
-	        $jsb.loadScript('htmlToCanvas.js');
 
 	        this._downloadAttrSupported = window.document.createElement('a').download !== undefined;
 	    },

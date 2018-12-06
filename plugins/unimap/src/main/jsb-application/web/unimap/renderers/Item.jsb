@@ -1,13 +1,14 @@
 {
 	$name: 'Unimap.Render.Item',
 	$parent: 'Unimap.Render.Basic',
-	$require: ['JSB.Controls.Checkbox', 'JSB.Controls.Editor'],
+	$require: ['JSB.Controls.Checkbox', 
+	           'JSB.Controls.Editor',
+	           'css:Item.css'],
 	$client: {
 	    _editors: [],
 
 	    construct: function(){
 	        this.addClass('itemRender checked');
-	        $jsb.loadCss('Item.css');
 
 	        if(this._scheme.optional){
 	            this.addClass('optional');

@@ -2,9 +2,9 @@
 	$name: 'DataCube.SqlSourceNode',
 	$parent: 'JSB.Workspace.EntryNode',
 	$client: {
+		$require: ['css:SqlSourceNode.css'],
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('SqlSourceNode.css');
 			this.addClass('sqlSourceNode');
 			
 			this.append(`#dot

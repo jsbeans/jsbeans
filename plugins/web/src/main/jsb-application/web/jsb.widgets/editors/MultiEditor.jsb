@@ -1,7 +1,8 @@
 {
 	$name:'JSB.Widgets.MultiEditor',
 	$parent: 'JSB.Widgets.Editor',
-	$require: 'JSB.Widgets.Value',
+	$require: ['JSB.Widgets.Value',
+	           'css:MultiEditor.css'],
 	
 	$bootstrap: function(){
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){
@@ -66,7 +67,6 @@
 			JSB.loadCss('tpl/codemirror/theme/xq-light.css');
 			JSB.loadCss('tpl/codemirror/addon/hint/show-hint.css');
 			JSB.loadCss('tpl/codemirror/addon/dialog/dialog.css');
-			$jsb.loadCss('MultiEditor.css');
 			this.getElement().addClass('multiEditor');
 			
 			JSB.loadScript('tpl/codemirror/lib/codemirror.js', function(){

@@ -1,7 +1,9 @@
 {
 	$name: 'DataCube.Renderers.WidgetRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
-	$require: ['JSB.Widgets.RendererRepository','DataCube.Widgets.WidgetRegistry'],
+	$require: ['JSB.Widgets.RendererRepository',
+	           'DataCube.Widgets.WidgetRegistry',
+	           'css:WidgetRenderer.css'],
 	$client: {
 		$constructor: function(entry, opts){
 			var self = this;
@@ -9,7 +11,6 @@
 			//opts.editable = false;
 			$base(entry, opts);
 			this.addClass('widgetRenderer');
-			$jsb.loadCss('WidgetRenderer.css');
 			
 			if(opts.showDashboard){
 				this.server().getDashboard(entry, function(dashboardEntry){

@@ -2,6 +2,7 @@
 	$name: 'JSB.Widgets.Alpha.ScrollBox',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		$require: ['css:scrollBox.css'],
 		_oldScroll:{
 			x: 0,
 			y: 0
@@ -10,7 +11,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('scrollBox');
-			$jsb.loadCss('scrollBox.css');
 
             if(this.options.cssClass){
                 this.addClass(this.options.cssClass);

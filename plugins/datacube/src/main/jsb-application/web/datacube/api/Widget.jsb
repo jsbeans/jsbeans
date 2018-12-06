@@ -3,7 +3,11 @@
 	$parent: 'JSB.Widgets.Control',
 
 	$client: {
-		$require: ['DataCube.Widgets.FilterManager', 'DataCube.Api.WidgetController', 'JSB.Controls.Navigator', 'DataCube.Controls.WidgetFilterSelector'],
+		$require: ['DataCube.Widgets.FilterManager', 
+		           'DataCube.Api.WidgetController', 
+		           'JSB.Controls.Navigator', 
+		           'DataCube.Controls.WidgetFilterSelector',
+		           'css:Widget.css'],
 		
 		options: {
 			wsid: null,
@@ -25,7 +29,6 @@
 			$base(opts);
 
 			this.addClass('apiWidget');
-			$jsb.loadCss('Widget.css');
 			
 			var wsId = opts.wsid;
 			var wId = opts.wid;

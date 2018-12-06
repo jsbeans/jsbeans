@@ -271,12 +271,13 @@
                     });
                 }
             }
-
+// todo: исправить отображение фильтров
+/*
             if(!this._resolvePointFilters(this._schemeOpts.bindings)){
                 this.ready();
                 return;
             }
-
+*/
             var widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('chart colorScheme').value() },
                 data = {},
                 colorCount = 0;
@@ -413,6 +414,12 @@
                 };
 
                 JSB.merge(true, baseChartOpts, chartOpts);
+
+                for(var i = 0; i < chartOpts.series.length; i++){
+                    for(var j in chartOpts.series[i]){
+                        baseChartOpts.series[i][j] = chartOpts.series[i][j];
+                    }
+                }
             } catch(ex){
                 console.log('Sunburst build chart exception');
                 console.log(ex);

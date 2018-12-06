@@ -3,9 +3,10 @@
 	$parent: 'JSB.Widgets.Control',
 	
 	$client: {
+		$require: ['css:FilterTag.css'],
+		
 		$constructor: function(fDesc, opts){
 			$base(opts);
-			$jsb.loadCss('FilterTag.css');
 			this.addClass('filterTag');
 			if(opts && opts.not){
 				this.addClass('not');

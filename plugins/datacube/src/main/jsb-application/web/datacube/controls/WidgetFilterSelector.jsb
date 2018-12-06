@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Control',
 	
 	$client: {
-		$require: ['DataCube.Controls.FilterTag'],
+		$require: ['DataCube.Controls.FilterTag',
+		           'css:WidgetFilterSelector.css'],
 		
 		visible: false,
 		owner: null,
@@ -15,7 +16,6 @@
 			$base();
 			this.owner = owner;
 			this.filterManager = filterManager;
-			$jsb.loadCss('WidgetFilterSelector.css');
 			this.addClass('widgetFilterSelector');
 			
 			$this.updateVisibility();

@@ -1,12 +1,12 @@
 {
 	$name:'JSB.Widgets.TreeView',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JSB.Controls.ScrollBox'],
+	$require: ['JSB.Controls.ScrollBox',
+	           'css:treeView.css'],
 	$client: {
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('treeView.css');
 			this.addClass('_dwp_treeview');
 			this.scrollBox = new ScrollBox(this.options);
 			this.append(this.scrollBox);

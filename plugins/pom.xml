@@ -37,6 +37,7 @@
         <module>worker</module>
 
         <module>datacube</module>
+        <module>datacube-engine</module>
         <module>datacube-jdbc</module>
         <module>datacube-mongodb</module>
 

@@ -1,7 +1,8 @@
 {
 	$name: 'DataCube.CubeNode',
 	$parent: 'JSB.Workspace.EntryNode',
-	$require: 'JSB.Widgets.Button',
+	$require: ['JSB.Widgets.Button',
+	           'css:CubeNode.css'],
 	
 	$client: {
 	    $require: ['JSB.Widgets.ToolManager'],
@@ -11,7 +12,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('CubeNode.css');
 			this.addClass('cubeNode');
 			
 			this.append('<div class="status"></div>');

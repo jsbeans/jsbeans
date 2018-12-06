@@ -1,7 +1,8 @@
 {
 	$name: 'DataCube.Renderers.StylesSettingsRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
-	$require: 'JSB.Widgets.RendererRepository',
+	$require: ['JSB.Widgets.RendererRepository',
+	           'css:StyleSettingsRenderer.css'],
 	$client: {
 		$constructor: function(entry, opts){
 			var self = this;
@@ -9,7 +10,6 @@
 
 			$base(entry, opts);
 			this.addClass('styleSettingsRenderer');
-			$jsb.loadCss('StyleSettingsRenderer.css');
 		}
 	},
 

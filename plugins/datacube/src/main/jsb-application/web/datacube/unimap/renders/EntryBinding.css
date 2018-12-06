@@ -1,0 +1,49 @@
+.entryBindingRender > .name {
+    width: 100px;
+    display: inline-block;
+    line-height: 22px;
+    font-size: 15px;
+    color: #73879C;
+    /*font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;*/
+    margin-right: 5px;
+}
+
+.entryBindingRender > .item {
+    background: rgba(24, 108, 138, 0.2);
+    color: #555;
+    border: 1px dotted rgba(2, 47, 78, 0.4);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 15px;
+    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+    min-width: 200px;
+    max-width: 100%;
+}
+
+.entryBindingRender > .item.filled {
+    min-width: initial;
+}
+
+.entryBindingRender > .item:not(.filled){
+	font-size: 11px;
+	color: #667b84;
+	padding: 5px 6px;
+}
+
+.entryBindingRender > .item > * {
+    vertical-align: middle;
+}
+
+.entryBindingRender > .item > .widgetRenderer {
+    max-width: calc(100% - 17px);
+}
+
+.entryBindingRender > .item > .btnDelete {
+    margin-left: 5px;
+}
+
+.entryBindingRender > .item > .error {
+    color: darkred;
+}

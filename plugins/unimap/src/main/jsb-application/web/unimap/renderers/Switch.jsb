@@ -1,11 +1,11 @@
 {
 	$name: 'Unimap.Render.Switch',
 	$parent: 'Unimap.Render.Basic',
-	$require: ['JSB.Controls.Switch'],
+	$require: ['JSB.Controls.Switch',
+	           'css:Switch.css'],
 	$client: {
 	    construct: function(){
 	        this.addClass('switchRender');
-	        $jsb.loadCss('Switch.css');
 
 	        this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
 

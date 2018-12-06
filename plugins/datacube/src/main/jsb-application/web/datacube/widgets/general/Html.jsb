@@ -157,6 +157,8 @@
 	    }
 	},
 	$client: {
+		$require: ['css:Html.css'],
+		
 		$constructor: function(opts){
 			var doT = {
 				version: "1.0.3",
@@ -296,7 +298,6 @@
 			$base(opts);
 			
 			this.addClass('htmlWidget');
-			$jsb.loadCss('Html.css');
 			$this.setInitialized();
 		},
 

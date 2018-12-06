@@ -2,11 +2,11 @@
 	$name: 'JSB.Controls.Button',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+		$require: ['css:button.css'],
 	    $constructor: function(opts){
 	        if(!opts.element) opts.element = '<button></button>';
 	        $base(opts);
 
-	        $jsb.loadCss('button.css');
             this.addClass('jsb-button');
 
             // options caption

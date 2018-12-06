@@ -27,10 +27,10 @@
 		})
 	},
 	$client: {
+		$require:['css:primitiveEditor.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('primitiveEditor.css');
 			this.addClass('_dwp_primitiveEditor');
 			this.addClass(this.options.mode);
 			

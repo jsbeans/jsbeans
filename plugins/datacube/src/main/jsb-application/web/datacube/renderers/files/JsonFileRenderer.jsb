@@ -2,11 +2,11 @@
 	$name: 'DataCube.Renderers.JsonFileRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$client: {
+		$require: ['css:JsonFileRenderer.css'],
 		$constructor: function(entry, opts){
 			var self = this;
 			$base(entry, opts);
 			this.addClass('jsonFileRenderer');
-			$jsb.loadCss('JsonFileRenderer.css');
 		}
 	},
 	

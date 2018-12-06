@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$require: ['JSB.Controls.ScrollBox',
 	           'JSB.Widgets.Button',
-	           'JSB.Widgets.ToolManager'],
+	           'JSB.Widgets.ToolManager',
+	           'css:SliceDiagramNode.css'],
 	
 	$client: {
 		editor: null,
@@ -38,7 +39,6 @@
 			this.editor = opts.editor;
 			this.entry = opts.entry;
 
-			$jsb.loadCss('SliceDiagramNode.css');
 			this.addClass('sliceDiagramNode');
 
 			// drag handle
@@ -211,10 +211,6 @@
             if(opts && opts.name){
                 this.sliceName.text(opts.name);
             }
-		},
-
-		refreshLinks: function(){
-		    //
 		},
 
 		removeDimension: function(field){

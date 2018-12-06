@@ -292,6 +292,10 @@
 			return this.loadWorkspace(wDesc.wId);
 		},
 		
+		getEntry: function(wId, eId){
+			return this.getWorkspace(wId).entry(eId);
+		},
+		
 		getUsers: function(){
 			// In future - need to obtain an allowed list of users to share with via security service.
 			// TEMP: return all users that have at least one workspace.

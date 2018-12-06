@@ -3,14 +3,14 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
-		$require: 'JSB.Widgets.SplitLayoutManager',
+		$require: ['JSB.Widgets.SplitLayoutManager',
+		           'css:HttpServerView.css'],
 		ready: false,
 		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('HttpServerView.css');
 			this.addClass('httpServerView');
 			
 			// create dialog
@@ -70,7 +70,7 @@
 			}
 			JSB.defer(function(){
 				var settings = $this.collectSettings();
-				var entry = $this.node.getTargetEntry();
+				var entry = $this.getCurrentEntry();
 				entry.server().updateSettings(settings);
 			}, 300, 'updateSettings_' + this.getId());
 			
@@ -89,7 +89,7 @@
 				});
 				return;
 			}
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			entry.server().getSettings(function(settings){
 				$this.fillSettings(settings);
 			});

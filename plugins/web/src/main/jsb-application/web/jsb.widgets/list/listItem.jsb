@@ -3,10 +3,10 @@
 	$parent: 'JSB.Widgets.Control',
 	
 	$client: {
+		$require: ['css:itemList.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('itemList.css');
 			this.addClass('_dwp_listItem');
 			
 			// add close btn

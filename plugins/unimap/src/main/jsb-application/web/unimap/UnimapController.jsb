@@ -1,18 +1,18 @@
 {
 	$name: 'Unimap.Controller',
 	$parent: 'JSB.Controls.Control',
-	$require: ['Unimap.Bootstrap'],
+	$require: ['Unimap.Bootstrap',
+	           'css:UnimapController.css'],
 	$client: {
 	    $constructor: function(opts){
 	        $base(opts);
             this.addClass('scheme');
-            $jsb.loadCss('UnimapController.css');
 
             this._scheme = opts.scheme;
-            this._values = opts.values.values;
+            this._values = (opts.values && opts.values.values) || {};
             this._context = opts.context;
 
-            if(opts.values.commonFields){
+            if(opts.values && opts.values.commonFields){
                 this.createCommonFieldsMap(opts.values.commonFields);
             }
 

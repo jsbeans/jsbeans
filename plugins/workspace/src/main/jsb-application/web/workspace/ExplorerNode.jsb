@@ -15,6 +15,7 @@
 	
 	
 	$client: {
+		$require: ['css:ExplorerNode.css'],
 		selected: false,
 		highlighted: false,
 	
@@ -23,7 +24,6 @@
 			if(opts){
 				$jsb.merge(this.descriptor, opts.descriptor);
 			}
-			$jsb.loadCss('ExplorerNode.css');
 			this.addClass('workspaceExplorerNode');
 			
 			this.attr('title', this.getName());

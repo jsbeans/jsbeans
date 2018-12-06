@@ -5,11 +5,11 @@
 		WidgetContainer: 'JSB.Widgets.WidgetContainer'
 	},
 	$client: {
+		$require: ['css:widget.css'],
 		_widgetContainer: null,
 		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('widget.css');
 			this.element.addClass('_dwp_widget');
 			if(opts){
 				if(!JSB().isNull(opts.container)){

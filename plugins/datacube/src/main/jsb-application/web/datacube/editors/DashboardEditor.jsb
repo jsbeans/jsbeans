@@ -7,7 +7,8 @@
 		           'JSB.Widgets.Dashboard.Dashboard',
 		           'DataCube.Controls.FilterSelector',
 		           'DataCube.Widgets.FilterManager',
-		           'DataCube.Widgets.WidgetWrapper'],
+		           'DataCube.Widgets.WidgetWrapper',
+		           'css:DashboardEditor.css'],
 		
 		entry: null,
 		ignoreHandlers: false,
@@ -15,7 +16,6 @@
 		           
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('DashboardEditor.css');
 			this.addClass('dashboardEditor loading');
 			
 			this.filterManager = new FilterManager(this);

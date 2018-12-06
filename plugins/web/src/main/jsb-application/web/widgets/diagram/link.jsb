@@ -17,6 +17,7 @@
 			cellRoundMax: 2,
 			wiringClass: '_jsb_diagramWiringLinkMode',
 			wiringModeStyle: false,
+			userSelect: true,
 			
 			onHighlight: function(bEnable){
 				this.group.classed('highlighted', bEnable);
@@ -363,7 +364,11 @@
 			this.group.classed(this.options.wiringClass, bEnable);
 		},
 		
-		select: function(bEnable){
+		select: function(bEnable, isUserSelect){
+		    if(!this.options.userSelect && isUserSelect){
+		        return;
+		    }
+
 			if(bEnable){
 				if(!this.diagram.selected[this.getId()]){
 					this.diagram.selected[this.getId()] = this;

@@ -18,4 +18,9 @@ public class DataCubeMongodbPluginActivator implements PluginActivator {
         ConfigHelper.addJssFolder(ff);
         ConfigHelper.addWebFolder(ff);
     }
+
+    @Override
+    public String getName() {
+        return "datacube-mongodb";
+    }
 }

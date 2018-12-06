@@ -6,7 +6,8 @@
 	               'JSB.Controls.ScrollBox',
 	               'JSB.Controls.Select',
 	               'JSB.Widgets.RendererRepository',
-	               'JSB.Widgets.ToolManager'],
+	               'JSB.Widgets.ToolManager',
+	               'css:DataSourceDiagramNode.css'],
 
 		options: {
 		    onCreate: function(){
@@ -34,7 +35,6 @@
 	        this.editor = opts.editor;
 	        this.fields = opts.fields;
 
-	        $jsb.loadCss('DataSourceDiagramNode.css');
 			this.addClass('dataSourceDiagramNode');
 
 			// drag handle

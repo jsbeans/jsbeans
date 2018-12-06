@@ -20,10 +20,10 @@
 	views: {},
 	
 	$client: {
+		$require: ['css:Browser.css'],
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('Browser.css');
 			this.addClass('workspaceBrowser');
 			
 			this.tabView = new TabView({
@@ -31,7 +31,7 @@
 				allowNewTab: false,
 				onSwitchTab: function(id){
 					if($this.views[id]){
-						$this.views[id].ctrl.setCurrentNode($this.currentNode, $this.currentWorkspace);
+						$this.views[id].ctrl.setCurrentEntry($this.currentNode ? $this.currentNode.getTargetEntry() : null);
 					}
 				}
 			});
@@ -86,7 +86,7 @@
 				return;
 			}
 			this.tabView.switchTab(id);
-			$this.views[id].ctrl.setCurrentNode($this.currentNode, $this.currentWorkspace);
+			$this.views[id].ctrl.setCurrentEntry($this.currentNode ? $this.currentNode.getTargetEntry() : null);
 		},
 		
 		getActiveView: function(){

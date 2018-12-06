@@ -1,12 +1,12 @@
 {
 	$name: 'JSB.Workspace.UploadNode',
 	$parent: 'JSB.Workspace.ExplorerNode',
-	$require: ['JSB.Workspace.FolderNode'],
+	$require: ['JSB.Workspace.FolderNode',
+	           'css:UploadNode.css'],
 	$client: {
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('UploadNode.css');
 			this.addClass('uploadNode');
 			
 			this.icon = this.$('<div class="icon"></div>');

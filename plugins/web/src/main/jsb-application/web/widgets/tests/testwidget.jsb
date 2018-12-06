@@ -13,11 +13,11 @@
 		}
 	},
 	$client: {
+		$require: ['css:testwidget.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('testwidget');
-			$jsb.loadCss('testwidget.css');
 			JSB().loadScript('http://code.highcharts.com/highcharts.js', function(){
 				self.init();
 			});

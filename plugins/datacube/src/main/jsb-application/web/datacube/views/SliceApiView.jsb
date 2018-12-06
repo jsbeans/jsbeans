@@ -7,7 +7,8 @@
 		           'JSB.Widgets.TabView', 
 		           'JsonView', 
 		           'JSB.Widgets.ScrollBox', 
-		           'JSB.Widgets.MultiEditor'],
+		           'JSB.Widgets.MultiEditor',
+		           'css:SliceApiView.css'],
 		ready: false,
 		ignoreHandlers: false,
 		isCube: false,
@@ -23,7 +24,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('SliceApiView.css');
 			this.addClass('sliceApiView');
 			
 			var splitBox = new SplitBox({
@@ -178,7 +178,7 @@
 		
 		updateRequest: function(){
 			// construct slice request
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			var wid = entry.getWorkspace().getId();
 			var eid = entry.getId();
 			
@@ -228,7 +228,7 @@
 		
 		fillSettings: function(){
 			var idGroup = this.find('.cubeSettings').jsb();
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			if(JSB.isInstanceOf(entry, 'DataCube.Model.Cube')){
 				this.isCube = true;
 				idGroup.setTitle('Идентификация куба');

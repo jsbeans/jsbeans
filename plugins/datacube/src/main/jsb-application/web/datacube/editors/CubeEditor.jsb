@@ -6,7 +6,8 @@
 	               'DataCube.SliceDiagramNode',
 	               'DataCube.DataSourceDiagramNode',
 	               'JSB.Widgets.ToolBar',
-	               'JSB.Widgets.ToolManager'],
+	               'JSB.Widgets.ToolManager',
+					'css:CubeEditor.css'],
 
 	    _cube: null,
 	    _dataSources: {},
@@ -15,7 +16,6 @@
 	    $constructor: function(opts){
 			$base(opts);
 
-			$jsb.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
 
             this.toolbar = new ToolBar();
@@ -23,7 +23,7 @@
 
 			this.toolbar.addItem({
 				key: 'addSlice',
-				tooltip: 'Р”РѕР±Р°РІРёС‚СЊ СЃСЂРµР·',
+				tooltip: 'Добавить срез',
 				element: '<div class="icon"></div>',
 				click: function(){
 				    $this.addSlice();
@@ -32,20 +32,20 @@
 
 			var removeBtn = this.toolbar.addItem({
 				key: 'remove',
-				tooltip: 'РЈРґР°Р»РёС‚СЊ СЌР»РµРјРµРЅС‚С‹',
+				tooltip: 'Удалить элементы?',
 				element: '<div class="icon"></div>',
 				click: function(){
                     ToolManager.showMessage({
                         icon: 'removeDialogIcon',
-                        text: 'Р’С‹ СѓРІРµСЂРµРЅС‹ С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РІС‹Р±СЂР°РЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹?',
-                        buttons: [{text: 'РЈРґР°Р»РёС‚СЊ', value: true},
-                                  {text: 'РќРµС‚', value: false}],
+                        text: 'Вы уверены, что хотите удалить выбранные элементы?',
+                        buttons: [{text: 'Удалить', value: true},
+                                  {text: 'Нет', value: false}],
                         target: {
-                            selector: removeBtn.getElement()
+                            selector: removeBtn.element
                         },
                         constraints: [{
                             weight: 10.0,
-                            selector: removeBtn.getElement()
+                            selector: removeBtn.element
                         }],
                         callback: function(bDel){
                             if(bDel){
@@ -166,7 +166,8 @@
 								shape: 'arrow',
 								strip: 0
 							}
-						}
+						},
+						userSelect: false
 					}
 				}
 			});

@@ -21,4 +21,9 @@ public class DataCubeJdbcPluginActivator implements PluginActivator {
         ConfigHelper.addJssFolder(ff);
         ConfigHelper.addWebFolder(ff);
     }
+
+    @Override
+    public String getName() {
+        return "datacube-jdbc";
+    }
 }

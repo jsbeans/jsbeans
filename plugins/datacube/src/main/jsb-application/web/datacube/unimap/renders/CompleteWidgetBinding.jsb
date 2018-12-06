@@ -2,11 +2,11 @@
 	$name: 'Unimap.Render.CompleteWidgetBinding',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Widgets.RendererRepository'],
+	    $require: ['JSB.Widgets.RendererRepository',
+	               'css:CompleteWidgetBinding.css'],
 
 	    construct: function(){
 	        this.addClass('completeWidgetBindingRender');
-	        $jsb.loadCss('CompleteWidgetBinding.css');
 
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
 	        this.append(name);

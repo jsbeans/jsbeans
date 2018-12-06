@@ -12,7 +12,8 @@
 		resizeHandles: {},
 		position: {x: 0, y: 0},
 		options: {
-			checkSize: true
+			checkSize: true,
+			userSelect: true
 		},
 		
 		$constructor: function(diagram, key, opts){
@@ -266,7 +267,11 @@
 			}
 		},
 		
-		select: function(bEnable){
+		select: function(bEnable, isUserSelect){
+		    if(!this.options.userSelect && isUserSelect){
+		        return;
+		    }
+
 			if(bEnable){
 				if(!this.diagram.selected[this.getId()]){
 					this.diagram.selected[this.getId()] = this;

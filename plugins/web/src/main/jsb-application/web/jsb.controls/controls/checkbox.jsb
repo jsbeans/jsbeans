@@ -3,10 +3,10 @@
 	$parent: 'JSB.Controls.Control',
 
 	$client: {
+		$require: ['css:checkbox.css'],
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('jsb-checkbox');
-			$jsb.loadCss('checkbox.css');
 
 			this.getElement().append(`#dot
 			    <div class="check-elem">

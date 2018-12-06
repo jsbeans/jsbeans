@@ -2,11 +2,11 @@
 	$name: 'DataCube.Renderers.CubeRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$client: {
+		$require: ['css:CubeRenderer.css'],
 		$constructor: function(entry, opts){
 			var self = this;
 			$base(entry, opts);
 			this.addClass('cubeRenderer');
-			$jsb.loadCss('CubeRenderer.css');
 		}
 	},
 	

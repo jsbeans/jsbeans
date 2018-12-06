@@ -5,7 +5,8 @@
 	fileSize: null,
 	
 	$server: {
-		$require: 'JSB.Workspace.WorkspaceController',
+		$require: ['JSB.Workspace.WorkspaceController', 
+		           'JSB.Web.Download'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerFileUploadCallback(null, this, 0, function(name, data){
@@ -55,6 +56,16 @@
 			} finally {
 				this.removeArtifact(tempName);
 			}
+		},
+		
+		downloadFile: function(){
+			var fileName = this.getName();
+			var dh = new Download(fileName, {mode: 'binary'}, function(outputStream){
+				var inputStream = $this.loadArtifact('.data', {stream: true});
+				inputStream.copy(outputStream);
+				inputStream.close();
+			});
+			return dh;
 		},
 		
 		read: function(opts){

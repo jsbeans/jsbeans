@@ -4,31 +4,36 @@
 	
 	$require: ['JSB.Workspace.WorkspaceController', 
 	           'JSB.Widgets.Button',
-	           'JQuery.UI.Effects'],
+	           'JQuery.UI.Effects',
+	           'css:BrowserView.css'],
 	
 	$client: {
-		node: null,
+//		node: null,
+		entry: null,
 		workspace: null,
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('BrowserView.css');
 			this.addClass('workspaceBrowserView');
 			
 		},
 		
-		setCurrentNode: function(node, workspace){
-			if(this.node == node){
+		setCurrentEntry: function(entry){
+			if(this.entry == entry){
 				return;
 			}
-			this.node = node;
-			this.workspace = workspace;
+			this.entry = entry;
+			if(this.entry){
+				this.workspace = this.entry.getWorkspace();
+			} else {
+				this.workspace = null;
+			}
 			this.refresh();
 		},
 		
-		getCurrentNode: function(){
-			return this.node;
+		getCurrentEntry: function(){
+			return this.entry;
 		},
 		
 		refresh: function(){

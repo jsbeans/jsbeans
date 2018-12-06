@@ -8,10 +8,10 @@
 		DropTreeTool: 'JSB.Widgets.DropTreeTool'
 	},
 	$client: {
+		$require: ['css:comboBox.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('comboBox.css');
 			this.addClass('_dwp_comboBox');
 			this.init();
 		},

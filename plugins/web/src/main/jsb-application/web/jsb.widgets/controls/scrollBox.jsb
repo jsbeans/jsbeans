@@ -2,9 +2,9 @@
 	$name:'JSB.Widgets.ScrollBox',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		$require: ['css:scrollBox.css'],
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('scrollBox.css');
 			if(opts && opts.cssClass){
 			    this.addClass(opts.cssClass);
 			}

@@ -18,8 +18,8 @@
         name: 'completeWidget',
         render: 'Unimap.Render.CompleteWidgetBinding'
     },{
-        name: 'databaseBinding',
-        render: 'Unimap.Render.DatabaseBinding'
+        name: 'entryBinding',
+        render: 'Unimap.Render.EntryBinding'
     },{
         name: 'autocompleteGroup',
         render: 'Unimap.Render.AutocompleteGroup'
@@ -40,6 +40,9 @@
     },{
         name: 'dataBinding',
         render: 'Datacube.ValueSelectors.DataBindingSelector'
+    },{
+        name: 'entryBinding',
+        render: 'Datacube.ValueSelectors.EntryBinding'
     },{
         name: 'embeddedWidget',
         render: 'Datacube.ValueSelectors.EmbeddedWidgetBinding'

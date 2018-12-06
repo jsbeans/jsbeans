@@ -72,7 +72,7 @@
 
 		refresh: function(){
 			this.ensureTrigger(['_layoutInitialized'], function(){
-			    $this.layoutManager.getWidget('cubeEditor').refresh($this.node.getTargetEntry());
+			    $this.layoutManager.getWidget('cubeEditor').refresh($this.getCurrentEntry());
 			    $this.layoutManager.getWidget('gridView').clear();
 			});
 		}

@@ -2,9 +2,9 @@
 	$name:'JSB.Widgets.TabView',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		$require: ['css:tabView.css'],
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('tabView.css');
 			this.init();
 		},
 		

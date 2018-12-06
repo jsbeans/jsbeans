@@ -2,13 +2,12 @@
 	$name: 'JSB.Widgets.Dashboard.Placeholder',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
-		
+		$require: ['css:Placeholder.css'],
 		lastAccepted: false,
 		dragUi: false,
 		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('Placeholder.css');
 			this.addClass('_jsb_dashboardPlaceholder');
 			
 			if(this.options.emptyText){

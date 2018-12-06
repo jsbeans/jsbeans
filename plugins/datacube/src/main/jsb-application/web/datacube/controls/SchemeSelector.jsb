@@ -1,7 +1,8 @@
 {
 	$name: 'DataCube.Controls.SchemeSelector',
 	$parent: 'JSB.Widgets.ComboBox',
-	$require: ['Unimap.Render.DataBindingCache'],
+	$require: ['Unimap.Render.DataBindingCache',
+	           'css:SchemeSelector.css'],
 	$client: {
 		options: {
 		    clearBtn: false,
@@ -31,7 +32,6 @@
 			$base(opts);
 			
 			this.addClass('schemeSelector');
-			$jsb.loadCss('SchemeSelector.css');
 			
 			if(JSB.isDefined(items)){
 				$this.setItems(items, cubeItems, opts.updateId);

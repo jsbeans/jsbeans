@@ -1,7 +1,10 @@
 {
 	$name: 'Handsontable',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JsonView'],
+	$require: ['JsonView',
+	           'css:Handsontable.jsb.css',
+	           'css:handsontable.min.css',
+	           'script:handsontable.min.js'],
 	$client: {
         _oldScroll:{
             y: 0
@@ -12,7 +15,6 @@
 		$constructor: function(opts){
 			$base(opts);
 
-			$jsb.loadCss('Handsontable.jsb.css');
 			this.addClass('tableControl');
 
             this.noData = this.$('<div class="noData hidden"></div>').text((opts && opts.noDataMessage)||'Нет данных');
@@ -29,50 +31,47 @@
 			if(this.callbacks.createHeader) // if undefined will set default header
 			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
-			$jsb.loadCss('handsontable.min.css');
-			$jsb.loadScript('handsontable.min.js', function(){    //tpl/handsontable/handsontable.min.js
-                // custom render for all cells
-                function customRenderer(hotInstance, td, row, column, prop, value, cellProperties){
-                    // include default renderer
-                    Handsontable.renderers.BaseRenderer.apply(this, arguments);
+            // custom render for all cells
+            function customRenderer(hotInstance, td, row, column, prop, value, cellProperties){
+                // include default renderer
+                Handsontable.renderers.BaseRenderer.apply(this, arguments);
 
-                    $this.customRenderer(hotInstance, td, row, column, prop, value, cellProperties);
-                }
-                Handsontable.renderers.registerRenderer('customRenderer', customRenderer);
+                $this.customRenderer(hotInstance, td, row, column, prop, value, cellProperties);
+            }
+            Handsontable.renderers.registerRenderer('customRenderer', customRenderer);
 
-                $this.handsontable = new Handsontable($this.table.get(0), this.handsontable_options);
+            $this.handsontable = new Handsontable($this.table.get(0), this.handsontable_options);
 
-                $this.getElement().resize(function(evt, x, y){
-                	$this.handsontable.updateSettings({
-                		width: x,
-                		height: y
-                	});
-
-                	$this.deferredRender();
-                });
-                
-                $this.options.isInit = true;
-
-                $this.find('.ht_master.handsontable > div.wtHolder').scroll(function(evt){
-                    var scrollHeight = evt.target.scrollHeight,
-                      scrollTop = evt.target.scrollTop,
-                      clientHeight = evt.target.clientHeight;
-
-                    // for content preloader
-                    if(scrollTop !== 0 && scrollTop > $this._oldScroll.y && scrollHeight - scrollTop <= 2 * clientHeight){
-                        $this.preLoad(evt);
-                    }
-
-                    $this._oldScroll.y = scrollTop;
-                });
-                
-                $this.setTrigger('initialized');
-                
-                $this.handsontable.updateSettings({
-            		width: $this.getElement().width(),
-            		height: $this.getElement().height()
+            $this.getElement().resize(function(evt, x, y){
+            	$this.handsontable.updateSettings({
+            		width: x,
+            		height: y
             	});
+
+            	$this.deferredRender();
             });
+            
+            $this.options.isInit = true;
+
+            $this.find('.ht_master.handsontable > div.wtHolder').scroll(function(evt){
+                var scrollHeight = evt.target.scrollHeight,
+                  scrollTop = evt.target.scrollTop,
+                  clientHeight = evt.target.clientHeight;
+
+                // for content preloader
+                if(scrollTop !== 0 && scrollTop > $this._oldScroll.y && scrollHeight - scrollTop <= 2 * clientHeight){
+                    $this.preLoad(evt);
+                }
+
+                $this._oldScroll.y = scrollTop;
+            });
+            
+            $this.setTrigger('initialized');
+            
+            $this.handsontable.updateSettings({
+        		width: $this.getElement().width(),
+        		height: $this.getElement().height()
+        	});
 		},
 
 		callbacks: {
@@ -186,7 +185,7 @@
 		},
 
 		_createHeaderCellCallback: function(i){
-            return this.callbacks.createHeader.call(this, i, this.columns[i] ? this.columns[i].data : undefined);
+            return this.callbacks.createHeader.call(this, i, this.columns[i] && this.columns[i].data || '');
 		},
 
 		clear: function(){
