@@ -107,6 +107,11 @@
                                                 value: 'point.y'
                                             },
                                             {
+                                                alias: 'Имя точки',
+                                                type: 'string',
+                                                value: 'point.name'
+                                            },
+                                            {
                                                 alias: 'Имя серии',
                                                 type: 'string',
                                                 value: 'series.name'
@@ -322,6 +327,11 @@
                                 alias: 'Значение точки(Y)',
                                 type: 'number',
                                 value: 'point.y'
+                            },
+                            {
+                                alias: 'Имя точки',
+                                type: 'string',
+                                value: 'point.name'
                             },
                             {
                                 alias: 'Имя серии',

@@ -3,13 +3,13 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
+		$require: ['css:DashboardPublicationView.css'],
 		ready: false,
 		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('DashboardPublicationView.css');
 			this.addClass('dashboardPublicationView');
 			
 			this.append(`#dot
@@ -54,7 +54,7 @@
 		},
 		
 		fillSettings: function(){
-			var entry = this.node.getTargetEntry();
+			var entry = this.getCurrentEntry();
 			$this.ignoreHandlers = true;
 			var wid = entry.getWorkspace().getId();
 			var eid = entry.getId();

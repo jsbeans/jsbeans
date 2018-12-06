@@ -6,7 +6,8 @@
 	           'JSB.Widgets.Button', 
 	           'JSB.Widgets.ListBox', 
 	           'JSB.Widgets.PrimitiveEditor', 
-	           'JSB.Widgets.RendererRepository'],
+	           'JSB.Widgets.RendererRepository',
+	           'css:SchemePopupTool.css'],
 	$client: {
 		
 		cubeFieldsCat: 'Поля источника',
@@ -32,7 +33,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('SchemePopupTool.css');
 			this.addClass('schemePopupTool');
 			
 			$this.getElement().on({

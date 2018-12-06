@@ -6,9 +6,9 @@
 	},
 	
 	$client: {
+		$require: ['css:groupBox.css'],
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('groupBox.css');
 			this.init();
 		},
 		

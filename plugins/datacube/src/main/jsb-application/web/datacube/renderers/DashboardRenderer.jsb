@@ -2,11 +2,11 @@
 	$name: 'DataCube.Renderers.DashboardRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$client: {
+		$require: ['css:DashboardRenderer.css'],
 		$constructor: function(entry, opts){
 			var self = this;
 			$base(entry, opts);
 			this.addClass('dashboardRenderer');
-			$jsb.loadCss('DashboardRenderer.css');
 		}
 	},
 	

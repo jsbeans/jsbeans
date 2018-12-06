@@ -198,7 +198,9 @@
                                     color: {
                                         render: 'item',
                                         name: 'Цвет',
-                                        editor: 'JSB.Widgets.ColorEditor'
+                                        editor: 'JSB.Widgets.ColorEditor',
+                                        valueType: 'string',
+                                        defaultValue: '#000000'
                                     }
                                 }
                             },
@@ -208,12 +210,16 @@
                                     startColor: {
                                         render: 'item',
                                         name: 'Начальный цвет',
-                                        editor: 'JSB.Widgets.ColorEditor'
+                                        editor: 'JSB.Widgets.ColorEditor',
+                                        valueType: 'string',
+                                        defaultValue: '#000000'
                                     },
                                     endColor: {
                                         render: 'item',
                                         name: 'Конечный цвет',
-                                        editor: 'JSB.Widgets.ColorEditor'
+                                        editor: 'JSB.Widgets.ColorEditor',
+                                        valueType: 'string',
+                                        defaultValue: '#000000'
                                     },
                                     functionType: {
                                         render: 'select',
@@ -276,7 +282,9 @@
                      defaultColor: {
                         render: 'item',
                         name: 'Цвет заливки регионов без данных',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        valueType: 'string',
+                        defaultValue: 'transparent'
                      },
                      borderColor: {
                         render: 'item',
@@ -310,12 +318,16 @@
                             selectColor: {
                                 render: 'item',
                                 name: 'Цвет заливки регионов',
-                                editor: 'JSB.Widgets.ColorEditor'
+                                editor: 'JSB.Widgets.ColorEditor',
+                                valueType: 'string',
+                                defaultValue: 'transparent'
                             },
                             selectBorderColor: {
                                 render: 'item',
                                 name: 'Цвет границ регионов',
-                                editor: 'JSB.Widgets.ColorEditor'
+                                editor: 'JSB.Widgets.ColorEditor',
+                                valueType: 'string',
+                                defaultValue: 'transparent'
                             }
                          }
                      },
@@ -436,7 +448,7 @@
                                                             name: 'Цвет',
                                                             editor: 'JSB.Widgets.ColorEditor',
                                                             valueType: 'string',
-                                                            defaultValue: '#000'
+                                                            defaultValue: '#000000'
                                                         }
                                                     }
                                                 },
@@ -453,14 +465,14 @@
                                                             name: 'Начальный цвет',
                                                             editor: 'JSB.Widgets.ColorEditor',
                                                             valueType: 'string',
-                                                            defaultValue: '#000'
+                                                            defaultValue: '#000000'
                                                         },
                                                         endColor: {
                                                             render: 'item',
                                                             name: 'Конечный цвет',
                                                             editor: 'JSB.Widgets.ColorEditor',
                                                             valueType: 'string',
-                                                            defaultValue: '#000'
+                                                            defaultValue: '#000000'
                                                         },
                                                         functionType: {
                                                             render: 'select',
@@ -760,6 +772,7 @@
                     render: 'item',
                     name: 'Цвет шрифта',
                     editor: 'JSB.Widgets.ColorEditor',
+                    valueType: 'string',
                     defaultValue: '#333333'
                 },
                 fontSize: {
@@ -783,7 +796,10 @@
         }
     },
     $client: {
-        $require: ['JSB.Utils.Rainbow', 'JSB.Crypt.MD5', 'JSB.Utils.Formatter'],
+        $require: ['JSB.Utils.Rainbow', 
+                   'JSB.Crypt.MD5', 
+                   'JSB.Utils.Formatter',
+                   'css:map.css'],
 
         $constructor: function(opts){
             $base(opts);
@@ -795,7 +811,6 @@
             this.append(this._widgetElements.header);
 
             this.addClass('mapWidget');
-            $jsb.loadCss('map.css');
 
             JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.css');
             JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.Default.css');
@@ -981,7 +996,7 @@
                                 break;
                             case 'rangeColor':
                                 var isStepGrad = colorSelector.find('stepGradation').checked();
-
+debugger;
                                 this._styles.regions[i] = {
                                     rangeColor: {
                                         startColor: colorSelector.find('startColor').value(),
@@ -1311,7 +1326,10 @@
                                 }
 
                                 if($this._styles.regions[i].sourceColor){
-                                    regions[i].color = $this._styles.regions[i].sourceColor.value();
+                                    if(!regions[i].colors){
+                                        regions[i].colors = [];
+                                    }
+                                    regions[i].colors.push($this._styles.regions[i].sourceColor.value());
                                 }
                             }
                             /*********/
@@ -1689,13 +1707,17 @@
 
                 // add geojson layers
                 /*********/
-                function regionStyle(i, reg){
+                function regionStyle(i, reg, index){
                     if(!reg){
                         if($this._styles.regions[i].showEmptyRegions){
                             return {fillColor: $this._styles.regions[i].defaultColor, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
                         } else {
                             return {fillColor: 'transparent', color: 'transparent'};
                         }
+                    }
+
+                    if(data && data.regions[i].colors){
+                        return {fillColor: data.regions[i].colors[index], color: $this._styles.regions[i].borderColor, fillOpacity: 0.7};
                     }
 
                     if(data && data.regions[i].color){
@@ -1719,9 +1741,10 @@
                             $this._maps[i].map = L.geoJSON($this._maps[i].data, {
                                 onEachFeature: function(feature, layer){
                                     var regInfo = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data),
+                                        index = regInfo.index,
                                         reg = regInfo.region;
 
-                                    layer.setStyle(regionStyle(i, reg));
+                                    layer.setStyle(regionStyle(i, reg, index));
 
                                     // set values properties
                                     /*********/
@@ -1737,14 +1760,14 @@
                                                     $this._infoControl.update();
                                                 }
                                             });
-                                        })(i, regInfo.index);
+                                        })(i, index);
                                     } else {
                                         if(!reg){
                                             layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
                                             return;
                                         }
 
-                                        layer.bindPopup($this._format($this._styles.regions[i].displayContent, regInfo.index, {y: reg.value}), {closeButton: false, autoPan: false});
+                                        layer.bindPopup($this._format($this._styles.regions[i].displayContent, index, {y: reg.value}), {closeButton: false, autoPan: false});
 
                                         layer.on({
                                             mouseover: function(evt){
@@ -1759,7 +1782,7 @@
                                     }
 
                                     if($this._styles.regions[i].showValuesPermanent && reg){
-                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, regInfo.index, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, index, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 

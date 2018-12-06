@@ -1,6 +1,7 @@
 {
 	$name:'JSB.Tpl.Highcharts',
 	$client:{
+		$require: ['css:css/customHighcharts.css'],
 		$singleton: true,
 
 		_lang: {
@@ -41,8 +42,6 @@
 				`#include 'highcharts.js'`;
 				`#include 'highcharts-more.js'`;
 				`#include 'modules/no-data-to-display.js'`;
-
-				$jsb.loadCss('css/customHighcharts.css');
 
 				$this.setOptions();
 			}).call(null);

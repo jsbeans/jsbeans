@@ -2,13 +2,13 @@
 	$name: 'JSB.Controls.Select',
 	$parent: 'JSB.Controls.Control',
     $client: {
+    	$require: ['css:select.css',
+    	           'css:../fonts/fa/fontawesome-all.min.css'],
         _optionsList: {},
 
         $constructor: function(opts){
             $base(opts);
 
-            $jsb.loadCss('select.css');
-            $jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
             this.addClass('jsb-select');
 
             this.currentVal = this.$('<div class="curVal"></div>');

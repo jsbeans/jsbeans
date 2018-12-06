@@ -1,7 +1,8 @@
 {
 	$name:'DatePicker',
 	$parent: 'JSB.Widgets.Control',
-	$require:['JQuery.UI'],
+	$require:['JQuery.UI',
+	          'css:datepicker.css'],
 	$client:{
 		
 		options: {
@@ -24,7 +25,6 @@
 			var self = this;
 			$base(opts);
 			
-			$jsb.loadCss('datepicker.css');
 			this.addClass('_jsb_DatePicker');
 			
 			var pickerOpts = {

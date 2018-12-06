@@ -2,10 +2,11 @@
 	$name: 'DataCube.CsvFileNode',
 	$parent: 'JSB.Workspace.FileNode',
 	$client: {
+		$require: ['css:CsvFileNode.css'],
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('CsvFileNode.css');
 			this.addClass('csvFileNode');
 			
 			this.append('<div class="status"></div>');

@@ -1,20 +1,19 @@
-.databaseBindingRender > .name {
+.entryBindingRender > .name {
     width: 100px;
     display: inline-block;
     line-height: 22px;
     font-size: 15px;
     color: #73879C;
-    font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+    /*font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;*/
     margin-right: 5px;
 }
 
-.databaseBindingRender > .item {
-    height: 34px;
+.entryBindingRender > .item {
     background: rgba(24, 108, 138, 0.2);
     color: #555;
-    border: 2px dashed rgba(2, 47, 78, 0.2);
+    border: 1px dotted rgba(2, 47, 78, 0.4);
     border-radius: 4px;
-    padding: 6px;
+    padding: 2px 6px;
     font-size: 15px;
     text-align: center;
     display: inline-block;
@@ -23,22 +22,28 @@
     max-width: 100%;
 }
 
-.databaseBindingRender > .item.filled {
+.entryBindingRender > .item.filled {
     min-width: initial;
 }
 
-.databaseBindingRender > .item > * {
+.entryBindingRender > .item:not(.filled){
+	font-size: 11px;
+	color: #667b84;
+	padding: 5px 6px;
+}
+
+.entryBindingRender > .item > * {
     vertical-align: middle;
 }
 
-.databaseBindingRender > .item > .widgetRenderer {
+.entryBindingRender > .item > .widgetRenderer {
     max-width: calc(100% - 17px);
 }
 
-.databaseBindingRender > .item > .btnDelete {
+.entryBindingRender > .item > .btnDelete {
     margin-left: 5px;
 }
 
-.databaseBindingRender > .item > .error {
+.entryBindingRender > .item > .error {
     color: darkred;
 }

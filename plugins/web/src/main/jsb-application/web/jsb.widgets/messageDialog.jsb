@@ -3,7 +3,6 @@
 	$client: {
 		$singleton: true,
 		$constructor: function(){
-//			$jsb.loadCss('messagedialog.css');
 		},
 		
 		/* vars */

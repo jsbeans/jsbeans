@@ -13,7 +13,8 @@
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.Button',
                    'JSB.Widgets.TabView',
-                   'Handsontable'
+                   'Handsontable',
+                   'css:ParserView.css'
         ],
         
         logEntries: [],
@@ -22,7 +23,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('ParserView.css');
 			this.addClass('parserView');
 
             this.titleBlock = this.$('<div class="titleBlock"></div>');
@@ -167,7 +167,7 @@
 		},
 		
 		refresh: function(){
-			this.entry = this.node.getTargetEntry();
+			this.entry = this.getCurrentEntry();
 			$this.enableStage('analysis', false);
 			$this.clearTablesPreview();
 			ParserManager.server().logRead(this.entry, function(logEntries){

@@ -9,7 +9,8 @@
 	           'JSB.Controls.ScrollBox',
 	           'JSB.Controls.Switch',
 	           'JSB.Controls.Select',
-	           'JSB.Widgets.ToolManager'],
+	           'JSB.Widgets.ToolManager',
+	           'css:DataProviderDiagramNode.css'],
 	
 	$client: {
 		ready: false,
@@ -40,7 +41,6 @@
 			$base(diagram, key, opts);
 			this.provider = opts.provider;
 			this.editor = opts.editor;
-			$jsb.loadCss('DataProviderDiagramNode.css');
 			this.addClass('dataProviderDiagramNode');
 			this.attr('provider', this.provider.getJsb().$name);
 			

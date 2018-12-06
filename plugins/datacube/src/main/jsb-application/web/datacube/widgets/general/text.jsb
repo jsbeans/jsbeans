@@ -141,13 +141,13 @@
         }
     },
 	$client: {
+		$require: ['css:text.css'],
 		highlights: [],
 
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.addClass('textWidget');
-			$jsb.loadCss('text.css');
 			$this.setInitialized();
 		},
 

@@ -10,11 +10,11 @@
 		Tooltip: 'JSB.Widgets.Tooltip'
 	},
 	$client: {
+		$require: ['css:toolManager.css'],
 		$singleton: true,
 		$constructor: function(){
 			$base();
 			var self = this;
-			$jsb.loadCss('toolManager.css');
 			this.tools = {};
 			this.visibleInstances = [];
 			this.subscribe('tool');

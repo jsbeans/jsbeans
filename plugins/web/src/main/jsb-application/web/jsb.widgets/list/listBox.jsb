@@ -5,9 +5,9 @@
 		ScrollBox: 'JSB.Widgets.ScrollBox'
 	},
 	$client: {
+		$require: ['css:listBox.css'],
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('listBox.css');
 			var self = this;
 			var elt = this.getElement();
 			elt.addClass('_dwp_listBox');

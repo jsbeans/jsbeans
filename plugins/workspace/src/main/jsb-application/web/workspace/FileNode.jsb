@@ -2,10 +2,10 @@
 	$name: 'JSB.Workspace.FileNode',
 	$parent: 'JSB.Workspace.EntryNode',
 	$client: {
+		$require: ['css:FileNode.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('FileNode.css');
 			this.addClass('fileNode');
 			
 			this.uploadFile = this.$('<input type="file" style="display: none;" />');
@@ -41,6 +41,19 @@
 				allowSelect: true,
 				callback: function(){
 					$this.uploadFile.trigger('click');
+				}
+			});
+			items.push({
+				key: 'fileDownload',
+				element: '<div class="icon"></div><div class="text">Скачать файл</div>',
+				allowHover: true,
+				allowSelect: true,
+				callback: function(){
+					$this.getTargetEntry().server().downloadFile(function(dh, fail){
+						if(dh){
+							dh.download();
+						}
+					});
 				}
 			});
 			return items;

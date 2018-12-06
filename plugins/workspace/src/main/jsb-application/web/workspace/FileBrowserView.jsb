@@ -3,12 +3,10 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
+		$require: ['css:FileBrowserView.css'],
 		$constructor: function(opts){
 			$base(opts);
-			
-			$jsb.loadCss('FileBrowserView.css');
 			this.addClass('workspaceFileBrowserView');
-			
 		},
 		
 		refresh: function(){}

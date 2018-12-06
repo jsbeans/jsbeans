@@ -9,9 +9,9 @@
 	},
 */	
 	$client: {
+		$require: ['css:jsonView.css'],
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('jsonView.css');
 //			this.preloadImages();
 			this.init(opts);
 		},

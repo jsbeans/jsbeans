@@ -2,9 +2,10 @@
 	$name: 'DataCube.WidgetNode',
 	$parent: 'JSB.Workspace.EntryNode',
 	$client: {
+		$require: ['css:WidgetNode.css'],
+		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('WidgetNode.css');
 			this.addClass('widgetNode');
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender){

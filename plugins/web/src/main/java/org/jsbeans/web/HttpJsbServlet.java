@@ -27,6 +27,7 @@ import scala.concurrent.Future;
 
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -96,10 +97,10 @@ public class HttpJsbServlet extends HttpServlet {
                 @Override
                 public UpdateStatusMessage run() throws Exception {
                     String params = pObj.toJson();
-                    return HttpJsbServlet.this.execCmd(beanPath, proc, params, session, req.getRemoteAddr(), user, rid, getFullURL(req), token);
+                    return HttpJsbServlet.this.execCmd(beanPath, proc, params, session, req.getRemoteAddr(), user, rid, getFullURL(req), token, req, resp);
                 }
             });
-            this.responseResult(respObj, req, resp, rid);
+           	this.responseResult(respObj, req, resp, rid);
 
         } catch (Exception ex) {
             this.responseError(ex, req, resp, rid);
@@ -213,14 +214,19 @@ public class HttpJsbServlet extends HttpServlet {
 
     }
 
-    private UpdateStatusMessage execCmd(String beanPath, String proc, String params, String session, String clientAddr, String user, String rid, String uri, String token) throws UnsupportedEncodingException {
+    private UpdateStatusMessage execCmd(String beanPath, String proc, String params, String session, String clientAddr, String user, String rid, String uri, String token, HttpServletRequest req, HttpServletResponse resp) throws UnsupportedEncodingException {
         Timeout timeout = ActorHelper.getServiceCommTimeout();
-        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ var Web = JSB.getInstance('JSB.Web'); var result = JSB.getInstance('JSB.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s')]); var opts = {}; if(result instanceof Web.Response){opts = result.opts; result = result.data;} return {exec: result, opts: opts};})()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8")), false);
+        if(beanPath.endsWith("download.jsb")){
+        	timeout = ActorHelper.getInfiniteTimeout();
+        }
+        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ var Web = JSB.getInstance('JSB.Web'); var result = JSB.getInstance('JSB.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s')]); var opts = {}; if(result instanceof Web.Response){opts = result.opts; result = result.data; } return {exec: result, opts: opts};})()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8")), false);
         msg.setUserToken(token);
         msg.setScopePath(session);
         msg.setClientAddr(clientAddr);
         msg.setUser(user);
         msg.setClientRequestId(rid);
+        msg.addWrapped("__request", req);
+        msg.addWrapped("__response", resp);
         Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), msg, timeout);
         UpdateStatusMessage respObj = null;
         try {

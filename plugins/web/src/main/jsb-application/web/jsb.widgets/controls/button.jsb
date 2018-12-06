@@ -3,10 +3,11 @@
 	$parent: 'JSB.Widgets.Control',
 	
 	$client: {
+		$require: ['css:button.css'],
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('button.css');
 			this.addClass('_dwp_button');
 			
 			// create button

@@ -1,7 +1,9 @@
 {
 	$name: 'Unimap.Render.Group',
 	$parent: 'Unimap.Render.Basic',
-	$require: ['JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
+	$require: ['JSB.Controls.Panel', 
+	           'JSB.Controls.Checkbox',
+	           'css:Group.css'],
 	$client: {
 	    _defaultSchemeOpts: {
 	        sortable: true
@@ -9,7 +11,6 @@
 
 	    construct: function(opts){
 	        this.addClass('groupRender');
-	        $jsb.loadCss('Group.css');
 
 	        this._values.name = opts.name || this._values.name || this._scheme.name;
 

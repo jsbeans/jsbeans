@@ -1,10 +1,10 @@
 {
 	$name: 'DataCube.SliceDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable',
-	           'JSB.Controls.ScrollBox',
+	$require: ['JSB.Controls.ScrollBox',
 	           'JSB.Widgets.Button',
-	           'JSB.Widgets.ToolManager'],
+	           'JSB.Widgets.ToolManager',
+	           'css:SliceDiagramNode.css'],
 	
 	$client: {
 		editor: null,
@@ -35,7 +35,6 @@
 			this.editor = opts.editor;
 			this.entry = opts.entry;
 
-			$jsb.loadCss('SliceDiagramNode.css');
 			this.addClass('sliceDiagramNode');
 
 			// drag handle

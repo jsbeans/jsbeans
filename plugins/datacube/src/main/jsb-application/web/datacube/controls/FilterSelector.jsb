@@ -1,7 +1,8 @@
 {
 	$name: 'DataCube.Controls.FilterSelector',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['DataCube.Controls.FilterTag'],
+	$require: ['DataCube.Controls.FilterTag',
+	           'css:FilterSelector.css'],
 	
 	$client: {
 		owner: null,
@@ -13,7 +14,6 @@
 			$base();
 			this.owner = owner;
 			this.filterManager = filterManager;
-			$jsb.loadCss('FilterSelector.css');
 			this.addClass('filterSelector');
 			
 			var iconElt = this.$('<div class="icon"></div>');

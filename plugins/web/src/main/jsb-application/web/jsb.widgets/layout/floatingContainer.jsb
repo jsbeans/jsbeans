@@ -2,10 +2,10 @@
 	$name:'JSB.Widgets.FloatingContainer',
 	$parent:'JSB.Widgets.WidgetContainer',
 	$client: {
+		$require: ['css:floatingContainer.css'],
 		$constructor: function(opts){
 			// ctor
 			$base(opts);
-			$jsb.loadCss('floatingContainer.css');
 			this.getElement().addClass('_dwp_floatingContainer');
 			this.init();
 		},

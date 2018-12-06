@@ -8,7 +8,8 @@
 	           'DataCube.Query.SchemeMenuTool',
 	           'DataCube.Query.SchemePopupTool',
 	           'JSB.Widgets.ToolManager',
-	           'JSB.Widgets.RendererRepository'],
+	           'JSB.Widgets.RendererRepository',
+	           'css:SchemeEditor.css'],
 	
 	$client: {
 		options: {
@@ -29,7 +30,6 @@
 
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('SchemeEditor.css')
 			this.addClass('schemeEditor');
 
 			this.parent = opts.parent;

@@ -1,12 +1,12 @@
 {
 	$name:'JSB.Widgets.SplitBox',
 	$parent: 'JSB.Widgets.Control',
-	$require:['JQuery.UI.Interactions'],
+	$require:['JQuery.UI.Interactions',
+	          'css:splitBox.css'],
 	$client: {
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('splitBox.css');
 			this.addClass('_dwp_splitbox');
 			self.init();
 		},

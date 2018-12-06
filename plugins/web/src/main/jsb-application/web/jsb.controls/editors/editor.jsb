@@ -2,6 +2,7 @@
 	$name: 'JSB.Controls.Editor',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+		$require: ['css:editor.css'],
 	    _types: ['text', 'password', 'color', 'search', 'number'],
 	    _value: null,
 
@@ -11,7 +12,6 @@
 	        }
 	        $base(opts);
 
-	        $jsb.loadCss('editor.css');
             this.addClass('jsb-editor');
 
             this.editor = this.getElement();

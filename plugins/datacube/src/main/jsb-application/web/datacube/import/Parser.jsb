@@ -300,6 +300,32 @@
 	        }
 		},
 		
+		batchSettings: {
+			render: 'group',
+	        name: 'Пакетная загрузка',
+	        items: {
+	        	useBatch: {
+		        	render: 'group',
+			        name: 'Использовать пакетную загрузку файлов',
+			        optional: true,
+			        items: {
+			        	batchFolder: {
+    						render: 'entryBinding',
+    						name: 'Папка',
+    						accept: 'JSB.Workspace.FolderEntry',
+    						emptyText: 'Перетащите сюда папку'
+    					},
+    					batchRecursive: {
+    						render: 'item',
+    						name: 'Обойти вложенные папки',
+    						optional: 'checked',
+    						editor: 'none'
+    					}
+			        }
+	        	}
+	        }
+		},
+		
 		importSettings: {
 			render: 'group',
 	        name: 'Сохранение',
@@ -313,19 +339,41 @@
 	        				name: 'базу',
 	        				items: {
 	        					databaseEntry: {
-	        						render: 'databaseBinding',
-	        						name: 'База данных'
+	        						render: 'entryBinding',
+	        						name: 'База данных',
+	        						accept: 'DataCube.Model.DatabaseSource',
+	        						emptyText: 'Перетащите сюда базу'
 	        					},
 	        					databaseScheme: {
 	        						render: 'item',
 	        						name: 'Схема',
 	        						value: 'public'
 	        					},
-	        					removeOldTable: {
-	        						render: 'item',
-	        						name: 'Перезаписать существующие таблицы',
-	        						optional: 'checked',
-	        						editor: 'none'
+	        					existingTableAction: {
+	        						render: 'select',
+	        						name: 'Если таблица существует - ',
+	        						items: {
+	        							databaseTableOverwrite: {
+	        								render: 'item',
+	    	        						name: 'Перезаписать',
+	        							},
+	        							databaseTableNew: {
+	        								render: 'item',
+	    	        						name: 'Создать новую',
+	        							},
+	        							databaseTableAppend: {
+	        								render: 'group',
+	    	        						name: 'Добавить в существующую',
+	    	        						items: {
+	    	        							skipExistingRows: {
+	    	        								render: 'item',
+	    	    	        						name: 'Пропускать существующие записи',
+	    	    	        						optional: 'checked',
+	    	    	        						editor: 'none'
+	    	        							}
+	    	        						}
+	        							},
+	        						}
 	        					}
 	        				}
 	        			}
@@ -337,8 +385,6 @@
 	
 	$server: {
 		$require: ['Unimap.ValueSelector',
-		           'DataCube.MaterializationEngine',
-		           'JSB.Workspace.WorkspaceController',
 		           'DataCube.ParserManager',
 		           'JSB.Crypt.MD5',
 		           'Moment'],
@@ -367,7 +413,6 @@
 		dataStack: [],
 		dataTopArray: null,
 		
-		importTables: {},
 		
 		deep: 0,
 		typeOrder: {
@@ -1430,140 +1475,6 @@
 				this.descriptors[tableDesc.table] = tableDesc;
 			}
 			this.execute();
-		},
-		
-		import: function(){
-			var batchSize = 100;
-			// create materializer
-			var dbVal = this.getContext().find('databaseEntry').value();
-			var dbSource = WorkspaceController.getWorkspace(dbVal.workspaceId).entry(dbVal.entryId);
-			this.logAppend('info', 'Создание материализатора для источника "' + dbSource.getName() + '"');
-			var mInst = MaterializationEngine.createMaterializer(dbSource);
-			
-			try {
-				this.parse(function(tableDesc, rowData){
-					if($this.cancelFlag){
-						throw 'Cancel';
-					}
-					if(!$this.importTables[tableDesc.table]){
-						$this.importTables[tableDesc.table] = {
-							created: false,
-							columns: {},
-							rows: [],
-							total: 0
-						}
-					}
-					var tDesc = $this.importTables[tableDesc.table];
-					
-					// update columns
-					if(!tDesc.created){
-						for(var c in tableDesc.columns){
-							tDesc.columns[c] = tableDesc.columns[c];
-							if(!tDesc.columns[c].type){
-								// detect type
-								var type = $this.detectValueTable(rowData[c]);
-								if(type != 'null'){
-									tDesc.columns[c].type = type;
-								}
-							}
-						}	
-					}
-					
-					
-					// update rows
-					tDesc.rows.push(rowData);
-					if(tDesc.rows.length >= batchSize){
-						$this.storeBatch(mInst);
-					}
-				});
-				$this.storeBatch(mInst);
-				
-				var entry = this.getEntry();
-				
-				// store tables count
-				entry.tables = Object.keys($this.importTables).length;
-				entry.property('tables', entry.tables);
-				
-				// store records count
-				var records = 0, columns = 0;
-				for(var t in $this.importTables){
-					records += $this.importTables[t].total;
-					columns += Object.keys($this.importTables[t].columns).length;
-				}
-				
-				entry.records = records;
-				entry.property('records', entry.records);
-
-				entry.columns = columns;
-				entry.property('columns', entry.columns);
-				
-				entry.lastTimestamp = Date.now();
-				entry.property('lastTimestamp', entry.lastTimestamp);
-				
-				dbSource.extractScheme();
-			} finally {
-				if(mInst){
-					mInst.destroy();
-				}
-			}
-		},
-		
-		storeBatch: function(mInst){
-			if(!this.importOpts){
-				this.importOpts = {
-					schema: this.getContext().find('databaseScheme').value() || 'public',
-					treatEmptyStringsAsNull: $this.options.treatEmptyStringsAsNull
-				};
-			}
-			for(var t in $this.importTables){
-				var tDesc = $this.importTables[t];
-				if(!tDesc.created){
-					// check for all columns are filled
-					var bColumnsCorrect = true;
-					for(var c in tDesc.columns){
-						if(!tDesc.columns[c] || !tDesc.columns[c].type){
-							bColumnsCorrect = false;
-							break;
-						}
-					}
-					if(bColumnsCorrect){
-						if(this.getContext().find('removeOldTable').checked()){
-							this.logAppend('info', 'Удаление старой таблицы: ' + t);
-							mInst.removeTable(t, $this.importOpts);
-						}
-						// create table in db
-						this.logAppend('info', 'Создание таблицы: ' + t);
-						var res = mInst.createTable(t, tDesc.columns, $this.importOpts);
-						if(res){
-							tDesc.table = res.table;
-							tDesc.fieldMap = res.fieldMap;
-							tDesc.created = true;
-							this.logAppend('info', 'Таблица "'+tDesc.table+'" успешно создана');
-						}
-					} else {
-						continue;
-					}
-				}
-				
-				// upload rows
-				if(tDesc.rows.length == 0){
-					continue;
-				}
-				
-				var translatedRows = [];
-				for(var i = 0; i < tDesc.rows.length; i++){
-					var row = tDesc.rows[i];
-					var nRow = {};
-					for(var j in row){
-						nRow[tDesc.fieldMap[j]] = row[j];
-					}
-					translatedRows.push(nRow);
-				}
-				mInst.insert(tDesc.table, translatedRows, $this.importOpts);
-				tDesc.total += translatedRows.length;
-				this.logAppend('info', 'В таблицу "'+tDesc.table+'" записано ' + tDesc.total + ' строк', MD5.md5('rowsWritten' + tDesc.table));
-				tDesc.rows = [];
-			}
 		},
 		
 		logAppend: function(type, str, key){

@@ -5,7 +5,8 @@
 		$require: ['JSB.Widgets.Dashboard.Placeholder',
 		           'JSB.Widgets.WidgetContainer',
 		           'JSB.Widgets.FloatingContainer',
-		           'JSB.Widgets.SplitBox'],
+		           'JSB.Widgets.SplitBox',
+		           'css:Container.css'],
 		           
 		widgetContainer: null,
 		splitBox: null,
@@ -17,7 +18,6 @@
 		
 		$constructor: function(opts, parent, dashboard){
 			$base(opts);
-			$jsb.loadCss('Container.css');
 			this.addClass('_jsb_dashboardContainer');
 			this.dashboard = dashboard;
 			this.parent = parent;

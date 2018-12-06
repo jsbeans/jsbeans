@@ -4,11 +4,13 @@
 	$client: {
 	    _beans: [],
 
-	    $require: ['JSB.Controls.Button', 'JSB.Controls.Checkbox', 'DataCube.Renderers.EmbededWidgetRenderer'],
+	    $require: ['JSB.Controls.Button', 
+	               'JSB.Controls.Checkbox', 
+	               'DataCube.Renderers.EmbededWidgetRenderer',
+	               'css:EmbeddedWidgetBinding.css'],
 
 	    construct: function(){
 	        this.addClass('embeddedWidgetBindingRender');
-	        $jsb.loadCss('EmbeddedWidgetBinding.css');
 
 	        if(this._scheme.optional){
 	            this.addClass('optional');

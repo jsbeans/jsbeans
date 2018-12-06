@@ -14,9 +14,9 @@
 		})
 	},
 	$client: {
+		$require: ['css:enumEditor.css'],
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('enumEditor.css');
 			this.getElement().addClass('_dwp_enumEditor');
 			this.init();
 		},

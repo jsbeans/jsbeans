@@ -1,7 +1,10 @@
 {
 	$name: 'DataCube.GridView',
 	$parent: 'JSB.Widgets.Widget',
-	$require: ['Handsontable', 'JQuery.UI.Loader', 'DataCube.Export.Export'],
+	$require: ['Handsontable', 
+	           'JQuery.UI.Loader', 
+	           'DataCube.Export.Export',
+	           'css:GridView.css'],
 	$client: {
 	    allLoaded: false,
 	    curLoadId: null,
@@ -11,7 +14,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('gridView');
-			$jsb.loadCss('GridView.css');
 
             this.table = new Handsontable({
             	noDataMessage: opts && opts.noDataMessage || 'Нет данных',
@@ -101,15 +103,13 @@
 		    return '<div>' + header + sortButton + '</div>';
 		},
 
-		exportData: function(key, fileName, callback){
-		    this.server().loadExportData(function(res){
-		        callback.call();
-		        if(res.error){
-		            return;
-		        }
-
-                Export.exportData(key, res.result, fileName);
-		    });
+		exportData: function(key, name, callback){
+			this.server().doExport(key, name, function(dh, fail){
+				callback.call();
+				if(dh){
+					dh.download();
+				}
+			});
 		},
 		
 		// get number of lines
@@ -251,6 +251,8 @@
 	},
 
 	$server: {
+		$require: ['DataCube.Export.ExportManager',
+		           'JSB.Web.Download'],
 	    it: null,
 	    exportQuery: null,
 	    
@@ -359,57 +361,24 @@
                 }
             }
 	    },
-
-	    loadExportData: function(){
-	        function createArrEl(el){
-                var e = [];
-
-                for(var i in el){
-                    e.push(el[i]);
-                }
-
-                return e;
-	        }
-	        
-	        var it = null;
-
-            try{
-                it = this.exportObj.cube.executeQuery(this.exportObj.query, this.exportObj.queryParams);
-
-                var res = [];
-
-                var el = it.next();
-                res.push(Object.keys(el));
-                res.push(createArrEl(el));
-
-                while(true){
-                    var el = it.next();
-
-                    if(!el) {
-                        break;
-                    }
-
-                    res.push(createArrEl(el));
-                }
-
-                return {
-                    result: res,
-                    error: null
-                };
-            } catch(e){
-                JSB().getLogger().error(e);
-
-                return {
-                    result: null,
-                    error: e
-                }
-            } finally {
-            	if(it){
-            		try {
-            			it.close();
-            		} catch(e){}
-            	}
-            }
+	    
+	    doExport: function(format, name){
+	    	var fileName = ExportManager.getExportFileName(format, name);
+			var ct = ExportManager.getContentType(format);
+			var mode = ExportManager.getContentMode(format);
+			var encoding = ExportManager.getEncoding(format);
+			var dh = new Download(fileName, {mode: mode, contentType: ct, encoding: encoding}, function(stream){
+				var exporter = ExportManager.createExporter(format, stream, {name: name, file: fileName});
+				// write into download stream
+				try {
+					exporter.iterate($this.exportObj.cube.executeQuery($this.exportObj.query, $this.exportObj.queryParams, $this.exportObj.provider));
+				} finally {
+					exporter.destroy();
+				}
+			});
+			
+			return dh;
 	    }
+
 	}
 }

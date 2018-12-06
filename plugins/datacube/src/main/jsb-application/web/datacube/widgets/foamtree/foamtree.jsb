@@ -120,13 +120,13 @@
         }
     },
 	$client: {
-	    $require: ['JSB.Utils.Formatter'],
+	    $require: ['JSB.Utils.Formatter',
+	               'css:foamtree.css'],
 
 	    _isNeedUpdate: false,
 
         $constructor: function(opts){
             $base(opts);
-            $jsb.loadCss('foamtree.css');
 
             $this.container = $this.$('<div class="container"></div>');
             $this.append($this.container);

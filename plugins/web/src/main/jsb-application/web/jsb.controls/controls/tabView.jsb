@@ -2,10 +2,11 @@
 	$name:'JSB.Controls.TabView',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+		$require: ['css:tabView.css'],
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('jsb-tabview');
-			$jsb.loadCss('tabView.css');
 
 			// todo: styles for another tab position
             this.tabPane = this.$('<ul class="tabPane ' + this.options.tabPosition + '"></ul>');

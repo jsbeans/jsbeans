@@ -3,9 +3,9 @@
 	$parent: 'DataCube.Providers.InMemoryDataProvider',
 	
 	$client: {
+		$require: ['css:JsonFileDataProvider.css'],
 		$constructor: function(){
 			$base();
-			$jsb.loadCss('JsonFileDataProvider.css');
 		}
 	},
 	

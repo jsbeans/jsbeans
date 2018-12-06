@@ -4,14 +4,14 @@
 	$require: {
 		Button: 'JSB.Widgets.Button',
 		TextEditor: 'JSB.Widgets.PrimitiveEditor',
-		'MD5': 'JSB.Crypt.MD5'
+		'MD5': 'JSB.Crypt.MD5',
+		'css':'css:login.css'
 	},
 	$client: {
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('loginForm');
-			$jsb.loadCss('login.css');
 			
 			this.getElement().css({
 				display: 'none'

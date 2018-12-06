@@ -2,6 +2,7 @@
 	$name: 'DataCube.GraphWidget.GraphNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$client: {
+		$require: ['css:GraphNode.css'],
 		options: {
 			checkSize: false
 		},
@@ -9,7 +10,6 @@
 		$constructor: function(diagram, key, opts){
 			$base(diagram, key, opts);
 			this.addClass('graphNode');
-			$jsb.loadCss('GraphNode.css');
 
 			this.entry = opts.entry;
             this.updateEntry(opts.entry);

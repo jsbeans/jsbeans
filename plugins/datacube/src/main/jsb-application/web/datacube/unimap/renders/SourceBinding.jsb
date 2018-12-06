@@ -2,7 +2,12 @@
 	$name: 'Unimap.Render.SourceBinding',
 	$parent: 'Unimap.Render.Item',
 	$client: {
-	    $require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button', 'Unimap.Render.DataBindingCache'],
+	    $require: ['JSB.Controls.Editor', 
+	               'DataCube.Providers.DataProviderRepository', 
+	               'JSB.Widgets.RendererRepository', 
+	               'JSB.Controls.Button', 
+	               'Unimap.Render.DataBindingCache',
+	               'css:SourceBinding.css'],
 
 	    _beans: [],
 	    _dataList: [],
@@ -15,7 +20,6 @@
 
 	    construct: function(){
 	        this.addClass('sourceBindingRender');
-	        $jsb.loadCss('SourceBinding.css');
 
 	        this.createDataList();
 
@@ -119,7 +123,7 @@
 	        }
 	        
 	        function collectCubeFields(desc, items){
-	        	if(!desc.cubeFields || Object.keys(desc.cubeFields).length == 0){
+	        	if(!desc || !desc.cubeFields || Object.keys(desc.cubeFields).length == 0){
 	        		return;
 	        	}
 	        	for(var cubeField in desc.cubeFields){

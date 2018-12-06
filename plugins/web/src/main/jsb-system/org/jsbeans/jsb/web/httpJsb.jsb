@@ -24,7 +24,11 @@
 				throw 'Bean "' + repoEntry.jsb.$name + '" does not allow to be called via HTTP. Use "$http" option in bean declaration.';
 			}
 */			
-			return $jsb.getProvider().executeClientRpc(repoEntry.jsb.$name, '__httpCall__' + repoEntry.jsb.$name, proc, params);
+			var instanceId = '__httpCall__' + repoEntry.jsb.$name;
+			if(repoEntry.jsb.getKeywordOption('$fixedId') && params && params.length > 0 && params[0]['id']){
+				instanceId = params[0]['id'];
+			}
+			return $jsb.getProvider().executeClientRpc(repoEntry.jsb.$name, instanceId, proc, params);
 		}
 		
 	}

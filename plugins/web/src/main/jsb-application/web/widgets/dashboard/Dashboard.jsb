@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Control',
 	$client: {
 		$require: ['JSB.Widgets.Dashboard.Container',
-		           'JSB.Widgets.Dashboard.Placeholder'],
+		           'JSB.Widgets.Dashboard.Placeholder',
+		           'css:Dashboard.css'],
 		           
 	    placeholder: null,
 	    container: null,
@@ -12,7 +13,6 @@
 	    
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('Dashboard.css');
 			this.addClass('_jsb_dashboard');
 			
 			// setup initial placeholder

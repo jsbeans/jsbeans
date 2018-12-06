@@ -1,7 +1,7 @@
 {
 	$name:'JSB.Widgets.ColorEditor',
 	$parent: 'JSB.Widgets.Editor',
-	$require: [],
+	$require: ['css:colorEditor.css'],
 	$client: {
 	    _color: "#000",
 	    _hexagenColorMap: [
@@ -150,7 +150,6 @@
 			var self = this;
 			$base(opts);
 			this.addClass('colorEditor');
-			$jsb.loadCss('colorEditor.css');
 
 			if(this.options.value){
 			    this._color = this.options.value;

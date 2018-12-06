@@ -4,7 +4,8 @@
 	$require: {
 		ListBox: 'JSB.Widgets.ListBox',
 		ToolManager: 'JSB.Widgets.ToolManager',
-		UserMenuTool: 'UserMenuTool'
+		UserMenuTool: 'UserMenuTool',
+		css:'css:userBlock.css'
 	},
 	
 	$sync: true,
@@ -16,7 +17,6 @@
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('userBlock');
-			$jsb.loadCss('userBlock.css');
 
 			this.append(`#dot
 				<div class="loggedPanel">

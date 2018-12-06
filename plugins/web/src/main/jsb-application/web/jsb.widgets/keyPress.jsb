@@ -2,9 +2,10 @@
 	$name:'JSB.KeyPress',
 	$client: {
 		$singleton: true,
+		$require: ['script:keypress.js'],
+		
 		$constructor: function(){
 			var self = this;
-			$jsb.loadScript('keypress.js');
 			
 			JSB().waitForObjectExist('window.keypress',function(){
 				self.init();

@@ -5,10 +5,11 @@
 		'Editor': 'JSB.Widgets.PrimitiveEditor'
 	},
 	$client: {
+		$require: ['css:SearchEditor.css'],
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('SearchEditor.css');
 			this.addClass('searchEditor');
 			
 			this.editor = new Editor({

@@ -3,6 +3,7 @@
 	$parent: 'JSB.Widgets.Editor',
 	
 	$client: {
+		$require: ['css:complexEditor.css'],
 		data: null,
 		options: {
 			readonly: false,
@@ -13,7 +14,6 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('complexEditor.css');
 			this.addClass('_jsb_complexEditor');
 		},
 		

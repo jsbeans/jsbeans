@@ -1,12 +1,12 @@
 {
 	$name: 'JSB.Workspace.FolderNode',
 	$parent: 'JSB.Workspace.EntryNode',
-	$require: ['JSB.Widgets.Button'],
+	$require: ['JSB.Widgets.Button',
+	           'css:FolderNode.css'],
 	$client: {
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('FolderNode.css');
 			this.addClass('folderNode');
 			
 			this.renderer.append('<div class="childCount">(<span></span>)</div>');

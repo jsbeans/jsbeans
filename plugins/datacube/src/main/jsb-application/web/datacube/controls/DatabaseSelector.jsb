@@ -2,7 +2,8 @@
 	$name: 'DataCube.Controls.DatabaseSelector',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Widgets.RendererRepository',
-	           'JSB.Widgets.ToolManager'],
+	           'JSB.Widgets.ToolManager',
+	           'css:DatabaseSelector.css'],
 	
 	$client: {
 		ready: false,
@@ -14,7 +15,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('databaseSelector');
-			$jsb.loadCss('DatabaseSelector.css');
 			
 			this.attr('title', 'Выберите базу');
 			this.placeholderElt = this.$('<div class="placeholder">Выберите/перетащите базу</div>');

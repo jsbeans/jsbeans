@@ -6,7 +6,8 @@
 	               'DataCube.SliceDiagramNode',
 	               'DataCube.DataSourceDiagramNode',
 	               'JSB.Widgets.Button',
-	               'JSB.Widgets.ToolManager'],
+	               'JSB.Widgets.ToolManager',
+					'css:CubeEditor.css'],
 
 	    _cube: null,
 	    _dataSources: {},
@@ -15,7 +16,6 @@
 	    $constructor: function(opts){
 			$base(opts);
 
-			$jsb.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
 
 			// todo: add toolbar
@@ -151,13 +151,13 @@
 
             var removeBtn = new Button({
                 cssClass: 'roundButton btnDelete btn10',
-                tooltip: 'РЈРґР°Р»РёС‚СЊ СЌР»РµРјРµРЅС‚С‹',
+                tooltip: 'Удалить элементы',
                 onClick: function(){
                     ToolManager.showMessage({
                         icon: 'removeDialogIcon',
-                        text: 'Р’С‹ СѓРІРµСЂРµРЅС‹ С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РІС‹Р±СЂР°РЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹?',
-                        buttons: [{text: 'РЈРґР°Р»РёС‚СЊ', value: true},
-                                  {text: 'РќРµС‚', value: false}],
+                        text: 'Вы уверены что хотите удалить выбранные элементы?',
+                        buttons: [{text: 'Удалить', value: true},
+                                  {text: 'Нет', value: false}],
                         target: {
                             selector: removeBtn.getElement()
                         },

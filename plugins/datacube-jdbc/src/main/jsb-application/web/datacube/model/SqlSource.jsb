@@ -43,12 +43,21 @@
 		},
 		
 		updateSettings: function(settings){
-			this.settings = JSB.merge({
+			if(!settings){
+				return;
+			}
+			var newSettings = JSB.merge({
 				name: $this.getId(),
 				type: 'JSB.Store.Sql.SQLStore',
 				url: '',
 				properties: {}
 			}, settings);
+
+			// compare with old settings
+			if(JSB.isEqual(newSettings, this.settings||{})){
+				return;
+			}
+			this.settings = newSettings;
 			this.property('settings', this.settings);
 			this.getWorkspace().store();
 			this.publish('DataCube.Model.SqlSource.updateSettings');
@@ -104,7 +113,10 @@
 			$this.publish('DataCube.Model.SqlSource.updateCache');
 		},
 		
-		extractScheme: function(){
+		extractScheme: function(settings){
+			if(settings){
+				this.updateSettings(settings);
+			}
 			var mtx = 'DataCube.Model.SqlSource.extractScheme.' + this.getId();
 			JSB.getLocker().lock(mtx);
 			try {
