@@ -723,7 +723,6 @@ if(!(function(){return this;}).call(null).JSB){
 							(function(req){
 								var alias = requireMap[req];
 								self._lookupRequire(req, function(cls){
-									
 									if(locker)locker.lock('_jsb_lookupRequires_' + self.$name);
 									rcWrap._requireCnt--;
 									if(locker)locker.unlock('_jsb_lookupRequires_' + self.$name);
@@ -742,6 +741,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				
 				loadRequires(function(){
+
 					var $jsb = self;
 					var $parent = null;
 					
@@ -2767,23 +2767,24 @@ if(!(function(){return this;}).call(null).JSB){
 				url = this.getBasePath() + url;
 			}
 			url = this.injectServerVersion(url);
+			var oUrl = url;
 			
-			if(this.resourceLoaded[url]){
+			if(this.resourceLoaded[oUrl]){
 				if(callback && JSB().isFunction(callback)){
 					callback.call(this);
 				}
 				return;
 			}
 			
-			if(this.resourceScheduled[url]){
+			if(this.resourceScheduled[oUrl]){
 				if(callback && JSB().isFunction(callback)){
-					this.resourceScheduled[url].push(callback);
+					this.resourceScheduled[oUrl].push(callback);
 				}
 				return;
 			} else {
-				this.resourceScheduled[url] = this.resourceScheduled[url] || [];
+				this.resourceScheduled[oUrl] = this.resourceScheduled[oUrl] || [];
 				if(callback && JSB().isFunction(callback)){
-					this.resourceScheduled[url].push(callback);
+					this.resourceScheduled[oUrl].push(callback);
 				}
 			}
 			
@@ -2809,10 +2810,10 @@ if(!(function(){return this;}).call(null).JSB){
 			_l.type = "text/css";
 			
 			_l.onload = function(){
-				self.resourceLoaded[url] = true;
-				if(self.resourceScheduled[url]){
-					var shArr = self.resourceScheduled[url];
-					delete self.resourceScheduled[url];
+				self.resourceLoaded[oUrl] = true;
+				if(self.resourceScheduled[oUrl]){
+					var shArr = self.resourceScheduled[oUrl];
+					delete self.resourceScheduled[oUrl];
 					for(var i = 0; i < shArr.length; i++){
 						shArr[i].call(self);
 					}
