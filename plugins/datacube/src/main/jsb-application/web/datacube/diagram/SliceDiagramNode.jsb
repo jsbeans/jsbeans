@@ -1,8 +1,7 @@
 {
 	$name: 'DataCube.SliceDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable',
-	           'JSB.Controls.ScrollBox',
+	$require: ['JSB.Controls.ScrollBox',
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.ToolManager'],
 	
