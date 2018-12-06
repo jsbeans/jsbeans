@@ -5726,8 +5726,8 @@ JSB({
 			console.log('WARNING: ' + this._prepareObj(str));
 		},
 		error: function(str){
-debugger;
 			console.log('ERROR: ' + this._prepareObj(str));
+			debugger;
 		}
 	}
 });

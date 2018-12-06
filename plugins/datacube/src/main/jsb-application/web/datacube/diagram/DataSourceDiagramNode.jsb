@@ -9,19 +9,21 @@
 	               'JSB.Widgets.ToolManager'],
 
 		options: {
+		    onCreate: function(){
+		        this.refresh();
+		    },
 			onHighlight: function(bEnable){
 				this.highlightNode(bEnable);
 			},
-			onSelect: function(bEnable){
-				this.selectNode(bEnable);
-			},
-			onRemove: function(){},
 			onPositionChanged: function(x, y){
 			    var self = this;
 
 				JSB.defer(function(){
 					self.editor.getCube().server().updateNodePosition(self.entry, {position: {x: x, y: y}});
 				}, 500, 'dataProviderResize_' + this.getId());
+			},
+			onSelect: function(bEnable){
+				this.selectNode(bEnable);
 			}
 		},
 
@@ -39,8 +41,10 @@
 			var dragHandle = this.$('<div class="dragHandle"><div></div><div></div><div></div></div>');
 			this.append(dragHandle);
 
-			this.installDragHandle('drag', {
-				selector: dragHandle
+			this.installHandle({
+			    key: 'drag',
+				selector: dragHandle,
+				type: 'drag'
 			});
 
 			// caption
@@ -78,26 +82,6 @@
 			this.failedMsg = this.$('<div class="failed hidden"><div class="icon"></div><div class="text">MSG</div><div class="details"></div></div>');
 			this.body.append(this.failedMsg);
 
-			// toolbar
-			/*
-			this.toolbar = this.$('<div class="toolbar"></div>');
-            this.append(this.toolbar);
-
-
-			// search
-            this.body.append(`#dot
-                <div class="search">
-                    <div
-                        jsb="JSB.Widgets.PrimitiveEditor"
-                        onChange="{{=this.callbackAttr(function(){ var editor = this; JSB.defer(function(){ $this.search(editor) }, 300, 'searchDefer_' + $this.getId()); })}}"
-                    >
-                    </div>
-                    <div class="icon">
-                    </div>
-                </div>
-            `);
-            */
-
 			this.fieldList = new ScrollBox({
 			    cssClass: 'fields',
 			    xAxisScroll: false
@@ -111,9 +95,11 @@
 			var rightBottomGripper = this.$('<div class="gripper cornerGripper rightBottomGripper"></div>');
 			this.status.append(rightBottomGripper);
 
-			this.installResizeHandle('rightBottomGripper',{
+			this.installHandle({
+				key: 'rightBottomGripper',
 				selector: rightBottomGripper,
-				resize: {right: true}
+				resize: {right: true},
+				type: 'resize'
 			});
 
 			// install connector
@@ -135,8 +121,6 @@
                     $this.editor.getCube().server().updateNodePosition($this.entry, {size: {width: $this.getElement().width()}});
                 }, 300, 'dataProviderResize_' + $this.getId());
 			});
-
-			this.refresh();
 	    },
 
 	    loadScheme: function(callback){

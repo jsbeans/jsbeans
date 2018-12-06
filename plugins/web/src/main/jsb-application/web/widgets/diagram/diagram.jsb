@@ -50,9 +50,7 @@
 			background: null,
 
 			links: {
-				'_jsb_diagramUserWiringLink': {
-					
-				}
+				'_jsb_diagramUserWiringLink': {}
 			},
 			layouts: {
 				'default': {
@@ -76,7 +74,6 @@
 			JSB().loadScript('tpl/d3/d3.min.js', function(){
 				$this.init();
 			});
-			
 		},
 		
 		init: function(){
@@ -136,20 +133,9 @@
 				'display': 'none'
 			});
 			
-			
 			// setup controllers
 			this.controllers.normal = new Controller(this);
 			this.controllers.wiring = new WiringController(this);
-			
-			this.subscribe('_jsb_diagramMouseEvent', function(sender, msg, params){
-				for(var i = self.controllerStack.length - 1; i >= 0; i--){
-					var res = self.controllerStack[i].onMessage(sender, msg, params);
-					if(res){
-						return;
-					}
-				}
-				self.controllers.normal.onMessage(sender, msg, params);
-			});
 			
 			// setup layouts
 			if(this.options.layouts){
@@ -311,37 +297,35 @@
 		},
 		
 		setupEventHandlers: function(){
-			var self = this;
 			this.getElement().on({
 				click: function(evt){
-					self.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
+					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: evt});
 				},
 
 				mouseover: function(evt){
-					self.publish('_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
+					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
 				},
 				
 				mouseout: function(evt){
-					self.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
+					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
 				},
 
 				mousedown: function(evt){
-					self.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
+					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
 				},
 
 				mouseup: function(evt){
-					self.publish('_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
+					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
 				},
 
 				mousemove: function(evt){
-					self.publish('_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
+					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
 				},
 				
 				mousewheel: function(evt, delta){
-					self.publish('_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
+					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
 				}
 			});
-			
 		},
 		
 		pageToSheetCoords: function(pt){
@@ -529,10 +513,6 @@
 			}
 		},
 		
-		destroy: function(){
-			$base();
-		},
-		
 		getNode: function(id){
 			if(this.nodes[id]){
 				return this.nodes[id];
@@ -595,6 +575,7 @@
 			var node = new nodeClass(this, key, opts);
 			this.nodes[node.getId()] = node;
 			this.sheet.append(node.getElement());
+			node.setInitialize();
 			
 			if(this.options.onChange){
 				this.options.onChange.call(this, 'createNode', node);
@@ -655,7 +636,6 @@
 		},
 		
 		createLink: function(linkKey, opts, hideEvent){
-			var self = this;
 			var linkDesc = this.linkDescs[linkKey];
 			var linkClass = Link;
 			if(linkDesc.linkClass){
@@ -963,7 +943,7 @@
 			if(!this.options.autoLayout){
 				return;
 			}
-			var self = this;
+
 			function _getManagersForNode(item){
 				var lmans = [];
 				if(!item.options.layout){
@@ -1014,7 +994,7 @@
 			
 			// call managers
 			for(var lman in manNodeMap){
-				var lm = self.layoutManagers[lman];
+				var lm = $this.layoutManagers[lman];
 				if(!lm){
 					throw 'Unable to find layout manager: ' + lman;
 				}
@@ -1027,6 +1007,20 @@
 		        x: this.grid.width(),
 		        y: this.grid.height()
 		    };
+		},
+
+		onMouseEvent: function(sender, msg, desc){
+            for(var i = this.controllerStack.length - 1; i >= 0; i--){
+                if(this.controllerStack[i].onMessage(sender, msg, desc)){
+                    return;
+                }
+            }
+
+            this.controllers.normal.onMessage(sender, msg, desc);
+		},
+
+		getConnectorDescription: function(key){
+		    return this.connectorDescs[key];
 		}
 	}
 }

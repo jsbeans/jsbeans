@@ -34,35 +34,35 @@
 			}
 			this.diagram.captureObj = {
 				click: function(evt){
-					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
+					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: evt});
 				},
 
 				mouseover: function(evt){
-					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
+					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
 				},
 				
 				mouseout: function(evt){
-					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
+					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
 				},
 				
 				click: function(evt){
-					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
+					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: evt});
 				},
 				
 				mousedown: function(evt){
-					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
+					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
 				},
 
 				mouseup: function(evt){
-					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
+					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
 				},
 
 				mousemove: function(evt){
-					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
+					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
 				},
 				
 				mousewheel: function(evt, delta){
-					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
+					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
 				}
 			};
 			this.$(document).on(this.diagram.captureObj);
@@ -91,8 +91,7 @@
 					}
 					var nodeMap = this.diagram.getNodesUnderCursor(this.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY}));
 					if(Object.keys(nodeMap).length === 0){
-						this.select(this.diagram.nodes, false);	
-						this.select(this.diagram.links, false);
+						this.select(this.diagram.getSelected(), false);
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && params.event.which == 1) {
 					params.event.stopPropagation();
@@ -107,20 +106,21 @@
 						// toggle
 						sender.select(!sender.isSelected());
 					} else {
-						// select new
-						sender.select(true);
-						
 						// remove old selected
-						var rMap = {};
-						for(var nodeId in this.diagram.nodes){
-							var node = this.diagram.nodes[nodeId];
-							if(node == sender){
+						var deselect = {},
+						    selected = this.diagram.getSelected();
+
+						for(var i in selected){
+							if(selected[i].getId() == sender.getId()){
 								continue;
 							}
-							rMap[nodeId] = node;
+
+							deselect[i] = selected[i];
 						}
-						this.select(rMap, false);
-						this.select(this.diagram.links, false);
+						this.select(deselect, false);
+
+						// select new
+						sender.select(true);
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Link') && params.event.which == 1){
 					params.event.stopPropagation();
@@ -436,7 +436,5 @@
 				obj.select(bEnable);
 			}
 		}
-		
-
 	}
 }

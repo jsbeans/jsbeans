@@ -39,14 +39,11 @@
 				}
                 $this.update(params.status, params.success !== true);
 			});
-			
-			this.update();
-		},
-		
-		createSlice: function(){
-			$this.explorer.expandNode($this.treeNode.key, function(){
-				$this.getTargetEntry().server().addSlice(function(slice){
+
+            this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
+                if(sender !== $this){
 					var node = $this.explorer.getEntryNode(slice);
+
 					if(!node){
 						node = $this.explorer.addTreeItem({
 	                        entry: slice,
@@ -55,9 +52,17 @@
 	                    }, $this.treeNode.key, false, {collapsed:true});
 					}
 
-                    $this.publish('Datacube.CubeNode.createSlice', slice);
+					$this.explorer.publish('JSB.Workspace.nodeOpen', node);
+                }
+            });
 
-					//$this.explorer.publish('JSB.Workspace.nodeOpen', node);
+			this.update();
+		},
+		
+		createSlice: function(){
+			$this.explorer.expandNode($this.treeNode.key, function(){
+				$this.getTargetEntry().server().addSlice(function(slice){
+                    $this.publish('Datacube.CubeNode.createSlice', slice);
 				});
 			});
 		},

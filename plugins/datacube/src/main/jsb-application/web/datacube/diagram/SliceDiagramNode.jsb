@@ -13,13 +13,17 @@
 		_sources: {},
 		
 		options: {
+		    onCreate: function(){
+		        this.refresh({
+		            sources: this.options.sources
+		        });
+		    },
 			onHighlight: function(bEnable){
 				this.highlightNode(bEnable);
 			},
 			onSelect: function(bEnable){
 				this.selectNode(bEnable);
 			},
-			onRemove: function(){},
 			onPositionChanged: function(x, y){
 				var self = this;
 
@@ -42,8 +46,10 @@
 			var dragHandle = this.$('<div class="dragHandle"><div></div><div></div><div></div></div>');
 			this.append(dragHandle);
 
-			this.installDragHandle('drag', {
-				selector: dragHandle
+			this.installHandle({
+			    key: 'drag',
+				selector: dragHandle,
+				type: 'drag'
 			});
 
 			var header = this.$('<header></header>');
@@ -107,14 +113,6 @@
 
 			this.status = this.$('<footer></footer>');
 			this.append(this.status);
-
-			this.getElement().click(function(){
-			    $this.select(true);
-			});
-
-			$this.refresh({
-			    sources: opts.sources
-			});
 			
 			this.subscribe('Slice.renameSlice', {session: true}, function(sender, msg, desc){
 				var entry = desc.entry;
@@ -214,6 +212,10 @@
             if(opts && opts.name){
                 this.sliceName.text(opts.name);
             }
+		},
+
+		refreshLinks: function(){
+		    //
 		},
 
 		removeDimension: function(field){

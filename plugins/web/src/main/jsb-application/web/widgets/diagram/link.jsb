@@ -273,7 +273,7 @@
 				// add event handler
 				this.group.on({
 					click: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'click', event: d3.event});
+						$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: d3.event});
 					}
 				});
 			}
