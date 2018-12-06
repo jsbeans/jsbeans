@@ -3,13 +3,13 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
-		$require: ['DataCube.DashboardEditor'],
+		$require: ['DataCube.DashboardEditor',
+		           'css:DashboardEditorView.css'],
 		
 		editor: null,
 		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('DashboardEditorView.css');
 			this.addClass('dashboardEditorView');
 		},
 		

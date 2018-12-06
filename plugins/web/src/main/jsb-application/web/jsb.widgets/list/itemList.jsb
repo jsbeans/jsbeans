@@ -5,10 +5,10 @@
 		ItemListView: 'JSB.Widgets.ItemList.View'
 	},
 	$client: {
+		$require: ['css:itemList.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('itemList.css');
 			this.addClass('_dwp_itemList');
 			
 			if(!this.options.views.basic){

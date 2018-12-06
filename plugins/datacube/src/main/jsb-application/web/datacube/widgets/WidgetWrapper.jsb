@@ -74,7 +74,8 @@
 		           'JSB.Controls.Navigator',
 		           'DataCube.Controls.WidgetFilterSelector',
 		           'JSB.Widgets.RendererRepository',
-		           'DataCube.Export.ExportManager'],
+		           'DataCube.Export.ExportManager',
+		           'css:WidgetWrapper.css'],
 
 		attached: false,
 		childWidgets: [],
@@ -97,7 +98,6 @@
 			
 			this.filterManager = (opts && opts.filterManager) || (this.owner && this.owner.getFilterManager());
 
-			$jsb.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
 			
 			this.setTitle(this.getWidgetEntry().getName());

@@ -2,11 +2,11 @@
 	$name: 'DataCube.Renderers.ExcelFileRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$client: {
+		$require: ['css:ExcelFileRenderer.css'],
 		$constructor: function(entry, opts){
 			var self = this;
 			$base(entry, opts);
 			this.addClass('excelFileRenderer');
-			$jsb.loadCss('ExcelFileRenderer.css');
 		}
 	},
 	

@@ -41,13 +41,13 @@
 		           'JQuery.UI.Loader', 
 		           'Unimap.ValueSelector', 
 		           'Datacube.Unimap.Bootstrap',
-		           'JSB.Widgets.ToolBar'],
+		           'JSB.Widgets.ToolBar',
+		           'css:Widget.css'],
 
 		$constructor: function(opts){
 		    $base();
 
 		    this.addClass('datacubeWidget');
-		    $jsb.loadCss('Widget.css');
 		    
 		    this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);

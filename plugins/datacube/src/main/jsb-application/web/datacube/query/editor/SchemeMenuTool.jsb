@@ -1,7 +1,9 @@
 {
 	$name: 'DataCube.Query.SchemeMenuTool',
 	$parent: 'JSB.Widgets.Tool',
-	$require: ['JSB.Widgets.ToolManager', 'JSB.Widgets.Button'],
+	$require: ['JSB.Widgets.ToolManager', 
+	           'JSB.Widgets.Button',
+	           'css:SchemeMenuTool.css'],
 	$client: {
 		
 		$bootstrap: function(){
@@ -24,7 +26,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('SchemeMenuTool.css');
 			this.addClass('schemeMenuTool');
 			
 			$this.btnEdit = new Button({

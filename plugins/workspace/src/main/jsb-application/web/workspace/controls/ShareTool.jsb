@@ -6,6 +6,7 @@
 		ComboBox: 'JSB.Widgets.ComboBox'
 	},
 	$client: {
+		$require: ['css:ShareTool.css'],
 		$bootstrap: function(){
 			// register tooltip
 			JSB().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
@@ -29,7 +30,6 @@
 		},
 		
 		construct: function(){
-			$jsb.loadCss('ShareTool.css');
 			this.addClass('_jsb_workspaceShareTool');
 			
 			this.append(`#dot

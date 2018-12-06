@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$require: ['JQuery.UI.Resizable', 
 	           'JSB.Widgets.ToolManager',
-	           'DataCube.Dialogs.SliceOptionsTool'],
+	           'DataCube.Dialogs.SliceOptionsTool',
+	           'css:SliceDiagramNode.css'],
 	
 	$client: {
 		ready: false,
@@ -37,7 +38,6 @@
 			this.editor = opts.editor;
 			this.slice = opts.slice;
 
-			$jsb.loadCss('SliceDiagramNode.css');
 			this.addClass('sliceDiagramNode');
 			
 			this.caption = this.$(`#dot

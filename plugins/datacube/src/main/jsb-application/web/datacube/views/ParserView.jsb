@@ -13,7 +13,8 @@
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.Button',
                    'JSB.Widgets.TabView',
-                   'Handsontable'
+                   'Handsontable',
+                   'css:ParserView.css'
         ],
         
         logEntries: [],
@@ -22,7 +23,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('ParserView.css');
 			this.addClass('parserView');
 
             this.titleBlock = this.$('<div class="titleBlock"></div>');

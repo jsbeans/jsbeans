@@ -2,6 +2,9 @@
 	$name: 'JSB.Controls.ComboEditor',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+		$require: ['css:comboEditor.css',
+		           'css:../fonts/fa/fontawesome-all.min.css'],
+		           
 	    _optionsList: {},
 	    _value: {
 	        key: null,
@@ -12,8 +15,6 @@
 	    $constructor: function(opts){
 	        $base(opts);
 
-	        $jsb.loadCss('comboEditor.css');
-	        $jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
             this.addClass('jsb-comboEditor');
 
             this.currentVal = this.$('<div class="curVal"></div>');

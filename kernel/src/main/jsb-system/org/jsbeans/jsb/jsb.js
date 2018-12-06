@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.7 | jsbeans.org | (c) 2011-2018 Special Information Systems, LLC */
+/*! jsBeans v2.6.8 | jsbeans.org | (c) 2011-2018 Special Information Systems, LLC */
 if(!(function(){return this;}).call(null).JSB){
 (function(){
 	
@@ -499,8 +499,16 @@ if(!(function(){return this;}).call(null).JSB){
 				var reqBeans = {};
 
 				// collect all requires with smaller readyState
+				var skipPrefixes = ['java:', 'css:', 'script:'];
 				for(var req in self._requireMap){
-					if(req.toLowerCase().indexOf('java:') == 0){
+					var needSkip = false;
+					for(var i = 0; i < skipPrefixes.length; i++){
+						if(req.toLowerCase().indexOf(skipPrefixes[i]) == 0){
+							needSkip = true;
+							break;
+						}
+					}
+					if(needSkip){
 						continue;
 					}
 					var jsb = self.objects[req];
@@ -663,7 +671,7 @@ if(!(function(){return this;}).call(null).JSB){
 							var rObj = {};
 							// generate alias
 							var alias = e;
-							if(alias.lastIndexOf('.') >= 0){
+							if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0 && alias.lastIndexOf('.') >= 0){
 								alias = alias.substr(alias.lastIndexOf('.') + 1);
 							}
 							rObj[alias] = e;
@@ -681,7 +689,7 @@ if(!(function(){return this;}).call(null).JSB){
 									if(!self.isString(alias)){
 										throw new Error('Invalid alias "' + JSON.stringify(alias) + '" in bean "'+self.$name+'" requirement');
 									}
-									if(!/^[A-Za-z_][A-Za-z_\d]*$/.test(alias)){
+									if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0 && !/^[A-Za-z_][A-Za-z_\d]*$/.test(alias)){
 										throw new Error('Invalid alias "' + alias + '" in bean "'+self.$name+'" requirement');
 									}
 									if(reverseRequireMap[alias]){
@@ -720,7 +728,9 @@ if(!(function(){return this;}).call(null).JSB){
 									rcWrap._requireCnt--;
 									if(locker)locker.unlock('_jsb_lookupRequires_' + self.$name);
 									
-									requireVals[alias] = cls;
+									if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0){
+										requireVals[alias] = cls;
+									}
 									
 									if(rcWrap._requireCnt === 0){
 										callback.call(self);
@@ -964,8 +974,16 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			var wMap = {};
 			// collect all requires with smaller readyState
+			var skipPrefixes = ['java:', 'css:', 'script:'];
 			for(var req in this._requireMap){
-				if(req.toLowerCase().indexOf('java:') == 0){
+				var needSkip = false;
+				for(var i = 0; i < skipPrefixes.length; i++){
+					if(req.toLowerCase().indexOf(skipPrefixes[i]) == 0){
+						needSkip = true;
+						break;
+					}
+				}
+				if(needSkip){
 					continue;
 				}
 				var jsb = this.objects[req];
@@ -1777,7 +1795,15 @@ if(!(function(){return this;}).call(null).JSB){
 				var msg = 'ERROR: Failed to create instance of bean: "'+this.$name+'" due to some of its requires has not been initialized:';
 				for(var rName in this._requireMap){
 					// skip java requires
-					if(rName.toLowerCase().indexOf('java:') == 0){
+					var skipPrefixes = ['java:', 'css:', 'script:'];
+					var needSkip = false;
+					for(var i = 0; i < skipPrefixes.length; i++){
+						if(rName.toLowerCase().indexOf(skipPrefixes[i]) == 0){
+							needSkip = true;
+							break;
+						}
+					}
+					if(needSkip){
 						continue;
 					}
 					var rjsb = this.get(rName);
@@ -2025,6 +2051,26 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 */				
 				callback.call(self, curJavaScope);
+			} else if(name.toLowerCase().indexOf('css:') == 0){
+				if(this.isServer()){
+					// do nothing with load
+					callback.call(self, null);
+				} else {
+					var fileName = name.substr(4).trim();
+					this.loadCss(fileName, function(){
+						callback.call(self, null);
+					})
+				}
+			} else if(name.toLowerCase().indexOf('script:') == 0){
+				if(this.isServer()){
+					// do nothing with load
+					callback.call(self, null);
+				} else {
+					var fileName = name.substr(7).trim();
+					this.loadScript(fileName, function(){
+						callback.call(self, null);
+					})
+				}
 			} else {
 				this.lookup(name, function(cls){
 					if(self.isNull(cls)){
@@ -2716,15 +2762,33 @@ if(!(function(){return this;}).call(null).JSB){
 
 		},
 		
-		loadCss: function(url){
+		loadCss: function(url, callback){
 			if(this instanceof JSB){
 				url = this.getBasePath() + url;
 			}
 			url = this.injectServerVersion(url);
 			
 			if(this.resourceLoaded[url]){
+				if(callback && JSB().isFunction(callback)){
+					callback.call(this);
+				}
 				return;
 			}
+			
+			if(this.resourceScheduled[url]){
+				if(callback && JSB().isFunction(callback)){
+					this.resourceScheduled[url].push(callback);
+				}
+				return;
+			} else {
+				this.resourceScheduled[url] = this.resourceScheduled[url] || [];
+				if(callback && JSB().isFunction(callback)){
+					this.resourceScheduled[url].push(callback);
+				}
+			}
+			
+			var self = this;
+			
 			var _l = document.createElement("link");
 			_l.rel = "stylesheet";
 		    if(url.indexOf('http') == -1){
@@ -2744,9 +2808,20 @@ if(!(function(){return this;}).call(null).JSB){
 		    }
 			_l.type = "text/css";
 			
+			_l.onload = function(){
+				self.resourceLoaded[url] = true;
+				if(self.resourceScheduled[url]){
+					var shArr = self.resourceScheduled[url];
+					delete self.resourceScheduled[url];
+					for(var i = 0; i < shArr.length; i++){
+						shArr[i].call(self);
+					}
+				}
+			}
+			
 		    var _oHead = document.getElementsByTagName('HEAD').item(0);
 		    _oHead.appendChild( _l);
-			this.resourceLoaded[url] = true;
+			
 		},
 		
 		waitForObjectExist: function(funcName, callback){

@@ -3,13 +3,13 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
+		$require: ['css:DashboardPublicationView.css'],
 		ready: false,
 		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('DashboardPublicationView.css');
 			this.addClass('dashboardPublicationView');
 			
 			this.append(`#dot

@@ -2,6 +2,7 @@
 	$name: 'JSB.Controls.Navigator',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+		$require: ['css:navigator.css'],
 	    _clickX: null,
 	    _moved: false,
 
@@ -9,7 +10,6 @@
 	        $base(opts);
 
 			this.addClass('jsb-navigator');
-			$jsb.loadCss('navigator.css');
 
 			this._leftScroll = this.$('<div class="leftScroll hidden"></div>');
 			this.append(this._leftScroll);

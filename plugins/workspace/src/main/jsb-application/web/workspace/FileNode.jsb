@@ -2,10 +2,10 @@
 	$name: 'JSB.Workspace.FileNode',
 	$parent: 'JSB.Workspace.EntryNode',
 	$client: {
+		$require: ['css:FileNode.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('FileNode.css');
 			this.addClass('fileNode');
 			
 			this.uploadFile = this.$('<input type="file" style="display: none;" />');

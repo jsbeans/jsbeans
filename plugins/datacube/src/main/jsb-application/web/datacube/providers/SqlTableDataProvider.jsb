@@ -3,9 +3,9 @@
 	$parent: 'DataCube.Providers.DataProvider',
 	
 	$client: {
+		$require: ['css:SqlTableDataProvider.css'],
 		$constructor: function(){
 			$base();
-			$jsb.loadCss('SqlTableDataProvider.css');
 		}
 	},
 	

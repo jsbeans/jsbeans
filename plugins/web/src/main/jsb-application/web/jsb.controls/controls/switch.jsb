@@ -2,10 +2,11 @@
 	$name: 'JSB.Controls.Switch',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+		$require: ['css:switch.css'],
+		
 	    $constructor: function(opts){
 	        $base(opts);
 
-	        $jsb.loadCss('switch.css');
             this.addClass('jsb-switch');
 
             this.checkbox = this.$('<input id="switch_' + $this.getId() + '" type="checkbox" />');

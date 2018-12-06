@@ -1,7 +1,8 @@
 {
 	$name: 'DataCube.Controls.SortSelector',
 	$parent: 'JSB.Widgets.Control',
-	$require: 'JSB.Widgets.ToolManager',
+	$require: ['JSB.Widgets.ToolManager',
+	           'css:SortSelector.css'],
 	
 	$client: {
 		sortFields: null,
@@ -10,7 +11,6 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('SortSelector.css');
 			this.addClass('sortSelector');
 			
 			this.field = this.$('<div class="field"></div>');

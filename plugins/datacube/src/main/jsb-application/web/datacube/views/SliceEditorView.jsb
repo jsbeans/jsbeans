@@ -9,7 +9,8 @@
 	           'JSB.Widgets.MultiEditor', 
 	           'DataCube.Query.QueryEditor',
 	           'JSB.Widgets.ToolManager',
-	           'DataCube.Export.ExportManager'],
+	           'DataCube.Export.ExportManager',
+	           'css:SliceEditorView.css'],
 	$client: {
 		ready: false,
 		ignoreHandlers: false,
@@ -17,7 +18,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('SliceEditorView.css');
 			this.addClass('sliceEditorView');
 
 			this.titleBlock = this.$('<div class="titleBlock"></div>');

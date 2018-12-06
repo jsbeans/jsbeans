@@ -1,14 +1,14 @@
 {
 	$name: 'JSB.Workspace.EntryRenderer',
 	$parent: 'JSB.Widgets.Renderer',
-	$require: ['JSB.Widgets.PrimitiveEditor'], 
+	$require: ['JSB.Widgets.PrimitiveEditor',
+	           'css:EntryRenderer.css'], 
 
 	$client: {
 		$constructor: function(entry, opts){
 			var self = this;
 			$base(entry, opts);
 			this.addClass('entryRenderer');
-			$jsb.loadCss('EntryRenderer.css');
 			
 			this.icon = this.$('<div class="icon"></div>');
 			this.append(this.icon);

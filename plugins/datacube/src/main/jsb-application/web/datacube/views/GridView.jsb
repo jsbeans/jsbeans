@@ -1,7 +1,10 @@
 {
 	$name: 'DataCube.GridView',
 	$parent: 'JSB.Widgets.Widget',
-	$require: ['Handsontable', 'JQuery.UI.Loader', 'DataCube.Export.Export'],
+	$require: ['Handsontable', 
+	           'JQuery.UI.Loader', 
+	           'DataCube.Export.Export',
+	           'css:GridView.css'],
 	$client: {
 	    allLoaded: false,
 	    curLoadId: null,
@@ -11,7 +14,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('gridView');
-			$jsb.loadCss('GridView.css');
 
             this.table = new Handsontable({
             	noDataMessage: opts && opts.noDataMessage || 'Нет данных',

@@ -20,10 +20,10 @@
 	views: {},
 	
 	$client: {
+		$require: ['css:Browser.css'],
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('Browser.css');
 			this.addClass('workspaceBrowser');
 			
 			this.tabView = new TabView({

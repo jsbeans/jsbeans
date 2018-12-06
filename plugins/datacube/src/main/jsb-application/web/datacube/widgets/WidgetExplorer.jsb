@@ -8,12 +8,12 @@
 		           'JSB.Widgets.GroupBox',
 		           'JSB.Widgets.ItemList',
 		           'JSB.Widgets.ItemList.BlockView',
-		           'DataCube.Widgets.WidgetListItem'],
+		           'DataCube.Widgets.WidgetListItem',
+		           'css:WidgetExplorer.css'],
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('WidgetExplorer.css');
 			this.addClass('widgetExplorer');
 			
 			this.scrollBox = new ScrollBox();

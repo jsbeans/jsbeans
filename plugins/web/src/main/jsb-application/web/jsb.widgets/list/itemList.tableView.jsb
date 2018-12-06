@@ -1,7 +1,8 @@
 {
 	$name:'JSB.Widgets.ItemList.TableView',
 	$parent: 'JSB.Widgets.ItemList.View',
-	$require:['JQuery.UI.Resizable'],
+	$require:['JQuery.UI.Resizable',
+	          'css:itemList.tableView.css'],
 	
 	$client: {
 		options: {
@@ -14,8 +15,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			
-			$jsb.loadCss('itemList.tableView.css');
 			
 			this.subscribe(['JSB.Widgets.ItemList.insertItem', 'JSB.Widgets.ItemList.deleteItem','JSB.Widgets.ItemList.clear'], function(sender, msg, params){
 				if(self.list !== sender){

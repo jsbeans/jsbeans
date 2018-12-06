@@ -5,6 +5,7 @@
 		Button: 'JSB.Widgets.Button'
 	},
 	$client: {
+		$require: ['css:messageTool.css'],
 		$bootstrap: function(){
 			// register tooltip
 			var self = this;
@@ -30,7 +31,6 @@
 		
 		construct: function(){
 			var self = this;
-			$jsb.loadCss('messageTool.css');
 			var elt = this.getElement();
 			elt.addClass('_dwp_messageTool');
 			this.icon = this.$('<div class="_dwp_messageTool_Icon"></div>');

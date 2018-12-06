@@ -3,14 +3,14 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
-		$require: ['JSB.Widgets.SplitBox'],
+		$require: ['JSB.Widgets.SplitBox',
+		           'css:WidgetApiView.css'],
 		ready: false,
 		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('WidgetApiView.css');
 			this.addClass('widgetApiView');
 			
 			var splitBox = new SplitBox({

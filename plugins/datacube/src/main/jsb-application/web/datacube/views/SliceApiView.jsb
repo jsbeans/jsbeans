@@ -7,7 +7,8 @@
 		           'JSB.Widgets.TabView', 
 		           'JsonView', 
 		           'JSB.Widgets.ScrollBox', 
-		           'JSB.Widgets.MultiEditor'],
+		           'JSB.Widgets.MultiEditor',
+		           'css:SliceApiView.css'],
 		ready: false,
 		ignoreHandlers: false,
 		isCube: false,
@@ -23,7 +24,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('SliceApiView.css');
 			this.addClass('sliceApiView');
 			
 			var splitBox = new SplitBox({

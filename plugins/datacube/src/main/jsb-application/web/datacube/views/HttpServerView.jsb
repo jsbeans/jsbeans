@@ -3,14 +3,14 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
-		$require: 'JSB.Widgets.SplitLayoutManager',
+		$require: ['JSB.Widgets.SplitLayoutManager',
+		           'css:HttpServerView.css'],
 		ready: false,
 		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('HttpServerView.css');
 			this.addClass('httpServerView');
 			
 			// create dialog

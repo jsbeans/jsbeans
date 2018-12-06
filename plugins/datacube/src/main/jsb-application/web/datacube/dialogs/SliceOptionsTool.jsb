@@ -4,7 +4,8 @@
 	$require: ['JSB.Widgets.ToolManager', 
 	           'JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.ScrollBox',
-	           'JQuery.UI.Resizable'],
+	           'JQuery.UI.Resizable',
+	           'css:SliceOptionsTool.css'],
 	$client: {
 		$bootstrap: function(){
 			// register tooltip
@@ -25,7 +26,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('SliceOptionsTool.css');
 			this.addClass('sliceOptionsTool');
 			
 			this.append(`#dot

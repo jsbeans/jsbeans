@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Tool',
 	$require: [
 	    'JSB.Widgets.ToolManager',
-	    'JSB.Controls.Editor'
+	    'JSB.Controls.Editor',
+	    'css:Formatter.AddTool.css'
 	],
 	$client: {
 		$bootstrap: function(){
@@ -32,7 +33,6 @@
 		    $base(opts);
 
 		    this.addClass('formatterAddTool');
-		    $jsb.loadCss('Formatter.AddTool.css');
 
 		    this._itemsList = this.$('<ul class="itemsList"></ul>');
 		    this.append(this._itemsList);

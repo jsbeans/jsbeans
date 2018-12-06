@@ -1,11 +1,11 @@
 {
 	$name: 'Unimap.Render.NamesBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.ComboEditor'],
+	$require: ['JSB.Controls.ComboEditor',
+	           'css:NamesBinding.css'],
 	$client: {
 	    construct: function(){
 	        this.addClass('namesBinding');
-	        $jsb.loadCss('NamesBinding.css');
 
 	        this.createDataList(this.getValueByKey(this._scheme.linkTo));
 

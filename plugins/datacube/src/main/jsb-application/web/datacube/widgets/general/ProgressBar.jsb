@@ -157,14 +157,14 @@
 	    }
 	},
 	$client: {
-		$require: 'JSB.Utils.Formatter',
+		$require: ['JSB.Utils.Formatter',
+		           'css:ProgressBar.css'],
 		widgets: [],
 		
 		$constructor: function(opts){
 			$base(opts);
 			
 			this.addClass('progressBar');
-			$jsb.loadCss('ProgressBar.css');
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.setInitialized();

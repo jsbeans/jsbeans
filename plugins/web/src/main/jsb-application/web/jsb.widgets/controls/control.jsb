@@ -1,6 +1,6 @@
 {
 	$name:'JSB.Widgets.Control',
-	$require: ['JQuery', 'JSB.Widgets.DomController'],
+	$require: ['JQuery', 'JSB.Widgets.DomController', 'css:control.css'],
 	$client: {
 		$constructor: function(opts){
 			opts = opts || {};
@@ -11,7 +11,6 @@
 			} 
 			this.options = JSB.merge(true, {}, this.options, opts);
 			
-			$jsb.loadCss('control.css');
 			if(this.options.element){
 				this.element = this.$(this.options.element);
 				delete this.options.element;

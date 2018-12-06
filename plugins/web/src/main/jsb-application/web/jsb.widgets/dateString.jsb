@@ -2,10 +2,10 @@
 	$name:'JSB.DateString',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		$require: ['css:dateString.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('dateString.css');
 			this.addClass('_dwp_dateString');
 		},
 		

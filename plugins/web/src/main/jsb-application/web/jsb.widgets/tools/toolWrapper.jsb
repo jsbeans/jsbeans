@@ -2,10 +2,10 @@
 	$name:'JSB.Widgets.ToolWrapper',
 	$parent:'JSB.Widgets.Control',
 	$client: {
+		$require: ['css:toolWrapper.css'],
 		$constructor: function(toolId, toolMgr, w, opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('toolWrapper.css');
 			this.toolId = toolId;
 			this.toolManager = toolMgr;
 			this.embeddedWidget = w;

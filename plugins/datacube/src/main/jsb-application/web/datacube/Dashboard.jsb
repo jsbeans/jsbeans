@@ -11,13 +11,13 @@
 		$require: ['JSB.Widgets.Dashboard.Dashboard',
 		           'DataCube.Controls.FilterSelector',
 		           'DataCube.Widgets.FilterManager',
-		           'DataCube.Widgets.WidgetWrapper'],
+		           'DataCube.Widgets.WidgetWrapper',
+		           'css:Dashboard.css'],
 		           
 		entry: null,
 		           
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('Dashboard.css');
 			this.addClass('dataCubeDashboard loading');
 			
 			this.filterManager = new FilterManager(this);

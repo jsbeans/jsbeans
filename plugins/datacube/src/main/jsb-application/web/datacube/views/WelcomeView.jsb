@@ -3,10 +3,10 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
+		$require: ['css:WelcomeView.css'],
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('WelcomeView.css');
 			this.addClass('welcomeView');
 			
 		},

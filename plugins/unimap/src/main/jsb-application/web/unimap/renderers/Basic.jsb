@@ -1,7 +1,8 @@
 {
 	$name: 'Unimap.Render.Basic',
 	$parent: 'JSB.Controls.Control',
-	$require: ['Unimap.Controller'],
+	$require: ['Unimap.Controller',
+	           'css:Basic.css'],
     $client: {
         _basicOpts: {},
         _defaultSchemeOpts: {},
@@ -9,7 +10,6 @@
         $constructor: function(opts){
             $base(opts);
             this.addClass('basicRender');
-            $jsb.loadCss('Basic.css');
 
             if(opts.scheme.advancedRender){
                 this.addClass('advancedRender');

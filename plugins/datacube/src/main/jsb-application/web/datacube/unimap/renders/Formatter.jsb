@@ -2,11 +2,14 @@
 	$name: 'Unimap.Render.Formatter',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Widgets.ToolManager', 'DataCube.Formatter.AddTool', 'DataCube.Formatter.EditMenuTool', 'DataCube.Formatter.EditTool'],
+	    $require: ['JSB.Widgets.ToolManager', 
+	               'DataCube.Formatter.AddTool', 
+	               'DataCube.Formatter.EditMenuTool', 
+	               'DataCube.Formatter.EditTool',
+	               'css:Formatter.css'],
 
 	    construct: function(){
 	        this.addClass('formatter');
-	        $jsb.loadCss('Formatter.css');
 
             this._name = this.$('<span class="name">' + this._scheme.name + '</span>');
             this.append(this._name);

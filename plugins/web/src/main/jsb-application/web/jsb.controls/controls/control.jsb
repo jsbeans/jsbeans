@@ -1,6 +1,8 @@
 {
 	$name: 'JSB.Controls.Control',
-	$require: ['JQuery', 'JSB.Widgets.DomController'],
+	$require: ['JQuery', 
+	           'JSB.Widgets.DomController',
+	           'css:control.css'],
 	$client: {
 		$constructor: function(opts){
 		    opts = opts || {};
@@ -20,8 +22,6 @@
                 var tag = opts.tag || 'div';
                 this.element = this.$('<'+tag+' _id="'+this.getId()+'" class="jsb-control"></'+tag+'>');
             }
-
-            $jsb.loadCss('control.css');
 
             // options class
             if(this.options.cssClass){

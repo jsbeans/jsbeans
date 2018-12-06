@@ -13,7 +13,8 @@
 	           'JSB.Widgets.Button',
 	           'JQuery.UI.Effects',
 	           'JQuery.UI.Loader',
-	           'JSB.Web'],
+	           'JSB.Web',
+	           'css:Explorer.css'],
 	
 	$sync: {
 		updateCheckInterval: 0
@@ -31,7 +32,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('Explorer.css');
 			this.addClass('workspaceExplorer');
 			
 			this.messageBox = this.$('<div class="message"></div>');

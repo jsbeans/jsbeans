@@ -1,13 +1,13 @@
 {
 	$name: 'JSB.Controls.Panel',
 	$parent: 'JSB.Controls.Control',
-	$require: ['JSB.Controls.Editor'],
+	$require: ['JSB.Controls.Editor',
+	           'css:panel.css',
+	           'css:../fonts/fa/fontawesome-all.min.css'],
     $client: {
         $constructor: function(opts){
             $base(opts);
 
-            $jsb.loadCss('panel.css');
-            $jsb.loadCss('../fonts/fa/fontawesome-all.min.css');
             this.addClass('jsb-panel');
 
             this.elements.header = this.$('<div class="header"></div>');

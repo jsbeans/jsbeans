@@ -2,7 +2,9 @@
 	$name: 'Unimap.Render.ParserSourceBinding',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Widgets.Button', 'Unimap.Render.DataBindingCache'],
+	    $require: ['JSB.Widgets.Button', 
+	               'Unimap.Render.DataBindingCache',
+	               'css:ParserSourceBinding.css'],
 
 	    _beans: [],
 	    _dataList: [],
@@ -15,7 +17,6 @@
 
 	    construct: function(){
 	        this.addClass('parserSourceBindingRender');
-	        $jsb.loadCss('ParserSourceBinding.css');
 	        
 	        this.createDataList();
 	        

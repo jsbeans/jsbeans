@@ -5,6 +5,7 @@
 		ListBox: 'JSB.Widgets.ListBox'
 	},
 	$client: {
+		$require: ['css:dropListTool.css'],
 		$bootstrap: function(){
 			// register tooltip
 			var self = this;
@@ -30,7 +31,6 @@
 		
 		construct: function(){
 			var self = this;
-			$jsb.loadCss('dropListTool.css');
 			this.addClass('_dwp_droplistTool');
 			this.listbox = new ListBox({
 				onSelectionChanged: function(key, item, evt){

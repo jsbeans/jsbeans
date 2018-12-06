@@ -2,9 +2,9 @@
 	$name: 'DataCube.HttpServerNode',
 	$parent: 'JSB.Workspace.EntryNode',
 	$client: {
+		$require: ['css:HttpServerNode.css'],
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('HttpServerNode.css');
 			this.addClass('httpServerNode');
 			
 			this.append(`#dot

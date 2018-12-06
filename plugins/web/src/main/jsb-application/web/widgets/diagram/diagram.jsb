@@ -10,7 +10,8 @@
 		Controller: 'JSB.Widgets.Diagram.Controller',
 		WiringController: 'JSB.Widgets.Diagram.WiringController',
 		LayoutManager: 'JSB.Widgets.Diagram.LayoutManager',
-		DefaultLayoutManager: 'JSB.Widgets.Diagram.DefaultLayoutManager'
+		DefaultLayoutManager: 'JSB.Widgets.Diagram.DefaultLayoutManager',
+		css: 'css:diagram.css'
 	},
 	
 	$client: {
@@ -63,7 +64,6 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			$jsb.loadCss('diagram.css');
 			this.addClass('_jsb_diagram');
 			
 			JSB().loadScript('tpl/d3/d3.min.js', function(){

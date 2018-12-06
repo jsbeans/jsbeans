@@ -14,12 +14,12 @@
 	},
 	
 	$client: {
+		$require: ['css:EntryNode.css'],
 		renderer: null,
 		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('EntryNode.css');
 			this.addClass('entryNode');
 			
 			if(this.isLink()){

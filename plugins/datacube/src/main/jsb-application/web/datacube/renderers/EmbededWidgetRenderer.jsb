@@ -2,11 +2,11 @@
 	$name: 'DataCube.Renderers.EmbededWidgetRenderer',
 	$parent: 'JSB.Widgets.Renderer',
 	$client: {
+		$require: ['css:EmbededWidgetRenderer.css'],
 		$constructor: function(wDesc, opts){
 			opts = opts || {};
 			$base(wDesc, opts);
 			this.addClass('embededWidgetRenderer');
-			$jsb.loadCss('EmbededWidgetRenderer.css');
 			
 			this.icon = this.$('<img class="icon"></img>');
 			this.append(this.icon);

@@ -5,6 +5,7 @@
 		WidgetContainer: 'JSB.Widgets.WidgetContainer'
 	},
 	$client: {
+		$require: ['css:widgetTool.css'],
 		$bootstrap: function(){
 			// register tooltip
 			var self = this;
@@ -25,7 +26,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('widgetTool.css');
 			this.addClass('_dwp_widgetTool');
 			
 			this.wc = new WidgetContainer();

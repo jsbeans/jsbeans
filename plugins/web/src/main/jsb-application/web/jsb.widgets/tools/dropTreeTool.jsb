@@ -1,7 +1,8 @@
 {
 	$name:'JSB.Widgets.DropTreeTool',
 	$parent: 'JSB.Widgets.Tool',
-	$require: ['JSB.Widgets.TreeView'],
+	$require: ['JSB.Widgets.TreeView',
+	           'css:dropTreeTool.css'],
 	
 	$client: {
 		$bootstrap: function(){
@@ -29,7 +30,6 @@
 		
 		construct: function(){
 			var self = this;
-			$jsb.loadCss('dropTreeTool.css');
 			this.addClass('_dwp_dropTreeTool');
 			this.tree = new TreeView({
 				onSelectionChanged: function(key, item, evt){

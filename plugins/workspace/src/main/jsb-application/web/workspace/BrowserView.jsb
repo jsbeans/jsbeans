@@ -4,7 +4,8 @@
 	
 	$require: ['JSB.Workspace.WorkspaceController', 
 	           'JSB.Widgets.Button',
-	           'JQuery.UI.Effects'],
+	           'JQuery.UI.Effects',
+	           'css:BrowserView.css'],
 	
 	$client: {
 //		node: null,
@@ -14,7 +15,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('BrowserView.css');
 			this.addClass('workspaceBrowserView');
 			
 		},

@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Tool',
 	$require: ['JSB.Widgets.ToolManager', 
 	           'JSB.Widgets.PrimitiveEditor',
-	           'JSB.Widgets.ScrollBox'],
+	           'JSB.Widgets.ScrollBox',
+	           'css:CubeMaterializationTool.css'],
 	$client: {
 		$bootstrap: function(){
 			// register tooltip
@@ -24,7 +25,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('CubeMaterializationTool.css');
 			this.addClass('cubeMaterializationTool');
 			
 			this.append(`#dot

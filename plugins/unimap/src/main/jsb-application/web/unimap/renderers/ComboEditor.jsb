@@ -1,13 +1,13 @@
 {
 	$name: 'Unimap.Render.ComboEditor',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.ComboEditor'],
+	$require: ['JSB.Controls.ComboEditor',
+	           'css:ComboEditor.css'],
 	$client: {
 	    _editors: [],
 
 	    construct: function(){
 	        this.addClass('comboEditor');
-	        $jsb.loadCss('ComboEditor.css');
 
 	        this.createOptionsList();
 

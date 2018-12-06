@@ -1,10 +1,10 @@
 {
 	$name:'JSB.Widgets.NetworkIndicator',
-	$require: ['JQuery'],
+	$require: ['JQuery',
+	           'css:networkIndicator.css'],
 	$client: {
 		$singleton: true,
 		$constructor: function(){
-			$jsb.loadCss('networkIndicator.css');
 			this.element = this.$('<div class="networkConnection"></div>');
 			this.icon = this.$('<div class="icon"></div>');
 			this.element.append(this.icon);

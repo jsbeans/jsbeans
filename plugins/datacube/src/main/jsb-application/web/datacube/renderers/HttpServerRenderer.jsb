@@ -2,11 +2,11 @@
 	$name: 'DataCube.Renderers.HttpServerRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$client: {
+		$require: ['css:HttpServerRenderer.css'],
 		$constructor: function(entry, opts){
 			var self = this;
 			$base(entry, opts);
 			this.addClass('httpServerRenderer');
-			$jsb.loadCss('HttpServerRenderer.css');
 		}
 	},
 	

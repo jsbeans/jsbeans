@@ -3,14 +3,14 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
-		$require: 'JSB.Widgets.SplitLayoutManager',
+		$require: ['JSB.Widgets.SplitLayoutManager',
+		           'css:SqlSourceView.css'],
 		ready: false,
 		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('SqlSourceView.css');
 			this.addClass('sqlSourceView');
 			
 			// create dialog

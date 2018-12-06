@@ -1,7 +1,12 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor', 'DataCube.Controls.SchemeSelector', 'Unimap.Render.DataBindingCache'],
+	$require: ['JSB.Controls.Button', 
+	           'JSB.Controls.Select', 
+	           'JSB.Controls.ComboEditor', 
+	           'DataCube.Controls.SchemeSelector', 
+	           'Unimap.Render.DataBindingCache',
+	           'css:DataBinding.css'],
 	$client: {
         _dataList: [],
         _cubeFieldList: [],
@@ -11,7 +16,6 @@
 
 	    construct: function(){
 	        this.addClass('dataBindingRender');
-	        $jsb.loadCss('DataBinding.css');
 
 	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList') || [];
 	        this._cubeFieldList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_cubeFieldList') || [];

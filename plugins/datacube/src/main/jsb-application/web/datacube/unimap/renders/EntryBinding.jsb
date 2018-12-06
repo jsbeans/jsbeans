@@ -2,11 +2,11 @@
 	$name: 'Unimap.Render.EntryBinding',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Widgets.RendererRepository'],
+	    $require: ['JSB.Widgets.RendererRepository',
+	               'css:EntryBinding.css'],
 
 	    construct: function(){
 	        this.addClass('entryBindingRender');
-	        $jsb.loadCss('EntryBinding.css');
 
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
 	        this.append(name);

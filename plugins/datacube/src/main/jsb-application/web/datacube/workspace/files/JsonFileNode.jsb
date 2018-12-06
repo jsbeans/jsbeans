@@ -2,10 +2,10 @@
 	$name: 'DataCube.JsonFileNode',
 	$parent: 'JSB.Workspace.FileNode',
 	$client: {
+		$require: ['css:JsonFileNode.css'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('JsonFileNode.css');
 			this.addClass('jsonFileNode');
 			
 			this.append('<div class="status"></div>');

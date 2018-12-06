@@ -743,7 +743,8 @@
 		           'JSB.Crypt.MD5',
 		           'DataCube.Controls.SortSelector',
 		           'DataCube.Controls.FilterEntry',
-		           'JSB.Utils.Formatter'],
+		           'JSB.Utils.Formatter',
+		           'css:Table.css'],
 		
 		_ready: false,
 		headerDesc: [],
@@ -768,7 +769,6 @@
 			$base(opts);
 			
 			this.addClass('tableWidget');
-			$jsb.loadCss('Table.css');
 /*			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);

@@ -2,11 +2,11 @@
 	$name: 'Unimap.Render.StylesBinding',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Widgets.RendererRepository'],
+	    $require: ['JSB.Widgets.RendererRepository',
+	               'css:StylesBinding.css'],
 
 	    construct: function(){
 	        this.addClass('styleBindingRender');
-	        $jsb.loadCss('StylesBinding.css');
 
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
 	        this.append(name);

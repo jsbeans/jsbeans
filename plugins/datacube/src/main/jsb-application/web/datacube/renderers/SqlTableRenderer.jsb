@@ -1,7 +1,8 @@
 {
 	$name: 'DataCube.Renderers.SqlTableRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
-	$require: 'JSB.Widgets.RendererRepository',
+	$require: ['JSB.Widgets.RendererRepository',
+	           'css:SqlTableRenderer.css'],
 	$client: {
 		$constructor: function(entry, opts){
 			var self = this;
@@ -9,7 +10,6 @@
 			opts.editable = false;
 			$base(entry, opts);
 			this.addClass('sqlTableRenderer');
-			$jsb.loadCss('SqlTableRenderer.css');
 			entry.ensureSynchronized(function(){
 				var e = $this.getEntry();
 				$this.updateAdditional();

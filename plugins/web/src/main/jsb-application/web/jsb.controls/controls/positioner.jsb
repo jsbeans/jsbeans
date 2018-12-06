@@ -2,11 +2,11 @@
 	$name: 'JSB.Controls.Positioner',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+		$require: ['css:positioner.css'],
 	    $constructor: function(opts){
 	        $base(opts);
 
 			this.addClass('jsb-positioner');
-			$jsb.loadCss('positioner.css');
 
             this.currentVal = this.$('<div class="curVal"></div>');
             this.append(this.currentVal);

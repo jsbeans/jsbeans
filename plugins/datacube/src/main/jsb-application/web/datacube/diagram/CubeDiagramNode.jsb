@@ -5,7 +5,8 @@
 	           'JSB.Widgets.ToolManager', 
 	           'DataCube.Dialogs.CubeMaterializationTool',
 	           'JSB.Widgets.CheckBox',
-	           'JSB.Controls.ScrollBox'],
+	           'JSB.Controls.ScrollBox',
+	           'css:CubeDiagramNode.css'],
 	
 	$client: {
 		ready: false,
@@ -37,7 +38,6 @@
 			$base(diagram, key, opts);
 			this.editor = opts.editor;
 			this.entry = opts.entry;
-			$jsb.loadCss('CubeDiagramNode.css');
 			this.addClass('cubeDiagramNode');
 			
 			this.caption = this.$(`#dot

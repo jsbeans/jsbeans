@@ -9,13 +9,13 @@
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.Button',
-                   'DataCube.Widgets.FilterManager'
+                   'DataCube.Widgets.FilterManager',
+                   'css:WidgetSettingsView.css'
         ],
 
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('WidgetSettingsView.css');
 			this.addClass('widgetSettingsView');
 
             this.titleBlock = this.$('<div class="titleBlock"></div>');

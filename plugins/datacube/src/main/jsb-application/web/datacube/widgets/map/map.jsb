@@ -796,7 +796,10 @@
         }
     },
     $client: {
-        $require: ['JSB.Utils.Rainbow', 'JSB.Crypt.MD5', 'JSB.Utils.Formatter'],
+        $require: ['JSB.Utils.Rainbow', 
+                   'JSB.Crypt.MD5', 
+                   'JSB.Utils.Formatter',
+                   'css:map.css'],
 
         $constructor: function(opts){
             $base(opts);
@@ -808,7 +811,6 @@
             this.append(this._widgetElements.header);
 
             this.addClass('mapWidget');
-            $jsb.loadCss('map.css');
 
             JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.css');
             JSB.loadCss('tpl/leaflet.markercluster/MarkerCluster.Default.css');

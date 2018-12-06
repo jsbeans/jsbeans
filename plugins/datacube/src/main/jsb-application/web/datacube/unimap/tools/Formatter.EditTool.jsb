@@ -4,7 +4,8 @@
 	$require: [
 	    'JSB.Widgets.ToolManager',
 	    'JSB.Controls.Checkbox',
-	    'JSB.Controls.Editor'
+	    'JSB.Controls.Editor',
+	    'css:Formatter.EditTool.css'
 	],
 	$client: {
 		$bootstrap: function(){
@@ -30,7 +31,6 @@
 		    $base(opts);
 
 		    this.addClass('formatterEditTool');
-		    $jsb.loadCss('Formatter.EditTool.css');
 
 		    this._variableBlock = this.$('<div class="variableBlock"></div>');
 		    this.append(this._variableBlock);

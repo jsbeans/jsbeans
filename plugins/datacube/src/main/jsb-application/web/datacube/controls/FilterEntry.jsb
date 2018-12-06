@@ -1,7 +1,10 @@
 {
 	$name: 'DataCube.Controls.FilterEntry',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JSB.Widgets.PrimitiveEditor', 'JSB.Widgets.ToolManager', 'JSB.Widgets.ComboBox'],
+	$require: ['JSB.Widgets.PrimitiveEditor', 
+	           'JSB.Widgets.ToolManager', 
+	           'JSB.Widgets.ComboBox',
+	           'css:FilterEntry.css'],
 	
 	$client: {
 		filterField: null,
@@ -44,7 +47,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('FilterEntry.css');
 			this.addClass('filterEntry');
 			
 			this.editor = new PrimitiveEditor({

@@ -1,7 +1,9 @@
 {
 	$name: 'DataCube.Formatter.EditMenuTool',
 	$parent: 'JSB.Widgets.Tool',
-	$require: ['JSB.Widgets.ToolManager', 'JSB.Widgets.Button'],
+	$require: ['JSB.Widgets.ToolManager', 
+	           'JSB.Widgets.Button',
+	           'css:Formatter.EditMenuTool.css'],
 	$client: {
 		$bootstrap: function(){
 			// register tooltip
@@ -24,7 +26,6 @@
 			$base(opts);
 
 			this.addClass('formatterEditMenuTool');
-			$jsb.loadCss('Formatter.EditMenuTool.css');
 
 			$this.btnEdit = new Button({
 				cssClass: 'roundButton btn10 btnEdit',

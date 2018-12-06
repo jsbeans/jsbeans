@@ -9,13 +9,13 @@
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Controls.Button',
                    'DataCube.Widgets.WidgetWrapper',
-                   'JSB.Widgets.Dashboard.Dashboard'
+                   'JSB.Widgets.Dashboard.Dashboard',
+                   'css:StylesEditorView.css'
         ],
 
 		$constructor: function(opts){
 			$base(opts);
 
-			$jsb.loadCss('StylesEditorView.css');
 			this.addClass('stylesEditorView');
 
             this.titleBlock = this.$('<div class="titleBlock"></div>');

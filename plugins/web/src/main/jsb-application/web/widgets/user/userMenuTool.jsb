@@ -2,7 +2,8 @@
 	$name:'UserMenuTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require: {
-		WidgetContainer: 'JSB.Widgets.FloatingContainer'
+		WidgetContainer: 'JSB.Widgets.FloatingContainer',
+		css:'css:userMenuTool.css'
 	},
 	$client: {
 		$bootstrap: function(){
@@ -26,7 +27,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			$jsb.loadCss('userMenuTool.css');
 			this.addClass('_dwp_userMenuTool');
 			
 			// append header

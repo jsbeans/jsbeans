@@ -5,7 +5,8 @@
 	$client: {
 		$require: ['JSB.Widgets.Diagram',
 		           'JSB.Widgets.ToolBar',
-		           'DataCube.Providers.DataProviderRepository'],
+		           'DataCube.Providers.DataProviderRepository',
+		           'css:CubeEditor.css'],
 		           
 		cubeEntry: null,
 		cubeNode: null,
@@ -15,7 +16,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			$jsb.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
 			
 			// create diagram
