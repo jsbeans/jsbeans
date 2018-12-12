@@ -43,12 +43,16 @@
 				this.property('cube', this.cube.getId());
 				this.setName(name);
 				this.property('query', this.query);
+				this.property('queryParams', this.queryParams);
 			} else {
 				if(this.property('cube')){
 					this.cube = this.getWorkspace().entry(this.property('cube'));
 				}
 				if(this.property('query')){
 					this.query = this.property('query');
+				}
+				if(this.property('queryParams')){
+					this.queryParams = this.property('queryParams');
 				}
 			}
 			this.cacheEnabled = Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled');

@@ -17,6 +17,7 @@ import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jsbeans.helpers.ActorHelper;
+import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.helpers.NetworkHelper;
 import org.jsbeans.helpers.ReflectionHelper;
 import org.jsbeans.messages.Message;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 //import ch.qos.logback.classic.Level;
@@ -191,8 +193,13 @@ public class Core {
                 // create plugin instance
                 PluginActivator plugin = type.newInstance();
                 plugins.add(plugin);
-
-                Config config = loadPluginConfig(plugin.getConfigurationName());
+                
+                // generate plugin specific variables
+                Properties p = new Properties();
+                p.put("plugin.name", plugin.getName());
+                p.put("plugin.home", ConfigHelper.getPluginHomeFolder(plugin));
+                
+                Config config = loadPluginConfig(plugin.getConfigurationName()).resolveWith(ConfigFactory.parseProperties(p).withFallback(getConfig()));
                 // merge main and plugin config
                 if (config != null) {
                     Core.mergeConfigWith(config, false);
@@ -202,7 +209,7 @@ public class Core {
                 }
 
                 if (DEBUG) {
-                    Config debug = loadPluginConfig(plugin.getConfigurationName() + "-debug");
+                    Config debug = loadPluginConfig(plugin.getConfigurationName() + "-debug").resolveWith(ConfigFactory.parseProperties(p).withFallback(getConfig()));
                     // merge main and plugin config
                     if (debug != null) {
                         Core.mergeConfigWith(debug, false);

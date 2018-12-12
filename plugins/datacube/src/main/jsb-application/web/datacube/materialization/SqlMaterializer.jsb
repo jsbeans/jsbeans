@@ -28,6 +28,7 @@
 			var vendor = JDBC.getDatabaseVendor(connection);
 			var suggestedName = cName;
 			var schema = opts && opts.schema || 'public';
+			var alreadyExisted = false;
 			try {
 				var databaseMetaData = connection.getMetaData();
 				// check schema for existence
@@ -50,6 +51,7 @@
 					var curTabRecord = rs.next();
 					if(curTabRecord){
 						if(opts.useExistingTable){
+							alreadyExisted = true;
 							// extract columns and return current name
 							var columns = databaseMetaData.getColumns(null, schema, suggestedName, null);
 							while(columns.next()) {
@@ -57,7 +59,45 @@
 								if(fields[columnName]){
 									fieldMap[columnName] = columnName;
 								} else {
-									throw new Error('Invalid column name: ' + columnName);
+									// try to detect near column
+									for(var fn in fields){
+										if(fn.indexOf(columnName) >= 0 || columnName.indexOf(fn) >= 0){
+											fieldMap[fn] = columnName;
+											break;
+										}
+									}
+								}
+							}
+							
+							// check fieldMap
+							if(Object.keys(fieldMap).length == 0 && Object.keys(fields).length > 0){
+								throw new Error('Existed table "' + schema + '"."' + suggestedName + '" completely differs with current field set');
+							}
+							
+							// perform missing columns
+							for(var fn in fields){
+								if(!fieldMap[fn]){
+									// append missing column
+									var fType = fields[fn].type;
+									var fComment = fields[fn].comment;
+									var sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fn + '" ' + JDBC.translateType(fType, vendor);
+									JDBC.executeUpdate(connection, sql);
+									
+									// extract current field
+									var columns = databaseMetaData.getColumns(null, schema, suggestedName, null);
+									while(columns.next()) {
+										var columnName = ''+columns.getString("COLUMN_NAME");
+										if(columnName != fn && fn.indexOf(columnName) == -1 && columnName.indexOf(fn) == -1){
+											continue;
+										}
+										fieldMap[fn] = columnName;
+										
+										if(fComment && fComment.length > 0){
+											sql = 'comment on column "' + schema + '"."' + suggestedName + '"."' + columnName + '" is \'' + fComment + '\'';
+											JDBC.executeUpdate(connection, sql);
+										}
+										break;
+									}
 								}
 							}
 							
@@ -128,7 +168,9 @@
 				
 			} catch(e){
 				try {
-					JDBC.executeUpdate(connection, 'drop table "' + schema + '"."' +suggestedName + '"');
+					if(!alreadyExisted){
+						JDBC.executeUpdate(connection, 'drop table "' + schema + '"."' +suggestedName + '"');
+					}
 				} catch(ex) {
 				}
 				throw e;
