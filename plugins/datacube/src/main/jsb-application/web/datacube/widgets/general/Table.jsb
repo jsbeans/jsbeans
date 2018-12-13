@@ -545,6 +545,13 @@
                     editor: 'none',
                     optional: true
                 },
+/*                useForCompare: {
+                	render: 'switch',
+                    name: 'Использовать для сравнения',
+                    items: {
+                    	
+                    }
+                },*/
                 summary: {
                     render: 'switch',
                     name: 'Отображать в строке статуса сводный показатель',

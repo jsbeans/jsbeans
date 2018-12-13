@@ -30,7 +30,8 @@
 		_init: function(){
 			// setup initial config variables
 			this.configVariables = {
-				'USER_DIR': FileSystem.getUserDirectory(true)
+				'USER_DIR': FileSystem.getUserDirectory(true),
+				'CUR_DIR': FileSystem.getCurrentDirectory(true)
 			}
 			
 			// load configuration

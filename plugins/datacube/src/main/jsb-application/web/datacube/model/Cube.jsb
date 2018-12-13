@@ -242,6 +242,14 @@
 									this.slicePositions[sDesc.id] = sDesc.position;
 								}
 							}
+							// append child slices
+							var sliceChMap = this.getChildren();
+							for(var chId in sliceChMap){
+								if(this.slices[chId] || !JSB.isInstanceOf(sliceChMap[chId], 'DataCube.Model.Slice')){
+									continue;
+								}
+								this.slices[chId] = sliceChMap[chId];
+							}
 							
 						}
 						this.loaded = true;

@@ -12,11 +12,11 @@
 			return fn.replace(/\|/g,'_');
 		},
 		
-		getArtifactDir: function(entry){
+		getArtifactDir: function(entry, bRead){
 			var eStore = entry.getEntryStore();
 			var eDir = null;
 			if(JSB.isInstanceOf(eStore, 'JSB.Workspace.FileEntryStore')){
-				eDir = eStore.getEntryDir(entry);
+				eDir = eStore.getEntryDir(entry, bRead);
 			} else {
 				//TODO:
 				throw new Error('not implemented');
@@ -104,7 +104,11 @@
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
 			if(!FileSystem.exists(eFileName)){
-				throw new Error('Internal error: Missing artifact file "'+eFileName+'" defined in entry: ' + entry.getId());
+				eDir = this.getArtifactDir(entry, true);
+				eFileName = FileSystem.join(eDir, name);
+				if(!FileSystem.exists(eFileName)){
+					throw new Error('Internal error: Missing artifact file "'+eFileName+'" defined in entry: ' + entry.getId());
+				}
 			}
 			return FileSystem.size(eFileName);
 		},
@@ -116,7 +120,11 @@
 			JSB.getLocker().lock(mtxName);
 			try {
 				if(!FileSystem.exists(eFileName)){
-					throw new Error('Internal error: Missing artifact file "'+eFileName+'" defined in entry: ' + entry.getId());
+					eDir = this.getArtifactDir(entry, true);
+					eFileName = FileSystem.join(eDir, name);
+					if(!FileSystem.exists(eFileName)){
+						throw new Error('Internal error: Missing artifact file "'+eFileName+'" defined in entry: ' + entry.getId());
+					}
 				}
 				
 				var artifactType = entry._artifacts[name];
@@ -188,6 +196,12 @@
 			try {
 				if(FileSystem.exists(eFileName)){
 					FileSystem.move(eFileName, eFileNewName);
+				} else {
+					eDir = this.getArtifactDir(entry, true);
+					eFileName = FileSystem.join(eDir, existedName);
+					if(FileSystem.exists(eFileName)){
+						FileSystem.copy(eFileName, eFileNewName);
+					}
 				}
 			} catch(e){
 				if(opts && opts.silent){
