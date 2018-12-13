@@ -141,6 +141,10 @@
 		},
 
 		installHoverHandlers: function(entryType, entryKey, handle, opts){
+		    if(entryKey === '$provider'){
+		        return;
+		    }
+
 			if(!entryType || !JSB.isDefined(entryKey)){
 				throw new Error('Missing entryType or entryKey');
 			}
@@ -2114,11 +2118,19 @@ console.log('getCubeSlices');
 					$this.container.append(valElt);
 				}
 			}  else if(this.scheme.expressionType == 'DropContainer'){
-			    if(this.options.mode === 'diagram'){
+			    if(this.schemeName === '$provider'){
+			        if(this.value){
+                        this.server().getDataSourceEntry(this.value, function(entry, fail){
+                            if(!fail){
+                                $this.container.append(RendererRepository.createRendererFor(entry).getElement());
+                            }
+                        });
+			        }
+			    } else if(this.options.mode === 'diagram'){
 			        var select = new Select({
                         clearBtn: true,
                         cloneOptions: true,
-                        options: this.scheme.name === '$from' ? this.options.sliceSelectOptions : this.options.sourceSelectOptions,
+                        options: this.options.sliceSelectOptions,
                         value: this.value,
                         onchange: function(val){
                             $this.changeConstValue(val.key);
@@ -2348,7 +2360,6 @@ console.log('getCubeSlices');
 				return {w: 0.5, scheme: schemeName};
 				break;
 			case 'EConstString':
-			//case 'DropContainer':
 				if(JSB.isObject(value) || JSB.isArray(value)){
 					return {w: 0, scheme: schemeName};
 				}
@@ -2508,7 +2519,7 @@ console.log('getCubeSlices');
             } else {
 debugger;
             }
-
+debugger;
 		    for(var i in fields){
 		        child.doAdd({
 		            key: '#outputFieldName',
@@ -2532,9 +2543,12 @@ debugger;
 	    },
 
 	    getEntryFields: function(pDesc){
+            var entry;
+
 	        pDesc = pDesc.split('/');
 
-	        var entry = WorkspaceController.getWorkspace(pDesc[0]).entry(pDesc[1]);
+	        //if(pDesc.length)
+	        entry = WorkspaceController.getWorkspace(pDesc[0]).entry(pDesc[1]);
 
 	        if(!entry){
 	            return;

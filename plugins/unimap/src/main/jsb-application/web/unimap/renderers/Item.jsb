@@ -66,7 +66,7 @@
 	                this.addItem(this._values.values[i], i);
 	            }
 	        } else {
-	            if(!this._scheme.multiple){
+	            if(!this._scheme.multiple || JSB.isObject(this._scheme.multiple) && this._scheme.multiple.createDefault){
 	                this.addItem(null, 0);
                 }
 	        }

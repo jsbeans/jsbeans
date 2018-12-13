@@ -96,17 +96,20 @@
     padding-left: 5px;
 }
 
-.jsb-select > .dropDown li > .selectValue {
+.jsb-select > .dropDown li > .selectValue,
+.jsb-select > .dropDown li.selectValue {
     padding: 5px;
     border: 1px solid transparent;
 }
 
-.jsb-select > .dropDown li > .selectValue:hover {
+.jsb-select > .dropDown li > .selectValue:hover,
+.jsb-select > .dropDown li.selectValue:hover {
     background: rgba(220, 220, 220, 0.45);
     border: 1px solid rgb(158, 158, 158);
 }
 
-.jsb-select > .dropDown li > .selectValue.selected {
+.jsb-select > .dropDown li > .selectValue.selected,
+.jsb-select > .dropDown li.selectValue.selected {
     background: rgb(220, 220, 220);
     border: 1px solid rgb(158, 158, 158);
 }

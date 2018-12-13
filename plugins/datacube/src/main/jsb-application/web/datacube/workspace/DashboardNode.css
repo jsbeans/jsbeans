@@ -1,22 +1,11 @@
 @CHARSET "UTF-8";
 
-.workspaceExplorerNode.dashboardNode {
-	
-}
-
-
-.workspaceExplorerNode.dashboardNode > .entryRenderer {
-	
-}
-
 .workspaceExplorerNode.dashboardNode > .entryRenderer > .icon {
 	width: 26px;
     height: 26px;
-    margin-top: -13px;
 }
 
 .workspaceExplorerNode.dashboardNode > .entryRenderer > .title {
-	padding-left: 32px;
 	padding-bottom: 10px;
 }
 

@@ -98,9 +98,7 @@
 
 	    update: function(data){
             var sliceId = data.entry.getId(),
-                sources = data.sources,
                 slices = data.slices,
-                sourceSelectOptions = [],
                 sliceSelectOptions = [];
 
             function createElement(obj, key){
@@ -109,10 +107,6 @@
                     key: key,
                     value: RendererRepository.createRendererFor(obj.entry, {showSource: true}).getElement()
                 }
-            }
-
-            for(var i in sources){
-                sourceSelectOptions.push(createElement(sources[i], i));
             }
 
             for(var i in slices){
@@ -131,7 +125,6 @@
 
             this.queryEditor.setOption('sliceId', sliceId);
             this.queryEditor.setOption('measurements', this.measurements);
-            this.queryEditor.setOption('sourceSelectOptions', sourceSelectOptions);
             this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
 
             this.queryEditor.set(this.query);

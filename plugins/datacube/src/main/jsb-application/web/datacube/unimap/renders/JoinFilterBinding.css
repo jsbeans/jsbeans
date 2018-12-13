@@ -1,0 +1,40 @@
+.joinFilterBinding {
+
+}
+
+.joinFilterBinding > .name {
+    display: block;
+}
+
+.joinFilterBinding > .entryRenderer {
+    display: inline-block;
+    width: calc(50% - 35px - 10px);
+}
+
+.joinFilterBinding > .comparison {
+    display: inline-block;
+    margin: 0 10px;
+    width: 50px;
+}
+
+.joinFilterBinding > .multipleContainer > .multipleItem {
+    display: block;
+    margin: 5px 0;
+}
+
+.joinFilterBinding > .multipleContainer > .multipleItem > .firstField {
+    width: calc(50% - 35px - 10px);
+}
+
+.joinFilterBinding > .multipleContainer > .multipleItem > .comparison {
+    margin: 0 5px;
+    width: 60px;
+}
+
+.joinFilterBinding > .multipleContainer > .multipleItem > .secondField {
+    width: calc(50% - 35px - 11px);
+}
+
+.joinFilterBinding > .multipleContainer > .btnMultiple {
+    margin-left: calc(100% - 16px);
+}

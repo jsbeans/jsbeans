@@ -27,7 +27,7 @@
 			var self = this;
 			$base(opts);
 			this.addClass('schemeMenuTool');
-
+			/*
 			$this.btnSetStruct = new Button({
 				cssClass: 'roundButton btn10 btnSetStruct',
 				tooltip: 'Пометить как измерение',
@@ -37,7 +37,7 @@
 				}
 			});
 			$this.append($this.btnSetStruct);
-			
+			*/
 			$this.btnEdit = new Button({
 				cssClass: 'roundButton btn10 btnEdit',
 				tooltip: 'Редактировать',
@@ -90,7 +90,7 @@
 		
 		update: function(){
 			var actions = this.data.data.actions;
-			$this.btnSetStruct.enable(actions.allowSetStruct);
+			//$this.btnSetStruct.enable(actions.allowSetStruct);
 			$this.btnEdit.enable(actions.allowEdit);
 			$this.btnDelete.enable(actions.allowRemove);
 		}

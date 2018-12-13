@@ -1,18 +1,8 @@
 {
 	$name: 'DataCube.Model.Cube',
 	$parent: 'JSB.Workspace.Entry',
-	
-	sourceCount: 0,
-	fieldCount: 0,
+
 	sliceCount: 0,
-	
-	getSourceCount: function(){
-		return this.sourceCount;
-	},
-	
-	getFieldCount: function(){
-		return this.fieldCount;
-	},
 
 	getSliceCount: function(){
 		return this.sliceCount;
@@ -41,20 +31,11 @@
 		loaded: false,
 
 		dimensions: {},
-		fields: [],
 
-		dataSources: {},
 		slices: {},
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
-			if(this.property('sources')){
-				this.sourceCount = this.property('sources');
-			}
-
-			if(this.property('fields')){
-				this.fieldCount = this.property('fields');
-			}
 
 			if(this.property('slices')){
 				this.sliceCount = this.property('slices');
@@ -105,21 +86,6 @@
 								}
 							}
 
-							// load data sources
-							for(var i = 0; i < snapshot.dataSources.length; i++){
-							    var desc = snapshot.dataSources[i],
-							        idArr = desc.id.split('/');
-
-							    if(this.getWorkspace(idArr[0]).existsEntry(idArr[1])){
-							        var entry = this.getWorkspace(idArr[0]).entry(idArr[1]);
-
-                                    this.dataSources[desc.id] = {
-                                        entry: entry,
-                                        diagramOpts: desc.diagramOpts
-                                    }
-							    }
-							}
-
 							// load dimensions
 							this.dimensions = snapshot.dimensions || {};
 						}
@@ -136,47 +102,8 @@
 				return;
 			}
 
-			// check all data sources exist
-			var isNeedStore = false;
-			for(var i in this.slices){
-			    var sources = this.slices[i].entry.extractSources();
-
-			    for(var j = 0; j < sources.length; j++){
-			        var sourceId = sources[j];
-
-			        if(this.dataSources[sourceId] || this.slices[sourceId]){
-			            continue;
-			        }
-
-                    var idArr = sourceId.split('/');
-
-                    if(this.getWorkspace(idArr[0]).existsEntry(idArr[1])){
-                        var entry = this.getWorkspace(idArr[0]).entry(idArr[1]);
-
-                        this.dataSources[sourceId] = {
-                            entry: entry
-                        }
-                    }
-
-                    isNeedStore = true;
-			    }
-
-			    this.slices[i].sources = sources;
-			}
-
-			if(isNeedStore){
-			    this.store();
-            }
-
-			// prepare data source fields
-			for(var i in this.dataSources){
-			    this.dataSources[i].fields = this.dataSources[i].entry.extractFieldsForDisplay();
-			}
-
 			return {
-			    dataSources: this.dataSources,
 			    dimensions: this.dimensions,
-				fields: this.fields,
 				slices: this.slices
 			};
 		},
@@ -241,7 +168,6 @@ return;
 			try {
 				// construct snapshot
 				var snapshot = {
-				    dataSources: [],
 				    dimensions: this.dimensions,
 					slices: []
 				};
@@ -253,22 +179,11 @@ return;
                         diagramOpts: this.slices[i].diagramOpts
 					});
 				}
-
-				// prepare data sources
-				for(var i in this.dataSources){
-				    snapshot.dataSources.push({
-				        id: i,
-				        diagramOpts: this.dataSources[i].diagramOpts
-				    });
-				}
 				
 				this.storeArtifact('.cube', snapshot);
-				
-				this.fieldCount = Object.keys(this.fields).length;
+
 				this.sliceCount = Object.keys(this.slices).length;
-				
-				this.property('sources', this.sourceCount);
-				this.property('fields', this.fieldCount);
+
 				this.property('slices', this.sliceCount);
 				
 				this.getWorkspace().store();
@@ -277,48 +192,34 @@ return;
 			}
 		},
 
-		addDataSource: function(entry, diagramOpts){
-		    this.dataSources[entry.getFullId()] = {
-		        entry: entry,
-		        diagramOpts: diagramOpts
-		    };
-
-		    this.sourceCount = Object.keys(this.dataSources).length;
-
-			this.store();
-			this.doSync();
-		},
-
 		addDimension: function(field){
 		    this.dimensions[field] = true;
 		    this.store();
 		},
 
-		addSlice: function(){
+		addSlice: function(opts){
 			this.load();
-			// generate slice name map
-			var snMap = {};
-			for(var sId in this.slices){
-				snMap[this.slices[sId].entry.getName()] = true;
-			}
-			var sName = null;
-			for(var cnt = 1; ; cnt++){
-				sName = 'Срез ' + cnt;
-				if(!snMap[sName]){
-					break;
-				}
-			}
 
-			var slice = new Slice(JSB.generateUid(), this.getWorkspace(), this, sName);
+			var slice = new Slice(JSB.generateUid(), this.getWorkspace(), {
+			    cube: this,
+			    name: this.generateSliceName(opts.name),
+			    sources: opts.sources,
+			    sourceOpts: opts.sourceOpts,
+			    sourceType: opts.sourceType
+			});
 
 			this.slices[slice.getFullId()] = {
+			    diagramOpts: opts.diagramOpts,
 			    entry: slice
 			};
-			this.sliceCount = Object.keys(this.slices).length;
+
 			this.addChildEntry(slice);
-			this.publish('DataCube.Model.Cube.changed', {action: 'sliceAdded'}, {session: true});
+
+			this.sliceCount = Object.keys(this.slices).length;
+
 			this.store();
 			this.doSync();
+
 			return slice;
 		},
 
@@ -333,12 +234,35 @@ return;
 		},
 
 		extractFields: function(){
-		    this.load();
+		    return this.getDimensions();
+		},
+		generateSliceName: function(sName){
+			var snMap = {};
 
-		    return this.fields;
+			sName = sName || 'Срез';
+
+			for(var sId in this.slices){
+				snMap[this.slices[sId].entry.getName()] = true;
+			}
+
+			if(!snMap[sName]){
+			    return sName;
+			} else {
+			    sName += ' ';
+			}
+
+			for(var cnt = 1; ; cnt++){
+			    var suffix = '(' + cnt + ')';
+
+				if(!snMap[sName + suffix]){
+					return sName + suffix;
+				}
+			}
 		},
 
 		getDimensions: function(){
+		    this.load();
+
 		    return this.dimensions;
 		},
 
@@ -357,20 +281,6 @@ return;
 			}
 
 			return slices;
-		},
-
-		removeDataSource: function(sId){
-		    this.load();
-
-		    if(!this.dataSources[sId]){
-		        return;
-		    }
-
-		    delete this.dataSources[sId];
-
-			this.sourceCount = Object.keys(this.dataSources).length;
-
-			this.store();
 		},
 
 		removeDimension: function(fields){
@@ -397,8 +307,6 @@ return;
 
 			delete this.slices[sId];
 
-			this.publish('DataCube.Model.Cube.changed', {action: 'sliceRemoved'}, {session: true}); // todo: remove?
-
 			this.sliceCount = Object.keys(this.slices).length;
 
 			this.store();
@@ -409,8 +317,6 @@ return;
 
 		    if(this.hasChildEntry(entry)){
 		        this.slices[entryId].diagramOpts = JSB.merge(this.slices[entryId].diagramOpts, diagramOpts);
-		    } else if(this.dataSources[entryId]){
-		        this.dataSources[entryId].diagramOpts = JSB.merge(this.dataSources[entryId].diagramOpts, diagramOpts);
 		    } else {
 		        return;
 		    }

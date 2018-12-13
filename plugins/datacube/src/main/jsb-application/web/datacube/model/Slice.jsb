@@ -5,7 +5,20 @@
 	$require: ['DataCube.Query.QuerySyntax'],
 
 	cube: null,
+	source: null,
 	query: {},
+
+    extractFields: function(){
+        var fields = {};
+
+        if(this.query.$select){
+            for(var i in this.query.$select){
+                fields[i] = i;
+            }
+        }
+
+        return fields;
+    },
 
     extractSources: function(query){
         var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
@@ -19,14 +32,12 @@
             if(query[fromKeys[i]]){
                 switch(fromKeys[i]){
                     case '$from':
-                    case '$cube':
-                    case '$provider':
                         sources.push(query[fromKeys[i]]);
                         break;
                     case '$join':
                         // todo: add cube
-                        var left = query.$join.$left.$provider,
-                            right = query.$join.$right.$provider;
+                        var left = query.$join.$left.$from,
+                            right = query.$join.$right.$from;
 
                         sources.push(left);
                         sources.push(right);
@@ -48,15 +59,7 @@
 		return this.cube;
 	},
 
-    getMainContext: function(){
-        var query = this.getQuery();
-
-        if(query){
-            return query.$context;
-        }
-    },
-
-    getSourceType: function(){
+    getFromType: function(){
         var fromKeys = QuerySyntax.getFromContext();
 
         for(var i = 0; i < fromKeys.length; i++){
@@ -66,6 +69,18 @@
         }
 
         return 'Текущий куб';
+    },
+
+    getMainContext: function(){
+        var query = this.getQuery();
+
+        if(query){
+            return query.$context;
+        }
+    },
+
+    getSource: function(){
+        return this.source;
     },
 
 	getQuery: function(){
@@ -88,14 +103,24 @@
 			});
 		},
 		
-		$constructor: function(id, workspace, cube, name){
+		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
 
-			if(cube && name){
-				this.cube = cube;
-				this.property('cube', this.cube.getId());
-				this.setName(name);
-				this.property('query', this.query);
+			if(opts){
+			    this.cube = opts.cube;
+                this.property('cube', this.cube.getId());
+
+                $super.setName(opts.name);
+
+                if(opts.sourceType){
+                    this.query = this.generateQueryFromSource(opts.sources, opts.sourceType, opts.sourceOpts);
+                    this.property('query', this.query);
+
+                    if(opts.sourceType === '$provider'){
+                        this.source = opts.sources[0];
+                        this.property('source', this.source.getFullId());
+                    }
+                }
 			} else {
 				if(this.property('cube')){
 					this.cube = this.getWorkspace().entry(this.property('cube'));
@@ -103,6 +128,12 @@
 
 				if(this.property('query')){
 					this.query = this.property('query');
+				}
+
+				if(this.property('source')){
+				    var idArr = this.property('source').split('/');
+
+				    this.source = this.getWorkspace(idArr[0]).entry(idArr[1]);
 				}
 			}
 
@@ -202,16 +233,78 @@
             return this.cube.executeQuery(preparedQuery, params);
 		},
 
-		extractFields: function(){
-		    var fields = {};
+		generateQueryFromSource: function(sources, sourceType, opts){
+		    var query = {};
 
-		    if(this.query.$select){
-		        for(var i in this.query.$select){
-		            fields[i] = i;
-		        }
+		    function createSelect(query, source, context){
+		        var fields = source.extractFields();
+
+		        query['$select'] = query['$select'] || {};
+
+                for(var i in fields){
+                    if(context){
+                        if(query['$select'][i]){
+                            var cnt = 2;
+
+                            while(true){
+                                if(!query['$select'][i + ' (' + cnt + ')']){
+                                    query['$select'][i + ' (' + cnt + ')'] = {
+                                        $context: context,
+                                        $field: i
+                                    }
+                                    break;
+                                }
+
+                                cnt++;
+                            }
+                        } else {
+                            query['$select'][i] = {
+                                $context: context,
+                                $field: i
+                            }
+                        }
+                    } else {
+                        query['$select'][i] = {
+                            $field: i
+                        }
+                    }
+                }
 		    }
 
-		    return fields;
+		    query['$context'] = sourceType;
+
+		    switch(sourceType){
+		        case '$provider':
+		        case '$from':
+		            query[sourceType] = sources[0].getFullId();
+
+		            createSelect(query, sources[0]);
+		            break;
+                case '$join':
+                    query['$join'] = {
+                        $left: {
+                            $from: sources[0].getFullId()
+                        },
+                        $right: {
+                            $from: sources[1].getFullId()
+                        }
+                    }
+                    query['$join'] = JSB.merge(query['$join'], opts);
+
+                    query['$join']['$left']['$context'] = 'joinLeft';
+                    createSelect(query['$join']['$left'], sources[0]);
+
+                    query['$join']['$right']['$context'] = 'joinRight';
+                    createSelect(query['$join']['$right'], sources[0]);
+
+                    createSelect(query, sources[0], 'joinLeft');
+                    createSelect(query, sources[1], 'joinRight');
+                    break;
+                case '$union':
+                    break;
+		    }
+
+		    return query;
 		},
 
 		getEditorData: function(){

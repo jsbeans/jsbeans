@@ -7,9 +7,18 @@
 	width: 256px;
 }
 
+.sliceDiagramNode.dataSourceSlice {
+    border: 1px solid #000;
+}
+
 .sliceDiagramNode.selected,
 .sliceDiagramNode.highlighted {
 	box-shadow: 0 0 1px 3px #639a67;
+}
+
+.sliceDiagramNode.dataSourceSlice.selected,
+.sliceDiagramNode.dataSourceSlice.highlighted {
+	box-shadow: 0 0 1px 3px #3c6192;
 }
 
 /* header && footer color */
@@ -31,6 +40,15 @@
 	background: -ms-linear-gradient(top, #ade2b0 0%, #77d274 60%, #7dca78 100%);
 }
 
+.sliceDiagramNode.dataSourceSlice > header,
+.sliceDiagramNode.dataSourceSlice > footer {
+	background: -webkit-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+	background: -moz-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+    background: linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+	background: -o-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+	background: -ms-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+}
+
 /* dragHandle */
 .sliceDiagramNode > .dragHandle {
     border-bottom: 1px solid #4b794e;
@@ -40,6 +58,16 @@
 .sliceDiagramNode > .dragHandle > div {
     border: 1px solid #0c4e10;
     background: #1b5a15;
+}
+
+.sliceDiagramNode.dataSourceSlice > .dragHandle {
+    border-bottom: 1px solid #988e5f;
+    background-color: #d2ce07;
+}
+
+.sliceDiagramNode.dataSourceSlice > .dragHandle > div {
+    border: 1px solid #524507;
+    background: #927903;
 }
 
 /* header */
@@ -88,13 +116,17 @@
 
 .sliceDiagramNode > header > .caption > .name {
     display: inline-block;
-    vertical-align: middle;
     line-height: 20px;
     height: 20px;
     color: #025401;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-left: 1px;
+}
+
+.sliceDiagramNode > header > .entryRenderer {
+    width: 100%;
 }
 
 /* source */

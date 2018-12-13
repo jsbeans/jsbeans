@@ -3,7 +3,7 @@
 	$parent: 'JSB.Controls.Control',
     $client: {
     	$require: ['css:select.css',
-    	           'css:../fonts/fa/fontawesome-all.min.css'],
+    	           'css:../../fonts/fa/fontawesome-all.min.css'],
         _optionsList: {},
 
         $constructor: function(opts){
@@ -158,7 +158,7 @@
                                 createOptions(childElement, options[i].child);
                             }
                         } else {
-                            el = $this.$('<li key="' + options[i] + '"">' + options[i] + '</li>');
+                            el = $this.$('<li key="' + options[i] + '" class="selectValue">' + options[i] + '</li>');
                             key = options[i];
                         }
 
@@ -194,7 +194,12 @@
 
 	        if(JSB.isDefined(key)){  // select
 	            this.currentVal.append(this._optionsList[key].element.html());
-	            this._optionsList[key].element.find('> .selectValue').addClass('selected');
+
+	            if(this._optionsList[key].element.hasClass('selectValue')){
+	                this._optionsList[key].element.addClass('selected');
+	            } else {
+	                this._optionsList[key].element.find('> .selectValue').addClass('selected');
+                }
 	        }
 
 	        if(this.clearBtn){

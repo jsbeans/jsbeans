@@ -39,7 +39,7 @@
 		$require: ['JSB.Crypt.MD5', 
 		           'DataCube.Export.Export', 
 		           'JQuery.UI.Loader', 
-		           'Unimap.ValueSelector', 
+		           'Unimap.ValueSelector',
 		           'Datacube.Unimap.Bootstrap',
 		           'JSB.Widgets.ToolBar',
 		           'css:Widget.css'],
@@ -939,6 +939,14 @@
 			this.values = opts.values;
 
 			this.context = {};
+
+			// todo
+			this.sources = opts.sources;
+
+            if(readyCallback){
+                readyCallback.call($this);
+            }
+			/*
 			if(opts.sources){
 				this.sources = opts.sources;
 				
@@ -962,6 +970,7 @@
         			readyCallback.call($this);
         		}
 			}
+			*/
 		}
 	},
 

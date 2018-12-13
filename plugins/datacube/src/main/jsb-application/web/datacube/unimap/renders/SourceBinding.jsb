@@ -517,7 +517,7 @@
 				source: source.getId(),
 				arrayType: recordTypes,
 				workspaceId: source.getWorkspace().getId(),
-				cubeFields: source.getCubeFields()
+				cubeFields: source.getCube().getDimensions()
 			}
 	    },
 

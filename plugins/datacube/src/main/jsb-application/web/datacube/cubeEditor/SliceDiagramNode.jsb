@@ -3,6 +3,7 @@
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$require: ['JSB.Controls.ScrollBox',
 	           'JSB.Widgets.Button',
+	           'JSB.Widgets.RendererRepository',
 	           'JSB.Widgets.ToolManager',
 	           'css:SliceDiagramNode.css'],
 	
@@ -39,6 +40,8 @@
 			this.editor = opts.editor;
 			this.entry = opts.entry;
 
+            var dataSource = this.entry.getSource();
+
 			this.addClass('sliceDiagramNode');
 
 			// drag handle
@@ -74,12 +77,26 @@
 			});
 			header.append(editBtn.getElement());
 
+			if(dataSource){
+                var renderer = RendererRepository.createRendererFor(dataSource, {showSource: true});
+                header.append(renderer.getElement());
+
+                renderer.getElement().click(function(evt){
+                    evt.stopPropagation();
+                    // todo: show original source data
+                });
+
+                this.addClass('dataSourceSlice');
+			}
+
 			// source link type
-			var sourceMessage = this.$('<span class="source">Тип источника: </span>');
+			/*
+			var sourceMessage = this.$('<span class="source">Тип связи: </span>');
 			this.append(sourceMessage);
 
-			this.sourceType = this.$('<b class="sourceType">' + this.entry.getSourceType() + '</b>');
+			this.sourceType = this.$('<b class="sourceType">' + this.entry.getLinkType() + '</b>');
 			sourceMessage.append(this.sourceType);
+			*/
 
 			// select fields
 			this.fieldList = new ScrollBox({
@@ -89,8 +106,7 @@
 			this.append(this.fieldList.getElement());
 
 			// connectors
-			// left connector has slice from current cube only
-			if(this.editor.getCube().getId() === this.entry.getCube().getId()){
+			if(!dataSource){
                 var leftConnector = this.$('<div class="connector left"></div>');
                 header.append(leftConnector);
 
@@ -104,7 +120,7 @@
 			var rightConnector = this.$('<div class="connector right"></div>');
 			header.append(rightConnector);
 
-            this.rightConnector = $this.installConnector('providerRight', {
+            this.rightConnector = $this.installConnector('sliceRight', {
                 origin: rightConnector,
                 handle: [rightConnector],
                 iri: 'connector/right/' + this.getId()
@@ -201,7 +217,7 @@
                 if(!oldLinks[id]){
                     oldLinks[id] = this.editor.createLink('bind', {
                         sourceConnector: this.leftConnector,
-                        targetConnector: this.editor.getSource(id).node.rightConnector
+                        targetConnector: this.editor.getSlice(id).node.rightConnector
                     });
                 }
             }
@@ -211,12 +227,6 @@
             if(opts && opts.name){
                 this.sliceName.text(opts.name);
             }
-		},
-
-		removeDimension: function(field){
-		    if(this.fields[field]){
-		        this.fieldList.find('.field[key="' + field + '"]').removeClass('dimension');
-		    }
 		},
 		
 		highlightNode: function(bEnable){
@@ -231,7 +241,6 @@
 		    var obj = {
                 entry: this.entry,
                 node: this,
-                sources: this.editor.getSources(),
                 slices: this.editor.getSlices()
 		    };
 

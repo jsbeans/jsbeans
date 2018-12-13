@@ -74,7 +74,7 @@
 		},
 
 		createLink: function(){
-		    //
+		    // todo
 		},
 		
 		destroy: function(){

@@ -1,0 +1,14 @@
+.joinSettingsTool {
+    padding: 5px;
+    overflow: visible;
+    width: 400px;
+}
+
+.joinSettingsTool > .header {
+    text-align: center;
+    font-size: 1.3em;
+}
+
+.joinSettingsTool > .okBtn {
+    margin-left: calc(100% - 84px - 106px);
+}

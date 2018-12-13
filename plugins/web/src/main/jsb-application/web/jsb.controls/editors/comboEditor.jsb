@@ -3,7 +3,7 @@
 	$parent: 'JSB.Controls.Control',
 	$client: {
 		$require: ['css:comboEditor.css',
-		           'css:../fonts/fa/fontawesome-all.min.css'],
+		           'css:../../fonts/fa/fontawesome-all.min.css'],
 		           
 	    _optionsList: {},
 	    _value: {

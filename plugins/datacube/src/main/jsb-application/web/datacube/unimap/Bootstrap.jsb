@@ -32,6 +32,9 @@
     },{
         name: 'formatter',
         render: 'Unimap.Render.Formatter'
+    },{
+        name: 'joinFilter',
+        render: 'Unimap.Render.JoinFilterBinding'
     }],
 
     _customSelectors: [{
@@ -55,5 +58,8 @@
     },{
         name: 'parserBinding',
         render: 'Datacube.ValueSelectors.SourceSelector'
+    },{
+        name: 'joinFilter',
+        render: 'Datacube.ValueSelectors.JoinFilterSelector'
     }]
 }

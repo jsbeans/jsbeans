@@ -41,17 +41,17 @@
 			});
 
             this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
-                if(sender !== $this){
-					var node = $this.explorer.getEntryNode(slice);
+                var node = $this.explorer.getEntryNode(slice);
 
-					if(!node){
-						node = $this.explorer.addTreeItem({
-	                        entry: slice,
-	                        hasEntryChildren: 0,
-	                        name: slice.getName()
-	                    }, $this.treeNode.key, false, {collapsed:true});
-					}
+                if(!node){
+                    node = $this.explorer.addTreeItem({
+                        entry: slice,
+                        hasEntryChildren: 0,
+                        name: slice.getName()
+                    }, $this.treeNode.key, false, {collapsed:true});
+                }
 
+                if(sender === $this){
 					$this.explorer.publish('JSB.Workspace.nodeOpen', node);
                 }
             });
@@ -118,9 +118,7 @@
 				statusElt.attr('title', status);
 			} else {
 				statusElt.append(`#dot
-					<div class="item sources">Источников: <span class="count">{{=$this.getTargetEntry().getSourceCount()}}</span>; </div>
-					<div class="item fields">полей: <span class="count">{{=$this.getTargetEntry().getFieldCount()}}</span>; </div>
-					<div class="item slices">срезов: <span class="count">{{=$this.getTargetEntry().getSliceCount()}}</span></div>
+					<div class="item slices">Срезов: <span class="count">{{=$this.getTargetEntry().getSliceCount()}}</span></div>
 				`);
 			}
 		}

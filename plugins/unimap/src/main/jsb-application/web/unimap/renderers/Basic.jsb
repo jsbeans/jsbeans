@@ -186,6 +186,10 @@
             return this._schemeController.findRendersByKey(key);
         },
 
+        getData: function(){
+            return this._schemeController.getData();
+        },
+
         getLinkedRenders: function(){
             return this._schemeController.getLinkedRenders(this.getKey());
         },

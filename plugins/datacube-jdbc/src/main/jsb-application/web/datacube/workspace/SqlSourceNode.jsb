@@ -40,7 +40,5 @@
 				this.find('.status').empty().append('Схем: <span class="count">' + details.schemes + '</span>; таблиц: <span class="count">' + details.tables + '</span>; столбцов: <span class="count">' + details.columns + '</span>');
 			}
 		}
-		
 	}
-	
 }

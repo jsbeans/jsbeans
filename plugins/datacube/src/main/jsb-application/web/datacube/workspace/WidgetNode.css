@@ -1,9 +1,5 @@
 @CHARSET "UTF-8";
 
-.workspaceExplorerNode.widgetNode {
-	
-}
-
 .workspaceExplorerNode.widgetNode.unused > .entryRenderer {
 	opacity: 0.5;
 }

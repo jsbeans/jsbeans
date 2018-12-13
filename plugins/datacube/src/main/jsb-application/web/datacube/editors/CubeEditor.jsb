@@ -4,80 +4,20 @@
 	$client: {
 	    $require: ['JSB.Widgets.Diagram',
 	               'DataCube.SliceDiagramNode',
-	               'DataCube.DataSourceDiagramNode',
-	               'JSB.Widgets.ToolBar',
 	               'JSB.Widgets.ToolManager',
-					'css:CubeEditor.css'],
+	               'DataCube.Dialogs.JoinSettingsTool',
+					'css:CubeEditor.css',
+					'css:../../fonts/fa/fontawesome-all.min.css'],
 
 	    _cube: null,
-	    _dataSources: {},
 	    _slices: {},
+
+	    _selectedItems: {},
 
 	    $constructor: function(opts){
 			$base(opts);
 
 			this.addClass('cubeEditor');
-
-            this.toolbar = new ToolBar();
-            this.append(this.toolbar);
-
-			this.toolbar.addItem({
-				key: 'addSlice',
-				tooltip: 'Добавить срез',
-				element: '<div class="icon"></div>',
-				click: function(){
-				    $this.addSlice();
-				}
-			});
-
-			var removeBtn = this.toolbar.addItem({
-				key: 'remove',
-				tooltip: 'Удалить элементы?',
-				element: '<div class="icon"></div>',
-				click: function(){
-                    ToolManager.showMessage({
-                        icon: 'removeDialogIcon',
-                        text: 'Вы уверены, что хотите удалить выбранные элементы?',
-                        buttons: [{text: 'Удалить', value: true},
-                                  {text: 'Нет', value: false}],
-                        target: {
-                            selector: removeBtn.element
-                        },
-                        constraints: [{
-                            weight: 10.0,
-                            selector: removeBtn.element
-                        }],
-                        callback: function(bDel){
-                            if(bDel){
-                                for(var i in $this._selectedItems){
-                                    if(JSB.isInstanceOf($this._selectedItems[i], 'JSB.Widgets.Diagram.Link')){
-                                        continue;
-                                    }
-
-                                    if(JSB.isInstanceOf($this._selectedItems[i].entry, 'DataCube.Model.Slice') &&
-                                       $this._cube.getId() === $this._selectedItems[i].entry.getCube().getId()){
-                                        (function(node){
-                                            $this._selectedItems[i].entry.server().remove(function(res, fail){
-                                                if(!fail){
-                                                    node.destroy();
-                                                }
-                                            });
-                                        })($this._selectedItems[i]);
-                                    } else {
-                                        (function(node){
-                                            $this._cube.server().removeDataSource($this._selectedItems[i].entry.getFullId(), function(res, fail){
-                                                if(!fail){
-                                                    node.destroy();
-                                                }
-                                            });
-                                        })($this._selectedItems[i]);
-                                    }
-                                }
-                            }
-                        }
-                    });
-				}
-			});
 
 			// create diagram
 			this.diagram = new Diagram({
@@ -87,16 +27,6 @@
 				    $this.setTrigger('diagramReady');
 				},
 				nodes: {
-					dataSourceDiagramNode: {
-						jsb: 'DataCube.DataSourceDiagramNode',
-						layout: {
-							'default': {
-								auto: true,
-								animate: true,
-								nodeExpand: 20
-							}
-						}
-					},
 					sliceDiagramNode: {
 						jsb: 'DataCube.SliceDiagramNode',
 						layout: {
@@ -121,7 +51,7 @@
 						}
 					},
 
-					providerRight: {
+					sliceRight: {
 						acceptLocalLinks: false,
 						userLink: false,
 						offsetX: 2,
@@ -135,7 +65,7 @@
 				links: {
 					bind: {
 						source: ['sliceLeft'],
-						target: ['providerRight'],
+						target: ['sliceRight'],
 						joints: [{
 							name: 'offsStart',
 							position: function(){
@@ -185,7 +115,6 @@
 
                             var entry = obj.getTargetEntry();
                             if(JSB.isInstanceOf(entry, 'DataCube.Model.DatabaseTable')){
-                            // JSB.isInstanceOf(entry,'DataCube.Model.Slice')
                                 return true;
                             }
                         }
@@ -206,8 +135,109 @@
                 }
             });
 
-            var editTool = this.$('<div class="editTool hidden"></div>');
-            this.append(editTool);
+            // todo
+            // search
+            //this.search = this.$();
+
+            // create add buttons
+            var addBtn = this.$('<div class="addBtn fas fa-plus-circle"></div>');
+            this.append(addBtn);
+
+            var addAdvancedBtns = this.$('<ul class="hidden"></ul>');
+            addBtn.append(addAdvancedBtns);
+
+            addAdvancedBtns.append('<li key="$join" class="joinIcon"></li>');
+            addAdvancedBtns.append('<li key="$union" class="unionIcon"></li>');
+
+            addAdvancedBtns.find('li').click(function(evt){
+                evt.stopPropagation();
+
+                var sources = [],
+                    sourceType = $this.$(evt.target).attr('key');
+
+                for(var i in $this._selectedItems){
+                    sources.push($this._selectedItems[i].entry);
+                }
+
+                if(sourceType === '$join'){
+                    ToolManager.activate({
+                        id: 'joinSettingsTool',
+                        cmd: 'show',
+                        data: sources,
+                        target: {
+                            selector: $this.getElement()
+                        },
+                        callback: function(sourceOpts){
+                            $this.addSlice(null, {
+                                sources: sources,
+                                sourceType: sourceType,
+                                sourceOpts: sourceOpts
+                            });
+                        }
+                    });
+                } else {
+                    $this.addSlice(null, {
+                        sources: sources,
+                        sourceType: sourceType
+                    });
+                }
+            });
+
+            addBtn.click(function(evt){
+                evt.stopPropagation();
+
+                var sources = [],
+                    sourceType = undefined;
+
+                for(var i in $this._selectedItems){
+                    sources.push($this._selectedItems[i].entry);
+                }
+
+                if(sources.length === 1){
+                    sourceType = '$from';
+                } else if (sources.length > 2){
+                    sourceType = '$union';
+                } else if(sources.length === 0) {
+                } else {
+                    return;
+                }
+
+                $this.addSlice(null, {
+                    sources: sourceType ? sources : undefined,
+                    sourceType: sourceType
+                });
+            });
+
+            var removeBtn = this.$('<div class="removeBtn hidden fas fa-trash-alt"></div>');
+            this.append(removeBtn);
+            removeBtn.click(function(){
+                ToolManager.showMessage({
+                    icon: 'removeDialogIcon',
+                    text: 'РЈРґР°Р»РёС‚СЊ РІС‹Р±СЂР°РЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹?',
+                    buttons: [{text: 'РЈРґР°Р»РёС‚СЊ', value: true},
+                              {text: 'РћС‚РјРµРЅР°', value: false}],
+                    target: {
+                        selector: removeBtn.element
+                    },
+                    constraints: [{
+                        weight: 10.0,
+                        selector: removeBtn.element
+                    }],
+                    callback: function(bDel){
+                        if(bDel){
+                            for(var i in $this._selectedItems){
+                                (function(node){
+                                    $this._selectedItems[i].entry.server().remove(function(res, fail){
+                                        if(!fail){
+                                            node.destroy();
+                                        }
+                                    });
+                                })($this._selectedItems[i]);
+                            }
+                        }
+                    }
+                });
+            });
 
             this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
                 if(sender !== $this && slice.cube === $this._cube){
@@ -216,11 +246,18 @@
             });
 
             this.subscribe('_jsb_diagramSelectionChanged', function(sender, msg, selectedItems){
-                // todo: if items not links
-                if(Object.keys(selectedItems).length > 0){
-                    $this.toolbar.enableItem('remove', true);
+                var keysCount = Object.keys(selectedItems).length;
+
+                if(keysCount > 0){
+                    removeBtn.removeClass('hidden');
                 } else {
-                    $this.toolbar.enableItem('remove', false);
+                    removeBtn.addClass('hidden');
+                }
+
+                if(keysCount === 0 || keysCount === 1 || keysCount > 2){
+                    addAdvancedBtns.addClass('hidden');
+                } else {
+                    addAdvancedBtns.removeClass('hidden');
                 }
 
                 $this._selectedItems = selectedItems;
@@ -228,37 +265,40 @@
 	    },
 
 	    addDataSource: function(entry, position){
-	        this._cube.server().addDataSource(entry, {position: position}, function(res, fail){
+	        this._cube.server().addSlice({
+	            diagramOpts: {position: position},
+                name: entry.getName(),
+	            sources: [entry],
+	            sourceType: '$provider'
+	        }, function(slice, fail){
 	            if(fail){
 	                // todo: error
 	                console.log('Error due create data source');
 	                return;
 	            }
 
-                if(JSB.isInstanceOf(entry, "DataCube.Model.DatabaseTable")){
-                    var pNode = $this.diagram.createNode('dataSourceDiagramNode', {entry: entry, editor: $this});
-                    pNode.setPosition(position.x, position.y);
-
-                    $this._dataSources[entry.getFullId()] = {
-                        entry: entry,
-                        node: pNode
-                    }
-                }
+                $this._slices[slice.getFullId()] = {
+                    entry: slice,
+                    node: $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this, position: position})
+                };
 	        });
 	    },
 
-		addSlice: function(slice){
+		addSlice: function(slice, opts){
 		    if(!slice){
-				$this.getCube().server().addSlice(function(slice, fail){
+				$this.getCube().server().addSlice(opts, function(sliceRes, fail){
 				    if(fail){
 				        // todo: error
 				        console.log('Error due create slice');
 				        return;
 				    }
 
-				    $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this});
+                    $this._slices[sliceRes.getFullId()] = {
+                        entry: sliceRes,
+                        node: $this.diagram.createNode('sliceDiagramNode', {entry: sliceRes, editor: $this})
+                    };
 
-                    $this.publish('Datacube.CubeNode.createSlice', slice);
+                    $this.publish('Datacube.CubeNode.createSlice', sliceRes);
 				});
 		        return;
 		    }
@@ -267,29 +307,18 @@
 		},
 
 	    constructCube: function(desc){
-	        function createNode(type, obj){
-	            var node = $this.diagram.createNode(type, JSB.merge({
-	                editor: $this,
-	                position: obj.diagramOpts && obj.diagramOpts.position
-	            }, obj));
-
-                return {
-                    entry: obj.entry,
-                    node: node
-                }
-	        }
-
-	        this._dataSources = {};
 	        this._slices = {};
-
-	        // create sources' nodes
-	        for(var i in desc.dataSources){
-	            this._dataSources[desc.dataSources[i].entry.getFullId()] = createNode('dataSourceDiagramNode', desc.dataSources[i]);
-	        }
 
 	        // create slices' nodes
 	        for(var i in desc.slices){
-	            this._slices[desc.slices[i].entry.getFullId()] = createNode('sliceDiagramNode', desc.slices[i]);
+	            this._slices[desc.slices[i].entry.getFullId()] = {
+	                entry: desc.slices[i].entry,
+	                node: this.diagram.createNode('sliceDiagramNode', {
+                        editor: this,
+                        entry: desc.slices[i].entry,
+                        position: desc.slices[i].diagramOpts && desc.slices[i].diagramOpts.position
+                    })
+	            };
 	        }
 
 	        this.options.layoutManager.ensureInitialize(function(){
@@ -305,16 +334,12 @@
 	        return this._cube;
 	    },
 
-	    getSource: function(id){
-	        return this._dataSources[id] || this._slices[id];
+	    getSlice: function(id){
+	        return this._slices[id];
 	    },
 
 	    getSlices: function(){
 	        return this._slices;
-	    },
-
-	    getSources: function(){
-	        return this._dataSources;
 	    },
 
 	    refresh: function(entry){
