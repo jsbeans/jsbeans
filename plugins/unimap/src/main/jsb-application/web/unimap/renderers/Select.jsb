@@ -20,7 +20,14 @@
 	            this._values.values.push(values);
 	        }
 
-	        values.value = values.value ? values.value : !this._scheme.allowEmpty && this._optionsList && this._optionsList.length > 0 ? this._optionsList[0].key : undefined;
+	        //values.value = values.value ? values.value : !this._scheme.allowEmpty && this._optionsList && this._optionsList.length > 0 ? this._optionsList[0].key : undefined;
+	        if(values.value){
+	            values.value = values.value = values.value;
+	        } else if(this._scheme.defaultValue) {
+	            values.value = this._scheme.defaultValue;
+	        } else if(!this._scheme.allowEmpty && this._optionsList && this._optionsList.length > 0){
+	            values.value = this._optionsList[0].key;
+	        }
 
 	        var item = this.$('<div class="item"></div>');
 
