@@ -272,7 +272,7 @@
 		    }
 
 		    query['$context'] = sourceType;
-
+//debugger;
 		    switch(sourceType){
 		        case '$provider':
 		        case '$from':
@@ -295,12 +295,13 @@
                     createSelect(query['$join']['$left'], sources[0]);
 
                     query['$join']['$right']['$context'] = 'joinRight';
-                    createSelect(query['$join']['$right'], sources[0]);
+                    createSelect(query['$join']['$right'], sources[1]);
 
                     createSelect(query, sources[0], 'joinLeft');
                     createSelect(query, sources[1], 'joinRight');
                     break;
                 case '$union':
+
                     break;
 		    }
 
