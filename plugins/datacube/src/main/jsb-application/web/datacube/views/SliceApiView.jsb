@@ -6,7 +6,7 @@
 		$require: ['JSB.Widgets.SplitBox', 
 		           'JSB.Widgets.TabView', 
 		           'JsonView', 
-		           'JSB.Widgets.ScrollBox', 
+		           'JSB.Controls.ScrollBox',
 		           'JSB.Widgets.MultiEditor',
 		           'css:SliceApiView.css'],
 		ready: false,
@@ -32,7 +32,7 @@
 			});
 			this.append(splitBox);
 			splitBox.addToPane(0, `#dot
-				<div class="leftScroll" jsb="JSB.Widgets.ScrollBox">
+				<div class="leftScroll" jsb="JSB.Controls.ScrollBox">
 					<div jsb="JSB.Widgets.GroupBox" caption="Идентификация среза" class="cubeSettings">
 						<div class="option workspaceId">
 							<div class="icon"></div>
@@ -53,7 +53,7 @@
 					
 					<div jsb="JSB.Widgets.GroupBox" caption="Конструктор запроса" class="requestConstructor">
 					
-						<div class="option select" jsb="JSB.Widgets.CheckBox" label="$select" check="false">
+						<div class="option select" jsb="JSB.Controls.Checkbox" label="$select" checked="false">
 							<div jsb="JSB.Widgets.MultiEditor" 
 								class="editor selectEditor"
 								valuetype="org.jsbeans.types.JsonObject" 
@@ -61,7 +61,7 @@
 								onchange="{{=$this.callbackAttr(function(val){ $this.requestOpts.select = val; $this.updateRequest()}) }}"></div>
 						</div>
 
-						<div class="option groupBy" jsb="JSB.Widgets.CheckBox" label="$groupBy" checked="false"
+						<div class="option groupBy" jsb="JSB.Controls.Checkbox" label="$groupBy" checked="false"
 							onchange="{{=$this.callbackAttr(function(checked){ $this.enableGroupBy(checked); })}}">
 							<div jsb="JSB.Widgets.MultiEditor" 
 								class="editor groupByEditor"
@@ -70,7 +70,7 @@
 								onchange="{{=$this.callbackAttr(function(val){ $this.requestOpts.groupBy = val; $this.updateRequest()}) }}"></div>
 						</div>
 
-						<div class="option filter" jsb="JSB.Widgets.CheckBox" label="$filter" checked="false"
+						<div class="option filter" jsb="JSB.Controls.Checkbox" label="$filter" checked="false"
 							onchange="{{=$this.callbackAttr(function(checked){ $this.enableFilter(checked); })}}">
 							<div jsb="JSB.Widgets.MultiEditor" 
 								class="editor filterEditor"
@@ -79,7 +79,7 @@
 								onchange="{{=$this.callbackAttr(function(val){ $this.requestOpts.filter = val; $this.updateRequest()}) }}"></div>
 						</div>
 
-						<div class="option sort" jsb="JSB.Widgets.CheckBox" label="$sort" checked="false"
+						<div class="option sort" jsb="JSB.Controls.Checkbox" label="$sort" checked="false"
 							onchange="{{=$this.callbackAttr(function(checked){ $this.enableSort(checked); })}}">
 							<div jsb="JSB.Widgets.MultiEditor" 
 								class="editor sortEditor"
@@ -88,7 +88,7 @@
 								onchange="{{=$this.callbackAttr(function(val){ $this.requestOpts.sort = val; $this.updateRequest()}) }}"></div>
 						</div>
 
-						<div class="option skip" jsb="JSB.Widgets.CheckBox" label="skip" checked="true"
+						<div class="option skip" jsb="JSB.Controls.Checkbox" label="skip" checked="true"
 							onchange="{{=$this.callbackAttr(function(checked){ $this.updateRequest() })}}">
 							<div jsb="JSB.Widgets.PrimitiveEditor"
 								class="editor skipEditor"
@@ -98,7 +98,7 @@
 							</div>
 						</div>
 
-						<div class="option limit" jsb="JSB.Widgets.CheckBox" label="limit" checked="true"
+						<div class="option limit" jsb="JSB.Controls.Checkbox" label="limit" checked="true"
 							onchange="{{=$this.callbackAttr(function(checked){ $this.updateRequest() })}}">
 							<div jsb="JSB.Widgets.PrimitiveEditor"
 								class="editor limitEditor"

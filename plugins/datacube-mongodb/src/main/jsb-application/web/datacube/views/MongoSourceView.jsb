@@ -30,7 +30,7 @@
 							</div>
 						</div>
 						
-						<div class="option useAuth" jsb="JSB.Widgets.CheckBox" label="Использовать аутентификацию" checked="false" content="true" 
+						<div class="option useAuth" jsb="JSB.Controls.CheckBox" label="Использовать аутентификацию" checked="false" content="true"
 								onchange="{{=this.callbackAttr(function(){$this.updateSettings()})}}">
 							<div class="option authDb" title="БД авторизации">
 								<div class="icon"></div>

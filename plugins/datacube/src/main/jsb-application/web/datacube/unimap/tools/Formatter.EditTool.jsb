@@ -39,7 +39,7 @@
             this._separator = new Checkbox({
                 cssClass: 'thousandSeparator',
                 label: 'Разделение тысячных',
-                onchange: function(b){
+                onChange: function(b){
                     $this.desc.isThousandSeparate = b;
                 }
             });

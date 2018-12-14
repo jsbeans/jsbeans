@@ -1,7 +1,7 @@
 {
 	$name: 'JSB.Widgets.CheckboxTreeView',
 	$parent: 'JSB.Widgets.TreeView',
-	$require: ['JSB.Widgets.CheckBox'],
+	//$require: ['JSB.Widgets.CheckBox'],
 	$client: {
 		options:{
 			allowSelect: false
@@ -111,7 +111,7 @@
 				else
 					this.checkedItems[obj.checkKey] = obj;
 				
-				var childs = this.$(obj.childContainerElt[0].childNodes).find('._dwp_control._dwp_checkBox');
+				var childs = this.$(obj.childContainerElt[0].childNodes).find('._dwp_control.jsb-checkbox');
 				
 				for(var i = 0; i < childs.length; i++){					
 					var el = this.$(childs[i]).jsb();
@@ -122,7 +122,7 @@
 			}
 			else{
 				this.checkedItems[obj.checkKey] = false;
-				var childs = this.$(obj.childContainerElt[0].childNodes).find('._dwp_control._dwp_checkBox');
+				var childs = this.$(obj.childContainerElt[0].childNodes).find('._dwp_control.jsb-checkbox');
 				
 				for(var i = 0; i < childs.length; i++){					
 					var el = this.$(childs[i]).jsb();

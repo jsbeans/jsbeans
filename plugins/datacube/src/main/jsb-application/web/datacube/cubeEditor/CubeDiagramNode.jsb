@@ -4,7 +4,7 @@
 	$require: ['JQuery.UI.Resizable', 
 	           'JSB.Widgets.ToolManager', 
 	           'DataCube.Dialogs.CubeMaterializationTool',
-	           'JSB.Widgets.CheckBox',
+	           //'JSB.Widgets.CheckBox',
 	           'JSB.Controls.ScrollBox',
 	           'css:CubeDiagramNode.css'],
 	

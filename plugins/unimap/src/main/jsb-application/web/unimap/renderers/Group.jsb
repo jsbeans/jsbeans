@@ -67,7 +67,7 @@
 
 	            this.checkBox = new Checkbox({
 	                checked: this._values.checked,
-	                onchange: function(b){
+	                onChange: function(b){
 	                    $this._values.checked = b;
 
 	                    content.toggleClass('hidden');

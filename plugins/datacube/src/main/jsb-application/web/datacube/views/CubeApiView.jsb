@@ -33,7 +33,7 @@
 			});
 			this.append(splitBox);
 			splitBox.addToPane(0, `#dot
-				<div class="leftScroll" jsb="JSB.Widgets.ScrollBox">
+				<div class="leftScroll" jsb="JSB.Controls.ScrollBox">
 					<div jsb="JSB.Widgets.GroupBox" caption="Идентификация куба" class="cubeSettings">
 						<div class="option workspaceId">
 							<div class="icon"></div>
@@ -48,13 +48,13 @@
 					
 					<div jsb="JSB.Widgets.GroupBox" caption="Конструктор запроса" class="requestConstructor">
 					
-						<div class="option query" jsb="JSB.Widgets.CheckBox" label="" check="false">
+						<div class="option query" jsb="JSB.Controls.Checkbox" label="" checked="false">
 							<div jsb="DataCube.Query.QueryEditor" 
 								class="editor queryEditor"
 								onchange="{{=$this.callbackAttr(function(){ $this.updateRequest()}) }}"></div>
 						</div>
 
-						<div class="option skip" jsb="JSB.Widgets.CheckBox" label="skip" checked="true"
+						<div class="option skip" jsb="JSB.Controls.Checkbox" label="skip" checked="true"
 							onchange="{{=$this.callbackAttr(function(checked){ $this.updateRequest() })}}">
 							<div jsb="JSB.Widgets.PrimitiveEditor"
 								class="editor skipEditor"
@@ -64,7 +64,7 @@
 							</div>
 						</div>
 
-						<div class="option limit" jsb="JSB.Widgets.CheckBox" label="limit" checked="true"
+						<div class="option limit" jsb="JSB.Controls.Checkbox" label="limit" checked="true"
 							onchange="{{=$this.callbackAttr(function(checked){ $this.updateRequest() })}}">
 							<div jsb="JSB.Widgets.PrimitiveEditor"
 								class="editor limitEditor"
@@ -249,11 +249,8 @@
 				entry.server().getSlices(function(slices){
 					$this.fillSettings(fields, slices);	
 				});
-					
 			});
-			
 		}
-		
 	},
 	
 	$server: {

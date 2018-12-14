@@ -277,7 +277,7 @@
     },
 	$client: {
         $require: ['JSB.Widgets.Diagram', 
-                   'JSB.Widgets.CheckBox',
+                   'JSB.Controls.CheckBox',
                    'css:GraphWidget.css'],
 
         embeddedBindings: [],

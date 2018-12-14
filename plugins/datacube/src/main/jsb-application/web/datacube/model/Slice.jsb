@@ -35,7 +35,6 @@
                         sources.push(query[fromKeys[i]]);
                         break;
                     case '$join':
-                        // todo: add cube
                         var left = query.$join.$left.$from,
                             right = query.$join.$right.$from;
 
@@ -43,7 +42,7 @@
                         sources.push(right);
                         break;
                     case '$union':
-                        // todo
+                        sources = query.$union;
                         break;
                     case '$recursive':
                         // todo
@@ -272,7 +271,7 @@
 		    }
 
 		    query['$context'] = sourceType;
-//debugger;
+
 		    switch(sourceType){
 		        case '$provider':
 		        case '$from':
@@ -301,7 +300,13 @@
                     createSelect(query, sources[1], 'joinRight');
                     break;
                 case '$union':
+                    query['$union'] = [];
 
+                    for(var i = 0; i < sources.length; i++){
+                        query['$union'].push(sources[i].getFullId());
+
+                        createSelect(query, sources[i]);
+                    }
                     break;
 		    }
 

@@ -19,7 +19,7 @@
 
 	            var checkBox = new Checkbox({
 	                checked: this._values.checked,
-	                onchange: function(b){
+	                onChange: function(b){
 	                    $this._values.checked = b;
 	                }
 	            });
@@ -89,7 +89,7 @@
 	            checked: this._values.valueSkipping,
 	            cssClass: 'valueSkipping',
 	            label: 'Проброс значений',
-	            onchange: function(b){
+	            onChange: function(b){
 	                $this._values.valueSkipping = b;
 
                     if(b){

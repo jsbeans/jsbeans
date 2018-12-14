@@ -8,6 +8,7 @@
 	display: block;
 	position: relative;
 	overflow: hidden;
+	vertical-align: middle;
 	
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;

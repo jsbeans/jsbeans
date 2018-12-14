@@ -3,7 +3,9 @@
 	$parent: 'JSB.Controls.Control',
 	$client: {
 		$require: ['css:navigator.css'],
+
 	    _clickX: null,
+	    _elements: [],
 	    _moved: false,
 
 	    $constructor: function(opts){
@@ -62,8 +64,6 @@
         options: {
             onclick: null
         },
-
-        _elements: [],
 
         addElement: function(el){
             if(this._navigatorPane.children().length > 0){

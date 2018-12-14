@@ -23,14 +23,16 @@
                 this.element = this.$('<'+tag+' _id="'+this.getId()+'" class="jsb-control"></'+tag+'>');
             }
 
-            // options class
             if(this.options.cssClass){
                 this.addClass(this.options.cssClass);
             }
+
+            //todo: context menu btn?
 		},
 
         options: {
             cssClass: null,
+            enabled: true
         },
 
         addClass: function(c){
@@ -78,6 +80,12 @@
 			this.replacingMark = this.$('<div id="'+this.getId()+'_rmark"></div>');
 			this.getElement().after(this.replacingMark);
 			this.getElement().detach();
+		},
+
+		enable: function(b){
+		    this.options.enabled = b;
+
+		    this.classed('disabled', b);
 		},
 
 		find: function(c){
@@ -135,17 +143,13 @@
 			return true;
 		},
 
-		isFocused: function(){
-			return this._isFocused;
+		isEnabled: function(){
+			return this.options.enabled;
 		},
 
 		localToScreen: function(x, y){
 			var pt = this.getRelativePosition();
 			return {x: x + pt.left, y: y + pt.top};
-		},
-
-		loseFocus: function(){
-			this._isFocused = false;
 		},
 
 		on: function(eventName, func){
@@ -175,11 +179,6 @@
             }
             return c;
         },
-
-		setFocus: function(){
-			this.publish('setFocus');
-			this._isFocused = true;
-		},
 
 		setOption: function(opt, b){
 			this.options[opt] = b;

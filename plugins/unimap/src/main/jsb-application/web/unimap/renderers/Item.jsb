@@ -18,7 +18,7 @@
 	            this.checkBox = new Checkbox({
 	                checked: this._values.checked,
 	                label: this._scheme.name,
-	                onchange: function(b){
+	                onChange: function(b){
 	                    $this._values.checked = b;
 
 	                    if(b){
