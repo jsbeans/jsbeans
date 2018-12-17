@@ -175,12 +175,12 @@
 		            '$context': '$contextName',
 		            '$offset': '$offset',
 
-		            '$from':'$from',
+		            '$from':'$sourceSelect',
 		            '$join':'$join',
 		            '$union':'$union',
 		            '$recursive':'$recursive',
-		            '$cube':'$cube',
-		            '$provider':'$provider'
+		            '$cube':'$sourceSelect',
+		            '$provider':'$sourceSelect'
 		        },
 		        optional: ['$context', '$filter', '$groupBy', '$distinct',
 		                '$postFilter', '$cubeFilter', '$sort', '$finalize',
@@ -212,18 +212,10 @@
 		            '#outputFieldName': '$valueDefinition'
 		        },
 		    });
-		    /*
-		    new this.Group({
-		    	name: '$from',
-		        displayName: 'Источник запроса',
-		    	desc: 'Промежуточный запрос с несколькими столбцами',
-		        values: ['$query', '$viewName'],
-		    });
-		    */
+
 		    new this.DropContainer({
-		        name: '$from',
+		        name: '$sourceSelect',
 		        category: 'Источник запроса',
-		        allowValues: ['DataCube.Model.Slice'],
 		        desc: 'Идентификатор первичного источника данных',
 		        values: []
 		    });
@@ -236,70 +228,9 @@
 		        values: {
 		            '$joinType': '$joinType',
 		            '$filter': '$joinFilter',
-		            '$left': '$fromSelect',
-		            '$right': '$fromSelect',
+		            '$left': '$sourceSelect',
+		            '$right': '$sourceSelect'
 		        }
-		    });
-
-		    new this.Group({
-		    	name: '$fromSelect',
-		        values: ['$fromProvider', '$fromCube', '$query', '$join', '$union']
-		    });
-
-		    new this.ComplexObject({
-		        name: '$fromProvider',
-		        category: 'Источник запроса',
-		        displayName: 'Таблица',
-		        desc: 'Задает в качестве источника таблицу базы данных',
-		        values: {
-		            '$context': '$contextName',
-		            '$provider': '$provider',
-		            '$select': '$sourceSelect'
-		        }
-		    });
-
-		    new this.ComplexObject({
-		        name: '$fromCube',
-		        category: 'Источник запроса',
-		        displayName: 'Куб',
-		        desc: 'Задает в качестве источника куб',
-		        values: {
-		            '$context': '$contextName',
-		            '$cube': '$cube',
-		            '$select': '$sourceSelect'
-		        }
-		    });
-
-		    new this.DropContainer({
-		        name: '$provider',
-		        category: 'Источник запроса',
-		        allowValues: ['DataCube.Model.DatabaseTable'],
-		        desc: 'Идентификатор первичного источника данных',
-		        values: []
-		    });
-
-		    new this.ComplexObject({
-		        name: '$sourceSelect',
-		        desc: 'Столбцы источника для добавления в срез',
-		        displayName: 'Столбцы источника',
-		        customKey: '#outputFieldName',
-		        values: {
-		            '#outputFieldName': '$sourceValueDefinition'
-		        },
-		        optional: ['#outputFieldName']
-		    });
-
-		    new this.DropContainer({
-		        name: '$cube',
-		        category: 'Источник запроса',
-		        allowValues: ['DataCube.Model.Cube'],
-		        desc: 'Идентификатор куба',
-		        values: []
-		    });
-
-		    new this.Group({
-		    	name: '$sourceValueDefinition',
-		        values: ['$fieldName']
 		    });
 
 		    new this.Group({
@@ -915,7 +846,7 @@
 		        desc: 'Задает в качестве источника запроса объединение результатов нескольких запросов',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$query']
+		        values: ['$sourceSelect']
 		    });
 
 		    new this.ComplexObject({

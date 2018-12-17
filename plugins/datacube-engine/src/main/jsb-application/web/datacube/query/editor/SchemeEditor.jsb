@@ -26,8 +26,6 @@
 		hoverValues: {},
 		sourceFields: null,
 
-		sourceBeans: ['$from', '$provider', '$cube'],
-
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('schemeEditor');
@@ -46,7 +44,7 @@
 			    this.sourceFieldsEditors = {};
 			}
 
-            if(this.sourceBeans.indexOf(this.schemeName) > -1){
+            if(this.schemeName === '$sourceSelect'){
                 this.sourceFieldsEditors[this.getId()] = this;
             }
 
@@ -107,7 +105,7 @@
 		destroy: function(){
 			this.destroyNestedEditors();
 
-			if(this.sourceBeans.indexOf(this.schemeName) > -1){
+			if(this.schemeName === '$sourceSelect'){
 			    delete this.sourceFieldsEditors[this.getId()];
 			}
 
@@ -427,13 +425,12 @@
 		    }
 
 		    JSB.chain(sourcesArr, function(source, c){
-		        var sourceId = source.getValue(),
-		            context = source.scope.$context;
+		        var sourceId = source.getValue();
 
                 $this.server().getEntryFields(sourceId, function(res, fail){
                     if(!fail){
                         sources[sourceId] = {
-                            context: context,
+                            context: sourceId,
                             entry: res.entry,
                             fields: res.fields
                         };
@@ -797,7 +794,7 @@ console.log('getCubeSlices');
                     }
                     prefix = prefix || 'Столбец';
                     for(var idx = 2;; idx++){
-                        var suggestedName = prefix + '_' + idx;
+                        var suggestedName = prefix + ' (' + idx + ')';
                         if(!$this.value[suggestedName]){
                             return suggestedName;
                         }
@@ -863,6 +860,7 @@ console.log('getCubeSlices');
                         schemeName = chosenObj.value.scheme;
                         value = chosenObj.value.value;
                         context = chosenObj.value.context;
+                        /*
                         if(schemeName == '#fieldName' || schemeName == '$fieldName') {
                             if($this.scheme.name == '$select'){
                                 // check for field is not existed in groupBy section
@@ -887,7 +885,8 @@ console.log('getCubeSlices');
                                     }
                                 }
                             }
-                        } else if(schemeName == '$fieldExpr') {
+                        } else*/
+                        if(schemeName == '#fieldName' || schemeName == '$fieldName' || schemeName == '$fieldExpr') {
                             value = {
                                 $field: value,
                                 $context: context
@@ -2118,7 +2117,7 @@ console.log('getCubeSlices');
 					$this.container.append(valElt);
 				}
 			}  else if(this.scheme.expressionType == 'DropContainer'){
-			    if(this.schemeName === '$provider'){
+			    if(this.scopeName === '$provider'){
 			        if(this.value){
                         this.server().getDataSourceEntry(this.value, function(entry, fail){
                             if(!fail){
@@ -2126,7 +2125,7 @@ console.log('getCubeSlices');
                             }
                         });
 			        }
-			    } else if(this.options.mode === 'diagram'){
+			    } else {
 			        var select = new Select({
                         clearBtn: true,
                         cloneOptions: true,
@@ -2134,83 +2133,10 @@ console.log('getCubeSlices');
                         value: this.value,
                         onchange: function(val){
                             $this.changeConstValue(val.key);
-
-                            if(!$this.scope.$select || Object.keys($this.scope.$select).length === 0){
-                                val.options.entry.server().extractFields(function(fields, fail){
-                                    if(fail){
-                                        return;
-                                    }
-
-                                    $this.parent.addSelectFromSource(val, fields);
-                                });
-                            }
                         }
 			        });
 			        this.container.append(select.getElement());
-			    } else {
-                    this.dropContainer = this.$('<div class="dropContainer"></div>');
-                    this.container.append(this.dropContainer);
-
-                    function createValue(value, entry){
-                        $this.dropContainer.empty();
-
-                        function drawValue(entry){
-                            if(entry){
-                                $this.dropContainer.append(RendererRepository.createRendererFor(entry).getElement());
-                            }
-                        }
-
-                        if(!entry){
-                            $this.server().getDataSourceEntry(value, function(entry){
-                                drawValue(entry);
-                            })
-                        } else {
-                            drawValue(entry);
-                        }
-                    }
-
-                    this.dropContainer.droppable({
-                        accept: function(d){
-                            if(d && d.length > 0 && d.get(0).draggingItems){
-                                for(var i in d.get(0).draggingItems){
-                                    var obj = d.get(0).draggingItems[i].obj;
-
-                                    if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
-                                        continue;
-                                    }
-
-                                    for(var j = 0; j < $this.scheme.allowValues.length; j++){
-                                        if(JSB.isInstanceOf(obj.getTargetEntry(), $this.scheme.allowValues[j])){
-                                            return true;
-                                        }
-                                    }
-                                }
-                            }
-                            return false;
-                        },
-                        tolerance: 'pointer',
-                        greedy: true,
-                        activeClass : 'acceptDraggable',
-                        hoverClass: 'hoverDraggable',
-                        drop: function(evt, ui){
-                            var d = ui.draggable;
-
-                            for(var i in d.get(0).draggingItems){
-                                var entry = d.get(0).draggingItems[i].obj.getEntry(),
-                                    newVal = entry.getWorkspace().getId() + '/' + entry.getId();
-
-                                createValue(newVal, entry);
-
-                                $this.changeConstValue(newVal);
-                                break;
-                            }
-                        }
-                    });
-
-                    if(this.value){
-                        createValue(this.value);
-                    }
-                }
+			    }
 			} else {
 				throw new Error('Unknown expression type: ' + $this.scheme.expressionType);
 			}
@@ -2509,27 +2435,6 @@ console.log('getCubeSlices');
 			default:
 				throw new Error('Unexpected expression type: ' + scheme.expressionType);
 			}
-		},
-
-		addSelectFromSource: function(value, fields){
-		    var child;
-
-		    if(!$this.scope.$select){
-		        child = this.doAdd({"key":{"scheme":"$select","value":"$select"},"value":null});
-            } else {
-debugger;
-            }
-debugger;
-		    for(var i in fields){
-		        child.doAdd({
-		            key: '#outputFieldName',
-		            value: {
-		                scheme: '$fieldExpr',
-		                value: i,
-		                context: value.options.entry.getMainContext() //this.scope.context
-                    }
-                });
-		    }
 		}
 	},
 

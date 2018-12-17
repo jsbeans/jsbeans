@@ -101,20 +101,16 @@
                 slices = data.slices,
                 sliceSelectOptions = [];
 
-            function createElement(obj, key){
-                return {
-                    entry: obj.entry,
-                    key: key,
-                    value: RendererRepository.createRendererFor(obj.entry, {showSource: true}).getElement()
-                }
-            }
-
             for(var i in slices){
                 if(sliceId === slices[i].entry.getId()){
                     continue;
                 }
 
-                sliceSelectOptions.push(createElement(slices[i], i));
+                sliceSelectOptions.push({
+                    entry: slices[i].entry,
+                    key: i,
+                    value: RendererRepository.createRendererFor(slices[i].entry, {showSource: true}).getElement()
+                });
             }
 
             this.sliceName.setData(data.entry.getName());

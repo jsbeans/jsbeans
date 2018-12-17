@@ -76,6 +76,7 @@
 .cubeEditor > .addBtn {
     right: 20px;
     color: #169f85;
+    z-index: 1000;
 }
 
 .cubeEditor > .addBtn > ul {

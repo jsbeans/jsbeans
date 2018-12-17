@@ -35,8 +35,8 @@
                         sources.push(query[fromKeys[i]]);
                         break;
                     case '$join':
-                        var left = query.$join.$left.$from,
-                            right = query.$join.$right.$from;
+                        var left = query.$join.$left,
+                            right = query.$join.$right;
 
                         sources.push(left);
                         sources.push(right);
@@ -112,7 +112,7 @@
                 $super.setName(opts.name);
 
                 if(opts.sourceType){
-                    this.query = this.generateQueryFromSource(opts.sources, opts.sourceType, opts.sourceOpts);
+                    this.query = this.generateQueryFromSource(opts);
                     this.property('query', this.query);
 
                     if(opts.sourceType === '$provider'){
@@ -232,8 +232,9 @@
             return this.cube.executeQuery(preparedQuery, params);
 		},
 
-		generateQueryFromSource: function(sources, sourceType, opts){
-		    var query = {};
+		generateQueryFromSource: function(opts){
+		    var sources = opts.sources,
+		        query = {};
 
 		    function createSelect(query, source, context){
 		        var fields = source.extractFields();
@@ -270,34 +271,24 @@
                 }
 		    }
 
-		    query['$context'] = sourceType;
+		    query['$context'] = opts.name;
 
-		    switch(sourceType){
+		    switch(opts.sourceType){
 		        case '$provider':
 		        case '$from':
-		            query[sourceType] = sources[0].getFullId();
+		            query[opts.sourceType] = sources[0].getFullId();
 
 		            createSelect(query, sources[0]);
 		            break;
                 case '$join':
                     query['$join'] = {
-                        $left: {
-                            $from: sources[0].getFullId()
-                        },
-                        $right: {
-                            $from: sources[1].getFullId()
-                        }
+                        $left: sources[0].getFullId(),
+                        $right: sources[1].getFullId()
                     }
-                    query['$join'] = JSB.merge(query['$join'], opts);
+                    query['$join'] = JSB.merge(query['$join'], opts.sourceOpts);
 
-                    query['$join']['$left']['$context'] = 'joinLeft';
-                    createSelect(query['$join']['$left'], sources[0]);
-
-                    query['$join']['$right']['$context'] = 'joinRight';
-                    createSelect(query['$join']['$right'], sources[1]);
-
-                    createSelect(query, sources[0], 'joinLeft');
-                    createSelect(query, sources[1], 'joinRight');
+                    createSelect(query, sources[0], sources[0].getFullId());
+                    createSelect(query, sources[1], sources[1].getFullId());
                     break;
                 case '$union':
                     query['$union'] = [];
