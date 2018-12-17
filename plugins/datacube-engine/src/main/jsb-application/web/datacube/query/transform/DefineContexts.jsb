@@ -15,9 +15,12 @@
 		},
 
 		defineContexts: function(rootQuery) {
-debugger;
-		    // update contexts
+
             var contextQuery = {};
+
+		    /** 1) заполнить отсутствующие $context в запросе
+		        2) собрать запросы с дублирующимися контекстами
+		    */
             QueryUtils.walkQueries(rootQuery, {}, null,
                 function leaveCallback(query){
                     /// fill or update query context
@@ -29,7 +32,6 @@ debugger;
                             if (contextQuery[query.$context] == query) {
                                 return; /// is ok
                             } else {
-debugger;
                                 /// context is busy - rebuild query with new context
                                 var context = JSB.generateUid();
                                 var newQuery = QueryUtils.copyQuery(query, context);
@@ -42,19 +44,6 @@ debugger;
                     }
                 }
             );
-debugger
-//            /// find views with name!=context
-//            var contextNames = {};
-//            for(var ctx in contextQuery) {
-//                var query = contextQuery[ctx];
-//                QueryUtils.throwError(ctx == query.$context, 'DefineContexts: Invalid context name');
-//                for(var name in query.$views) {
-//                    if (query.$views[name].$context != name) {
-//                        contextNames[ctx] = contextNames[ctx]||{};
-//                        contextNames[ctx][name] = query.$views[name].$context;
-//                    }
-//                }
-//            }
-		}
+		},
 	}
 }

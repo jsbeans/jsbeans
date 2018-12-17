@@ -119,14 +119,14 @@
 		},
 
         _translateContext: function(context) {
-//            return context;
-            if (!$this._translatedContexts[context]) {
-                var name = $this._translatedContexts[context] = 'Q'+Object.keys($this._translatedContexts).length;
-                QueryUtils.logDebug('Query context: {} = {}',name, context);
-                return name;
-
-            }
-            return $this._translatedContexts[context];
+            return context;
+//            if (!$this._translatedContexts[context]) {
+//                var name = $this._translatedContexts[context] = 'Q'+Object.keys($this._translatedContexts).length;
+//                QueryUtils.logDebug('Query context: {} = {}',name, context);
+//                return name;
+//
+//            }
+//            return $this._translatedContexts[context];
         },
 
         _generateUid: function(){
