@@ -22,6 +22,7 @@
 
                 for(var j in fields){
                     arr.push({
+                        context: sources[i].getFullId(),
                         key: j,
                         value: j
                     });
@@ -56,7 +57,7 @@
                 options: this._sources[0],
                 onchange: function(val){
                     values.firstField = {
-                        $context: 'joinLeft',
+                        $context: val.options.context,
                         $field: val.key
                     }
 
@@ -84,7 +85,7 @@
                 options: this._sources[1],
                 onchange: function(val){
                     values.secondField = {
-                        $context: 'joinRight',
+                        $context: val.options.context,
                         $field: val.key
                     }
 
@@ -122,6 +123,8 @@
 
 	    destroy: function(){
 	        $base();
+
+	        //todo: destroy beans
 	    }
     }
 }

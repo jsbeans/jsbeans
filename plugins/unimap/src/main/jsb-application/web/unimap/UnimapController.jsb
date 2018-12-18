@@ -23,19 +23,6 @@
                 this._rendersMap = JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getRendersMap();
             }
 
-            if(opts.advancedRenders){
-                var advBtn = this.$('<span class="advancedBtn">Расширенные настройки<i class="fas fa-cog"></i></span>'),
-                    advBtnCont = this.$('<div class="clearfix"></div>');
-
-                advBtn.click(function(){
-                    $this.toggleClass('advancedMode');
-                });
-
-                advBtnCont.append(advBtn);
-
-                this.append(advBtnCont);
-            }
-
             this.construct();
 	    },
 

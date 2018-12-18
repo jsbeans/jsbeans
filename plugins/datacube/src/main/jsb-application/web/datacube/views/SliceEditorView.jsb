@@ -10,6 +10,7 @@
 	           'DataCube.Query.QueryEditor',
 	           'JSB.Widgets.ToolManager',
 	           'DataCube.Export.ExportManager',
+	           'JSB.Widgets.RendererRepository',
 	           'css:SliceEditorView.css'],
 	$client: {
 		ready: false,
@@ -189,8 +190,23 @@
 			        return;
 			    }
 
+                var sliceSelectOptions = [];
+
+                for(var i in data.cubeSlices){
+                    if($this.slice.getId() === data.cubeSlices[i].getId()){
+                        continue;
+                    }
+
+                    sliceSelectOptions.push({
+                        entry: data.cubeSlices[i],
+                        key: i,
+                        value: RendererRepository.createRendererFor(data.cubeSlices[i], {showSource: true}).getElement()
+                    });
+                }
+
 			    $this.queryEditor.setOption('cubeFields', data.cubeFields);
 			    $this.queryEditor.setOption('cubeSlices', data.cubeSlices);
+			    $this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
 
                 $this.updateQuery();
                 $this.updateTextQuery();
