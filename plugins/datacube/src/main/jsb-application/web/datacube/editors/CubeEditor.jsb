@@ -7,9 +7,10 @@
 	               'JSB.Widgets.ToolManager',
 	               'DataCube.Dialogs.JoinSettingsTool',
 					'css:CubeEditor.css',
-					'css:../../fonts/fa/fontawesome-all.min.css'],
+					], //'css:../../fonts/fa/fontawesome-all.min.css'
 
 	    _cube: null,
+	    _dimensions: {},
 	    _slices: {},
 
 	    _selectedItems: {},
@@ -307,6 +308,7 @@
 		},
 
 	    constructCube: function(desc){
+	        this._dimensions = desc.dimensions;
 	        this._slices = {};
 
 	        // create slices' nodes
@@ -314,6 +316,7 @@
 	            this._slices[desc.slices[i].entry.getFullId()] = {
 	                entry: desc.slices[i].entry,
 	                node: this.diagram.createNode('sliceDiagramNode', {
+	                    dimensions: desc.dimensions,
                         editor: this,
                         entry: desc.slices[i].entry,
                         position: desc.slices[i].diagramOpts && desc.slices[i].diagramOpts.position
@@ -322,7 +325,7 @@
 	        }
 
 	        this.options.layoutManager.ensureInitialize(function(){
-                $this.options.layoutManager.getWidget('cubePanel').refresh($this.getCube(), desc.dimensions);
+                $this.options.layoutManager.getWidget('cubePanel').refresh($this.getCube(), desc);
 	        });
 	    },
 
@@ -332,6 +335,10 @@
 
 	    getCube: function(){
 	        return this._cube;
+	    },
+
+	    getDimensions: function(){
+	        return this._dimensions;
 	    },
 
 	    getSlice: function(id){

@@ -138,19 +138,19 @@
 }
 
 /* fields */
-.sliceDiagramNode > .fields > .field {
-	padding: 0 4px;
+.sliceDiagramNode > .fields > .sliceField {
+    padding: 2px 4px;
 	position: relative;
 	white-space: nowrap;
 	box-sizing: border-box;
 	display: block;
 }
 
-.sliceDiagramNode > .fields > .field:nth-child(odd) {
+.sliceDiagramNode > .fields > .sliceField:nth-child(odd) {
 	background-color: #e0eaef;
 }
 
-.sliceDiagramNode > .fields > .field:nth-child(even) {
+.sliceDiagramNode > .fields > .sliceField:nth-child(even) {
 	background-color: #eef4f7;
 }
 

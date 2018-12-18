@@ -1,10 +1,6 @@
 @CHARSET "UTF-8";
 
-@import "/fonts/fa/fontawesome-all.min.css";
-@import "/fonts/aeromatics/aeromatics.css";
-@import "/fonts/roboto/roboto.css";
-@import "Buttons.css";
-@import "Unimap.css";
+@import "Datacube.css";
 
 div.ajaxloader > div.ajaxloaderInfo > .icon {
 	background-image: url(/datacube/images/datacube-loader.gif) !important;
@@ -232,9 +228,4 @@ div.ajaxloader[key="error"] > div.ajaxloaderInfo > .icon {
 
 .workspaceBrowser > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_icon {
 	margin-right: 4px;
-}
-
-/* all */
-.hidden{
-    display: none !important;
 }

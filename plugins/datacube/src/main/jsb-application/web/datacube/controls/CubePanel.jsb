@@ -3,11 +3,8 @@
 	$parent: 'JSB.Widgets.Widget',
     $client: {
         $require: ['JSB.Controls.ScrollBox',
-                   'JSB.Widgets.Button',
-                   'JSB.Widgets.TreeView',
-                   'JSB.Widgets.ToolBar',
-                   'JSB.Widgets.ToolManager'
-        ],
+                   'JSB.Controls.Checkbox',
+                   'JSB.Widgets.ToolManager'],
 
         $constructor: function(opts){
             $base(opts);
@@ -18,122 +15,61 @@
             var caption = this.$('<header>Измерения куба</header>');
             this.append(caption);
 
-            this.toolbar = new ToolBar();
-            this.append(this.toolbar);
-
-			this.toolbar.addItem({
-				key: 'add',
-				tooltip: 'Добавить измерение',
-				element: '<div class="icon"></div>',
-				click: function(){
-                    $this.$('body').addClass('copyCursor');
-
-                    $this.$(document).on('keyup.startAddDimension', function(e) {
-                        if (e.key === "Escape") {
-                            $this.publish('DataCube.CubeEditor.stopAddDimension');
-                        }
-                    });
-
-                    $this.publish('DataCube.CubeEditor.startAddDimension');
-				}
+			// select fields
+			this.cubeFields = new ScrollBox({
+			    xAxisScroll: false
 			});
+			this.append(this.cubeFields);
 
-			var removeBtn = this.toolbar.addItem({
-				key: 'remove',
-				tooltip: 'Удалить измерения',
-				element: '<div class="icon"></div>',
-				disabled: true,
-				click: function(){
-                    ToolManager.showMessage({
-                        icon: 'removeDialogIcon',
-                        text: 'Вы уверены что хотите удалить выбранные элементы?',
-                        buttons: [{text: 'Удалить', value: true},
-                                  {text: 'Нет', value: false}],
-                        target: {
-                            selector: removeBtn.wrapper
-                        },
-                        constraints: [{
-                            weight: 10.0,
-                            selector: removeBtn.wrapper
-                        }],
-                        callback: function(bDel){
-                            if(bDel){
-                                $this.removeDimensions();
-                            }
-                        }
-                    });
-				}
+			this.subscribe('DataCube.Model.Cube.updateCubeFields', {session: true}, function(sender, msg, opts){
+			    $this.refresh(null, opts);
 			});
+        },
 
-			this.dimensions = new TreeView({
-				selectMulti: true,
-				onSelectionChanged: function(key, obj){
-				    $this.toolbar.enableItem('remove', key);
-				},
-				onNodeHighlighted: function(key, bHighlighted, evt){
-				    $this.publish('DataCube.CubeEditor.dimensionHighlighted', {
-				        isHighlighted: bHighlighted,
-				        key: key
-				    });
-				}
-			});
-			this.append(this.dimensions);
-
-            this.subscribe('DataCube.CubeEditor.stopAddDimension', function(sender, msg, obj){
-                $this.$(document).off('keyup_startAddDimension');
-
-                $this.$('body').removeClass('copyCursor');
-
-                if(obj){
-                    $this.addDimension(obj);
+        addDimension: function(field){
+            this.cube.server().addDimension(field, function(res, fail){
+                if(!fail){
+                    $this.publish('DataCube.CubeEditor.toggleDimension', {field: field, isDimension: true});
                 }
             });
         },
 
-        addDimension: function(obj){
-            this.cube.server().addDimension(obj.field, function(res, fail){
-                if(!fail){
-                    $this.dimensions.addNode({
-                        key: obj.field,
-                        element: $this.$('<div class="dimension">' + obj.field + '</div>')
-                    });
+        refresh: function(cube, opts){
+            if(cube){
+                this.cube = cube;
+            }
 
-                    $this.publish('DataCube.CubeEditor.addDimension', obj.field);
-                }
+            var fieldsArr = Object.keys(opts.fields),
+                cubeFields = d3.select(this.cubeFields.getElement().get(0));
+
+            // enter
+            cubeFields.selectAll('.jsb-checkbox').data(fieldsArr).enter()
+                      .append(function(){
+                            return new Checkbox({
+                                onChange: function(b){
+                                    if(b){
+                                        $this.addDimension(this.getLabel());
+                                    } else {
+                                        $this.removeDimensions(this.getLabel());
+                                    }
+                                }
+                            }).getElement().get(0);
+                        });
+
+            // update
+            cubeFields.selectAll('.jsb-checkbox').data(fieldsArr).attr('test', function(d){
+                var cb = $this.$(this).jsb();
+                cb.setLabel(d);
+                cb.setChecked(opts.dimensions[d], true);
             });
+
+            // exit
+            cubeFields.selectAll('.jsb-checkbox').data(fieldsArr).exit().remove();
         },
 
-        refresh: function(cube, dimensions){
-            this.cube = cube;
-
-            this.dimensions.clear();
-
-            for(var i in dimensions){
-                this.dimensions.addNode({
-                    key: i,
-                    element: this.$('<div class="dimension">' + i + '</div>')
-                });
-            }
-        },
-
-        removeDimensions: function(){
-            var selected = this.dimensions.getSelected(),
-                keys = [];
-
-            if(!JSB.isArray(selected)){
-                selected = [selected];
-            }
-
-            for(var i = 0; i < selected.length; i++){
-                keys.push(selected[i].key);
-            }
-
-            this.cube.server().removeDimension(keys, function(res, fail){
-                if(!fail){
-                    for(var i = 0; i < keys.length; i++){
-                        $this.dimensions.deleteNode(keys[i]);
-                    }
-                }
+        removeDimensions: function(field){
+            this.cube.server().removeDimension(field, function(res, fail){
+                $this.publish('DataCube.CubeEditor.toggleDimension', {field: field, isDimension: false});
             });
         }
     }
