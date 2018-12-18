@@ -997,6 +997,17 @@
                 }
             }
 
+            if (context != callerContext) {
+                var callerQuery = $this.contextQueries[callerContext];
+                QueryUtils.throwError(callerQuery, 'Caller query context is undefined: {}', callerContext);
+                // is join filter (link to $left or $right query)
+                if (callerQuery.$join && (query == callerQuery.$join.$left || query == callerQuery.$join.$right)) {
+                    return $this._translateExpression(query.$select[field], query);
+                } else if (callerQuery.$recursive) {
+                    return $this._translateExpression(query.$select[field], query);
+                }
+            }
+
             if (query.$from) {
 
                 var sourceQuery = JSB.isObject(query.$from) ? query.$from : $this.contextQueries[query.$from];
@@ -1036,17 +1047,6 @@
                 return $this._quotedName($this._translateContext(context)) + "." + $this._quotedName(field);
             } else {
                 QueryUtils.throwError(false, 'Undefined source of query with context: {}', context);
-            }
-
-            if (context != callerContext) {
-                var callerQuery = $this.contextQueries[callerContext];
-                QueryUtils.throwError(callerQuery, 'Caller query context is undefined: {}', callerContext);
-                // is join filter (link to $left or $right query)
-                if (callerQuery.$join && (query == callerQuery.$join.$left || query == callerQuery.$join.$right)) {
-                    return $this._translateExpression(query.$select[field], query);
-                } else if (callerQuery.$recursive) {
-                    return $this._translateExpression(query.$select[field], query);
-                }
             }
 
             /// is export alias
