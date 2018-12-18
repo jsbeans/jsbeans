@@ -5,7 +5,8 @@
 	$server: {
 		$require: [
 		    'DataCube.Query.QueryUtils',
-		    'DataCube.Query.Transforms.QueryTransformer'
+		    'DataCube.Query.Transforms.QueryTransformer',
+		    'java:java.util.HashMap'
         ],
 
 		transform: function(rootQuery, cubeOrDataProvider){
@@ -16,34 +17,70 @@
 
 		defineContexts: function(rootQuery) {
 
-            var contextQuery = {};
+            var contextDuplicates = {/**context: []*/};
+            var queries = [];
+            var queryParents = new HashMap();
+            function registerQuery(q) {
+                if (queries.indexOf(q) == -1) {
+                    queries.push(q);
+                }
+                if(!contextDuplicates[q.$context]) {
+                    contextDuplicates[q.$context] = [];
+                }
+                if (contextDuplicates[q.$context].indexOf(q) == -1) {
+                    contextDuplicates[q.$context].push(q);
+                }
+            }
+            function printDuplicates(){
+                var s = '{';
+                for(var c in contextDuplicates) {
+                    '\n\t' + c + ': ' + contextDuplicates[c].length;
+                }
+                return s + '}\n';
+            }
 
-		    /** 1) заполнить отсутствующие $context в запросе
-		        2) собрать запросы с дублирующимися контекстами
-		    */
-            QueryUtils.walkQueries(rootQuery, {}, null,
+		    QueryUtils.walkQueries(rootQuery, {}, null,
                 function leaveCallback(query){
-                    /// fill or update query context
                     if (!query.$context) {
                         query.context = JSB.generateUid();
-                        contextQuery[query.$context] = query;
-                    } else {
-                        if (contextQuery[query.$context]) {
-                            if (contextQuery[query.$context] == query) {
-                                return; /// is ok
-                            } else {
-                                /// context is busy - rebuild query with new context
-                                var context = JSB.generateUid();
-                                var newQuery = QueryUtils.copyQuery(query, context);
-                                QueryUtils.jsonReplaceBody(query, newQuery);
-                                contextQuery[query.$context] = query;
-                            }
-                        } else {
-                            contextQuery[query.$context] = query;
-                        }
                     }
+                    var parent = this.path[this.path.length-1] == query
+                        ? this.path[this.path.length-2]
+                        : this.path[this.path.length-1];
+                    queryParents.put(query, parent);
+                    registerQuery(query);
                 }
             );
+
+            /// порядок важен - от листьев к корню
+            for(var i = 0; i < queries.length; i++) {
+                var query = queries[i];
+                if (contextDuplicates[query.$context].length > 1){
+                    var oldContext = query.$context;
+                    var newContext = oldContext + '##' + JSB.generateUid();
+
+                    /// замена контекста в самом запросе (все упоминания $context)
+                    QueryUtils.updateContext(query, oldContext, newContext);
+
+                    var parent = queryParents.get(query);
+
+                    /// update parent ($join, $recursive)
+                    if (parent) {
+                        if (parent.$join && parent.$join.$left == query
+                            || parent.$join && parent.$join.$right == query
+                            || parent.$recursive && parent.$recursive.$start == query
+                            || parent.$recursive && parent.$recursive.$joinedNext == query
+                        ) {
+                            QueryUtils.updateContext(parent, oldContext, newContext, function(e){
+                                return e != query;
+                            });
+                        }
+                    }
+
+
+                }
+
+            }
 		},
 	}
 }

@@ -1600,6 +1600,31 @@ debugger
 //            walkExpression(dcQuery, []);
 //        },
 
+		updateContext: function(exp, oldContext, newContext, filter) {
+		    var filter = filter || function() {return true;};
+
+		    function walk(e) {
+		        if (e == null) {
+		        } else if(JSB.isObject(e)) {
+		            for(var i in e) if (e.hasOwnProperty(i) && filter.call(e, e[i])) {
+		                if (i == '$context') {
+		                    if (e[i] == oldContext) {
+		                        e[i] = newContext;
+		                    }
+		                } else {
+		                    walk(e[i]);
+		                }
+		            }
+		        } else if(JSB.isArray(e)) {
+		            for(var i = 0; i < e.length; i++) if(filter.call(e, e[i])) {
+		                walk(e[i]);
+		            }
+                }
+		    }
+
+		    walk(exp);
+		},
+
 		copyQuery: function(dcQuery, context) {
 		    var dcQuery = JSB.merge(true, {}, dcQuery);
 		    var oldContext = dcQuery.$context;
