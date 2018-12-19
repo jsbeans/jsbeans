@@ -3,8 +3,6 @@
 	$parent: 'DataCube.Query.Translators.SQLTranslator',
 
 	$server: {
-		vendor: 'PostgreSQL',
-		
 		$require: [
 		    'JSB.System.Config',
 
@@ -39,6 +37,8 @@
 		},
 
 		translateQuery: function() {
+		    $this._updateVendor();
+
 		    $this._verifyFields();
 
 		    // build QueryView and nested views
