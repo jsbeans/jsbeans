@@ -46,6 +46,13 @@
     left: calc(50% + 6px);
 }
 
+/* search */
+.cubeEditor > .jsb-searchBox {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
 /* edit buttons */
 @keyframes ani {
     0% {

@@ -3,7 +3,7 @@
 	$parent: 'JSB.Controls.Control',
 
 	$client: {
-		$require: ['css:checkbox.css'],
+		$require: ['css:Checkbox.css'],
 
 		_contentBox: null,
 		_label: null,
@@ -71,6 +71,12 @@
             }
         },
 
+        getLabel: function(){
+            if(this._label){
+                return this._label.text();
+            }
+        },
+
 		isChecked: function(){
 			return this.find('> .check-elem > input').prop('checked');
 		},
@@ -86,8 +92,8 @@
 
 			this.enableContent(b);
 
-			if(this.options.onchange && !hideEvent){
-				this.options.onchange.call(this, b);
+			if(this.options.onChange && !hideEvent){
+				this.options.onChange.call(this, b);
 			}
 		},
 
@@ -134,8 +140,8 @@
 
 			this.enableContent(!checked);
 
-			if(this.options.onchange && !hideEvent){
-				this.options.onchange.call(this, !checked);
+			if(this.options.onChange && !hideEvent){
+				this.options.onChange.call(this, !checked);
 			}
 		},
 

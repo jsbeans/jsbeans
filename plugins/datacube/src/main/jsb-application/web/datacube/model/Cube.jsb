@@ -31,7 +31,7 @@
 		loaded: false,
 
 		dimensions: {},
-
+		fields: {},
 		slices: {},
 
 		$constructor: function(id, workspace, opts){
@@ -83,10 +83,12 @@
 									    entry: slice,
 									    diagramOpts: desc.diagramOpts
 									};
+
+									this.fields = JSB.merge(this.fields, slice.extractFields());
 								}
 							}
 
-							// load dimensions
+							// load fields
 							this.dimensions = snapshot.dimensions || {};
 						}
 						this.loaded = true;
@@ -104,53 +106,9 @@
 
 			return {
 			    dimensions: this.dimensions,
+			    fields: this.fields,
 				slices: this.slices
 			};
-		},
-
-		// check necessity
-		fixupProviders: function(){
-return;
-			var bNeedSave = false;
-			for(pId in this.dataProviders){
-				var p = this.dataProviders[pId];
-				if(!JSB.isInstanceOf(p.entry, 'DataCube.Model.SqlTable')){
-					continue;
-				}
-				if(!p.entry.isMissing()){
-					continue;
-				}
-				// lookup appropriate entry
-				var dbSource = p.entry.getParent();
-				if(!JSB.isInstanceOf(dbSource, 'DataCube.Model.SqlSource')){
-					continue;
-				}
-				var chMap = dbSource.getChildren();
-				var nCh = null;
-				for(var chId in chMap){
-					var chEntry = chMap[chId];
-					if(!JSB.isInstanceOf(chEntry, 'DataCube.Model.SqlTable')){
-						continue;
-					}
-					if(chEntry == p.entry || chEntry.isMissing()){
-						continue;
-					}
-					if(chEntry.getName() == p.entry.getName()){
-						nCh = chEntry;
-						break;
-					}
-				}
-				if(nCh){
-					bNeedSave = true;
-					// do replace
-					p.entry = nCh;
-					//this.dataProviderEntries[pId] = nCh; // todo
-				}
-			}
-			if(bNeedSave){
-				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
-				this.store();
-			}
 		},
 
 		store: function(){
@@ -193,12 +151,17 @@ return;
 		},
 
 		addDimension: function(field){
-		    this.dimensions[field] = true;
+		    this.dimensions[field] = {};
+
 		    this.store();
 		},
 
 		addSlice: function(opts){
 			this.load();
+
+			if(!opts){
+			    opts = {};
+			}
 
 			var slice = new Slice(JSB.generateUid(), this.getWorkspace(), {
 			    cube: this,
@@ -214,6 +177,8 @@ return;
 			};
 
 			this.addChildEntry(slice);
+
+			this.updateCubeFields(slice, true);
 
 			this.sliceCount = Object.keys(this.slices).length;
 
@@ -234,8 +199,9 @@ return;
 		},
 
 		extractFields: function(){
-		    return this.getDimensions();
+		    return this.fields;
 		},
+
 		generateSliceName: function(sName){
 			var snMap = {};
 
@@ -310,6 +276,41 @@ return;
 			this.sliceCount = Object.keys(this.slices).length;
 
 			this.store();
+		},
+
+		updateCubeFields: function(slice, noStore){
+		    function updateFields(slice){
+		        var sliceFields = slice.extractFields(),
+		            isNeedUpdate = false;
+
+		        for(var i in sliceFields){
+		            if(!$this.fields[i]){
+		                $this.fields[i] = {};
+
+		                isNeedUpdate = true;
+		            }
+		        }
+
+		        return isNeedUpdate;
+		    }
+
+		    var isNeedUpdate = false;
+
+		    if(slice){
+		        isNeedUpdate = updateFields(slice);
+		    } else {
+		        for(var i in this.slices){
+		            isNeedUpdate = updateFields(this.slices[i]) || isNeedUpdate;
+		        }
+		    }
+
+            if(isNeedUpdate){
+                this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.dimensions, fields: this.fields }, {session: true});
+
+                if(!noStore){
+                    this.store();
+                }
+            }
 		},
 
 		updateNodePosition: function(entry, diagramOpts){

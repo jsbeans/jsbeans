@@ -2,14 +2,15 @@
 	$name: 'DataCube.CubeEditor',
 	$parent: 'JSB.Widgets.Widget',
 	$client: {
-	    $require: ['JSB.Widgets.Diagram',
-	               'DataCube.SliceDiagramNode',
+	    $require: ['JSB.Controls.SearchBox',
+	               'JSB.Widgets.Diagram',
 	               'JSB.Widgets.ToolManager',
 	               'DataCube.Dialogs.JoinSettingsTool',
-					'css:CubeEditor.css',
-					'css:../../fonts/fa/fontawesome-all.min.css'],
+	               'DataCube.SliceDiagramNode',
+					'css:CubeEditor.css'],
 
 	    _cube: null,
+	    _dimensions: {},
 	    _slices: {},
 
 	    _selectedItems: {},
@@ -135,9 +136,16 @@
                 }
             });
 
-            // todo
             // search
-            //this.search = this.$();
+            var searchBox = new SearchBox({
+                onChange: function(val){
+                    $this.publish('DataCube.CubeEditor.search', val);
+                },
+                onClose: function(){
+                    $this.publish('DataCube.CubeEditor.search');
+                }
+            });
+            this.append(searchBox);
 
             // create add buttons
             var addBtn = this.$('<div class="addBtn fas fa-plus-circle"></div>');
@@ -307,6 +315,7 @@
 		},
 
 	    constructCube: function(desc){
+	        this._dimensions = desc.dimensions;
 	        this._slices = {};
 
 	        // create slices' nodes
@@ -314,6 +323,7 @@
 	            this._slices[desc.slices[i].entry.getFullId()] = {
 	                entry: desc.slices[i].entry,
 	                node: this.diagram.createNode('sliceDiagramNode', {
+	                    dimensions: desc.dimensions,
                         editor: this,
                         entry: desc.slices[i].entry,
                         position: desc.slices[i].diagramOpts && desc.slices[i].diagramOpts.position
@@ -322,7 +332,7 @@
 	        }
 
 	        this.options.layoutManager.ensureInitialize(function(){
-                $this.options.layoutManager.getWidget('cubePanel').refresh($this.getCube(), desc.dimensions);
+                $this.options.layoutManager.getWidget('cubePanel').refresh($this.getCube(), desc);
 	        });
 	    },
 
@@ -332,6 +342,10 @@
 
 	    getCube: function(){
 	        return this._cube;
+	    },
+
+	    getDimensions: function(){
+	        return this._dimensions;
 	    },
 
 	    getSlice: function(id){

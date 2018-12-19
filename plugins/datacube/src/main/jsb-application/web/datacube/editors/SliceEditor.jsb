@@ -80,12 +80,6 @@
 	            query: query
 	        }, function(res, err){
 	            if(!err && res.wasUpdated){
-	                /*
-	                $this.sliceData.node.refresh({
-	                    measurements: measurements,
-	                    query: query
-	                });
-	                */
 	                $this.publish('DataCube.CubeEditor.sliceUpdated', {
 	                    measurements: measurements,
 	                    name: name,

@@ -129,7 +129,7 @@
 			this.status = this.$('<footer></footer>');
 			this.append(this.status);
 			
-			this.subscribe('Slice.renameSlice', {session: true}, function(sender, msg, desc){
+			this.subscribe('DataCube.Model.Slice.renameSlice', {session: true}, function(sender, msg, desc){
 				var entry = desc.entry;
 
 				if($this.entry != entry){
@@ -139,21 +139,8 @@
 				caption.find('.name').text(desc.name);
 			});
 
-            this.subscribe('DataCube.CubeEditor.startAddDimension', function(sender, msg, obj){
-                $this.addClass('addDimension');
-            });
-
-            this.subscribe('DataCube.CubeEditor.stopAddDimension', function(sender, msg, obj){
-                $this.removeClass('addDimension');
-            });
-
-            this.subscribe('DataCube.CubeEditor.addDimension', function(sender, msg, field){
-                $this.addDimension(field);
-            });
-
-            this.subscribe('DataCube.CubeEditor.dimensionHighlighted', function(sender, msg, obj){
-                //todo
-                // obj: { isHighlighted: <bool>, key: <string> }
+            this.subscribe('DataCube.CubeEditor.search', function(sender, msg, value){
+                $this.search(value);
             });
 
             this.subscribe('DataCube.CubeEditor.sliceUpdated', function(sender, msg, obj){
@@ -161,43 +148,41 @@
                     $this.refresh(obj);
                 }
             });
+
+            this.subscribe('DataCube.CubeEditor.toggleDimension', function(sender, msg, desc){
+                $this.toggleDimension(desc);
+            });
 		},
 
-		addDimension: function(field){
-		    if(this.fields[field]){
-		        this.fieldList.find('.field[key="' + field + '"]').addClass('dimension');
-		    }
+		highlightNode: function(bEnable){
+			if(bEnable){
+				this.addClass('highlighted');
+			} else {
+				this.removeClass('highlighted');
+			}
 		},
 
 		refresh: function(opts){
 		    var query = opts && opts.query || this.entry.getQuery(),
-		        fields = query.$select ? Object.keys(query.$select) : [];
+		        fields = query.$select ? Object.keys(query.$select).sort() : [],
+		        dimensions = this.editor.getDimensions();
 
             if(fields.length !== 0){
                 var fieldsElements = d3.select(this.fieldList.getElement().get(0));
                 // enter
-                fieldsElements.selectAll('div.field').data(fields).enter().append('div').classed('field', true);
+                fieldsElements.selectAll('div.sliceField').data(fields).enter().append('div').classed('cubeFieldIcon sliceField', true);
 
                 // update
-                fieldsElements.selectAll('div.field').data(fields)
+                fieldsElements.selectAll('div.sliceField').data(fields)
                     .text(function(d){
                         return d;
+                    })
+                    .classed('dimension', function(d){
+                        return dimensions[d];
                     });
 
                 // exit
-                fieldsElements.selectAll('div.field').data(fields).exit().remove();
-
-                // set measurements
-                this.fieldList.getElement().find('div.field').click(function(evt){
-                    if($this.hasClass('addDimension')){
-                        evt.stopPropagation();
-
-                        $this.publish('DataCube.CubeEditor.stopAddDimension', {
-                            field: $this.$(evt.target).text(),
-                            slice: $this.entry
-                        });
-                    }
-                });
+                fieldsElements.selectAll('div.sliceField').data(fields).exit().remove();
 	        }
 
             // update links
@@ -228,13 +213,14 @@
                 this.sliceName.text(opts.name);
             }
 		},
-		
-		highlightNode: function(bEnable){
-			if(bEnable){
-				this.addClass('highlighted');
-			} else {
-				this.removeClass('highlighted');
-			}
+
+		search: function(value){
+		    if(value){
+                this.fieldList.find('.sliceField:not(:contains("' + value + '"))').addClass('hidden');
+                this.fieldList.find('.sliceField:contains("' + value + '")').removeClass('hidden');
+            } else {
+                this.fieldList.find('.sliceField').removeClass('hidden');
+            }
 		},
 
 		selectNode: function(bEnable){
@@ -251,6 +237,16 @@
 				this.removeClass('selected');
 				this.publish('DataCube.CubeEditor.sliceNodeDeselected', obj);
 			}
+		},
+
+		toggleDimension: function(desc){
+		    if(this.fields[desc.field]){
+		        if(desc.isDimension){
+		            this.fieldList.find('.sliceField:contains("' + desc.field + '")').addClass('dimension');
+		        } else {
+		            this.fieldList.find('.sliceField:contains("' + desc.field + '")').removeClass('dimension');
+		        }
+		    }
 		}
 	}
 }

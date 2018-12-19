@@ -70,14 +70,6 @@
         return 'Текущий куб';
     },
 
-    getMainContext: function(){
-        var query = this.getQuery();
-
-        if(query){
-            return query.$context;
-        }
-    },
-
     getSource: function(){
         return this.source;
     },
@@ -351,7 +343,9 @@
 
 		setName: function(name){
 			$base(name);
-			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
+
+			this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
+
 			this.doSync();
 		},
 
@@ -372,6 +366,8 @@
 
     			this.invalidate();
     			this.loadCacheFromCube();
+
+    			this.cube.updateCubeFields(this);
 
 		        isNeedUpdate = true;
 		    }
