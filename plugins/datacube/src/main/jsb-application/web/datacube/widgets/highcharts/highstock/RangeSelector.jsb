@@ -384,7 +384,11 @@
                             }
                         }
 
-                        fetch();
+                        if(seriesData.length <= 3000){
+                            fetch();
+                        } else {
+                            resultProcessing();
+                        }
                     } catch(ex){
                         console.log('RangeSelectorChart load data exception');
                         console.log(ex);

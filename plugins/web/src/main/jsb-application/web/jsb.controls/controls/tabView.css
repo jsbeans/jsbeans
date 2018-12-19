@@ -10,6 +10,7 @@
     list-style: none;
     margin: 0;
     padding: 0;
+    background: rgba(230, 230, 230, 1);
 }
 
 .jsb-tabview > .tabPane.top {
@@ -19,7 +20,6 @@
 	padding: 3px 6px 0 6px;
     height: 40px;
     border-bottom: 1px solid #ddd;
-    background: rgba(241, 241, 241, 1);
 }
 
 .jsb-tabview > .tabPane.top > li {
@@ -32,11 +32,12 @@
     padding: 4px 10px;
     text-align: center;
     color: #aaa;
-    border: 0px solid #ddd;
+    border: 0px solid #d4d4d4;
     border-width: 1px 1px 0px 1px;
-    background: #f1f1f1;
-    border-radius: 3px 3px 0 0;
+    background: #f7f7f7;
+    border-radius: 6px 6px 0 0;
     height: 35px;
+	transition: background 200ms, color 200ms;
 }
 
 .jsb-tabview > .tabPane.top > li > .icon,
@@ -60,7 +61,7 @@
 }
 
 .jsb-tabview > .tabPane.top > li.active {
-    color: #555;
+    color: #383838;
     border: 1px solid #ddd;
     border-top: 2px solid #d37531;
     border-bottom: 1px solid #fff;

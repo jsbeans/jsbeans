@@ -1,9 +1,52 @@
 {
 	$name: 'DataCube.Model.Slice',
-	$parent: 'JSB.Workspace.Entry',
+	$parent: 'DataCube.Model.SettingsEntry',
 
 	$require: ['DataCube.Query.QuerySyntax'],
 
+	$scheme: {
+		cacheSettings: {
+			render: 'group',
+			name: 'Кэширование данных',
+			collapsible: true,
+			items: {
+				useCache: {
+					render: 'switch',
+					name: 'Использовать кэширование срезов',
+					optional: 'checked',
+					items: {
+						cacheSize: {
+							render: 'item',
+							name: 'Размер кэша (Кб)',
+							value: 1024,
+							valueType: 'number'
+						},
+						cacheRowLimit: {
+							render: 'item',
+							name: 'Ограничить максимальное количество строк',
+							value: 1000,
+							valueType: 'number',
+							optional: true
+						},
+						cacheExtraQueries: {
+							render: 'item',
+							name: 'Кэшировать производные запросы (с фильтрами)',
+							optional: 'checked',
+							editor: 'none'
+						},
+						updateInterval: {
+							render: 'item',
+							name: 'Обновлять данные',
+							optional: true,
+							editor: 'JSB.Widgets.CronEditor',
+							value: '0 * * * *'
+						}
+					}
+				}
+			}
+		}
+	},
+	
 	cube: null,
 	source: null,
 	query: {},
@@ -80,7 +123,8 @@
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'DataCube.Query.QueryCache'],
+		           'DataCube.Query.QueryCache',
+		           'DataCube.Scheduler.EntryScheduleController'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode(null, this, {
@@ -112,6 +156,7 @@
                         this.property('source', this.source.getFullId());
                     }
                 }
+				this.property('queryParams', this.queryParams);
 			} else {
 				if(this.property('cube')){
 					this.cube = this.getWorkspace().entry(this.property('cube'));
@@ -134,6 +179,13 @@
 				if($this.queryCache && sender == $this.queryCache){
 					$this.publish('DataCube.Model.Slice.updated');
 				}
+			});
+			
+			this.subscribe('DataCube.Scheduler.EntryScheduleController.executeJob', function(sender, msg, params){
+				if(sender != $this){
+					return;
+				}
+				$this.executeScheduledJob(params);
 			});
 		},
 
@@ -391,6 +443,22 @@
 			}
 			this.ensureQueryCache();
 			this.queryCache.update(true);
+		},
+		
+		onChangeSettings: function(){
+			var ctx = this.getSettingsContext();
+			
+			// perform check for scheduled tasks
+			var updateCacheCron = null;
+			if(ctx.find('useCache').checked() && ctx.find('updateInterval').checked()){
+				EntryScheduleController.registerJob(this, 'updateCache', ctx.find('updateInterval').value());
+			} else {
+				EntryScheduleController.unregisterJob(this, 'updateCache');
+			}
+		},
+		
+		executeScheduledJob: function(params){
+			JSB.getLogger().debug('executeScheduledJob for slice: "' + this.getName() + '": ' + JSON.stringify(params));
 		}
 	}
 }

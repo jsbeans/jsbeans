@@ -35,6 +35,7 @@ public class ExecuteScriptMessage implements Message {
     private String user = null;
     private AccessControlContext accessControlContext;
     private String clientRequestId = null;
+    private boolean respond = true;
 
     public ExecuteScriptMessage() {
         initAccessControl();
@@ -60,6 +61,14 @@ public class ExecuteScriptMessage implements Message {
 
     private void initAccessControl() {
         this.accessControlContext = AccessController.getContext();
+    }
+    
+    public void setRespond(boolean bRespond){
+    	this.respond = bRespond;
+    }
+    
+    public boolean isNeedResponse(){
+    	return this.respond;
     }
     
     public void setPreserveScope(boolean b){

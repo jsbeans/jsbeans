@@ -115,8 +115,13 @@
                 // hide all tabs
                 var tabs = this.tabView.find('> .tabPane > li');
                 tabs.css('display', 'none');
+                
+                var queryType = nodeType;
+                if(JSB.isInstanceOf(this.currentNode, 'JSB.Workspace.EntryNode')){
+                	queryType = this.currentNode.getTargetEntry().getJsb().$name;
+                }
 
-				WorkspaceController.server().queryBrowserViews(this.wmKey, nodeType, function(viewArr){
+				WorkspaceController.server().queryBrowserViews(this.wmKey, queryType, function(viewArr){
 					$this.nodeViewRegistry[nodeType] = viewArr;
 					// ensure all view jsbs loaded
 					$jsb.chain(viewArr, function(viewDesc, c){

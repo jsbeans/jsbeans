@@ -3,9 +3,11 @@
 	$singleton: true,
 	
 	$server: {
+		$require: ['JSB.Workspace.WorkspaceController'],
 		cacheMap: {},
 		enabled: false,
 		tickInterval: 5000,
+		cacheControllerSettings: null,
 		
 		$constructor: function(){
 			$base();
@@ -23,7 +25,14 @@
 				$this.tick();
 				JSB.defer(doTick, $this.tickInterval);
 			}
-			doTick();
+			
+			
+			WorkspaceController.ensureTrigger('ready', function(){
+				$this.cacheControllerSettings = WorkspaceController.getSystemEntry('cacheControllerSettings');
+				doTick();
+				$this.setTrigger('ready');
+			});
+				
 		},
 		
 		registerCache: function(cacheInst){

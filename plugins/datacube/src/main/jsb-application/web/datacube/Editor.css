@@ -138,6 +138,11 @@ div.ajaxloader[key="error"] > div.ajaxloaderInfo > .icon {
 	background: transparent;
 }
 
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="workspaceExplorer"] > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active {
+	background-color: #f1f1f1;
+	border-bottom-color: #f1f1f1;
+}
+
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane {}
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active {

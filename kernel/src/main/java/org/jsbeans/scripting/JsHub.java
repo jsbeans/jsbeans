@@ -662,7 +662,7 @@ public class JsHub extends Service {
                     if (msg.isAsync()) {
                         self.tell(uMsg, self);
                     } else {
-                        if (!sender.equals(ActorRef.noSender())) {
+                        if (!sender.equals(ActorRef.noSender()) && msg.isNeedResponse()) {
                             sender.tell(uMsg, self);
                         }
                     }
@@ -701,7 +701,7 @@ public class JsHub extends Service {
                     if (msg.isAsync()) {
                         self.tell(uMsg, self);
                     } else {
-                        if (!sender.equals(ActorRef.noSender())) {
+                        if (!sender.equals(ActorRef.noSender()) && msg.isNeedResponse()) {
                             sender.tell(uMsg, self);
                         }
                     }

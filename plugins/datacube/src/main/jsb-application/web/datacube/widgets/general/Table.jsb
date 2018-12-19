@@ -170,10 +170,17 @@
 	                editor: 'none'
 	    	    },
 	    	    useAnimation: {
-	    	    	render: 'item',
+	    	    	render: 'switch',
 	                name: 'Анимация',
 	                optional: 'checked',
-	                editor: 'none'
+	                items: {
+	                	animationDuration: {
+	                		render: 'item',
+	    	                name: 'Продолжительность анимации (ms)',
+	    	                value: 1000,
+	    	                valueType: 'number'
+	                	}
+	                }
 	    	    }
 			}
 		},
@@ -545,6 +552,13 @@
                     editor: 'none',
                     optional: true
                 },
+/*                useForCompare: {
+                	render: 'switch',
+                    name: 'Использовать для сравнения',
+                    items: {
+                    	
+                    }
+                },*/
                 summary: {
                     render: 'switch',
                     name: 'Отображать в строке статуса сводный показатель',
@@ -1285,7 +1299,7 @@
 						if(dif != 0){
 							var curSel = d3.select(this);
 							curSel.style('transform', 'translate(0, '+dif+'px)');
-							curSel.transition().duration(800)
+							curSel.transition().duration($this.animationDuration || 800)
 								.style('transform', 'translate(0,0)')
 								.on('end', function(d){
 									d3.select(this).style('transform', null);
@@ -1294,7 +1308,7 @@
 					});
 					
 					newRowsSel.selectAll('tr.row')
-						.transition().duration(800)
+						.transition().duration($this.animationDuration || 800)
 							.style('opacity', 1)
 							.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'})
 							.on('end', function(d){
@@ -1326,7 +1340,7 @@
 						.style('opacity', 1);
 				
 					removedRowsSel.transition()
-						.duration(800)
+						.duration($this.animationDuration || 800)
 						.style('transform', 'scale(0,0)')
 						.style('opacity', 0)
 						.on('end', function(d){
@@ -2710,6 +2724,10 @@
 			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
 			this.usePrefetch = this.getContext().find('usePrefetch').checked();
 			this.useAnimation = this.getContext().find('useAnimation').checked();
+			if(this.useAnimation){
+				this.animationDuration = this.getContext().find('animationDuration').value();
+			}
+			
 			this.useGroupOperations = this.getContext().find('useGroupOperations').checked();
 			
 			if(this.useGroupOperations){
