@@ -3,14 +3,14 @@
 	$parent: 'DataCube.Query.Translators.BaseTranslator',
 
 	$server: {
-		vendor: 'PostgreSQL',
-		
 		$require: [
 		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
 		    'JSB.Store.Sql.JDBC'
         ],
+
+		vendor: 'PostgreSQL',
 
         _translatedContexts: {},
         
@@ -66,6 +66,7 @@
 		},
 
 		translateQuery: function() {
+		    $this._updateVendor();
 		    // translate query
 		    var sql = $this.translateQueryExpression($this.dcQuery, true);
 		    QueryUtils.logDebug('\n[qid="{}"] Translated SQL Query (2): \n{}', $this.dcQuery.$id, sql);
@@ -117,6 +118,13 @@
 
             return sql;
 		},
+
+        _updateVendor: function() {
+		    var store = this.providers[0].getStore();
+		    store.asSQL().connectedJDBC(function(conn){
+		        $this.vendor = JDBC.getDatabaseVendor(conn);
+		    });
+        },
 
         _translateContext: function(context) {
             return context;
@@ -567,10 +575,22 @@
                         sqlOp = ' < '; break;
                     case '$lte':
                         sqlOp = ' <= '; break;
-                    case '$like':
-                        sqlOp = ' ~~ '; break;
-                    case '$ilike':
-                        sqlOp = ' ~~* '; break;
+                   case '$like':
+                       switch($this.vendor) {
+                           case 'PostgreSQL':
+                               sqlOp = ' ~~ '; break;
+                           default:
+                               sqlOp = ' LIKE ';
+                       }
+                       break;
+                   case '$ilike':
+                       switch($this.vendor) {
+                           case 'PostgreSQL':
+                               sqlOp = ' ~~* '; break;
+                           default:
+                               sqlOp = ' LIKE ';
+                       }
+                       break;
                     case '$in':
                         sqlOp = JSB.isArray(operands[1]) ? ' IN ' : ' = ANY';
                         return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';

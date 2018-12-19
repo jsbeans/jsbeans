@@ -60,7 +60,7 @@
         */
         getQueryCube: function(cubeId, defaultCube) {
             var ids = cubeId.split('/');
-            if (ids.length == 2) {
+            if (ids.length > 1) {
                 var wid = ids[0];
                 var cid = ids[1];
                 var ws = WorkspaceController.getWorkspace(wid);
@@ -81,7 +81,7 @@
         */
         getQueryDataProvider: function(providerId, defaultCube) {
             var ids = providerId.split('/');
-             if (ids.length == 2) {
+             if (ids.length > 1) {
                 var wid = ids[0];
                 var pid = ids[1];
                 var ws = WorkspaceController.getWorkspace(wid);
