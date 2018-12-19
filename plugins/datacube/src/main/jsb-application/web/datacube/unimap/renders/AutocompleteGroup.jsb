@@ -19,18 +19,27 @@
                     switch(this._scheme.linkedFields[j].type){
                         case 'any':
                             val[j] = fields[index];
-                            next = true;
+
+                            if(!this._scheme.linkedFields[j].repeat){
+                                next = true;
+                            }
                             break;
                         case 'number':
                             if('integer' == fields[index].type || 'float' == fields[index].type || 'number' === fields[index].type){
                                 val[j] = fields[index];
-                                next = true;
+
+                                if(!this._scheme.linkedFields[j].repeat){
+                                    next = true;
+                                }
                             }
                             break;
                         default:
                             if(this._scheme.linkedFields[j].type == fields[index].type){
                                 val[j] = fields[index];
-                                next = true;
+
+                                if(!this._scheme.linkedFields[j].repeat){
+                                    next = true;
+                                }
                             }
                     }
 

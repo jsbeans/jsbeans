@@ -25,7 +25,6 @@
 	
 	padding: 1px 3px;
 	box-sizing: border-box;
-	font-family: roboto, lucida, sans, arial, sans-serif;
 	outline-color: rgba(0, 0, 0, 0);
 	
 	-webkit-touch-callout: initial;
@@ -99,8 +98,6 @@
 	bottom: 0;
 	padding: 0 3px;
 	box-sizing: border-box;
-	font-family: roboto, lucida, sans, arial, sans-serif;
-	cursor: default;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	max-width: 100%;

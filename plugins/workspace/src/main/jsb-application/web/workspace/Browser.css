@@ -31,7 +31,7 @@
     z-index: 1;
     height: 32px;
     left: 6px;
-    background: #fff;
+    background: #ffffffbd;
 /*	background: -webkit-linear-gradient(top, #f9f9f9, #fff 40%, #fefefe);
 	background: -moz-linear-gradient(top, #f9f9f9, #fff 40%, #fefefe);
     background: linear-gradient(top, #f9f9f9, #fff 40%, #fefefe);
@@ -41,7 +41,7 @@
     border-radius: 6px;
 /*	box-shadow: inset 0px 0px 1px #636363;*/
     padding: 1px;
-	border: 1px solid #dadada;
+	border: 1px solid #d4d4d4;
 }
 
 .workspaceBrowser > .workspaceNavigator > ul.wnbContainer > li.tag {

@@ -40,6 +40,22 @@
 				throw new Error('Invalid object passed');
 			}
 			var rName = this.rendererMap[obj.getJsb().$name];
+			if(!rName){
+				var bestNt = null;
+				var bestDist = null;
+				for(nt in this.rendererMap){
+					var dist = obj.getJsb().getSubclassOfDistance(nt);
+					if(!JSB.isNull(dist)){
+						if(JSB.isNull(bestDist) || bestDist > dist){
+							bestDist = dist;
+							bestNt = nt;
+						}
+					}
+				}
+				if(bestNt){
+					rName = this.rendererMap[obj.getJsb().$name] = this.rendererMap[bestNt];
+				}
+			}
 			if(!rName || !JSB.get(rName)){
 				return null;
 			}

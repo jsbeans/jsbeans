@@ -166,13 +166,19 @@
 				var mtx = 'JSB.Workspace.Entry.children.' + this.getId();
 				JSB.getLocker().lock(mtx);
 				this._children = {};
-				if(this._eDoc._children && this._eDoc._children.length > 0){
-					this._childCount = this._eDoc._children.length;
+				
+				if(this._eDoc._children && JSB.isArray(this._eDoc._children) && this._eDoc._children.length > 0){
 					for(var i = 0; i < this._eDoc._children.length; i++){
 						var chId = this._eDoc._children[i];
 						this._children[chId] = true;
 					}
+				} else if(this._eDoc._children && JSB.isObject(this._eDoc._children)){
+					for(var chId in this._eDoc._children){
+						this._children[chId] = true;
+					}
+					
 				}
+				this._childCount = Object.keys(this._children).length;
 				JSB.getLocker().unlock(mtx);
 				
 				// load artifacts
@@ -202,11 +208,11 @@
 			// serialize children
 			var mtx = 'JSB.Workspace.Entry.children.' + this.getId();
 			JSB.getLocker().lock(mtx);
-			doc._children = [];
+			doc._children = {};
 			for(var chId in this._children){
-				doc._children.push(chId);
+				doc._children[chId] = 1;
 			}
-			this._childCount = doc._children.length;
+			this._childCount = Object.keys(doc._children).length;
 			JSB.getLocker().unlock(mtx);
 			
 			// serialize artifacts

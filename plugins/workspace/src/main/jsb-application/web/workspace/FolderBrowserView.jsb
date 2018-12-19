@@ -1,12 +1,12 @@
 {
-	$name: 'JSB.Workspace.FileBrowserView',
+	$name: 'JSB.Workspace.FolderBrowserView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
-		$require: ['css:FileBrowserView.css'],
+		$require: ['css:FolderBrowserView.css'],
 		$constructor: function(opts){
 			$base(opts);
-			this.addClass('workspaceFileBrowserView');
+			this.addClass('workspaceFolderBrowserView');
 		},
 		
 		refresh: function(){}
@@ -19,7 +19,8 @@
 			WorkspaceController.registerBrowserView(null, this, {
 				priority: 0,
 				acceptNode: [null, 'JSB.Workspace.FolderNode'],
-				caption: 'Файлы'
+				acceptEntry: [null, 'JSB.Workspace.FolderEntry'],
+				caption: 'Объекты'
 			});
 		},
 	}

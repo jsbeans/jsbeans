@@ -1,11 +1,11 @@
 @CHARSET "UTF-8";
 
 .widgetApiView {
-	background: -webkit-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-	background: -moz-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-    background: linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-    background: -o-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-    background: -ms-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
+	background: -webkit-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+	background: -moz-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: -o-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: -ms-linear-gradient(top, #fff 0%, #fbfbfb 10%);
 }
 
 .widgetApiView .leftPane {

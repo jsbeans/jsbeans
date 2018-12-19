@@ -996,7 +996,7 @@
                                 break;
                             case 'rangeColor':
                                 var isStepGrad = colorSelector.find('stepGradation').checked();
-debugger;
+
                                 this._styles.regions[i] = {
                                     rangeColor: {
                                         startColor: colorSelector.find('startColor').value(),

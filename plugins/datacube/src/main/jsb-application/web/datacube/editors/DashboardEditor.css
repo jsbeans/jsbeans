@@ -25,7 +25,8 @@
 }
 
 .dashboardEditor ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab {
-	border: none;
+	border-left: none;
+    border-right: none;
     min-height: initial;
     padding: 1px 6px 2px 4px;
     margin-right: 1px;
@@ -33,13 +34,15 @@
 	white-space: nowrap;
 }
 
+.dashboardEditor ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab:not(.active) {
+	border-bottom: 1px solid #fff;
+}
+
 .dashboardEditor ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText {
 	max-width: 100%;
 }
 
 .dashboardEditor ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active {
-	background: #fff !important;
-	padding-bottom: 3px;
 }
 
 .dashboardEditor ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText {

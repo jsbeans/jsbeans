@@ -31,6 +31,7 @@
 		_blockedException: null,
 		_entries: {},
 		_changedEntries: {},
+		_hasRead: false,
 		
 		$constructor: function(id, cfg, wDesc){
             this.config = cfg;
@@ -60,6 +61,39 @@
 			this._artifactStore = new (artifactStoreJSB.getClass())(artifactStoreCfg);
 			
             $base(id, this);
+            
+            // auto create entries
+            var autoCreateEntries = this.config.autoCreate;
+            for(var eId in autoCreateEntries){
+            	if(this.existsEntry(eId)){
+            		continue;
+            	}
+            	var eDesc = autoCreateEntries[eId];
+            	var eMtxName = 'JSB.Workspace.Workspace.eInst.' + eId;
+    			JSB.getLocker().lock(eMtxName);
+    			try {
+    				var eJsb = JSB.get(eDesc.jsb);
+    				if(!eJsb){
+    					throw new Error('Failed to create workspace entry with id: "' + eId + '" due to missing it\'s bean: ' + eDesc.jsb);
+    				}
+    				var eClass = eJsb.getClass();
+    				var args = eDesc.args;
+    				if(!args || args.length == 0){
+    					new eClass(eId, this);	
+    				} else if(args.length == 1){
+    					new eClass(eId, this, args[0]);	
+    				} else if(args.length == 2){
+    					new eClass(eId, this, args[0], args[1]);	
+    				} else if(args.length == 3){
+    					new eClass(eId, this, args[0], args[1], args[2]);	
+    				} else if(args.length == 4){
+    					new eClass(eId, this, args[0], args[1], args[2], args[3]);	
+    				}
+    				
+    			} finally {
+    				JSB.getLocker().unlock(eMtxName);
+    			}
+            }
 		},
 		
 		blockWithException: function(e){
@@ -93,18 +127,25 @@
 			$base();
 			
 			// fill entry indices
-			var jsbArr = this.getEntryDoc()._jsbs;
-			var eIdx = this.getEntryDoc()._entries;
-			this._wt = this.getEntryDoc()._wt;
+			var doc = this.getEntryDoc();
+			var jsbArr = doc._jsbs;
+			var eIdx = doc._entries;
+			this._wt = doc._wt;
 			
 			var eMtxName = 'JSB.Workspace.Workspace.entries.' + this.getId();
 			JSB.getLocker().lock(eMtxName);
 			try {
 				for(var eId in eIdx){
 					var seDesc = eIdx[eId];
+					var eType = null;
+					if(jsbArr && JSB.isNumber(seDesc._j)){
+						eType = jsbArr[seDesc._j];
+					} else {
+						eType = seDesc._j;
+					}
 					var eDesc = {
 						eId: eId,
-						eType: jsbArr[seDesc._j],
+						eType: eType,
 						eName: seDesc._n,
 						eOpts: JSB.isDefined(seDesc._e) ? seDesc._e : null,
 						aOpts: JSB.isDefined(seDesc._a) ? seDesc._a : null
@@ -278,20 +319,22 @@
 						// serialize entry indices
 						var eIdx = {};
 						var jsbDict = {};
-						var jsbArr = [];
+						//var jsbArr = [];
 						$this.lock('_stored');
 						try {
 							var eMtxName = 'JSB.Workspace.Workspace.entries.' + $this.getId();
 							JSB.getLocker().lock(eMtxName);
 							try {
 								for(var eId in $this._entries){
+/*									
 									var jsbIdx = jsbDict[$this._entries[eId].eType];
 									if(!JSB.isDefined(jsbIdx)){
 										jsbIdx = jsbDict[$this._entries[eId].eType] = jsbArr.length;
 										jsbArr.push($this._entries[eId].eType);
 									}
+*/									
 									eIdx[eId] = {
-										_j: jsbIdx,
+										_j: $this._entries[eId].eType,
 										_n: $this._entries[eId].eName
 									}
 									if(!JSB.isNull($this._entries[eId].eOpts)){
@@ -305,9 +348,13 @@
 								JSB.getLocker().unlock(eMtxName);	
 							}
 							
-							$this.getEntryDoc()._jsbs = jsbArr;
-							$this.getEntryDoc()._entries = eIdx;
-							$this.getEntryDoc()._wt = $this._wt;
+							var doc = $this.getEntryDoc();
+							//doc._jsbs = jsbArr;
+							if(doc._jsbs){
+								delete doc._jsbs;
+							}
+							doc._entries = eIdx;
+							doc._wt = $this._wt;
 							
 							// store entry file
 							$this.storeEntry();
@@ -351,6 +398,10 @@
 				eMap[eId] = this.entry(eId);
 			}
 			return eMap;
+		},
+		
+		hasReadSection: function(){
+			return this._hasRead;
 		},
 		
 		existsEntry: function(id){

@@ -309,7 +309,11 @@
                             }
                         }
 
-                        fetch();
+                        if(seriesData.length <= 3000){
+                            fetch();
+                        } else {
+                            resultProcessing();
+                        }
                     });
                 }
 

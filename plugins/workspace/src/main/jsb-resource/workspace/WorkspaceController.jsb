@@ -6,10 +6,10 @@
 		$require: ['JSB.IO.FileSystem', 
 		           'JSB.System.Config'],
 		
-		managers: {},
 		fileUploadCallbackRegistry: {},
 		explorerNodeRegistry: {},
-		browserViewRegistry: {},
+		browserViewRegistryNode: {},
+		browserViewRegistryEntry: {},
 		workspaceDescriptors: {},
 		workspacesById: {},
 		workspacesByType: {},
@@ -30,7 +30,8 @@
 		_init: function(){
 			// setup initial config variables
 			this.configVariables = {
-				'USER_DIR': FileSystem.getUserDirectory(true)
+				'USER_DIR': FileSystem.getUserDirectory(true),
+				'CUR_DIR': FileSystem.getCurrentDirectory(true)
 			}
 			
 			// load configuration
@@ -287,6 +288,13 @@
 */			
 		},
 		
+		existsWorkspace: function(wId){
+			if(this.workspacesById[wId]){
+				return true;
+			}
+			return false;
+		},
+		
 		getWorkspace: function(wId){
 			var wDesc = this.getWorkspaceInfo(wId);
 			return this.loadWorkspace(wDesc.wId);
@@ -294,6 +302,11 @@
 		
 		getEntry: function(wId, eId){
 			return this.getWorkspace(wId).entry(eId);
+		},
+		
+		getSystemEntry: function(eId){
+			var wId = Config.get('workspace.workspaceTypes.system.workspaceId');
+			return this.getEntry(wId, eId);
 		},
 		
 		getUsers: function(){
@@ -491,23 +504,43 @@
 				if(!JSB.isArray(acceptNodes)){
 					acceptNodes = [acceptNodes];
 				}
+				var acceptEntries = [];
+				if(viewOpts.acceptEntry){
+					if(JSB.isArray(viewOpts.acceptEntry)){
+						acceptEntries = viewOpts.acceptEntry;
+					} else {
+						acceptEntries.push(viewOpts.acceptEntry);
+					}
+				}
+				
+				var vDesc = {
+					viewType: viewType,
+					priority: viewOpts.priority || 0,
+					caption: viewOpts.caption,
+					icon: viewOpts.icon	
+				};
 				
 				for(var j = 0; j < wTypes.length; j++){
 					var wType = wTypes[j];
-					if(!this.browserViewRegistry[wType]){
-						this.browserViewRegistry[wType] = {};
+					if(!this.browserViewRegistryNode[wType]){
+						this.browserViewRegistryNode[wType] = {};
+					}
+					if(!this.browserViewRegistryEntry[wType]){
+						this.browserViewRegistryEntry[wType] = {};
 					}
 					for(var n = 0; n < acceptNodes.length; n++){
 						var aNode = acceptNodes[n];
-						if(!this.browserViewRegistry[wType][aNode]){
-							this.browserViewRegistry[wType][aNode] = [];
+						if(!this.browserViewRegistryNode[wType][aNode]){
+							this.browserViewRegistryNode[wType][aNode] = [];
 						}
-						this.browserViewRegistry[wType][aNode].push({
-							viewType: viewType,
-							priority: viewOpts.priority || 0,
-							caption: viewOpts.caption,
-							icon: viewOpts.icon
-						});
+						this.browserViewRegistryNode[wType][aNode].push(vDesc);
+					}
+					for(var e = 0; e < acceptEntries.length; e++ ){
+						var aEntry = acceptEntries[e];
+						if(!this.browserViewRegistryEntry[wType][aEntry]){
+							this.browserViewRegistryEntry[wType][aEntry] = [];
+						}
+						this.browserViewRegistryEntry[wType][aEntry].push(vDesc);
 					}
 				}
 			} finally {
@@ -526,18 +559,23 @@
 			} else if(!(nodeJsb instanceof JSB)){
 				throw new Error('Invalid nodeJsb');
 			}
+			var registry = this.browserViewRegistryNode;
+			if(nodeJsb && nodeJsb.isSubclassOf('JSB.Workspace.Entry')){
+				registry = this.browserViewRegistryEntry;
+			}
+			
 			var wTypes = [null];
 			if(wType){
 				wTypes.push(wType);
 			}
 			for(var j = 0; j < wTypes.length; j++){
 				var wType = wTypes[j];
-				if(!this.browserViewRegistry[wType]){
+				if(!registry[wType]){
 					continue;
 				}
-				for(var nType in this.browserViewRegistry[wType]){
+				for(var nType in registry[wType]){
 					if((nodeJsb && nodeJsb.isSubclassOf(nType)) || (JSB.isNull(nodeJsb) && (JSB.isNull(nType) || nType == 'null'))){
-						viewArr = viewArr.concat(this.browserViewRegistry[wType][nType]);
+						viewArr = viewArr.concat(registry[wType][nType]);
 					}
 				}
 			}
@@ -548,7 +586,7 @@
 			return viewArr;
 		},
 		
-		constructBrowserViewSlice: function(wType){
+		_constructBrowserViewTypeSlice: function(wType, registry){
 			var slice = {};
 			var wTypes = [null];
 			if(wType){
@@ -556,14 +594,14 @@
 			}
 			for(var j = 0; j < wTypes.length; j++){
 				wType = wTypes[j];
-				if(!this.browserViewRegistry[wType]){
+				if(!registry[wType]){
 					continue;
 				}
-				for(var nType in this.browserViewRegistry[wType]){
+				for(var nType in registry[wType]){
 					if(!slice[nType]){
 						slice[nType] = [];
 					}
-					slice[nType] = slice[nType].concat(this.browserViewRegistry[wType][nType]);
+					slice[nType] = slice[nType].concat(registry[wType][nType]);
 				}
 			}
 			for(var nType in slice){
@@ -575,6 +613,14 @@
 			
 			return slice;
 		},
+		
+		constructBrowserViewNodeTypeSlice: function(wType){
+			return this._constructBrowserViewTypeSlice(wType, this.browserViewRegistryNode);
+		},
+		
+		constructBrowserViewEntryTypeSlice: function(wType) {
+			return this._constructBrowserViewTypeSlice(wType, this.browserViewRegistryEntry);
+		}
 
 	}
 }
