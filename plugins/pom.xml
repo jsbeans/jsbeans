@@ -26,7 +26,8 @@
 
     <modules>
         <module>web</module>
-	<module>scheduler</module>
+	    <module>scheduler</module>
+
         <module>store</module>
         <module>store-jdbc</module>
         <module>store-mongodb</module>

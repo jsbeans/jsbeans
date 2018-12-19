@@ -45,6 +45,15 @@
                         var usedDimensions = $this._collectUsedDimensions(queryStack);
                         JSB.merge(allUsedDimensions, usedDimensions);
                         var usedSliceFields = QueryUtils.extractInputFields(this.query);
+                        if(this.query.$union && this.query.$union.indexOf(name) !== -1) {
+                            var sliceFields = slice.getOutputFields();
+                            for (var i = 0; i < usedSliceFields.length; i++) {
+                                var f = usedSliceFields[i];
+                                if (!sliceFields[f.$field]) {
+                                    usedSliceFields.splice(i--, 1);
+                                }
+                            }
+                        }
                         var context = // контекст, который должен быть у полей данного среза
                                 this.query.$join && (
                                     this.query.$join.$left == name || this.query.$join.$right == name ||

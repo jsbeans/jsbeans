@@ -425,7 +425,7 @@
                             }
                         } else if (!exp.$select || exp == q) {
                             for(var i in exp) if (exp[i] != null) {
-                                if (typeof exp[i] !== "string" || !QuerySyntax.constValueOperators[i] && !QuerySyntax.queryOperators[i]) {
+                                if (typeof exp[i] === "string" || !QuerySyntax.constValueOperators[i] && !QuerySyntax.queryOperators[i]) {
                                     var resultField = walkExpression(exp[i]);
                                     if (resultField) {
                                         exp[i] = resultField;
@@ -481,20 +481,18 @@
                 } else if (JSB.isObject(exp)) {
                     if (!exp.$select) {
                         // value-expression
-                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            if (!JSB.isString(exp[f]) || !QuerySyntax.queryOperators[f]) {
-                                var res = walkExpressionFields(exp[f], query, path.concat([f]));
-                                if (res) {
-                                    exp[f] = res;
-                                }
+                        for (var f in exp)
+                        if (exp[f] != null && !QuerySyntax.constValueOperators[f] && !QuerySyntax.queryOperators[f]) {
+                            var res = walkExpressionFields(exp[f], query, path.concat([f]));
+                            if (res) {
+                                exp[f] = res;
                             }
                         }
                     } else if (exp == query){
                         // self query
-                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            if (!JSB.isString(exp[f]) || !QuerySyntax.queryOperators[f]) {
-                                walkExpressionFields(exp[f], query, path.concat([f]));
-                            }
+                        for (var f in exp)
+                        if (exp[f] != null && !QuerySyntax.constValueOperators[f] && !QuerySyntax.queryOperators[f]) {
+                            walkExpressionFields(exp[f], query, path.concat([f]));
                         }
                     } else {
                          // query-expression

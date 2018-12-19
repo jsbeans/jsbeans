@@ -825,20 +825,33 @@
 		    function getQuery(ctx){
 		        return $this.contextQueries[ctx];
 		    }
-
+            var usedFields = QueryUtils.extractInputFields(query);
 		    var sql = '';
 
 		    for(var i = 0; i < query.$union.length; i++) {
 		        var subQuery = query.$union[i];
 		        var fixedSubQuery = JSB.clone(subQuery);
-		        for(var alias in query.$select) {
-		            if (!fixedSubQuery.$select[alias]) {
-		                fixedSubQuery.$select[alias] = {
-		                    $const: null,
-		                    $type: QueryUtils.extractType(query.$select[alias], query, $this.cube, getQuery),
+		        var fields = [];
+		        /// add const:null fields
+		        for(var j = 0; j < usedFields.length; j++) {
+		            var field = usedFields[j].$field;
+		            if (!fixedSubQuery.$select[field]) {
+                        fixedSubQuery.$select[field] = {
+                            $const: null,
+                            $type: QueryUtils.extractType(query.$select[alias], query, $this.cube, getQuery),
                         };
-		            }
+                    }
+                    fields.push(field);
 		        }
+		        /// sort fields
+		        fields.sort(function(a,b){return a>b?1:a==b?0:-1;});
+		        var oldSelect = fixedSubQuery.$select;
+		        fixedSubQuery.$select = {};
+		        for(var j = 0; j < fields.length; j++) {
+		            var alias = fields[j];
+		            fixedSubQuery.$select[alias] = oldSelect[alias];
+		        }
+
                 if (sql.length > 0) sql += ' UNION ALL ';
 		        sql += $this.translateQueryExpression(fixedSubQuery, true);
 		    }
