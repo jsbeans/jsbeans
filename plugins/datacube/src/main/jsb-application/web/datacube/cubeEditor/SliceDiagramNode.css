@@ -139,7 +139,7 @@
 
 /* fields */
 .sliceDiagramNode > .fields {
-
+    max-height: 150px;
 }
 
 .sliceDiagramNode > .fields > .sliceField {

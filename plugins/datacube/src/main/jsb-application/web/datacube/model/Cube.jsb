@@ -30,7 +30,6 @@
 		
 		loaded: false,
 
-		dimensions: {},
 		fields: {},
 		slices: {},
 
@@ -83,13 +82,11 @@
 									    entry: slice,
 									    diagramOpts: desc.diagramOpts
 									};
-
-									this.fields = JSB.merge(this.fields, slice.extractFields());
 								}
 							}
 
 							// load fields
-							this.dimensions = snapshot.dimensions || {};
+							this.fields = snapshot.fields || {};
 						}
 						this.loaded = true;
 						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
@@ -104,8 +101,17 @@
 				return;
 			}
 
+			var dimensions = {};
+			for(var i in this.fields){
+			    if(this.fields[i].isDimension){
+			        dimensions[i] = {
+			            slices: this.fields[i].slices
+			        }
+			    }
+			}
+
 			return {
-			    dimensions: this.dimensions,
+			    dimensions: dimensions,
 			    fields: this.fields,
 				slices: this.slices
 			};
@@ -126,7 +132,7 @@
 			try {
 				// construct snapshot
 				var snapshot = {
-				    dimensions: this.dimensions,
+				    fields: this.fields,
 					slices: []
 				};
 				
@@ -151,7 +157,7 @@
 		},
 
 		addDimension: function(field){
-		    this.dimensions[field] = {};
+		    this.fields[field].isDimension = true;
 
 		    this.store();
 		},
@@ -229,7 +235,17 @@
 		getDimensions: function(){
 		    this.load();
 
-		    return this.dimensions;
+		    var dimensions = {};
+
+		    for(var i in this.fields){
+		        if(this.fields[i].isDimension){
+		            dimensions[i] = {
+		                slices: this.fields[i].slices
+		            };
+		        }
+		    }
+
+		    return dimensions;
 		},
 
 		// Dima use it
@@ -255,25 +271,39 @@
 		    }
 
 		    for(var i = 0; i < fields.length; i++){
-		        if(this.dimensions[fields[i]]){
-		            delete this.dimensions[fields[i]];
-		        }
+		        this.fields[fields[i]].isDimension = false;
 		    }
 
 		    this.store();
 		},
 		
-		removeSlice: function(sId){
+		removeSlice: function(sliceId){
 			this.load();
-			var slice = this.slices[sId];
+
+			var slice = this.slices[sliceId];
 
 			if(!slice){
 				return;
 			}
 
-			delete this.slices[sId];
+			// remove slice from fields
+			var sliceFields = slice.entry.extractFields();
+
+			for(var i in sliceFields){
+			    var sliceIndex = this.fields[i].slices.indexOf(sliceId);
+
+                this.fields[i].slices.splice(sliceIndex, 1);
+
+                if($this.fields[i].slices.length === 0){
+                    delete this.fields[i];
+                }
+			}
+
+			delete this.slices[sliceId];
 
 			this.sliceCount = Object.keys(this.slices).length;
+
+			this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.fields }, {session: true});
 
 			this.store();
 		},
@@ -281,13 +311,32 @@
 		updateCubeFields: function(slice, noStore){
 		    function updateFields(slice){
 		        var sliceFields = slice.extractFields(),
+		            sliceId = slice.getId(),
 		            isNeedUpdate = false;
 
+                // add new fields
 		        for(var i in sliceFields){
 		            if(!$this.fields[i]){
-		                $this.fields[i] = {};
+		                $this.fields[i] = {
+		                    slices: [sliceId]
+                        };
 
 		                isNeedUpdate = true;
+		            } else {
+		                $this.fields[i].slices.push(sliceId);
+		            }
+		        }
+
+		        // remove un-existed
+		        for(var i in $this.fields){
+		            var sliceIndex = $this.fields[i].slices.indexOf(sliceId);
+
+		            if(sliceIndex > -1 && !sliceFields[i]){
+		                $this.fields[i].slices.splice(sliceIndex, 1);
+
+		                if($this.fields[i].slices.length === 0){
+		                    delete $this.fields[i];
+		                }
 		            }
 		        }
 
@@ -305,7 +354,7 @@
 		    }
 
             if(isNeedUpdate){
-                this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.dimensions, fields: this.fields }, {session: true});
+                this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.fields }, {session: true});
 
                 if(!noStore){
                     this.store();
