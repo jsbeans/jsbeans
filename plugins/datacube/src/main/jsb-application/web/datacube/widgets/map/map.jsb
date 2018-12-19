@@ -2276,7 +2276,7 @@
                 }
 
                 //if(name.indexOf(region) > -1){
-                if(name === region){
+                if(name === String(region)){
                     return {
                         index: j,
                         region: array[j]
