@@ -592,8 +592,14 @@
                 case 0+Types.DATE:
                 case 0+Types.TIME:
                 case 0+Types.TIMESTAMP:
+                    var time;
+                    try {
+                        time = resultSet.getDate(i).getTime();
+                    } catch(e) {
+                        time = resultSet.getTimestamp(i).getTime();
+                    }
                     var date = new Date();
-                    date.setTime(resultSet.getTimestamp(i).getTime());
+                    date.setTime(time);
                     return date;
                 case 0+Types.ARRAY: {
                         var array = [];

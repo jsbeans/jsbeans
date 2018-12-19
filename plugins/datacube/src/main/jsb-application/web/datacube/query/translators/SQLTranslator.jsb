@@ -3,8 +3,6 @@
 	$parent: 'DataCube.Query.Translators.Translator',
 
 	$server: {
-		vendor: 'PostgreSQL',
-		
 		$require: [
 		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Query.QueryParser',
@@ -18,6 +16,8 @@
         	TranslatorRegistry.register(this);
         },
 
+		vendor: 'PostgreSQL',
+
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    if ($this.cube) {
@@ -26,6 +26,8 @@
 		},
 
 		translateQuery: function() {
+		    $this._updateVendor();
+
 //		    this._prepareWithViews();
 		    this._verifyFields();
 		    var sql = '';
@@ -105,6 +107,13 @@
 
 //		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
+        },
+
+        _updateVendor: function() {
+		    var store = this.providers[0].getStore();
+		    store.asSQL().connectedJDBC(function(conn){
+		        $this.vendor = JDBC.getDatabaseVendor(conn);
+		    });
         },
 
         _generateUid: function(){
@@ -1113,9 +1122,21 @@
                     case '$lte':
                         sqlOp = ' <= '; break;
                     case '$like':
-                        sqlOp = ' ~~ '; break;
+                        switch($this.vendor) {
+                            case 'PostgreSQL':
+                                sqlOp = ' ~~ '; break;
+                            default:
+                                sqlOp = ' LIKE ';
+                        }
+                        break;
                     case '$ilike':
-                        sqlOp = ' ~~* '; break;
+                        switch($this.vendor) {
+                            case 'PostgreSQL':
+                                sqlOp = ' ~~* '; break;
+                            default:
+                                sqlOp = ' LIKE ';
+                        }
+                        break;
                     case '$in':
                         sqlOp = JSB.isArray(operands[1]) ? ' IN ' : ' = ANY';
                         return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
