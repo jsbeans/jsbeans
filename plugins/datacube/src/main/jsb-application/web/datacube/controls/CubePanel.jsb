@@ -12,7 +12,7 @@
             $jsb.loadCss('CubePanel.css');
             this.addClass('cubePanel');
 
-            var caption = this.$('<header>Измерения куба</header>');
+            var caption = this.$('<header>Поля и измерения куба</header>');
             this.append(caption);
 
 			// select fields
@@ -20,6 +20,10 @@
 			    xAxisScroll: false
 			});
 			this.append(this.cubeFields);
+
+            this.subscribe('DataCube.CubeEditor.search', function(sender, msg, value){
+                $this.search(value);
+            });
 
 			this.subscribe('DataCube.Model.Cube.updateCubeFields', {session: true}, function(sender, msg, opts){
 			    $this.refresh(null, opts);
@@ -39,7 +43,7 @@
                 this.cube = cube;
             }
 
-            var fieldsArr = Object.keys(opts.fields),
+            var fieldsArr = Object.keys(opts.fields).sort(),
                 cubeFields = d3.select(this.cubeFields.getElement().get(0));
 
             // enter
@@ -71,6 +75,15 @@
             this.cube.server().removeDimension(field, function(res, fail){
                 $this.publish('DataCube.CubeEditor.toggleDimension', {field: field, isDimension: false});
             });
+        },
+
+        search: function(value){
+		    if(value){
+                this.cubeFields.find('.caption:not(:contains("' + value + '"))').closest('.jsb-checkbox').addClass('hidden');
+                this.cubeFields.find('.caption:contains("' + value + '")').closest('.jsb-checkbox').removeClass('hidden');
+            } else {
+                this.cubeFields.find('.jsb-checkbox').removeClass('hidden');
+            }
         }
     }
 }

@@ -139,14 +139,18 @@
 				caption.find('.name').text(desc.name);
 			});
 
-            this.subscribe('DataCube.CubeEditor.toggleDimension', function(sender, msg, desc){
-                $this.toggleDimension(desc);
+            this.subscribe('DataCube.CubeEditor.search', function(sender, msg, value){
+                $this.search(value);
             });
 
             this.subscribe('DataCube.CubeEditor.sliceUpdated', function(sender, msg, obj){
                 if(obj.slice.getId() === $this.entry.getId()){
                     $this.refresh(obj);
                 }
+            });
+
+            this.subscribe('DataCube.CubeEditor.toggleDimension', function(sender, msg, desc){
+                $this.toggleDimension(desc);
             });
 		},
 
@@ -160,7 +164,7 @@
 
 		refresh: function(opts){
 		    var query = opts && opts.query || this.entry.getQuery(),
-		        fields = query.$select ? Object.keys(query.$select) : [],
+		        fields = query.$select ? Object.keys(query.$select).sort() : [],
 		        dimensions = this.editor.getDimensions();
 
             if(fields.length !== 0){
@@ -207,6 +211,15 @@
 
             if(opts && opts.name){
                 this.sliceName.text(opts.name);
+            }
+		},
+
+		search: function(value){
+		    if(value){
+                this.fieldList.find('.sliceField:not(:contains("' + value + '"))').addClass('hidden');
+                this.fieldList.find('.sliceField:contains("' + value + '")').removeClass('hidden');
+            } else {
+                this.fieldList.find('.sliceField').removeClass('hidden');
             }
 		},
 

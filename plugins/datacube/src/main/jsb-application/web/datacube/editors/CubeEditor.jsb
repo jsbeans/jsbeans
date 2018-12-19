@@ -2,12 +2,12 @@
 	$name: 'DataCube.CubeEditor',
 	$parent: 'JSB.Widgets.Widget',
 	$client: {
-	    $require: ['JSB.Widgets.Diagram',
-	               'DataCube.SliceDiagramNode',
+	    $require: ['JSB.Controls.SearchBox',
+	               'JSB.Widgets.Diagram',
 	               'JSB.Widgets.ToolManager',
 	               'DataCube.Dialogs.JoinSettingsTool',
-					'css:CubeEditor.css',
-					], //'css:../../fonts/fa/fontawesome-all.min.css'
+	               'DataCube.SliceDiagramNode',
+					'css:CubeEditor.css'],
 
 	    _cube: null,
 	    _dimensions: {},
@@ -136,9 +136,16 @@
                 }
             });
 
-            // todo
             // search
-            //this.search = this.$();
+            var searchBox = new SearchBox({
+                onChange: function(val){
+                    $this.publish('DataCube.CubeEditor.search', val);
+                },
+                onClose: function(){
+                    $this.publish('DataCube.CubeEditor.search');
+                }
+            });
+            this.append(searchBox);
 
             // create add buttons
             var addBtn = this.$('<div class="addBtn fas fa-plus-circle"></div>');

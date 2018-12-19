@@ -99,7 +99,6 @@
 			while(it.hasNext()){
 				var e = it.next();
 				e.load();
-				e.fixupProviders();
 			}
 		},
 		

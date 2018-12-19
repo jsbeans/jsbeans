@@ -60,11 +60,9 @@
 .sourceBindingRender > .item > .renderer > .icon {
 	width: 16px;
 	height: 16px;
-	margin-top: -8px;
 }
 
 .sourceBindingRender > .item > .renderer .title {
-	padding-left: 20px;
 	display: inline-block;
 	vertical-align: middle;
 	max-width: 150px;
@@ -84,12 +82,10 @@
 .sourceBindingRender > .item > .renderer > .cubeRenderer > .icon {
 	width: 14px;
 	height: 14px;
-	margin-top: -7px;
 }
 
 .sourceBindingRender > .item > .renderer > .cubeRenderer > .title {
 	font-size: 10px;
-    padding-left: 20px;
 }
 
 .sourceBindingRender > .item.bindingItem.ui-droppable.filled {

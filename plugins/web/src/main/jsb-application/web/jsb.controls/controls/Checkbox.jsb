@@ -3,7 +3,7 @@
 	$parent: 'JSB.Controls.Control',
 
 	$client: {
-		$require: ['css:checkbox.css'],
+		$require: ['css:Checkbox.css'],
 
 		_contentBox: null,
 		_label: null,

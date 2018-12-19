@@ -138,6 +138,10 @@
 }
 
 /* fields */
+.sliceDiagramNode > .fields {
+
+}
+
 .sliceDiagramNode > .fields > .sliceField {
     padding: 2px 4px;
 	position: relative;

@@ -2,7 +2,7 @@
 	$name: 'JSB.Controls.Control',
 	$require: ['JQuery', 
 	           'JSB.Widgets.DomController',
-	           'css:control.css'],
+	           'css:Control.css'],
 	$client: {
 		$constructor: function(opts){
 		    opts = opts || {};

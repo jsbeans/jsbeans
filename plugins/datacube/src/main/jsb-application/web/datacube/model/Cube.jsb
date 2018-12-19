@@ -111,51 +111,6 @@
 			};
 		},
 
-		// check necessity
-		fixupProviders: function(){
-return;
-			var bNeedSave = false;
-			for(pId in this.dataProviders){
-				var p = this.dataProviders[pId];
-				if(!JSB.isInstanceOf(p.entry, 'DataCube.Model.SqlTable')){
-					continue;
-				}
-				if(!p.entry.isMissing()){
-					continue;
-				}
-				// lookup appropriate entry
-				var dbSource = p.entry.getParent();
-				if(!JSB.isInstanceOf(dbSource, 'DataCube.Model.SqlSource')){
-					continue;
-				}
-				var chMap = dbSource.getChildren();
-				var nCh = null;
-				for(var chId in chMap){
-					var chEntry = chMap[chId];
-					if(!JSB.isInstanceOf(chEntry, 'DataCube.Model.SqlTable')){
-						continue;
-					}
-					if(chEntry == p.entry || chEntry.isMissing()){
-						continue;
-					}
-					if(chEntry.getName() == p.entry.getName()){
-						nCh = chEntry;
-						break;
-					}
-				}
-				if(nCh){
-					bNeedSave = true;
-					// do replace
-					p.entry = nCh;
-					//this.dataProviderEntries[pId] = nCh; // todo
-				}
-			}
-			if(bNeedSave){
-				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
-				this.store();
-			}
-		},
-
 		store: function(){
             JSB.defer(function(){
                 $this._store();
