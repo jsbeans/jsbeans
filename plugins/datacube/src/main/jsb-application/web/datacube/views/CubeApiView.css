@@ -1,11 +1,11 @@
 @CHARSET "UTF-8";
 
 .cubeApiView {
-	background: -webkit-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-	background: -moz-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-    background: linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-    background: -o-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-    background: -ms-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
+	background: -webkit-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+	background: -moz-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: -o-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: -ms-linear-gradient(top, #fff 0%, #fbfbfb 10%);
 }
 
 .cubeApiView .leftScroll {}
@@ -94,11 +94,7 @@
 .cubeApiView .resultsTab {}
 
 .cubeApiView .resultsTab > ul._dwp_tabPane {
-	background: -webkit-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -moz-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -o-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -ms-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
+	background: transparent;
 }
 
 .cubeApiView .resultsTab > ul._dwp_tabPane > li > ._dwp_icon {

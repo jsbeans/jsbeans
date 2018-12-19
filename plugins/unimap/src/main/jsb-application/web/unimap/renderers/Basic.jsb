@@ -14,9 +14,10 @@
             if(opts.scheme.advancedRender){
                 this.addClass('advancedRender');
             }
-
+            
             this._key = opts.key;
             this._scheme = JSB.merge(true, this._defaultSchemeOpts, opts.scheme);
+            
             this._values = opts.values;
             this._schemeController = opts.schemeController;
 

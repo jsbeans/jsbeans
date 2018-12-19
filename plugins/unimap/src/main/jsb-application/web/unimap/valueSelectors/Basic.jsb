@@ -271,10 +271,10 @@
             values.valueType = scheme.valueType;
             wasUpdated = true;
         }
-
-        if(!values.values){
+        
+        if(!values.values || values.values.length === 0){
             values.values = [];
-
+            
             if(scheme.value){
                 values.values[0] = {
                     value: scheme.value

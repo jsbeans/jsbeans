@@ -965,6 +965,25 @@
 				targetEntry = targetEntry.getTargetEntry();
 			}
 			var nodeInfo = nodeSlice[targetEntry.getJsb().$name];
+			if(!nodeInfo){
+				// try to search best appropriate type
+				var bestNt = null;
+				var bestDist = null;
+				for(nt in nodeSlice){
+					var dist = targetEntry.getJsb().getSubclassOfDistance(nt);
+					if(!JSB.isNull(dist)){
+						if(JSB.isNull(bestDist) || bestDist > dist){
+							bestDist = dist;
+							bestNt = nt;
+						}
+					}
+				}
+				if(bestNt){
+					nodeInfo = nodeSlice[targetEntry.getJsb().$name] = nodeSlice[bestNt];
+				} else {
+					return null;
+				}
+			}
 			var nodeType = nodeSlice[targetEntry.getJsb().$name].nodeType;
 			if(!nodeType || !JSB.get(nodeType)){
 				return null;
@@ -1511,7 +1530,7 @@
 			}
 			$this.currentWorkspace = WorkspaceController.getWorkspace(wId);
 			$this.explorerNodeTypes = WorkspaceController.constructExplorerNodeTypeSlice($this.currentWorkspace.getWorkspaceType());
-			$this.browserViewTypes = WorkspaceController.constructBrowserViewSlice($this.currentWorkspace.getWorkspaceType());
+			$this.browserViewTypes = WorkspaceController.constructBrowserViewNodeTypeSlice($this.currentWorkspace.getWorkspaceType());
 			return {
 				workspace: $this.currentWorkspace, 
 				explorerNodeTypes: $this.explorerNodeTypes,

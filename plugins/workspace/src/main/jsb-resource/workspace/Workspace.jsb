@@ -61,6 +61,39 @@
 			this._artifactStore = new (artifactStoreJSB.getClass())(artifactStoreCfg);
 			
             $base(id, this);
+            
+            // auto create entries
+            var autoCreateEntries = this.config.autoCreate;
+            for(var eId in autoCreateEntries){
+            	if(this.existsEntry(eId)){
+            		continue;
+            	}
+            	var eDesc = autoCreateEntries[eId];
+            	var eMtxName = 'JSB.Workspace.Workspace.eInst.' + eId;
+    			JSB.getLocker().lock(eMtxName);
+    			try {
+    				var eJsb = JSB.get(eDesc.jsb);
+    				if(!eJsb){
+    					throw new Error('Failed to create workspace entry with id: "' + eId + '" due to missing it\'s bean: ' + eDesc.jsb);
+    				}
+    				var eClass = eJsb.getClass();
+    				var args = eDesc.args;
+    				if(!args || args.length == 0){
+    					new eClass(eId, this);	
+    				} else if(args.length == 1){
+    					new eClass(eId, this, args[0]);	
+    				} else if(args.length == 2){
+    					new eClass(eId, this, args[0], args[1]);	
+    				} else if(args.length == 3){
+    					new eClass(eId, this, args[0], args[1], args[2]);	
+    				} else if(args.length == 4){
+    					new eClass(eId, this, args[0], args[1], args[2], args[3]);	
+    				}
+    				
+    			} finally {
+    				JSB.getLocker().unlock(eMtxName);
+    			}
+            }
 		},
 		
 		blockWithException: function(e){

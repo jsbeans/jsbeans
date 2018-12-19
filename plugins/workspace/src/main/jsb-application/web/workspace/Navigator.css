@@ -76,7 +76,7 @@
 .workspaceNavigator > ul.wnbContainer > li.tag.active {
 	background-color: #d37531;
     color: #fff;
-    text-shadow: 1px 1px #7E3C17;
+    text-shadow: 1px 1px #7b3f15;
 	cursor: default;
 	transition: background-color 300ms;
 }

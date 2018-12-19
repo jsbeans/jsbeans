@@ -115,7 +115,7 @@
 
 			// add client
 			var clientWrap = this.$('<div key="'+uid+'" class="_dwp_clientPaneWrapper"></div>');
-			clientWrap.css({display:'none'});
+			//clientWrap.css({display:'none'});
 
 			if(JSB.isFunction(cls)){
                 self.tabs[uid] = {
@@ -225,8 +225,10 @@
 			activeTab.removeClass('active');
 			entry.tab.addClass('active');
 			var showArea = self.clientPane.find('._dwp_clientPaneWrapper[key="' + entry.tab.attr('clientId') + '"]');
-			showArea.css('display','');
-			self.clientPane.find('._dwp_clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').css('display','none');
+			//showArea.css('display','');
+			showArea.addClass('active');
+			//self.clientPane.find('._dwp_clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').css('display','none');
+			self.clientPane.find('._dwp_clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').removeClass('active');
 			self.currentTab = entry;
 			if(!entry.ctrl){
 			    this.activateTab(entry.id);
