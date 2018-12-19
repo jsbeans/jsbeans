@@ -306,7 +306,7 @@
                             query : fromQuery,
                             nestedPath: this.nestedPath.concat([key]),
                             fromPath: this.fromPath.concat([fromQuery]), // check ???
-                            isView : true,
+                            isView : exp,
                             isValueQuery: false,
                             inFrom : false,
                             inJoin: this.inJoin,
@@ -1624,32 +1624,36 @@ debugger
 		},
 
 		copyQuery: function(dcQuery, context) {
-		    var dcQuery = JSB.merge(true, {}, dcQuery);
 		    var oldContext = dcQuery.$context;
-
-		    function walk(e) {
-		        if (e == null) {
-		        } else if(JSB.isObject(e)) {
-		            for(var i in e) if (e.hasOwnProperty(i)) {
-		                if (i == '$context') {
-		                    if (e[i] == oldContext) {
-		                        e[i] = context;
-		                    } else {
-		                        e[i] = context + '_' + e[i];
-                            }
-		                } else {
-		                    walk(e[i]);
-		                }
-		            }
-		        } else if(JSB.isArray(e)) {
-		            for(var i = 0; i < e.length; i++) {
-		                walk(e[i]);
-		            }
-                }
-		    }
-
-		    walk(dcQuery);
-		    return dcQuery;
+		    var query = JSB.clone(dcQuery);
+		    $this.updateContext(query, oldContext, context);
+		    return query;
+//		    var dcQuery = JSB.merge(true, {}, dcQuery);
+//		    var oldContext = dcQuery.$context;
+//
+//		    function walk(e) {
+//		        if (e == null) {
+//		        } else if(JSB.isObject(e)) {
+//		            for(var i in e) if (e.hasOwnProperty(i)) {
+//		                if (i == '$context') {
+//		                    if (e[i] == oldContext) {
+//		                        e[i] = context;
+//		                    } else {
+//		                        e[i] = context + '_' + e[i];
+//                            }
+//		                } else {
+//		                    walk(e[i]);
+//		                }
+//		            }
+//		        } else if(JSB.isArray(e)) {
+//		            for(var i = 0; i < e.length; i++) {
+//		                walk(e[i]);
+//		            }
+//                }
+//		    }
+//
+//		    walk(dcQuery);
+//		    return dcQuery;
 		},
 
         jsonReplaceBody: function(target, source) {

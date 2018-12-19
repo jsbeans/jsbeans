@@ -17,7 +17,6 @@
 		transform: function(dcQuery, cubeOrDataProvider){
 
 //            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before EmbedViewQueries: ' + JSON.stringify(dcQuery));
-
 		    $this._embedViews(dcQuery);
 		    // TODO реализовать через walkQuery и findView на выходе с удалением $views
 
@@ -44,7 +43,7 @@
                             // embed view query to $from
                             var view = views[exp.$from];
                             QueryUtils.throwError(view, 'Internal error: EmbedViewQueries: View not found: ' + exp.$from);
-                            exp.$from = JSB.clone(view); // TODO change uniq context name and use QueryUtils.copyQuery
+                            exp.$from = QueryUtils.copyQuery(view, exp.$from);
                         }
                         if (exp.$join) {
                             if (JSB.isString(exp.$join.$left)) {
