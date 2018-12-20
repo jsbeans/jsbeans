@@ -253,6 +253,14 @@
                 }
             });
 
+            this.subscribe('DataCube.CubeEditor.toggleDimension', function(sender, msg, desc){
+                if(desc.isDimension){
+                    $this._dimensions[desc.field] = true;
+                } else {
+                    delete $this._dimensions[desc.field];
+                }
+            });
+
             this.subscribe('_jsb_diagramSelectionChanged', function(sender, msg, selectedItems){
                 var keysCount = Object.keys(selectedItems).length;
 

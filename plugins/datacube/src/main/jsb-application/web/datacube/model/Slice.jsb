@@ -288,6 +288,7 @@
                 for(var i in fields){
                     if(context){
                         if(query['$select'][i]){
+                            /*
                             var cnt = 2;
 
                             while(true){
@@ -301,6 +302,7 @@
 
                                 cnt++;
                             }
+                            */
                         } else {
                             query['$select'][i] = {
                                 $context: context,
