@@ -15,26 +15,25 @@
 		invalidateInterval: 0,
 		updateInterval: 0,
 		cacheMap: {},
+		cacheSize: 4096,
+		limitRows: 0,
 		
 		$constructor: function(owner, cube, opts){
 			$base();
 			this.cube = cube;
 			this.owner = owner;
-			this.options = opts || {};
-			if(Config.has('datacube.queryCache.batchSize')){
-				this.batchSize = Config.get('datacube.queryCache.batchSize');
-			}
-			if(Config.has('datacube.queryCache.closeIteratorTimeout')){
-				this.closeIteratorTimeout = Config.get('datacube.queryCache.closeIteratorTimeout');
-			}
-			QueryCacheController.registerCache(this);
 			
+			QueryCacheController.registerCache(this);
+			this.updateOptions(opts);
+
+/*			
 			if(opts && opts.invalidateInterval){
 				this.setInvalidateInterval(opts.invalidateInterval);
 			}
 			if(opts && opts.updateInterval){
 				this.setUpdateInterval(opts.updateInterval);
 			}
+			*/
 		},
 		
 		destroy: function(){
@@ -42,6 +41,22 @@
 			this.setUpdateInterval(0);
 			QueryCacheController.unregisterCache(this);
 			$base();
+		},
+		
+		updateOptions: function(opts){
+			this.options = opts || {};
+			if(Config.has('datacube.queryCache.batchSize')){
+				this.batchSize = Config.get('datacube.queryCache.batchSize');
+			}
+			if(Config.has('datacube.queryCache.closeIteratorTimeout')){
+				this.closeIteratorTimeout = Config.get('datacube.queryCache.closeIteratorTimeout');
+			}
+			if(opts && opts.cacheSize){
+				this.cacheSize = opts.cacheSize;
+			}
+			if(opts && opts.limitRows){
+				this.limitRows = opts.limitRows;
+			}
 		},
 		
 		load: function(){
