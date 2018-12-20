@@ -17,6 +17,14 @@
         });
 
         this.createRendersMapByClasses(JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getValueSelectorsMap());
+
+        if(opts.createDefaultValues && !this._values){
+            this._values = this.createDefaultValues();
+        }
+
+        if(opts.updateValues){
+            this.updateValues();
+        }
     },
 
     addLinkedFields: function(linkedFields){
@@ -216,6 +224,9 @@
     },
 
     updateValues: function(scheme, fullValues){
+        scheme = scheme || this._scheme;
+        fullValues = fullValues || this._values;
+
         var removedValues = {},
             wasUpdated = false,
             values = fullValues.values,
