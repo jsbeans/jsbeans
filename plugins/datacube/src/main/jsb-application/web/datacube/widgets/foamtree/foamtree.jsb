@@ -115,6 +115,26 @@
                             }
                         }
                     }
+                },
+                format: {
+                    render: 'formatter',
+                    name: 'Формат имён',
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Имя поля',
+                                type: 'string',
+                                value: 'name'
+                            },
+                            {
+                                alias: 'Значение',
+                                type: 'number',
+                                value: 'value'
+                            }
+                        ]
+                    },
+                    valueType: 'string',
+                    defaultValue: '{name}'
                 }
             }
         }
@@ -207,7 +227,8 @@
         	    this._styles = {
                     layout: settings.find('layout').value(),
                     stacking: settings.find('stacking').value(),
-                    descriptionGroupType: settings.find('descriptionGroupType').value()
+                    descriptionGroupType: settings.find('descriptionGroupType').value(),
+                    format: settings.find('format').value()
         	    }
         	}
 
@@ -312,7 +333,7 @@
                                     binding: data[i].binding,
                                     color: data[i].color,
                                     groups: groups,
-                                    label: data[i].name,
+                                    label: $this._styles.format ? Formatter.format($this._styles.format, {name: data[i].name, value: data[i].weight}) : data[i].name,
                                     showLabels: data[i].showLabels,
                                     weight: data[i].weight
                                 };
