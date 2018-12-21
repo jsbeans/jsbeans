@@ -1347,15 +1347,21 @@
 		            var provider = $this.getQueryDataProvider(query.$provider, cube);
                     var desc = provider.extractFields()[field];
                     $this.throwError(desc, 'Undefined field "{}" in data provider "{}"', field, query.$provider);
-                    return desc.nativeType || desc.type;
+                    return desc.type || desc.nativeType;
                 } else if (query.$join) {
-debugger;
-throw 'TODO';
-
+                    if (query.$join.$left.$select[field]) {
+                        return $this.extractType(query.$join.$left.$select[field], query.$join.$left, cube, getQuery);
+                    }
+                    if (query.$join.$right.$select[field]) {
+                        return $this.extractType(query.$join.$right.$select[field], query.$join.$right, cube, getQuery);
+                    }
                 } else if (query.$recursive) {
-debugger;
-throw 'TODO';
-
+                    if (query.$recursive.$start.$select[field]) {
+                        return $this.extractType(query.$recursive.$start.$select[field], query.$recursive.$start, cube, getQuery);
+                    }
+                    if (query.$recursive.$joinedNext.$select[field]) {
+                        return $this.extractType(query.$recursive.$joinedNext.$select[field], query.$recursive.$joinedNext, cube, getQuery);
+                    }
                 } else if (query.$union) {
                     for(var i = 0; i < query.$union.length; i++){
                         var unionQuery = query.$union[i];
