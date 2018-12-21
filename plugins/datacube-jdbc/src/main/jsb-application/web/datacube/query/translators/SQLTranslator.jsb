@@ -838,7 +838,7 @@
 		            if (!fixedSubQuery.$select[field]) {
                         fixedSubQuery.$select[field] = {
                             $const: null,
-                            $type: QueryUtils.extractType(query.$select[alias], query, $this.cube, getQuery),
+                            $type: QueryUtils.extractType(query.$select[field], query, $this.cube, getQuery),
                         };
                     }
                     fields.push(field);
