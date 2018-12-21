@@ -29,11 +29,11 @@
                 }
 
                 arr.sort(function(a, b){
-                    if (a.key.toLowerCase() > b.key.toLowerCase()) {
+                    if (a.key > b.key) {
                         return 1;
                     }
 
-                    if (a.key.toLowerCase() < b.key.toLowerCase()) {
+                    if (a.key < b.key) {
                         return -1;
                     }
 

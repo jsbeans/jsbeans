@@ -71,20 +71,20 @@
 
 	    apply: function(){
 	        var query = this.query,
-	            measurements = this.measurements,
 	            name = this.sliceName.getData().getValue();
 
 	        this.sliceData.entry.server().setSliceParams({
 	            name: name,
-	            measurements: measurements,
-	            query: query
+	            query: query,
+
+	            returnUpdates: true
 	        }, function(res, err){
 	            if(!err && res.wasUpdated){
 	                $this.publish('DataCube.CubeEditor.sliceUpdated', {
-	                    measurements: measurements,
-	                    name: name,
+	                    fields: res.updates.fields,
+	                    name: res.updates.name,
 	                    slice: $this.sliceData.entry,
-	                    query: query
+	                    query: res.updates.query
 	                });
 	            }
 	        });
@@ -110,7 +110,6 @@
             this.sliceName.setData(data.entry.getName());
 
             this.query = JSB.clone(data.entry.getQuery());
-            //this.measurements = JSB.clone(data.entry.getMeasurements());
             this.sliceData = data;
 
             this.queryEditor.setOption('sliceId', sliceId);
