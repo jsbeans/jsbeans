@@ -1011,7 +1011,7 @@
 //                    query.$from ? '$from' : query.$join ? '$join' : query.$union ? '$union' : query.$provider ? '$provider' : '',
 //                    sql
 //            );
-//if (sql =='"parentId"') {
+//if (sql =='"cdc7d029613b0faee2589d224975f353/5049aaefad83e380d4da3d63482e9e39"."INN"') {
 //    debugger;
 //    $this._translateFieldInternal(field, context, useAlias, callerContext);
 //}
@@ -1021,7 +1021,7 @@
         _translateFieldInternal: function(field, context, useAlias, callerContext) {
             var query = $this.contextQueries[context];
             QueryUtils.throwError(query, 'Query context is undefined: {}', context);
-
+//debugger
             if (useAlias) {
                 for(var alias in query.$select) {
                     if (alias == field) {
@@ -1048,7 +1048,7 @@
 
                 /// is source field
                 if (sourceQuery.$select[field]) {
-                    if (!sourceQuery.$from && !QueryUtils.queryHasBody(sourceQuery)) {
+                    if (/*!sourceQuery.$from && */!QueryUtils.queryHasBody(sourceQuery)) {
                         return $this._translateExpression(sourceQuery.$select[field], sourceQuery);
                     }
                     return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);

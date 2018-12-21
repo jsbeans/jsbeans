@@ -33,13 +33,18 @@
             var allUsedDimensions = {};
             dcQuery.$views = dcQuery.$views || {};
             var embeddedSlices = {};
+            var sliceViews = {};
 		    QueryUtils.walkQueries(dcQuery, {
 		            dcQuery: dcQuery,
 		            getExternalView: function(name) {
+//debugger
                         /// использовать срез и его заменители
                         var slice = QueryUtils.getQuerySlice(name, cube);
                         var slices = JSB.merge({}, QueryUtils.extractReplacementSlices(slice));
-                        slices[slice.getId()] = slice;
+                        slices[slice.getFullId()] = slice;
+
+                        // удалить срезы, которые уже встроены как родители для текущего зпроса
+                        $this._filterEmbeddedParentSlices(slices, sliceViews, this.path);
 
                         /// найти лучший срез встроить в запрос
                         var usedDimensions = $this._collectUsedDimensions(queryStack);
@@ -62,8 +67,18 @@
                                 )
                                 ? name
                                 : this.query.$context;
-                        dcQuery.$views[name] = $this.assemblyBestSlice(slices, context, usedSliceFields, usedDimensions, cube);
+
+                        var bestSlice = $this.selectBestSlice(slices, context, usedSliceFields, usedDimensions, cube);
+                        if (bestSlice != slice) {
+                            // TODO потенциально может возникнуть коллизия имен вьюх, соответствующиъ срезам-аналогам
+                        }
+                        var body = JSB.clone(bestSlice.getQuery());
                         embeddedSlices[name] = name;
+                        dcQuery.$views[name] = body;
+                        if(!sliceViews[bestSlice.getFullId()]) {
+                            sliceViews[bestSlice.getFullId()] = [];
+                        }
+                        sliceViews[bestSlice.getFullId()].push(body);
 
                         return dcQuery.$views[name];
 		            }
@@ -76,6 +91,7 @@
 
                     /// если запрос к кубу
 		            if (query.$cube || !query.$from && !query.$provider && !query.$join && !query.$union && !query.$recursive) {
+//debugger
                         var queryCube = QueryUtils.getQueryCube(query.$cube || cube.getId(), cube);
                         /// на случай, если запрос-однострочник
 		                if (!query.$cube) {
@@ -87,15 +103,24 @@
                             }
 		                }
 
+                        // удалить срезы, которые уже встроены как родители для текущего зпроса
+                        var slices = queryCube.getSlices();
+                        $this._filterEmbeddedParentSlices(slices, sliceViews, this.path);
+
 		                /// подобрать лучший подходящий срез
                         var usedSliceFields = QueryUtils.extractInputFields(query);
-                        var body = $this.assemblyBestSlice(queryCube.getSlices(), query.$context, usedSliceFields, usedDimensions, queryCube);
+                        var bestSlice = $this.selectBestSlice(slices, query.$context, usedSliceFields, usedDimensions, queryCube);
+                        var body = JSB.clone(bestSlice.getQuery());
                         /// заменить в запросе источник - установить $from вместо $cube и добавить вью
                         delete query.$cube;
-                        var name = query.$from = body.$context;
+                        var name = query.$from =bestSlice.getFullId();
                         if (!dcQuery.$views[name]) {
                             embeddedSlices[name] = name;
                             dcQuery.$views[name] = body;
+                            if(!sliceViews[name]) {
+                                sliceViews[name] = [];
+                            }
+                            sliceViews[name].push(body);
                         }
                     }
 
@@ -109,14 +134,31 @@
         },
 
 
-		assemblyBestSlice: function(slices, context, usedSliceFields, usedDimensions, cube){
+		selectBestSlice: function(slices, context, usedSliceFields, usedDimensions, cube){
 		    var matchedSlices = $this._filterMatchedSlices(slices, context, usedSliceFields, usedDimensions);
-		    var bestSlice = $this._selectTheEasiestSlice(slices, cube);
-		    var query = JSB.clone(bestSlice.getQuery());
-		    return query;
+		    var bestSlice = $this._selectTheEasiestSlice(matchedSlices, cube);
+		    return bestSlice;
 		},
 
-        _collectUsedDimensions: function(queryStack){
+		_filterEmbeddedParentSlices: function(slices, sliceViews, path) {
+            for (var sid in slices) {
+                var slice = slices[sid];
+                var sliceEmbedQueries = sliceViews[slice.getFullId()];
+                if(sliceEmbedQueries && sliceEmbedQueries.length > 0) {
+                    for(var j = 0; j < sliceEmbedQueries.length; j++) {
+                        var sliceQuery = sliceEmbedQueries[j];
+                        if(path.indexOf(sliceQuery) !== -1) {
+                            /// исключить, если срез уже встроен в родителя
+                            delete slices[sid];
+                        }
+                    }
+                }
+            }
+
+		},
+
+
+		_collectUsedDimensions: function(queryStack){
 		    var usedDimensions = {};
 
 		    for(var i = queryStack.length - 1; i >= 0; i--) {
@@ -136,6 +178,7 @@
 		    var maxDimensions = 0;
 
             for(var sid in slices) {
+                // TODO (build уьиуввув slices stack) исключить зацикливание, когда замена производится в срезе, возвращающем такие же как у источника поля
 		        var slice = slices[sid];
 		        var sliceQuery = slice.getQuery();
 		        var sliceFields = QueryUtils.extractOutputFields(sliceQuery);
