@@ -78,12 +78,12 @@
     bottom: 20px;
     font-size: 45px;
     cursor: pointer;
+    z-index: 10;
 }
 
 .cubeEditor > .addBtn {
     right: 20px;
     color: #169f85;
-    z-index: 1000;
 }
 
 .cubeEditor > .addBtn > ul {

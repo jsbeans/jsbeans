@@ -9,15 +9,25 @@
 	
 	$client: {
 		editor: null,
-		slice: null,
+		entry: null,
 
 		_sources: {},
 		
 		options: {
 		    onCreate: function(){
-		        this.refresh({
-		            sources: this.options.sources
-		        });
+		        var self = this;
+
+		        this.entry.server().extractFields(function(res, fail){
+		            if(fail){
+		                // todo: error?
+		                return;
+		            }
+
+                    self.refresh({
+                        fields: res,
+                        sources: self.options.sources
+                    });
+		        })
 		    },
 			onHighlight: function(bEnable){
 				this.highlightNode(bEnable);
@@ -164,26 +174,44 @@
 
 		refresh: function(opts){
 		    var query = opts && opts.query || this.entry.getQuery(),
-		        fields = query.$select ? Object.keys(query.$select).sort() : [],
 		        dimensions = this.editor.getDimensions();
 
-            if(fields.length !== 0){
-                var fieldsElements = d3.select(this.fieldList.getElement().get(0));
+            if(opts && opts.fields){
+                var fields = [];
+
+                for(var i in opts.fields){
+                    fields.push({
+                        name: i,
+                        type: opts.fields[i].type
+                    });
+                }
+
+                fields.sort();  // todo: dimensions up
+
+                var fieldsElementsData = d3.select(this.fieldList.getElement().get(0)).selectAll('div.sliceField').data(fields);
+
                 // enter
-                fieldsElements.selectAll('div.sliceField').data(fields).enter().append('div').classed('cubeFieldIcon sliceField', true);
+                var fieldsElementsEnter = fieldsElementsData.enter().append('div').classed('cubeFieldIcon sliceField', true);
+
+                fieldsElementsEnter.append('div').classed('name', true);
+                fieldsElementsEnter.append('div').classed('type', true);
 
                 // update
-                fieldsElements.selectAll('div.sliceField').data(fields)
-                    .text(function(d){
-                        return d;
-                    })
-                    .classed('dimension', function(d){
-                        return dimensions[d];
+                var fieldsElements = d3.select(this.fieldList.getElement().get(0)).selectAll('div.sliceField');
+
+                fieldsElements.classed('dimension', function(d){
+                        return dimensions[d.name];
+                    });
+                fieldsElements.select('.name').text(function(d){
+                        return d.name;
+                    });
+                fieldsElements.select('.type').text(function(d){
+                        return d.type;
                     });
 
                 // exit
-                fieldsElements.selectAll('div.sliceField').data(fields).exit().remove();
-	        }
+                fieldsElementsData.exit().remove();
+            }
 
             // update links
             var oldLinks = this._sources,
@@ -207,7 +235,7 @@
                 }
             }
 
-            this.fields = query.$select || {};
+            this.fields = opts && opts.fields || {};
 
             if(opts && opts.name){
                 this.sliceName.text(opts.name);
@@ -216,10 +244,10 @@
 
 		search: function(value){
 		    if(value){
-                this.fieldList.find('.sliceField:not(:contains("' + value + '"))').addClass('hidden');
-                this.fieldList.find('.sliceField:contains("' + value + '")').removeClass('hidden');
+                this.fieldList.find('.name:not(:icontains("' + value + '"))').closest('.sliceField').addClass('hidden');
+                this.fieldList.find('.name:icontains("' + value + '")').closest('.sliceField').removeClass('hidden');
             } else {
-                this.fieldList.find('.sliceField').removeClass('hidden');
+                this.fieldList.find('.name').closest('.sliceField').removeClass('hidden');
             }
 		},
 
@@ -242,11 +270,25 @@
 		toggleDimension: function(desc){
 		    if(this.fields[desc.field]){
 		        if(desc.isDimension){
-		            this.fieldList.find('.sliceField:contains("' + desc.field + '")').addClass('dimension');
+		            this.fieldList.find('.name:contains("' + desc.field + '")').closest('.sliceField').addClass('dimension');
 		        } else {
-		            this.fieldList.find('.sliceField:contains("' + desc.field + '")').removeClass('dimension');
+		            this.fieldList.find('.name:contains("' + desc.field + '")').closest('.sliceField').removeClass('dimension');
 		        }
 		    }
+		    /*
+		    var fields = this.fieldList.children();
+
+		    fields.sort(function(a, b){
+		        var aDim = $this.$(a).hasClass('dimension'),
+		            bDim = $this.$(b).hasClass('dimension');
+
+                if(aDim && bDim){
+                    //
+                }
+		    });
+
+		    fields.detach().appendTo(this.fields);
+		    */
 		}
 	}
 }

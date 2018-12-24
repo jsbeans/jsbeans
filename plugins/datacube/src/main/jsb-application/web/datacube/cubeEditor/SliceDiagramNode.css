@@ -158,6 +158,18 @@
 	background-color: #eef4f7;
 }
 
+.sliceDiagramNode > .fields > .sliceField > * {
+    display: inline-block;
+}
+
+.sliceDiagramNode > .fields > .sliceField > .name {
+    width: calc(70% - 7px);
+}
+
+.sliceDiagramNode > .fields > .sliceField > .type {
+    width: 30%;
+}
+
 /* footer */
 .sliceDiagramNode > footer {
     height: 10px;

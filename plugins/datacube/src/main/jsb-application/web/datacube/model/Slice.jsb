@@ -51,18 +51,6 @@
 	source: null,
 	query: {},
 
-    extractFields: function(){
-        var fields = {};
-
-        if(this.query.$select){
-            for(var i in this.query.$select){
-                fields[i] = i;
-            }
-        }
-
-        return fields;
-    },
-
     extractSources: function(query){
         var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
             sources = [];
@@ -276,6 +264,21 @@
             return this.cube.executeQuery(preparedQuery, params);
 		},
 
+        extractFields: function(){
+            var fieldsTypes = {}, // todo
+                fields = {};
+
+            if(this.query.$select){
+                for(var i in this.query.$select){
+                    fields[i] = {
+                        type: 'type'
+                    };
+                }
+            }
+
+            return fields;
+        },
+
 		generateQueryFromSource: function(opts){
 		    var sources = opts.sources,
 		        query = {};
@@ -404,14 +407,15 @@
 		},
 
 		setSliceParams: function(params){
-		    var isNeedUpdate = false;
+		    var updates = {},
+		        result = {};
 
 		    if(JSB.isDefined(params.name) && !JSB.isEqual(this.getName(), params.name)){
 		        $super.setName(params.name);
 
 		        this.publish('DataCube.Model.Slice.renameSlice', { name: params.name }, {session: true});
 
-		        isNeedUpdate = true;
+		        updates.name = params.name;
 		    }
 
 		    if(JSB.isDefined(this.getName(params.query)) && !JSB.isEqual(this.query, params.query)){
@@ -423,20 +427,20 @@
 
     			this.cube.updateCubeFields(this);
 
-		        isNeedUpdate = true;
+		        updates.query = params.query;
+		        updates.fields = this.extractFields();
 		    }
 
-		    if(isNeedUpdate){
+		    result = {
+		        updates: params.returnUpdates ? updates : undefined,
+		        wasUpdated: Boolean(Object.keys(updates).length)
+		    }
+
+		    if(result.wasUpdated){
 		        this.doSync();
-
-		        return {
-		            wasUpdated: true
-		        }
 		    }
 
-		    return {
-		        wasUpdated: false
-		    }
+		    return result;
 		},
 		
 		updateCache: function(){

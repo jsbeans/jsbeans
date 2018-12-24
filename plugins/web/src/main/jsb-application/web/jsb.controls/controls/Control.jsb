@@ -57,6 +57,10 @@
 			return this.getElement().attr.apply(this.getElement(), arguments);
 		},
 
+		children: function(selector){
+		    return this.getElement().children(selector);
+		},
+
 		classed: function(c, b){
 			if(b){
 				this.addClass(c);

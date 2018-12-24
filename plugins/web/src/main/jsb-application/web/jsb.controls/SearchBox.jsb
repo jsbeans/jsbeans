@@ -18,7 +18,9 @@
             searchBtn.click(function(){
                 $this.toggleClass('open');
 
-                if(!$this.hasClass('open')){
+                if($this.hasClass('open')){
+                    $this.editor.focus();
+                } else {
                     $this.clear();
 
                     if(JSB.isFunction($this.options.onClose)){

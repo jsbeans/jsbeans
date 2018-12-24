@@ -79,8 +79,8 @@
 
         search: function(value){
 		    if(value){
-                this.cubeFields.find('.caption:not(:contains("' + value + '"))').closest('.jsb-checkbox').addClass('hidden');
-                this.cubeFields.find('.caption:contains("' + value + '")').closest('.jsb-checkbox').removeClass('hidden');
+                this.cubeFields.find('.caption:not(:icontains("' + value + '"))').closest('.jsb-checkbox').addClass('hidden');
+                this.cubeFields.find('.caption:icontains("' + value + '")').closest('.jsb-checkbox').removeClass('hidden');
             } else {
                 this.cubeFields.find('.jsb-checkbox').removeClass('hidden');
             }
