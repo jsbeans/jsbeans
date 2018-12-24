@@ -27,6 +27,11 @@
 				onInit: function(){
 				    $this.setTrigger('diagramReady');
 				},
+				onPositionChange: function(type, changes){
+				    if($this._cube){
+				        $this._cube.server().updateDiagramPosition(changes);
+				    }
+				},
 				nodes: {
 					sliceDiagramNode: {
 						jsb: 'DataCube.SliceDiagramNode',
@@ -338,6 +343,9 @@
                     })
 	            };
 	        }
+
+	        this.diagram.setPan(desc.diagramOpts.position);
+	        this.diagram.setZoom(desc.diagramOpts.zoom);
 
 	        this.options.layoutManager.ensureInitialize(function(){
                 $this.options.layoutManager.getWidget('cubePanel').refresh($this.getCube(), desc);

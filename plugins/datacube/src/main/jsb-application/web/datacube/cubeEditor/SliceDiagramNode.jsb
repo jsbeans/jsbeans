@@ -186,7 +186,25 @@
                     });
                 }
 
-                fields.sort();  // todo: dimensions up
+                fields.sort(function(a, b){
+                    if(dimensions[a.name] && !dimensions[b.name]){
+                        return -1;
+                    }
+
+                    if(!dimensions[a.name] && dimensions[b.name]){
+                        return 1;
+                    }
+
+                    if(a.name > b.name){
+                        return 1;
+                    }
+
+                    if(a.name < b.name){
+                        return -1;
+                    }
+
+                    return 0;
+                });
 
                 var fieldsElementsData = d3.select(this.fieldList.getElement().get(0)).selectAll('div.sliceField').data(fields);
 
@@ -275,20 +293,38 @@
 		            this.fieldList.find('.name:contains("' + desc.field + '")').closest('.sliceField').removeClass('dimension');
 		        }
 		    }
-		    /*
+
 		    var fields = this.fieldList.children();
 
 		    fields.sort(function(a, b){
-		        var aDim = $this.$(a).hasClass('dimension'),
-		            bDim = $this.$(b).hasClass('dimension');
+		        a = $this.$(a);
+		        b = $this.$(b);
 
-                if(aDim && bDim){
-                    //
+		        var aDim = a.hasClass('dimension'),
+		            bDim = b.hasClass('dimension'),
+		            aName = a.find('.name').text(),
+		            bName = b.find('.name').text();
+
+                if(aDim && !bDim){
+                    return -1;
                 }
+
+                if(!aDim && bDim){
+                    return 1;
+                }
+
+                if(aName > bName){
+                    return 1;
+                }
+
+                if(aName < bName){
+                    return -1;
+                }
+
+                return 0;
 		    });
 
-		    fields.detach().appendTo(this.fields);
-		    */
+		    fields.detach().appendTo(this.fieldList.getElement());
 		}
 	}
 }

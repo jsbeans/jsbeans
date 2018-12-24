@@ -87,6 +87,9 @@
 
 							// load fields
 							this.fields = snapshot.fields || {};
+
+							// load diagram position & zoom
+							this.diagramOpts = snapshot.diagramOpts || {position: {x: 0, y: 0}, zoom: 1};
 						}
 						this.loaded = true;
 						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
@@ -111,6 +114,7 @@
 			}
 
 			return {
+			    diagramOpts: this.diagramOpts,
 			    dimensions: dimensions,
 			    fields: this.fields,
 				slices: this.slices
@@ -132,6 +136,7 @@
 			try {
 				// construct snapshot
 				var snapshot = {
+				    diagramOpts: this.diagramOpts,
 				    fields: this.fields,
 					slices: []
 				};
@@ -318,7 +323,8 @@
 		        for(var i in sliceFields){
 		            if(!$this.fields[i]){
 		                $this.fields[i] = {
-		                    slices: [sliceId]
+		                    slices: [sliceId],
+		                    type: sliceFields[i].type
                         };
 
 		                isNeedUpdate = true;
@@ -360,6 +366,12 @@
                     this.store();
                 }
             }
+		},
+
+		updateDiagramPosition: function(diagramOpts){
+		    this.diagramOpts = diagramOpts;
+
+		    this.store();
 		},
 
 		updateNodePosition: function(entry, diagramOpts){

@@ -33,6 +33,7 @@
         addDimension: function(field){
             this.cube.server().addDimension(field, function(res, fail){
                 if(!fail){
+                    $this.sort();
                     $this.publish('DataCube.CubeEditor.toggleDimension', {field: field, isDimension: true});
                 }
             });
@@ -43,7 +44,27 @@
                 this.cube = cube;
             }
 
-            var fieldsArr = Object.keys(opts.fields).sort(),
+            function sortFields(a, b){
+                if(opts.dimensions[a] && !opts.dimensions[b]){
+                    return -1;
+                }
+
+                if(!opts.dimensions[a] && opts.dimensions[b]){
+                    return 1;
+                }
+
+                if(a > b){
+                    return 1;
+                }
+
+                if(a < b){
+                    return -1;
+                }
+
+                return 0;
+            }
+
+            var fieldsArr = Object.keys(opts.fields).sort(sortFields),
                 cubeFields = d3.select(this.cubeFields.getElement().get(0));
 
             // enter
@@ -52,8 +73,10 @@
                             return new Checkbox({
                                 onChange: function(b){
                                     if(b){
+                                        this.addClass('dimension');
                                         $this.addDimension(this.getLabel());
                                     } else {
+                                        this.removeClass('dimension');
                                         $this.removeDimensions(this.getLabel());
                                     }
                                 }
@@ -65,6 +88,7 @@
                 var cb = $this.$(this).jsb();
                 cb.setLabel(d);
                 cb.setChecked(opts.dimensions[d], true);
+                cb.classed('dimension', opts.dimensions[d]);
             });
 
             // exit
@@ -73,6 +97,7 @@
 
         removeDimensions: function(field){
             this.cube.server().removeDimension(field, function(res, fail){
+                $this.sort();
                 $this.publish('DataCube.CubeEditor.toggleDimension', {field: field, isDimension: false});
             });
         },
@@ -84,6 +109,40 @@
             } else {
                 this.cubeFields.find('.jsb-checkbox').removeClass('hidden');
             }
+        },
+
+        sort: function(){
+		    var fields = this.cubeFields.children();
+
+		    fields.sort(function(a, b){
+		        a = $this.$(a);
+		        b = $this.$(b);
+
+		        var aDim = a.hasClass('dimension'),
+		            bDim = b.hasClass('dimension'),
+		            aName = a.children('.caption').text(),
+		            bName = b.children('.caption').text();
+
+                if(aDim && !bDim){
+                    return -1;
+                }
+
+                if(!aDim && bDim){
+                    return 1;
+                }
+
+                if(aName > bName){
+                    return 1;
+                }
+
+                if(aName < bName){
+                    return -1;
+                }
+
+                return 0;
+		    });
+
+		    fields.detach().appendTo(this.cubeFields.getElement());
         }
     }
 }

@@ -60,10 +60,12 @@
 			},
 			
 			// event handlers
-			onInit: function(){},
 			onChange: function(changeType, item){},
 			onCreate: function(item){},
-			onRemove: function(item){}
+			onInit: function(){},
+			onRemove: function(item){},
+			onPositionChange: function(type, changes){}
+			// todo: on position change
 		},
 		
 		

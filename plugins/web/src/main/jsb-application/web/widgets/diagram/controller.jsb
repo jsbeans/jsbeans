@@ -277,6 +277,10 @@
 				} else if(params.event.which == 3){
 					this.panStartPt = null;
 					this.diagram.removeClass('panning');
+
+					if(this.diagram.options.onPositionChange){
+					    this.diagram.options.onPositionChange.call(this.diagram, 'position', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
+					}
 				}
 				break;
 			case 'mousemove':
@@ -419,6 +423,11 @@
 				var currentZoom = this.diagram.getZoom();
 				currentZoom += /*Math.exp(currentZoom) */ params.delta * this.diagram.getOption('zoomStep') * currentZoom;
 				this.diagram.setZoom(currentZoom);
+
+                if(this.diagram.options.onPositionChange){
+                    this.diagram.options.onPositionChange.call(this.diagram, 'zoom', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
+                }
+
 				break;
 			}
 		},

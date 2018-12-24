@@ -1,55 +1,55 @@
 {
-	$name: 'DataCube.Model.Slice',
-	$parent: 'DataCube.Model.SettingsEntry',
+    $name: 'DataCube.Model.Slice',
+    $parent: 'DataCube.Model.SettingsEntry',
 
-	$require: ['DataCube.Query.QuerySyntax'],
+    $require: ['DataCube.Query.QuerySyntax'],
 
-	$scheme: {
-		cacheSettings: {
-			render: 'group',
-			name: 'Кэширование данных',
-			collapsible: true,
-			items: {
-				useCache: {
-					render: 'switch',
-					name: 'Использовать кэширование срезов',
-					optional: 'checked',
-					items: {
-						cacheSize: {
-							render: 'item',
-							name: 'Размер кэша (Кб)',
-							value: 1024,
-							valueType: 'number'
-						},
-						cacheRowLimit: {
-							render: 'item',
-							name: 'Ограничить максимальное количество строк',
-							value: 1000,
-							valueType: 'number',
-							optional: true
-						},
-						cacheExtraQueries: {
-							render: 'item',
-							name: 'Кэшировать производные запросы (с фильтрами)',
-							optional: 'checked',
-							editor: 'none'
-						},
-						updateInterval: {
-							render: 'item',
-							name: 'Обновлять данные',
-							optional: true,
-							editor: 'JSB.Widgets.CronEditor',
-							value: '0 * * * *'
-						}
-					}
-				}
-			}
-		}
-	},
-	
-	cube: null,
-	source: null,
-	query: {},
+    $scheme: {
+        cacheSettings: {
+            render: 'group',
+            name: 'Кэширование данных',
+            collapsible: true,
+            items: {
+                useCache: {
+                    render: 'switch',
+                    name: 'Использовать кэширование срезов',
+                    optional: 'checked',
+                    items: {
+                        cacheSize: {
+                            render: 'item',
+                            name: 'Размер кэша (Кб)',
+                            value: 1024,
+                            valueType: 'number'
+                        },
+                        cacheRowLimit: {
+                            render: 'item',
+                            name: 'Ограничить максимальное количество строк',
+                            value: 1000,
+                            valueType: 'number',
+                            optional: true
+                        },
+                        cacheExtraQueries: {
+                            render: 'item',
+                            name: 'Кэшировать производные запросы (с фильтрами)',
+                            optional: 'checked',
+                            editor: 'none'
+                        },
+                        updateInterval: {
+                            render: 'item',
+                            name: 'Обновлять данные',
+                            optional: true,
+                            editor: 'JSB.Widgets.CronEditor',
+                            value: '0 * * * *'
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    cube: null,
+    source: null,
+    query: {},
 
     extractSources: function(query){
         var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
@@ -107,6 +107,20 @@
 
 	getQuery: function(){
 		return this.query;
+	},
+
+	$client: {
+        extractFields: function(){
+            var fields = {};
+
+            if(this.query.$select){
+                for(var i in this.query.$select){
+                    fields[i] = {};
+                }
+            }
+
+            return fields;
+        }
 	},
 	
 	$server: {
