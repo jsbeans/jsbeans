@@ -549,23 +549,17 @@
 
         /** Возвращает массив полей источника, которые используются в запросе или во вложенных запросах, привязанных к текущему.
         */
-		extractInputFields: function(query) {
+		extractInputFields: function(query, includeCubeFilter) {
 		    var inputFields = {};
 		    var array = [];
 		    $this.walkFields(query, function fieldsCallback(field, context, query, path){
-		        if (!inputFields[context+field]) {
-		            var f = inputFields[context+field] = {$field: field, $context: context};
-		            array.push(f);
-                }
+		        if (includeCubeFilter || path.indexOf('$cubeFilter') == -1) {
+                    if (!inputFields[context+field]) {
+                        var f = inputFields[context+field] = {$field: field, $context: context};
+                        array.push(f);
+                    }
+		        }
 		    });
-//            var sourceFields = $this.extractSourceFields(query, cube, rootQuery);
-//            var inputFields = {};
-//            $this.walkInputFieldsCandidates(query, cube, {rootQuery:rootQuery}, function (field, context, q, isExp) {
-//                if (sourceFields[field]) {
-//                    inputFields[field] = true;
-//                }
-//                $this.throwError(sourceFields[field] || !isExp, 'Field "{}" is not defined in source', field);
-//            });
             return array;
 		},
 
@@ -808,7 +802,7 @@
                     var res = fieldsCallback(exp.$field, exp.$context, path);
                     if (res === null) return null;
                     if (res === undefined) return;
-                    $his.jsonReplaceBody(exp, res);
+                    $this.jsonReplaceBody(exp, res);
                     return exp;
                 } else if (JSB.isObject(exp)) {
                     // if or not embedded query-expression
@@ -823,12 +817,13 @@
                             }
                         }
                     } else {
+                        /// if query
                         if (JSB.isFunction(expressionCallback)) {
                             var newExp = expressionCallback(exp, path);
                             if (newExp === undefined){
                                 return;
                             }
-                            if (newExp == null) {
+                            if (newExp === null) {
                                 return null;
                             }
                             return newExp;
@@ -849,13 +844,13 @@
             function walkExpression(exp, path) {
                 if (JSB.isFunction(expressionCallback)) {
                     var newExp = expressionCallback(exp, path);
-                    if (newExp === undefined){
-                        return;
-                    }
-                    if (newExp == null) {
+                    if (newExp === null) {
                         return null;
                     }
-                    exp = newExp;
+                    if (newExp !== undefined){
+                        exp = newExp;
+                    }
+
                 } else {
                     // clone for changing in walkExpressionFields
                     exp = JSB.clone(exp);

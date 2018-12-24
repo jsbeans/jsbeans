@@ -130,7 +130,7 @@
                 }
             );
 
-            QueryUtils.logDebug('Embedded {} slices, used dimensions {}', embeddedSlices, JSON.stringify(Object.keys(allUsedDimensions)));
+            QueryUtils.logDebug('Embedded {} slices, used dimensions {}', Object.keys(embeddedSlices).length, JSON.stringify(Object.keys(allUsedDimensions)));
         },
 
 
@@ -165,7 +165,7 @@
 		        var query = queryStack[i];
                 if (query.$cubeFilter && Object.keys(query.$cubeFilter).length > 0) {
                     QueryUtils.walkExpressionFields(query.$cubeFilter, query, true, function(name, context){
-                        usedDimensions[field] = field;
+                        usedDimensions[name] = name;
                     });
                 }
 		    }
@@ -178,7 +178,6 @@
 		    var maxDimensions = 0;
 
             for(var sid in slices) {
-                // TODO (build уьиуввув slices stack) исключить зацикливание, когда замена производится в срезе, возвращающем такие же как у источника поля
 		        var slice = slices[sid];
 		        var sliceQuery = slice.getQuery();
 		        var sliceFields = QueryUtils.extractOutputFields(sliceQuery);
@@ -210,8 +209,8 @@
                     }
 
                     /// сохранить
-                    resultDimensions[slice.getId()] = countDimensions;
-		            resultSlices[slice.getId()] = slice;
+                    resultDimensions[sid] = countDimensions;
+		            resultSlices[sid] = slice;
 		        }
 		    }
 
