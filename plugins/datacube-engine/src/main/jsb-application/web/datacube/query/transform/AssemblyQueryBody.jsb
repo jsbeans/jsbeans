@@ -49,25 +49,21 @@
                         /// найти лучший срез встроить в запрос
                         var usedDimensions = $this._collectUsedDimensions(queryStack);
                         JSB.merge(allUsedDimensions, usedDimensions);
+                        var isJoined = this.query.$join && (
+                                this.query.$join.$left == name || this.query.$join.$right == name ||
+                                JSB.isObject(this.query.$join.$left) && this.query.$join.$left.$context == name ||
+                                JSB.isObject(this.query.$join.$right) && this.query.$join.$right.$context == name
+                        );
+                        var context = isJoined ? name : this.query.$context; /// контекст, который должен быть у полей данного среза
+                        /// сбор используемых полей среза-источника
                         var usedSliceFields = QueryUtils.extractInputFields(this.query);
-                        if(this.query.$union && this.query.$union.indexOf(name) !== -1) {
-                            var sliceFields = slice.getOutputFields();
-                            for (var i = 0; i < usedSliceFields.length; i++) {
-                                var f = usedSliceFields[i];
-                                if (!sliceFields[f.$field]) {
-                                    usedSliceFields.splice(i--, 1);
-                                }
-                            }
+                        if (this.query.$union && this.query.$union.indexOf(name) !== -1) {
+                            $this._filterUnionTargetFields(usedSliceFields, slice);
                         }
-                        var context = // контекст, который должен быть у полей данного среза
-                                this.query.$join && (
-                                    this.query.$join.$left == name || this.query.$join.$right == name ||
-                                    JSB.isObject(this.query.$join.$left) && this.query.$join.$left.$context == name ||
-                                    JSB.isObject(this.query.$join.$right) && this.query.$join.$right.$context == name
-                                )
-                                ? name
-                                : this.query.$context;
-
+                        if (isJoined) {
+                            $this._filterJoinedTargetFields(usedSliceFields, this.query, context);
+                        }
+                        /// непосредственно выбор среза по полям
                         var bestSlice = $this.selectBestSlice(slices, context, usedSliceFields, usedDimensions, cube);
                         if (bestSlice != slice) {
                             // TODO потенциально может возникнуть коллизия имен вьюх, соответствующиъ срезам-аналогам
@@ -108,7 +104,7 @@
                         $this._filterEmbeddedParentSlices(slices, sliceViews, this.path);
 
 		                /// подобрать лучший подходящий срез
-                        var usedSliceFields = QueryUtils.extractInputFields(query);
+                        var usedSliceFields = usedFields || QueryUtils.extractInputFields(query);
                         var bestSlice = $this.selectBestSlice(slices, query.$context, usedSliceFields, usedDimensions, queryCube);
                         var body = JSB.clone(bestSlice.getQuery());
                         /// заменить в запросе источник - установить $from вместо $cube и добавить вью
@@ -140,8 +136,29 @@
 		    return bestSlice;
 		},
 
+		_filterUnionTargetFields: function(usedSliceFields, slice) {
+            var sliceFields = slice.getOutputFields();
+            for (var i = 0; i < usedSliceFields.length; i++) {
+                var f = usedSliceFields[i];
+                if (!sliceFields[f.$field]) {
+                    usedSliceFields.splice(i--, 1);
+                }
+            }
+		},
+
+		_filterJoinedTargetFields: function(usedSliceFields, query, context) {
+            /// остаются только поля с целевым контекстом
+            for(var i = 0; i < usedSliceFields.length; i++) {
+                var field = usedSliceFields[i];
+                 if (!field.$context || field.$context !== context) {
+                    usedSliceFields.splice(i--, 1);
+                 }
+            }
+		},
+
 		_filterEmbeddedParentSlices: function(slices, sliceViews, path) {
             for (var sid in slices) {
+                var slice = slices[sid];
                 var slice = slices[sid];
                 var sliceEmbedQueries = sliceViews[slice.getFullId()];
                 if(sliceEmbedQueries && sliceEmbedQueries.length > 0) {
@@ -228,7 +245,19 @@
 
 		    QueryUtils.throwError(
 		        Object.keys(resultSlices).length > 0,
-		        "Не найдено подходящего среза c используемыми выходными полями: {}"
+		        "Не найдено подходящего среза cо всеми используемыми выходными полями: {}",
+		        (function(){
+		            var s = '';
+		            var a = {};
+                    for(var i = 0; i < usedSliceFields.length; i++) {
+                        var field = usedSliceFields[i];
+                        if(!a[field.$field]) {
+                            a[field.$field]=1;
+                            s += (i>0?', ':'') + field.$field;
+                        }
+                    }
+                    return s;
+		        })()
             );
 		    return resultSlices;
 		},
