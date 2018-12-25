@@ -174,8 +174,9 @@
 				    this.source = this.getWorkspace(idArr[0]).entry(idArr[1]);
 				}
 			}
-
-			this.cacheEnabled = Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled');
+			var ctx = this.getSettingsContext();
+			this.cacheEnabled = Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled') && ctx.find('useCache').checked();
+			this.extCacheEnabled = this.cacheEnabled && ctx.find('cacheExtraQueries').checked();
 
 			this.subscribe('DataCube.Query.QueryCache.updated', function(sender){
 				if($this.queryCache && sender == $this.queryCache){
@@ -271,7 +272,14 @@
             	q.$from = preparedQuery;
             	preparedQuery = q;
             }
-            if(useCache && this.cacheEnabled){
+            var isExtQuery = false;
+            if(opts && opts.extQuery && Object.keys(opts.extQuery).length > 0){
+            	isExtQuery = true;
+            }
+            if(opts && opts.wrapQuery && Object.keys(opts.wrapQuery).length > 0){
+            	isExtQuery = true;
+            }
+            if(useCache && this.cacheEnabled && (!isExtQuery || this.extCacheEnabled)){
             	this.ensureQueryCache();
 				return this.queryCache.executeQuery(preparedQuery, params);
             }
@@ -366,16 +374,47 @@
 
 		    return query;
 		},
-
-		getEditorData: function(){
+		
+		combineCacheOpts: function(){
+			var ctx = this.getSettingsContext();
+			return {
+				cacheSize: ctx.find('cacheSize').value(),
+				limitRows: ctx.find('cacheRowLimit').checked() ? ctx.find('cacheRowLimit').value() : 0
+			};
+		},
+		
+		ensureQueryCache: function(){
+			if(!this.queryCache){
+				var mtx = this.getId() + '_queryCache';
+				JSB.getLocker().lock(mtx);
+				if(!this.queryCache){
+					this.queryCache = new QueryCache(this, this.cube, this.combineCacheOpts());
+				}
+				JSB.getLocker().unlock(mtx);
+			}
+			
+			return this.queryCache;
+		},
+getEditorData: function(){
 		    var cube = this.getCube();
 
 		    return {
 		        cubeFields: cube.extractFields(),
 		        cubeSlices: cube.getSlices()
 		    }
-		},
 
+
+
+
+
+
+
+
+
+
+
+
+		},
 		getOutputFields: function(){
 			var fMap = {};
 			if(this.query && this.query.$select && Object.keys(this.query.$select).length > 0){
@@ -462,7 +501,7 @@
 				return;
 			}
 			this.ensureQueryCache();
-			this.queryCache.update(true);
+			this.queryCache.update();
 		},
 		
 		onChangeSettings: function(){
@@ -475,10 +514,20 @@
 			} else {
 				EntryScheduleController.unregisterJob(this, 'updateCache');
 			}
+			
+			// update cache opts
+			this.cacheEnabled = Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled') && ctx.find('useCache').checked();
+			this.extCacheEnabled = this.cacheEnabled && ctx.find('cacheExtraQueries').checked();
+			if(this.queryCache){
+				this.queryCache.updateOptions(this.combineCacheOpts());
+			}
+			
 		},
 		
-		executeScheduledJob: function(params){
-			JSB.getLogger().debug('executeScheduledJob for slice: "' + this.getName() + '": ' + JSON.stringify(params));
+		executeScheduledJob: function(job){
+			if(job.key == 'updateCache'){
+				$this.updateCache();
+			}
 		}
 	}
 }

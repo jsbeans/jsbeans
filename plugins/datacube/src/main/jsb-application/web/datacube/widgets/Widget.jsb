@@ -1142,12 +1142,13 @@
 						if($this.completed[iteratorId]){
 							break;
 						}
-						var el = null;
+						var el = $this.iterators[iteratorId].next();
+/*						var el = null;
 						try {
 							el = $this.iterators[iteratorId].next();
 						}catch(e){
 							el = null;
-						}
+						}*/
 						if(!el){
 							if($this.iterators[iteratorId]){
 								try {

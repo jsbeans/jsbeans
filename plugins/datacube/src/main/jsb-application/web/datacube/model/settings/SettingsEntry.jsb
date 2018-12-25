@@ -101,9 +101,12 @@
 				this._settingsContext = new ValueSelector({
 					bootstrap: 'Datacube.Unimap.Bootstrap',
 					values: this.getSettings(),
-					scheme: this.extractSettingsScheme()
+					scheme: this.extractSettingsScheme(),
+					createDefaultValues: true,
+					updateValues: true
 				});
 			}
+			
 			return this._settingsContext;
 		},
 		
@@ -120,7 +123,6 @@
 			if(curSettings && JSB.isEqual(curSettings, settings)){
 				return;
 			}
-			JSB.getLogger().info('settings changed: ' + JSON.stringify(settings));
 			this.property('_settings', settings);
 			if(this._settingsContext){
 				this._settingsContext.destroy();

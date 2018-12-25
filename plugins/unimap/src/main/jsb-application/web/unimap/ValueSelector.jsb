@@ -18,8 +18,11 @@
 
         this.createRendersMapByClasses(JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getValueSelectorsMap());
 
-        if(opts.createDefaultValues && !this._values){
-            this._values = this.createDefaultValues();
+        if(opts.createDefaultValues && Object.keys(this._values).length === 0){
+    		var defValues = this.createDefaultValues();
+
+            this._values = defValues.values;
+            this._linkedFields = defValues.linkedFields;
         }
 
         if(opts.updateValues){
@@ -225,7 +228,10 @@
 
     updateValues: function(scheme, fullValues){
         scheme = scheme || this._scheme;
-        fullValues = fullValues || this._values;
+        fullValues = fullValues || {
+        	linkedFields: this._linkedFields,
+        	values: this._values
+        };
 
         var removedValues = {},
             wasUpdated = false,

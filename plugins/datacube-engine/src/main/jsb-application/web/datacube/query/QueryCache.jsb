@@ -4,7 +4,9 @@
 	
 	$server: {
 		$require: ['DataCube.Query.QueryCacheController', 
-		           'JSB.Crypt.MD5'],
+		           'JSB.Crypt.MD5',
+		           'JSB.Store.StoreManager',
+		           'JSB.Store.Sql.JDBC'],
 		
 		cube: null,
 		owner: null,
@@ -15,11 +17,25 @@
 		invalidateInterval: 0,
 		updateInterval: 0,
 		cacheMap: {},
+		cacheStore: null,
+		cacheSize: 4096,
+		limitRows: 0,
 		
 		$constructor: function(owner, cube, opts){
 			$base();
 			this.cube = cube;
 			this.owner = owner;
+			
+			QueryCacheController.registerCache(this);
+			this.updateOptions(opts);
+		},
+		
+		destroy: function(){
+			QueryCacheController.unregisterCache(this);
+			$base();
+		},
+		
+		updateOptions: function(opts){
 			this.options = opts || {};
 			if(Config.has('datacube.queryCache.batchSize')){
 				this.batchSize = Config.get('datacube.queryCache.batchSize');
@@ -27,21 +43,20 @@
 			if(Config.has('datacube.queryCache.closeIteratorTimeout')){
 				this.closeIteratorTimeout = Config.get('datacube.queryCache.closeIteratorTimeout');
 			}
-			QueryCacheController.registerCache(this);
-			
-			if(opts && opts.invalidateInterval){
-				this.setInvalidateInterval(opts.invalidateInterval);
+			if(opts && opts.cacheSize){
+				this.cacheSize = opts.cacheSize;
 			}
-			if(opts && opts.updateInterval){
-				this.setUpdateInterval(opts.updateInterval);
+			if(opts && opts.limitRows){
+				this.limitRows = opts.limitRows;
 			}
 		},
 		
-		destroy: function(){
-			this.setInvalidateInterval(0);
-			this.setUpdateInterval(0);
-			QueryCacheController.unregisterCache(this);
-			$base();
+		getOwner: function(){
+			return this.owner;
+		},
+		
+		getCube: function(){
+			return this.cube;
 		},
 		
 		load: function(){
@@ -49,29 +64,7 @@
 				return;
 			}
 			this.lock('DataCube.Query.QueryCache.load');
-			function _prepareLoad(obj){
-				if(!obj){
-					return obj;
-				} else if(JSB.isObject(obj)){
-					if(obj.__type && obj.__type == 'date'){
-						return new Date(obj.__value);
-					} else {
-						var nObj = {};
-						for(var k in obj){
-							nObj[k] = _prepareLoad(obj[k]);
-						}
-						return nObj;
-					}
-				} else if(JSB.isArray(obj)){
-					var nObj = [];
-					for(var k = 0; k < obj.length; k++){
-						nObj.push(_prepareLoad(obj[k]));
-					}
-					return nObj;
-				} else {
-					return obj;
-				}
-			}
+			
 			try {
 				if(this.loaded){
 					return;
@@ -85,10 +78,6 @@
 							$this.lock('cache_' + qId);
 							var qDesc = snapshot[qId];
 							if(qDesc){
-								var restoredBuffer = [];
-								for(var k = 0; k < qDesc.buffer.length; k++){
-									restoredBuffer.push(_prepareLoad(qDesc.buffer[k]));
-								}
 								$this.cacheMap[qId] = {
 									qId: qId,
 									query: qDesc.query,
@@ -96,8 +85,11 @@
 									complete: qDesc.complete,
 									lastUpdated: qDesc.lastUpdated,
 									lastUsed: qDesc.lastUsed,
-									buffer: restoredBuffer,
 									cells: qDesc.cells,
+									rows: qDesc.rows,
+									cacheTable: qDesc.cacheTable,
+									updateSuffix: qDesc.updateSuffix,
+									dataHash: qDesc.dataHash,
 									it: null,
 									provider: null
 								}
@@ -124,31 +116,6 @@
 				$this.lock('DataCube.Query.QueryCache.store');
 				$this.storeQueued = false;
 				
-				function _prepareStore(obj){
-					if(!obj){
-						return obj;
-					} else if(JSB.isDate(obj)){
-						return {
-							__type: 'date',
-							__value: obj.getTime()
-						};
-					} else if(JSB.isObject(obj)){
-						var nObj = {};
-						for(var k in obj){
-							nObj[k] = _prepareStore(obj[k]);
-						}
-						return nObj;
-					} else if(JSB.isArray(obj)){
-						var nObj = [];
-						for(var k = 0; k < obj.length; k++){
-							nObj.push(_prepareStore(obj[k]));
-						}
-						return nObj;
-					} else {
-						return obj;
-					}
-				}
-				
 				try {
 					// prepare artifact
 					var art = {};
@@ -160,12 +127,6 @@
 						try {
 							var qDesc = $this.cacheMap[qId];
 							if(qDesc && !qDesc.provider){
-								// prepare buffer
-								var prepBuffer = [];
-								for(var j = 0; j < qDesc.buffer.length; j++){
-									prepBuffer.push(_prepareStore(qDesc.buffer[j]));
-								}
-								
 								art[qId] = {
 									qId: qId,
 									query: qDesc.query,
@@ -173,8 +134,11 @@
 									complete: qDesc.complete,
 									lastUpdated: qDesc.lastUpdated,
 									lastUsed: qDesc.lastUsed,
-									buffer: prepBuffer,
-									cells: qDesc.cells
+									cells: qDesc.cells,
+									rows: qDesc.rows,
+									cacheTable: qDesc.cacheTable,
+									updateSuffix: qDesc.updateSuffix,
+									dataHash: qDesc.dataHash
 								};
 							}
 						} finally {
@@ -196,42 +160,6 @@
 			}, 15000, 'DataCube.Query.QueryCache.store.' + this.getId());
 		},
 		
-		setInvalidateInterval: function(val){
-			if(!JSB.isNumber(val) || this.invalidateInterval == val){
-				return;
-			}
-			var mtx = 'DataCube.Query.QueryCache.invalidateInterval.' + this.getId();
-			JSB.cancelDefer(mtx);
-			this.invalidateInterval = val;
-			function _invalidate(){
-				if($this.invalidateInterval > 0){
-					$this.invalidate();
-					JSB.defer(_invalidate, $this.invalidateInterval, mtx);
-				}
-			}
-			if($this.invalidateInterval > 0){
-				JSB.defer(_invalidate, $this.invalidateInterval, mtx);
-			}
-		},
-		
-		setUpdateInterval: function(val){
-			if(!JSB.isNumber(val) || this.updateInterval == val){
-				return;
-			}
-			var mtx = 'DataCube.Query.QueryCache.updateInterval.' + this.getId();
-			JSB.cancelDefer(mtx);
-			this.updateInterval = val;
-			function _update(){
-				if($this.updateInterval > 0){
-					$this.update();
-					JSB.defer(_update, $this.updateInterval, mtx);
-				}
-			}
-			if($this.updateInterval > 0){
-				JSB.defer(_update, $this.updateInterval, mtx);
-			}
-		},
-		
 		generateQueryId: function(query, provider){
 			return MD5.md5(JSB.stringify(query) + (provider ? '_' + provider.getId() : ''));
 		},
@@ -242,6 +170,7 @@
 				if(this.cacheMap[qId].it){
 					try {
 						this.cacheMap[qId].it.close();
+						this.removeCacheTable(this.cacheMap[qId]);
 					} catch(e){}
 					this.cacheMap[qId].it = null;
 				}
@@ -249,7 +178,7 @@
 			this.cacheMap = {};
 			this.store();
 		},
-		
+/*		
 		invalidate: function(bForce){
 			this.load();
 			var idsToRemove = [];
@@ -279,21 +208,17 @@
 			}
 			this.store();
 		},
-		
-		update: function(bForce){
-			this.load();
-			var idsToUpdate = [];
-			var now = Date.now();
-			for(var qId in this.cacheMap){
-				var qDesc = this.cacheMap[qId];
-				if((qDesc.lastUpdated && now - qDesc.lastUpdated > $this.updateInterval) || bForce){
-					idsToUpdate.push(qId);
-				}
+*/		
+		update: function(){
+			if($this._updating){
+				return;
 			}
+			$this._updating = true;
+			this.load();
+			var now = Date.now();
+			var bChanged = false;
 			
-			for(var i = 0; i < idsToUpdate.length; i++){
-				var qId = idsToUpdate[i];
-				
+			for(var qId in this.cacheMap){
 				if(this.options.onUpdate && JSB.isFunction(this.options.onUpdate)){
 					if(!this.options.onUpdate.call(this, this.cacheMap[qId])){
 						continue;
@@ -320,15 +245,19 @@
 						complete: false,
 						lastUpdated: qExistedDesc.lastUpdated,
 						lastUsed: qExistedDesc.lastUsed,
+						updateSuffix: JSB.isDefined(qExistedDesc.updateSuffix) ? qExistedDesc.updateSuffix + 1 : 2, 
 						it: null,
-						buffer: [],
-						cells: 0
+						cells: 0,
+						rows: 0,
+						dataHash: ''
 					};
 					
 					// fill shadow buffer with the same length
-					while(!qNewDesc.complete && qNewDesc.buffer.length < qExistedDesc.buffer.length){
+					while(!qNewDesc.complete && qNewDesc.rows < qExistedDesc.rows){
 						$this._fillNextBatch(qNewDesc);
 					}
+					
+					qNewDesc.lastUpdated = Date.now();
 					
 					// close new iterator
 					if(qNewDesc.it){
@@ -341,19 +270,26 @@
 					
 					$this.lock('cache_' + qId);
 					// substitute data
-					qExistedDesc.buffer = qNewDesc.buffer;
-					qExistedDesc.cells = qNewDesc.cells;
-					qExistedDesc.lastUpdated = Date.now();
-					qExistedDesc.complete = qNewDesc.complete;
+					$this.cacheMap[qId] = qNewDesc;
 					$this.unlock('cache_' + qId);
+					
+					if(qNewDesc.dataHash != qExistedDesc.dataHash){
+						bChanged = true;
+					}
 					
 				} finally {
 					$this.unlock('cacheFill_' + qId);
 				}
+				
+				// remove prev cacheTable
+				$this.removeCacheTable(qExistedDesc);
 			}
 			
 			$this.store();
-			$this.publish('DataCube.Query.QueryCache.updated');
+			$this._updating = false;
+			if(bChanged){
+				$this.publish('DataCube.Query.QueryCache.updated');
+			}
 		},
 		
 		getCacheMap: function(){
@@ -371,12 +307,18 @@
 			if(!otherDesc){
 				return;
 			}
-			var curDesc = $this.cacheMap[qId];
-			if(curDesc && curDesc.it){
-				curDesc.it.close();
-			}
+			
 			$this.lock('cache_' + qId);
+			
 			try {
+				var curDesc = $this.cacheMap[qId];
+				if(curDesc){
+					$this.removeCacheTable(curDesc);
+					if(curDesc.it){
+						curDesc.it.close();
+					}
+				}
+			
 				$this.cacheMap[qId] = {
 					qId: qId,
 					query: otherDesc.query,
@@ -386,9 +328,25 @@
 					lastUpdated: otherDesc.lastUpdated,
 					lastUsed: Date.now(),
 					it: null,
-					buffer: JSB.clone(otherDesc.buffer),
-					cells: otherDesc.cells
+					cells: 0,
+					rows: 0
 				};
+				
+				// copy data
+				if(otherDesc.rows > 0){
+					var cacheIt = otherCache.openTableIterator(otherDesc);
+					var rows = [];
+					for(var i = 0; i < otherDesc.rows; i++){
+						var el = cacheIt.next();
+						if(!el){
+							break;
+						}
+						rows.push(el.DATA);
+					}
+					cacheIt.close();
+					$this.appendTableRows($this.cacheMap[qId], rows, 0, true);
+				}
+				
 			} finally {
 				$this.unlock('cache_' + qId);
 			}
@@ -402,15 +360,19 @@
 			otherCache.copyFrom(this, query);
 		},
 		
-		_fillNextBatch: function (desc){
+		_fillNextBatch: function (desc, position){
+			var written = 0;
 			if(desc.complete){
-				return;
+				return written;
+			}
+			if(!position){
+				position = 0;
 			}
 			if(!desc.it){
 				desc.it = $this.cube.executeQuery(desc.query, desc.params, desc.provider);
 				desc.lastUpdated = Date.now();
 				// do skip
-				for(var i = 0; i < desc.buffer.length; i++){
+				for(var i = 0; i < position; i++){
 					var el = desc.it.next();
 					if(!el){
 						desc.complete = true;
@@ -423,6 +385,7 @@
 				JSB.cancelDefer($this.getId() + 'closeIterator_' + desc.qId);
 			}
 			if(!desc.complete){
+				var rows = [];
 				for(var i = 0; i < $this.batchSize; i++){
 					var el = desc.it.next();
 					if(!el){
@@ -431,8 +394,13 @@
 						desc.complete = true;
 						break;
 					}
-					desc.buffer.push(el);
+					rows.push(el);
 					desc.cells += Object.keys(el).length;
+					desc.rows++;
+				}
+				written = $this.appendTableRows(desc, rows, position);
+				if(written > 0){
+					$this.store();
 				}
 			}
 			if(!desc.complete){
@@ -443,8 +411,152 @@
 					}
 				}, $this.closeIteratorTimeout, $this.getId() + 'closeIterator_' + desc.qId);
 			}
+			return written;
+		},
+		
+		ensureCacheStore: function(){
+			if(this.cacheStore){
+				return this.cacheStore;
+			}
+			var artDir = this.owner.getArtifactStore().getArtifactDir(this.owner);
+			
+			this.cacheStore = StoreManager.getStore({
+				name: '_cacheStore_' + this.owner.getId(),
+				type: 'JSB.Store.Sql.SQLStore',
+				url: 'jdbc:h2:' + FileSystem.join(artDir, '.queryCacheData') + ';CACHE_SIZE=' + this.cacheSize
+			});
+			
+			return this.cacheStore;
+		},
+		
+		constructCacheTableName: function(desc){
+			if(!desc.cacheTable){
+				var tName = '_cacheTable_' + desc.qId;
+				if(desc.updateSuffix){
+					tName += '_' + desc.updateSuffix;
+				}
+				desc.cacheTable = tName;
+			}
+			return desc.cacheTable;
+		},
+		
+		ensureCacheTable: function(desc){
+			var tableName = this.constructCacheTableName(desc);
+			var store = this.ensureCacheStore();
+			var connWrap = store.getConnection();
+			var connection = connWrap.get();
+			var schema = 'public';
+			try {
+				var databaseMetaData = connection.getMetaData();
+				var rs = databaseMetaData.getTables(null, null, tableName, null);
+				var curTabRecord = rs.next();
+				if(!curTabRecord){
+					// create table
+					var sql = 'create table "' +tableName + '" ( "POS" int8, "DATA" nvarchar )';
+					JDBC.executeUpdate(connection, sql);
+					// create index
+					sql = 'create index "' + tableName + '_idx " on "' + tableName + '" ( "POS" )';
+					JDBC.executeUpdate(connection, sql);
+					
+					desc.complete = false;
+				}
+			} finally {
+				connWrap.close();
+			}
+		},
+		
+		removeCacheTable: function(desc){
+			var tableName = this.constructCacheTableName(desc);
+			var store = this.ensureCacheStore();
+			var connWrap = store.getConnection();
+			var connection = connWrap.get();
+			try {
+				var databaseMetaData = connection.getMetaData();
+				var rs = databaseMetaData.getTables(null, null, tableName, null);
+				if(!rs.next()){
+					return;
+				}
+				JDBC.executeUpdate(connection, 'drop table "' + tableName + '"');
+			} finally {
+				connWrap.close();
+			}
 		},
 
+		openTableIterator: function(desc, pos){
+			if(!pos){
+				pos = 0;
+			}
+			var tableName = this.constructCacheTableName(desc);
+			var store = this.ensureCacheStore();
+			this.ensureCacheTable(desc);
+			var connWrap = store.getConnection();
+			var connection = connWrap.get();
+			var sql = 'select "POS", "DATA" from "' + tableName + '" where "POS" >= ' + pos + ' order by "POS" asc';
+			return JDBC.iteratedQuery(connection, sql, null, null, null, function(){
+				connWrap.close();
+			});
+		},
+		
+		appendTableRows: function(desc, rows, pos, bStringified){
+			if(!pos){
+				pos = 0;
+			}
+			function _prepareStore(obj){
+				if(!obj){
+					return obj;
+				} else if(JSB.isDate(obj)){
+					return {
+						__type: 'date',
+						__value: obj.getTime()
+					};
+				} else if(JSB.isObject(obj)){
+					var nObj = {};
+					for(var k in obj){
+						nObj[k] = _prepareStore(obj[k]);
+					}
+					return nObj;
+				} else if(JSB.isArray(obj)){
+					var nObj = [];
+					for(var k = 0; k < obj.length; k++){
+						nObj.push(_prepareStore(obj[k]));
+					}
+					return nObj;
+				} else {
+					return obj;
+				}
+			}
+			
+			var tableName = this.constructCacheTableName(desc);
+			var store = this.ensureCacheStore();
+			this.ensureCacheTable(desc);
+			
+			var batch = [];
+			var curHash = desc.dataHash || '';
+			for(var i = 0; i < rows.length; i++){
+				var dataStr = '';
+				if(bStringified){
+					dataStr = rows[i];
+				} else {
+					dataStr = JSON.stringify(_prepareStore(rows[i]));
+				}
+				curHash = MD5.md5(curHash + dataStr);
+				batch.push({
+					sql: 'insert into "' + tableName + '" ( "POS", "DATA" ) values (?, ?)',
+					values: [pos + i, dataStr]
+				});
+			}
+			if(batch.length > 0){
+				var connWrap = store.getConnection();
+				var connection = connWrap.get();
+				try {
+					JDBC.executeUpdate(connection, batch);
+				} finally {
+					connWrap.close();
+				}
+				desc.dataHash = curHash;
+			}
+			return batch.length;
+		},
 		
 		executeQuery: function(query, params, provider){
 			this.load();
@@ -453,34 +565,93 @@
 			function produceIterator(desc){
 				var position = 0;
 				var closed = false;
+				var cacheIt = null;
+				var mtxCacheIt = JSB.generateUid();
 				desc.lastUsed = Date.now();
+				
+				function closeCacheIt(){
+					if(cacheIt){
+						try { cacheIt.close(); } catch(e){}
+						cacheIt = null;
+					}
+				}
+				
+				function _prepareLoad(obj){
+					if(!obj){
+						return obj;
+					} else if(JSB.isObject(obj)){
+						if(obj.__type && obj.__type == 'date'){
+							return new Date(obj.__value);
+						} else {
+							var nObj = {};
+							for(var k in obj){
+								nObj[k] = _prepareLoad(obj[k]);
+							}
+							return nObj;
+						}
+					} else if(JSB.isArray(obj)){
+						var nObj = [];
+						for(var k = 0; k < obj.length; k++){
+							nObj.push(_prepareLoad(obj[k]));
+						}
+						return nObj;
+					} else {
+						return obj;
+					}
+				}
 
 				return {
 					next: function(){
 						if(closed){
 							return;
 						}
-						desc.lastUsed = Date.now();
-						if(desc.buffer.length <= position){
-							if(desc.complete){
-								return null;
-							}
-							$this.lock('cacheFill_' + desc.qId);
-							try {
-								if(desc.buffer.length <= position){
-									$this._fillNextBatch(desc);
-									if(desc.buffer.length <= position){
-										return null;
-									}
-									$this.store();
-								}
-							} finally {
-								$this.unlock('cacheFill_' + desc.qId);
-							}
+						
+						JSB.cancelDefer(mtxCacheIt);
+						
+						if(!cacheIt){
+							cacheIt = $this.openTableIterator(desc, position);
 						}
-						return desc.buffer[position++];
+						
+						try {
+							desc.lastUsed = Date.now();
+							var el = cacheIt.next();
+							if(!el){
+								closeCacheIt();
+								if(desc.complete){
+									return null;
+								}
+								$this.lock('cacheFill_' + desc.qId);
+								try {
+									cacheIt = $this.openTableIterator(desc, position);
+									el = cacheIt.next();
+									if(!el){
+										closeCacheIt();
+										var written = $this._fillNextBatch(desc, position);
+										if(written == 0){
+											this.close();
+											return null;
+										}
+										cacheIt = $this.openTableIterator(desc, position);
+										el = cacheIt.next();
+										if(!el){
+											this.close();
+											return null;
+										}
+									}
+								} finally {
+									$this.unlock('cacheFill_' + desc.qId);
+								}
+							}
+							position++;
+							return _prepareLoad(JSON.parse(el.DATA));
+						} finally {
+							JSB.defer(function(){
+								closeCacheIt();
+							}, $this.closeIteratorTimeout, mtxCacheIt);
+						}
 					},
 					close: function(){
+						closeCacheIt();
 						if(closed){
 							return;
 						}
@@ -508,17 +679,21 @@
 					provider: provider,
 					complete: false,
 					it: null,
-					buffer: [],
-					cells: 0
+					cells: 0,
+					rows: 0,
+					dataHash: ''
 				};
-				$this._fillNextBatch(cDesc);
-				this.cacheMap[qId] = cDesc;
-				$this.store();
-				
-				return produceIterator(cDesc);
+				$this.removeCacheTable(cDesc);
+				$this.cacheMap[qId] = cDesc;
 			} finally {
 				$this.unlock('cache_' + qId);
 			}
+			
+			$this._fillNextBatch(this.cacheMap[qId]);
+			$this.store();
+			
+			return produceIterator(this.cacheMap[qId]);
+
 		}
 	}
 }
