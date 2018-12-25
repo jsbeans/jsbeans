@@ -303,7 +303,7 @@
 				return;
 			}
 			this.ensureQueryCache();
-			this.queryCache.update(true);
+			this.queryCache.update();
 		},
 		
 		onChangeSettings: function(){

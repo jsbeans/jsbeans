@@ -287,10 +287,23 @@
 	            	name: 'Действия при клике',
 	            	items: {
 	            		useFilterOnClick: {
-	    	            	render: 'item',
+	    	            	render: 'select',
 	    	                name: 'Использовать глобальную фильтрацию',
 	    					optional: true,
-	    					editor: 'none'
+	    					items: {
+	    						filterOnClickAnd: {
+	    							render: 'item',
+	    							name: 'И'
+	    						},
+	    						filterOnClickOr: {
+	    							render: 'item',
+	    							name: 'ИЛИ'
+	    						},
+	    						filterOnClickNot: {
+	    							render: 'item',
+	    							name: 'НЕ'
+	    						}
+	    					}
 	    	            },
 	    	            callApiOnClick: {
 	    	            	render: 'switch',
@@ -1934,7 +1947,19 @@
 					for(var i = 0; i < idsToRemove.length; i++){
 						this.removeFilter(idsToRemove[i], true);
 					}
-					$this.onFilterClick(d, '$and', '$eq');
+					var filterOnClickType = '$and';
+					var filterOnClickOp = '$eq';
+					switch($this.filterOnClickType){
+					case 'filterOnClickAnd':
+						break;
+					case 'filterOnClickOr':
+						filterOnClickType = '$or';
+						break;
+					case 'filterOnClickNot':
+						filterOnClickOp = '$ne';
+						break;
+					}
+					$this.onFilterClick(d, filterOnClickType, filterOnClickOp);
 				}
 				if(this.callApiOnClick){
 					// construct param object
@@ -2719,6 +2744,9 @@
 			}
 			
 			this.useFilterOnClick = this.getContext().find('useFilterOnClick').checked();
+			if(this.useFilterOnClick){
+				this.filterOnClickType = this.getContext().find('useFilterOnClick').value();
+			}
 			this.showSortIcon = this.getContext().find('showSortIcon').checked();
 			this.callApiOnClick = this.getContext().find('callApiOnClick').checked();
 			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
