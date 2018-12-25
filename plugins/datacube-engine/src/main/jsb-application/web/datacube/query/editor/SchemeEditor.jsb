@@ -1904,7 +1904,7 @@ console.log('getCubeSlices');
 
 		constructHeuristic: function(){
 			if($this.scheme.name == '$fieldName' || $this.scheme.name == '$fieldExpr'){
-                $this.container.append($this.$('<div class="value"></div>').text($this.value['$field']).attr('title', $this.value['$field']));
+                $this.container.append($this.$('<div class="value"></div>').text($this.value['$field'] || $this.value).attr('title', $this.value['$field'] || $this.value));
                 $this.container.append($this.$('<div class="context"></div>').text($this.value['$context']));
 				return true;
 			} else if($this.scheme.name == '$sortTypeAsc') {

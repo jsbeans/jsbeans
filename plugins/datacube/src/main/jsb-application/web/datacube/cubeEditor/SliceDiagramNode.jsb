@@ -81,7 +81,8 @@
 			var editBtn = new Button({
 			    cssClass: 'roundButton btnEdit btn10',
 			    tooltip: 'Редактировать срез',
-			    onClick: function(){
+			    onClick: function(evt){
+			        evt.stopPropagation();
 			        $this.publish('JSB.Workspace.Entry.open', $this.entry);
 			    }
 			});
@@ -271,6 +272,7 @@
 
 		selectNode: function(bEnable){
 		    var obj = {
+		        cubeFields: this.editor,
                 entry: this.entry,
                 node: this,
                 slices: this.editor.getSlices()

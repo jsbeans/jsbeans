@@ -113,6 +113,7 @@
             this.sliceData = data;
 
             this.queryEditor.setOption('sliceId', sliceId);
+            this.queryEditor.setOption('cubeFields', data.cubeFields);
             this.queryEditor.setOption('measurements', this.measurements);
             this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
 

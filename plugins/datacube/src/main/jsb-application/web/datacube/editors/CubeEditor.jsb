@@ -328,6 +328,7 @@
 		},
 
 	    constructCube: function(desc){
+	        this._cubeFields = desc.fields;
 	        this._dimensions = desc.dimensions;
 	        this._slices = {};
 
@@ -358,6 +359,10 @@
 
 	    getCube: function(){
 	        return this._cube;
+	    },
+
+	    getCubeFields: function(){
+	        return this._cubeFields;
 	    },
 
 	    getDimensions: function(){

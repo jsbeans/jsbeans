@@ -65,7 +65,6 @@
 			onInit: function(){},
 			onRemove: function(item){},
 			onPositionChange: function(type, changes){}
-			// todo: on position change
 		},
 		
 		
