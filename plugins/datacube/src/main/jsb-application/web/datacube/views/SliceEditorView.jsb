@@ -11,6 +11,7 @@
 	           'JSB.Widgets.ToolManager',
 	           'DataCube.Export.ExportManager',
 	           'JSB.Widgets.RendererRepository',
+	           'DataCube.Query.SchemeController',
 	           'css:SliceEditorView.css'],
 	$client: {
 		ready: false,
@@ -65,41 +66,22 @@
             });
             this.titleBlock.append(this.analyzeBtn.getElement());
 
-                exportBtn = new Button({
-                    cssClass: 'btnUpdate',
-                    caption: "Экспорт",
-                    onClick: function(evt){
-                    	ExportManager.ensureSynchronized(function(){
-                    		var exporters = ExportManager.listExporters();
-                		    var keys = [];
-                		    
-                		    for(var eKey in exporters){
-                		    	var eDesc = exporters[eKey];
-                		    	keys.push({
-                		    		key: eKey,
-                		    		element: eDesc.name
-                		    	});
-                		    }
-                		    
-    	                    ToolManager.activate({
-    	                        id: '_dwp_droplistTool',
-    	                        cmd: 'show',
-    	                        data: keys,
-    	                        target: {
-    	                            selector: exportBtn.getElement(),
-    	                            dock: 'bottom'
-    	                        },
-    	                        callback: function(key, item, evt){
-    	                        	exportBtn.getElement().loader();
-                                    $this.gridView.exportData(key, $this.slice && $this.slice.getName(), function(){
-                                        exportBtn.getElement().loader('hide');
-                                    });
-    	                        }
-    	                    });
-                    	});
-                    	
-                    	
-/*                    	
+            var exportBtn = new Button({
+                cssClass: 'btnUpdate',
+                caption: "Экспорт",
+                onClick: function(evt){
+                    ExportManager.ensureSynchronized(function(){
+                        var exporters = ExportManager.listExporters();
+                        var keys = [];
+
+                        for(var eKey in exporters){
+                            var eDesc = exporters[eKey];
+                            keys.push({
+                                key: eKey,
+                                element: eDesc.name
+                            });
+                        }
+
                         ToolManager.activate({
                             id: '_dwp_droplistTool',
                             cmd: 'show',
@@ -115,9 +97,9 @@
                                 });
                             }
                         });
-*/                        
-                    }
-                });
+                    });
+                }
+            });
             this.titleBlock.append(exportBtn.getElement());
 			
 			var hSplitBox = new SplitBox({
@@ -135,7 +117,8 @@
 			
 			var scrollBox = new ScrollBox();
 			vSplitBox.addToPane(0, scrollBox);
-			
+
+
 			this.queryEditor = new QueryEditor({
 			    editorView: $this,
 			    measurements: this.measurements,
@@ -145,6 +128,12 @@
 			});
 			this.queryEditor.addClass('queryEditor');
 			scrollBox.append(this.queryEditor);
+
+
+			/*
+			this.queryEditor = new SchemeController();
+			scrollBox.append(this.queryEditor);
+			*/
 			
 			this.textQueryEditor = new MultiEditor({
 				valueType: "org.jsbeans.types.JsonObject",
@@ -179,7 +168,6 @@
 			this.titleEditor.setData(this.slice.getName());
 
 			this.query = JSB.clone(this.slice.getQuery());
-            //this.measurements = JSB.clone(this.slice.getMeasurements());
 
             this.queryEditor.setOption('cube', this.slice.getCube());
             this.queryEditor.setOption('measurements', this.measurements);
@@ -211,6 +199,13 @@
                 $this.updateQuery();
                 $this.updateTextQuery();
                 $this.updateGrid();
+
+                /*
+                $this.queryEditor.refresh({
+                    data: data,
+                    values: $this.query
+                });
+                */
 			});
 		},
 		

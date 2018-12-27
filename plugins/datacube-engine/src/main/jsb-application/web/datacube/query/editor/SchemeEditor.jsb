@@ -910,12 +910,14 @@ console.log('getCubeSlices');
                 if(askRename){
                     $this.doEdit('entry', colName);
                 }
+                /*
                 if(bGroupByChanged && $this.scheme.name == '$query'){
                     var selectEditor = $this.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
                     if(selectEditor){
                         selectEditor.updateSelectFieldsUsingGroup();
                     }
                 }
+                */
                 $this.updateButtons();
                 $this.notifyChanged();
             } else if($this.scheme.expressionType == 'EArray') {
@@ -939,12 +941,14 @@ console.log('getCubeSlices');
                 $this.value.push(value);
                 // draw entry
                 child = $this.drawArrayEntry($this.value.length - 1, schemeName, {expanded: true});
+                /*
                 if($this.scheme.name == '$groupBy'){
                     var selectEditor = $this.parent.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
                     if(selectEditor){
                         selectEditor.updateSelectFieldsUsingGroup();
                     }
                 }
+                */
                 $this.updateButtons();
                 $this.notifyChanged();
             } else {
@@ -1083,12 +1087,14 @@ console.log('getCubeSlices');
 					} else {
 						$this.drawObjectEntry(entryKey, schemeName, {expanded: true});
 					}
+					/*
 					if($this.scheme.name == '$groupBy'){
 						var selectEditor = $this.parent.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
 						if(selectEditor){
 							selectEditor.updateSelectFieldsUsingGroup();
 						}
 					}
+					*/
 					$this.notifyChanged();
 
 				}
@@ -1133,7 +1139,7 @@ console.log('getCubeSlices');
 					$this.$(entries.get(i)).attr('key', i);
 				}
 			}
-
+/*
 			if($this.scheme.name == '$query' && entryKey == '$groupBy'){
 				var selectEditor = $this.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
 				if(selectEditor){
@@ -1145,7 +1151,7 @@ console.log('getCubeSlices');
 					selectEditor.updateSelectFieldsUsingGroup();
 				}
 			}
-
+*/
 			$this.updateButtons();
 			$this.notifyChanged();
 		},

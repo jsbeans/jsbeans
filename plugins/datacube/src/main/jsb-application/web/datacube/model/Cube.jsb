@@ -30,6 +30,7 @@
 		
 		loaded: false,
 
+		diagramOpts: {position: {x: 0, y: 0}, zoom: 1},
 		fields: {},
 		slices: {},
 
@@ -86,10 +87,10 @@
 							}
 
 							// load fields
-							this.fields = snapshot.fields || {};
+							this.fields = snapshot.fields || this.fields;
 
 							// load diagram position & zoom
-							this.diagramOpts = snapshot.diagramOpts || {position: {x: 0, y: 0}, zoom: 1};
+							this.diagramOpts = snapshot.diagramOpts || this.diagramOpts;
 						}
 						this.loaded = true;
 						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
