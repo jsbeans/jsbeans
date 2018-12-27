@@ -11,7 +11,11 @@
 	    return ['$from', '$join', '$union', '$provider', '$recursive'];
 	},
 
-	getSchema: function (){
+	getSchema: function (key){
+	    if(key){
+	        return this.schemeExpressions[key];
+	    }
+
 	    return this.schemeExpressions;
 	},
 
@@ -225,6 +229,7 @@
 		        category: 'Источник запроса',
 		        displayName: 'Пересечение',
 		        desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
+		        render: '$join',
 		        values: {
 		            '$joinType': '$joinType',
 		            '$filter': '$joinFilter',

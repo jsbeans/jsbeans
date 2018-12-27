@@ -67,6 +67,18 @@
 			var header = this.$('<header></header>');
 			this.append(header);
 
+			// left connector
+			if(!dataSource){
+                this.leftConnectorElement = this.$('<div class="connector left"></div>');
+                header.append(this.leftConnectorElement);
+
+                this.leftConnector = $this.installConnector('sliceLeft', {
+                    origin: this.leftConnectorElement,
+                    handle: [this.leftConnectorElement],
+                    iri: 'connector/left/' + this.getId()
+                });
+			}
+
 			// caption
 			var caption = this.$(`#dot
 				<div class="caption">
@@ -116,18 +128,7 @@
 			});
 			this.append(this.fieldList.getElement());
 
-			// connectors
-			if(!dataSource){
-                var leftConnector = this.$('<div class="connector left"></div>');
-                header.append(leftConnector);
-
-                this.leftConnector = $this.installConnector('sliceLeft', {
-                    origin: leftConnector,
-                    handle: [leftConnector],
-                    iri: 'connector/left/' + this.getId()
-                });
-			}
-
+			// right connector
 			var rightConnector = this.$('<div class="connector right"></div>');
 			header.append(rightConnector);
 
@@ -174,33 +175,32 @@
 		},
 
 		refresh: function(opts){
-		    var query = opts && opts.query || this.entry.getQuery(),
-		        dimensions = this.editor.getDimensions();
-
             if(opts && opts.fields){
-                var fields = [];
+                var dimensions = this.editor.getDimensions(),
+                    fields = [];
 
                 for(var i in opts.fields){
                     fields.push({
-                        name: i,
+                        isDimension: dimensions[i],
+                        key: i,
                         type: opts.fields[i].type
                     });
                 }
 
                 fields.sort(function(a, b){
-                    if(dimensions[a.name] && !dimensions[b.name]){
+                    if(a.isDimension && !b.isDimension){
                         return -1;
                     }
 
-                    if(!dimensions[a.name] && dimensions[b.name]){
+                    if(!a.isDimension && b.isDimension){
                         return 1;
                     }
 
-                    if(a.name > b.name){
+                    if(a.key > b.key){
                         return 1;
                     }
 
-                    if(a.name < b.name){
+                    if(a.key < b.key){
                         return -1;
                     }
 
@@ -212,17 +212,17 @@
                 // enter
                 var fieldsElementsEnter = fieldsElementsData.enter().append('div').classed('cubeFieldIcon sliceField', true);
 
-                fieldsElementsEnter.append('div').classed('name', true);
+                fieldsElementsEnter.append('div').classed('key', true);
                 fieldsElementsEnter.append('div').classed('type', true);
 
                 // update
                 var fieldsElements = d3.select(this.fieldList.getElement().get(0)).selectAll('div.sliceField');
 
                 fieldsElements.classed('dimension', function(d){
-                        return dimensions[d.name];
+                        return d.isDimension;
                     });
-                fieldsElements.select('.name').text(function(d){
-                        return d.name;
+                fieldsElements.select('.key').text(function(d){
+                        return d.key;
                     });
                 fieldsElements.select('.type').text(function(d){
                         return d.type;
@@ -234,7 +234,7 @@
 
             // update links
             var oldLinks = this._sources,
-                newLinks = opts && opts.sources || this.entry.extractSources(query);
+                newLinks = opts && opts.sources || this.entry.extractSources(opts && opts.query || this.entry.getQuery());
 
             for(var i in oldLinks){
                 if(!newLinks[i]){
@@ -254,6 +254,39 @@
                 }
             }
 
+            // set link type
+            if(this.leftConnectorElement){
+                var fromType = this.entry.getFromType(),
+                    fromClass = '',
+                    fromName = this.leftConnectorElement.children('.tooltip');
+
+                if(fromName.length === 0){
+                    fromName = this.$('<div class="tooltip"></div>');
+                    this.leftConnectorElement.append(fromName);
+                }
+
+                switch(fromType){
+                    case '$from':
+                        fromClass = 'fromIcon';
+                        fromName.text('From');
+                        break;
+                    case '$join':
+                        fromClass = 'joinIcon';
+                        fromName.text('Join');
+                        break;
+                    case '$union':
+                        fromClass = 'unionIcon';
+                        fromName.text('Union');
+                        break;
+                    case '$recursive':
+                        fromClass = 'recursiveIcon';
+                        fromName.text('Recursive');
+                        break;
+                }
+
+                this.leftConnectorElement.removeClass().addClass('connector left hasIcon ' + fromClass);
+            }
+
             this.fields = opts && opts.fields || {};
 
             if(opts && opts.name){
@@ -263,16 +296,16 @@
 
 		search: function(value){
 		    if(value){
-                this.fieldList.find('.name:not(:icontains("' + value + '"))').closest('.sliceField').addClass('hidden');
-                this.fieldList.find('.name:icontains("' + value + '")').closest('.sliceField').removeClass('hidden');
+                this.fieldList.find('.key:not(:icontains("' + value + '"))').closest('.sliceField').addClass('hidden');
+                this.fieldList.find('.key:icontains("' + value + '")').closest('.sliceField').removeClass('hidden');
             } else {
-                this.fieldList.find('.name').closest('.sliceField').removeClass('hidden');
+                this.fieldList.find('.key').closest('.sliceField').removeClass('hidden');
             }
 		},
 
 		selectNode: function(bEnable){
 		    var obj = {
-		        cubeFields: this.editor,
+		        cubeFields: this.editor.getCubeFields(),
                 entry: this.entry,
                 node: this,
                 slices: this.editor.getSlices()
@@ -290,9 +323,9 @@
 		toggleDimension: function(desc){
 		    if(this.fields[desc.field]){
 		        if(desc.isDimension){
-		            this.fieldList.find('.name:contains("' + desc.field + '")').closest('.sliceField').addClass('dimension');
+		            this.fieldList.find('.key:contains("' + desc.field + '")').closest('.sliceField').addClass('dimension');
 		        } else {
-		            this.fieldList.find('.name:contains("' + desc.field + '")').closest('.sliceField').removeClass('dimension');
+		            this.fieldList.find('.key:contains("' + desc.field + '")').closest('.sliceField').removeClass('dimension');
 		        }
 		    }
 

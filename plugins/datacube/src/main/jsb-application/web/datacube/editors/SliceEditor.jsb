@@ -93,6 +93,7 @@
 	    update: function(data){
             var sliceId = data.entry.getId(),
                 slices = data.slices,
+                cubeSlices = {},
                 sliceSelectOptions = [];
 
             for(var i in slices){
@@ -105,6 +106,8 @@
                     key: i,
                     value: RendererRepository.createRendererFor(slices[i].entry, {showSource: true}).getElement()
                 });
+
+                cubeSlices[i] = slices[i].entry;
             }
 
             this.sliceName.setData(data.entry.getName());
@@ -114,6 +117,7 @@
 
             this.queryEditor.setOption('sliceId', sliceId);
             this.queryEditor.setOption('cubeFields', data.cubeFields);
+            this.queryEditor.setOption('cubeSlices', cubeSlices);
             this.queryEditor.setOption('measurements', this.measurements);
             this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
 

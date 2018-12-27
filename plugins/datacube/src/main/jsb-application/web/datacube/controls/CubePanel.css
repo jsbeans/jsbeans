@@ -16,6 +16,8 @@
 }
 
 .cubePanel > .jsb-scrollBox > .jsb-checkbox {
+    position: absolute;
     display: block;
     margin-bottom: 3px;
+    transition-duration: 0.5s;
 }

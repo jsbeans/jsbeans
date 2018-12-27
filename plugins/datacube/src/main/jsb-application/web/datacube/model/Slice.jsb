@@ -98,7 +98,7 @@
             }
         }
 
-        return 'Текущий куб';
+        return '$cube';
     },
 
     getSource: function(){
@@ -395,26 +395,16 @@
 			
 			return this.queryCache;
 		},
-getEditorData: function(){
+
+        getEditorData: function(){
 		    var cube = this.getCube();
 
 		    return {
 		        cubeFields: cube.extractFields(),
 		        cubeSlices: cube.getSlices()
 		    }
-
-
-
-
-
-
-
-
-
-
-
-
 		},
+
 		getOutputFields: function(){
 			var fMap = {};
 			if(this.query && this.query.$select && Object.keys(this.query.$select).length > 0){

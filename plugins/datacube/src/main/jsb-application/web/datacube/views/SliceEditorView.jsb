@@ -225,11 +225,15 @@
 			$this.ignoreHandlers = false;
 		},
 		
-		updateQuery: function(){
+		updateQuery: function() {
 			$this.ignoreHandlers = true;
+
 			try {
 				$this.queryEditor.set($this.query);
-			}catch(e){}
+			} catch(e) {
+			    console.log('queryEditor set error');
+            }
+
 			$this.ignoreHandlers = false;
 		}
 	},

@@ -104,19 +104,47 @@
 				return;
 			}
 
-			var dimensions = {};
+			var dimensions = {},
+			    fieldArray = [];
+
 			for(var i in this.fields){
 			    if(this.fields[i].isDimension){
 			        dimensions[i] = {
 			            slices: this.fields[i].slices
 			        }
 			    }
+
+			    fieldArray.push({
+			        isDimension: this.fields[i].isDimension,
+			        key: i
+			    });
 			}
+
+			fieldArray.sort(function(a, b){
+                if(a.isDimension && !b.isDimension){
+                    return -1;
+                }
+
+                if(!a.isDimension && b.isDimension){
+                    return 1;
+                }
+
+                if(a.key > b.key){
+                    return 1;
+                }
+
+                if(a.key < b.key){
+                    return -1;
+                }
+
+                return 0;
+            });
 
 			return {
 			    diagramOpts: this.diagramOpts,
 			    dimensions: dimensions,
 			    fields: this.fields,
+			    fieldArray: fieldArray,
 				slices: this.slices
 			};
 		},

@@ -1904,8 +1904,18 @@ console.log('getCubeSlices');
 
 		constructHeuristic: function(){
 			if($this.scheme.name == '$fieldName' || $this.scheme.name == '$fieldExpr'){
+			    var context = $this.value['$context'];
+
                 $this.container.append($this.$('<div class="value"></div>').text($this.value['$field'] || $this.value).attr('title', $this.value['$field'] || $this.value));
-                $this.container.append($this.$('<div class="context"></div>').text($this.value['$context']));
+
+			    if(context){
+			        if(this.options.cubeSlices[context]){
+			            context = RendererRepository.createRendererFor(this.options.cubeSlices[context]).getElement();
+			        }
+
+			        $this.container.append($this.$('<div class="context"></div>').append('(').append(context).append(')'));
+			    }
+
 				return true;
 			} else if($this.scheme.name == '$sortTypeAsc') {
 				$this.container.append($this.$('<div class="value fixed">По возрастанию</div>'));

@@ -106,6 +106,50 @@
     right: -4px;
 }
 
+.sliceDiagramNode > header > .connector.hasIcon {
+    background-size: 80%;
+    width: 20px;
+    height: 20px;
+    background-color: #b4e4bd;
+    background-repeat: no-repeat;
+    background-position: center;
+    left: -10px;
+    top: calc(50% - 10px);
+}
+
+.sliceDiagramNode > header > .connector.hasIcon ~ .caption {
+    width: calc(100% - 30px);
+    margin-left: 10px;
+}
+
+.sliceDiagramNode > header > .connector.left > .tooltip {
+    display: none;
+    position: absolute;
+    font-size: 12px;
+    color: white;
+    background: #555;
+    padding: 8px;
+    border-radius: 15%;
+    top: 30px;
+    right: -14px;
+    z-index: 10;
+}
+
+.sliceDiagramNode > header > .connector.left > .tooltip:after {
+    content: "";
+    position: absolute;
+    background: #555;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    height: 18px;
+    width: 18px;
+    top: -10px;
+    left: 7px;
+}
+
+.sliceDiagramNode > header > .connector.left:hover > .tooltip {
+    display: block;
+}
+
 .sliceDiagramNode > header > .caption > .icon {
     display: inline-block;
     width: 20px;
@@ -162,7 +206,7 @@
     display: inline-block;
 }
 
-.sliceDiagramNode > .fields > .sliceField > .name {
+.sliceDiagramNode > .fields > .sliceField > .key {
     width: calc(70% - 7px);
 }
 
