@@ -343,7 +343,8 @@
 						}
 						rows.push(el.DATA);
 					}
-					cacheIt.close();
+					try { cacheIt.close(); } catch(e){}
+					
 					$this.appendTableRows($this.cacheMap[qId], rows, 0, true);
 				}
 				
@@ -418,14 +419,21 @@
 			if(this.cacheStore){
 				return this.cacheStore;
 			}
-			var artDir = this.owner.getArtifactStore().getArtifactDir(this.owner);
-			
-			this.cacheStore = StoreManager.getStore({
-				name: '_cacheStore_' + this.owner.getId(),
-				type: 'JSB.Store.Sql.SQLStore',
-				url: 'jdbc:h2:' + FileSystem.join(artDir, '.queryCacheData') + ';CACHE_SIZE=' + this.cacheSize
-			});
-			
+			this.lock('cacheStore');
+			try {
+				if(this.cacheStore){
+					return this.cacheStore;
+				}
+				var artDir = this.owner.getArtifactStore().getArtifactDir(this.owner);
+				
+				this.cacheStore = StoreManager.getStore({
+					name: '_cacheStore_' + this.owner.getId(),
+					type: 'JSB.Store.Sql.SQLStore',
+					url: 'jdbc:h2:' + FileSystem.join(artDir, '.queryCacheData') + ';CACHE_SIZE=' + this.cacheSize
+				});
+			} finally {
+				this.unlock('cacheStore');
+			}
 			return this.cacheStore;
 		},
 		
@@ -445,23 +453,32 @@
 			var store = this.ensureCacheStore();
 			var connWrap = store.getConnection();
 			var connection = connWrap.get();
-			var schema = 'public';
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, tableName, null);
 				var curTabRecord = rs.next();
 				if(!curTabRecord){
-					// create table
-					var sql = 'create table "' +tableName + '" ( "POS" int8, "DATA" nvarchar )';
-					JDBC.executeUpdate(connection, sql);
-					// create index
-					sql = 'create index "' + tableName + '_idx " on "' + tableName + '" ( "POS" )';
-					JDBC.executeUpdate(connection, sql);
-					
-					desc.complete = false;
+					$this.lock('ensureCacheTable_' + desc.qId);
+					try {
+						var rs = databaseMetaData.getTables(null, null, tableName, null);
+						if(rs.next()){
+							return;
+						}
+						// create table
+						var sql = 'create table "' +tableName + '" ( "POS" int8, "DATA" nvarchar )';
+						JDBC.executeUpdate(connection, sql);
+						// create index
+						sql = 'create index "' + tableName + '_idx " on "' + tableName + '" ( "POS" )';
+						JDBC.executeUpdate(connection, sql);
+						
+						desc.complete = false;
+					} finally {
+						$this.unlock('ensureCacheTable_' + desc.qId);
+					}
 				}
 			} finally {
-				connWrap.close();
+				try {connWrap.close();} catch(e){}
+				
 			}
 		},
 		
@@ -478,7 +495,7 @@
 				}
 				JDBC.executeUpdate(connection, 'drop table "' + tableName + '"');
 			} finally {
-				connWrap.close();
+				try {connWrap.close();} catch(e){}
 			}
 		},
 
@@ -493,7 +510,7 @@
 			var connection = connWrap.get();
 			var sql = 'select "POS", "DATA" from "' + tableName + '" where "POS" >= ' + pos + ' order by "POS" asc';
 			return JDBC.iteratedQuery(connection, sql, null, null, null, function(){
-				connWrap.close();
+				try {connWrap.close();} catch(e){}
 			});
 		},
 		
@@ -551,7 +568,7 @@
 				try {
 					JDBC.executeUpdate(connection, batch);
 				} finally {
-					connWrap.close();
+					try {connWrap.close();} catch(e){}
 				}
 				desc.dataHash = curHash;
 			}
