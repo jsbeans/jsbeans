@@ -10,7 +10,7 @@
 			
 			this.append(`#dot
 				<div class="status">
-					<div class="item widgets">Виджетов: <span class="count">{{=this.descriptor.entry.getWidgetCount()}}</span></div>
+					<div class="item widgets">Виджетов: <span class="count">{{=$this.getTargetEntry().getWidgetCount()}}</span></div>
 				</div>
 			`);
 			
@@ -23,7 +23,7 @@
 		},
 		
 		update: function(){
-			this.find('.status > .widgets > .count').text(this.descriptor.entry.getWidgetCount());
+			this.find('.status > .widgets > .count').text($this.getTargetEntry().getWidgetCount());
 		}
 	}
 }
