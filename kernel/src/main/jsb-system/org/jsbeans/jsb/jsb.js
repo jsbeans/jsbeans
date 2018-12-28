@@ -3039,8 +3039,10 @@ if(!(function(){return this;}).call(null).JSB){
 				if(locker){
 					locker.lock('__deferTimeoutMap');
 				}
-				JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
-				delete this.deferTimeoutMap[key];
+				if(this.deferTimeoutMap[key]){
+					JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
+					delete this.deferTimeoutMap[key];
+				}
 				if(locker){
 					locker.unlock('__deferTimeoutMap');
 				}
