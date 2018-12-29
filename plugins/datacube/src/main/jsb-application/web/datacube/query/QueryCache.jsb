@@ -369,6 +369,9 @@
 			if(!position){
 				position = 0;
 			}
+			
+			JSB.cancelDefer($this.getId() + 'closeIterator_' + desc.qId);
+			
 			if(!desc.it){
 				desc.it = $this.cube.executeQuery(desc.query, desc.params, desc.provider);
 				desc.lastUpdated = Date.now();
@@ -382,8 +385,6 @@
 						break;
 					}
 				}
-			} else {
-				JSB.cancelDefer($this.getId() + 'closeIterator_' + desc.qId);
 			}
 			if(!desc.complete){
 				var rows = [];
@@ -701,12 +702,19 @@
 					dataHash: ''
 				};
 				$this.removeCacheTable(cDesc);
+				
+				$this.lock('cacheFill_' + qId);
+				try {
+					$this._fillNextBatch(cDesc);
+				} finally {
+					$this.unlock('cacheFill_' + qId);
+				}
+				
 				$this.cacheMap[qId] = cDesc;
 			} finally {
 				$this.unlock('cache_' + qId);
 			}
 			
-			$this._fillNextBatch(this.cacheMap[qId]);
 			$this.store();
 			
 			return produceIterator(this.cacheMap[qId]);
