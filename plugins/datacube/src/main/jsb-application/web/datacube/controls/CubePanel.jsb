@@ -44,39 +44,20 @@
                 this.cube = cube;
             }
 
-            function sortFields(a, b){
-                if(opts.dimensions[a] && !opts.dimensions[b]){
-                    return -1;
-                }
-
-                if(!opts.dimensions[a] && opts.dimensions[b]){
-                    return 1;
-                }
-
-                if(a > b){
-                    return 1;
-                }
-
-                if(a < b){
-                    return -1;
-                }
-
-                return 0;
-            }
-
-            var fieldsArr = Object.keys(opts.fields).sort(sortFields),
-                cubeFields = d3.select(this.cubeFields.getElement().get(0));
+            var cubeFields = d3.select(this.cubeFields.getElement().get(0));
 
             // enter
-            cubeFields.selectAll('.jsb-checkbox').data(fieldsArr).enter()
-                      .append(function(){
+            cubeFields.selectAll('.jsb-checkbox').data(opts.fieldArray).enter()
+                      .append(function(d){
                             return new Checkbox({
                                 onChange: function(b){
                                     if(b){
                                         this.addClass('dimension');
+                                        d.isDimension = true;
                                         $this.addDimension(this.getLabel());
                                     } else {
                                         this.removeClass('dimension');
+                                        d.isDimension = false;
                                         $this.removeDimensions(this.getLabel());
                                     }
                                 }
@@ -84,15 +65,19 @@
                         });
 
             // update
-            cubeFields.selectAll('.jsb-checkbox').data(fieldsArr).attr('test', function(d){
+            cubeFields.selectAll('.jsb-checkbox').data(opts.fieldArray).attr('test', function(d){
                 var cb = $this.$(this).jsb();
-                cb.setLabel(d);
-                cb.setChecked(opts.dimensions[d], true);
-                cb.classed('dimension', opts.dimensions[d]);
-            });
+                cb.setLabel(d.key);
+                cb.setChecked(d.isDimension, true);
+                cb.classed('dimension', d.isDimension);
+            })
+            .style('top', function(d, i) {
+                return (i*23) + 3 + "px";
+              }
+            );
 
             // exit
-            cubeFields.selectAll('.jsb-checkbox').data(fieldsArr).exit().remove();
+            cubeFields.selectAll('.jsb-checkbox').data(opts.fieldArray).exit().remove();
         },
 
         removeDimensions: function(field){
@@ -112,37 +97,30 @@
         },
 
         sort: function(){
-		    var fields = this.cubeFields.children();
+		    d3.select(this.cubeFields.getElement().get(0)).selectAll('.jsb-checkbox')
+                .sort(function(a, b){
+                    if(a.isDimension && !b.isDimension){
+                        return -1;
+                    }
 
-		    fields.sort(function(a, b){
-		        a = $this.$(a);
-		        b = $this.$(b);
+                    if(!a.isDimension && b.isDimension){
+                        return 1;
+                    }
 
-		        var aDim = a.hasClass('dimension'),
-		            bDim = b.hasClass('dimension'),
-		            aName = a.children('.caption').text(),
-		            bName = b.children('.caption').text();
+                    if(a.key > b.key){
+                        return 1;
+                    }
 
-                if(aDim && !bDim){
-                    return -1;
-                }
+                    if(a.key < b.key){
+                        return -1;
+                    }
 
-                if(!aDim && bDim){
-                    return 1;
-                }
-
-                if(aName > bName){
-                    return 1;
-                }
-
-                if(aName < bName){
-                    return -1;
-                }
-
-                return 0;
-		    });
-
-		    fields.detach().appendTo(this.cubeFields.getElement());
+                    return 0;
+                })
+                .style('top', function(d, i) {
+                    return (i*23) + 3 + "px";
+                  }
+                );
         }
     }
 }

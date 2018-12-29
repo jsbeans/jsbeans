@@ -722,6 +722,11 @@
 	vertical-align: middle;
 }
 
+.schemeEditor[sname = "$fieldExpr"] > .container > .context > .renderer {
+    margin: 0 2px;
+    width: calc(100% - 10px);
+}
+
 /* drop container */
 .schemeEditor > .container > .dropContainer {
     margin-bottom: 2px;

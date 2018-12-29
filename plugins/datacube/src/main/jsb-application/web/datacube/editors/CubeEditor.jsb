@@ -159,8 +159,8 @@
             var addAdvancedBtns = this.$('<ul class="hidden"></ul>');
             addBtn.append(addAdvancedBtns);
 
-            addAdvancedBtns.append('<li key="$join" class="joinIcon"></li>');
-            addAdvancedBtns.append('<li key="$union" class="unionIcon"></li>');
+            addAdvancedBtns.append('<li key="$join" class="joinIcon"><div class="tooltip">Join</div></li>');
+            addAdvancedBtns.append('<li key="$union" class="unionIcon"><div class="tooltip">Union</div></li>');
 
             addAdvancedBtns.find('li').click(function(evt){
                 evt.stopPropagation();

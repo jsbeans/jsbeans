@@ -30,6 +30,7 @@
 		
 		loaded: false,
 
+		diagramOpts: {position: {x: 0, y: 0}, zoom: 1},
 		fields: {},
 		slices: {},
 
@@ -86,10 +87,10 @@
 							}
 
 							// load fields
-							this.fields = snapshot.fields || {};
+							this.fields = snapshot.fields || this.fields;
 
 							// load diagram position & zoom
-							this.diagramOpts = snapshot.diagramOpts || {position: {x: 0, y: 0}, zoom: 1};
+							this.diagramOpts = snapshot.diagramOpts || this.diagramOpts;
 						}
 						this.loaded = true;
 						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
@@ -104,19 +105,47 @@
 				return;
 			}
 
-			var dimensions = {};
+			var dimensions = {},
+			    fieldArray = [];
+
 			for(var i in this.fields){
 			    if(this.fields[i].isDimension){
 			        dimensions[i] = {
 			            slices: this.fields[i].slices
 			        }
 			    }
+
+			    fieldArray.push({
+			        isDimension: this.fields[i].isDimension,
+			        key: i
+			    });
 			}
+
+			fieldArray.sort(function(a, b){
+                if(a.isDimension && !b.isDimension){
+                    return -1;
+                }
+
+                if(!a.isDimension && b.isDimension){
+                    return 1;
+                }
+
+                if(a.key > b.key){
+                    return 1;
+                }
+
+                if(a.key < b.key){
+                    return -1;
+                }
+
+                return 0;
+            });
 
 			return {
 			    diagramOpts: this.diagramOpts,
 			    dimensions: dimensions,
 			    fields: this.fields,
+			    fieldArray: fieldArray,
 				slices: this.slices
 			};
 		},
