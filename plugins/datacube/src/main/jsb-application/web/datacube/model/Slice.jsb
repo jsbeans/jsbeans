@@ -2,7 +2,10 @@
     $name: 'DataCube.Model.Slice',
     $parent: 'DataCube.Model.SettingsEntry',
 
-    $require: ['DataCube.Query.QuerySyntax'],
+    $require: [
+        'DataCube.Query.QuerySyntax',
+        'DataCube.Query.QueryUtils'
+    ],
 
     $scheme: {
         cacheSettings: {
@@ -287,13 +290,19 @@
 		},
 
         extractFields: function(){
+		    function getQuery(name) {
+		        if ($this.query.$views && $this.query[name]) {
+		            return $this.query[name];
+		        }
+		        return QueryUtils.findView(name, $this.query);
+		    }
             var fieldsTypes = {}, // todo
                 fields = {};
 
             if(this.query.$select){
                 for(var i in this.query.$select){
                     fields[i] = {
-                        type: 'type'
+                        type: QueryUtils.extractType(this.query.$select[i], this.query, $this.getCube(), getQuery)
                     };
                 }
             }

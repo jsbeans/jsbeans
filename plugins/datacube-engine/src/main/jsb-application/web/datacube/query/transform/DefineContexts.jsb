@@ -17,15 +17,13 @@
 
 		defineContexts: function(rootQuery) {
 
-            var contextDuplicates = {/**context: []*/};
+            var contextDuplicates = {/**"context": []*/};
             var queries = [];
             var queryParents = new HashMap();
             function registerQuery(q) {
-                if (queries.indexOf(q) == -1) {
-                    queries.push(q);
-                }
                 if(!contextDuplicates[q.$context]) {
                     contextDuplicates[q.$context] = [];
+                    queries.push(q);
                 }
                 if (contextDuplicates[q.$context].indexOf(q) == -1) {
                     contextDuplicates[q.$context].push(q);
@@ -42,7 +40,7 @@
 		    QueryUtils.walkQueries(rootQuery, {}, null,
                 function leaveCallback(query){
                     if (!query.$context) {
-                        query.context = JSB.generateUid();
+                        query.$context = JSB.generateUid();
                     }
                     var parent = this.path[this.path.length-1] == query
                         ? this.path[this.path.length-2]

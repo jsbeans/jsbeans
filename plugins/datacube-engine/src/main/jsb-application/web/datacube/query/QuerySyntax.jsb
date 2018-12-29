@@ -211,6 +211,7 @@
 		        name: '$select',
 		        desc: 'Выражения для формирования выходных полей (значений в столбцах)',
 		        displayName: 'Столбцы',
+		        category: 'Выражения запроса',
 		        customKey: '#outputFieldName',
 		        values: {
 		            '#outputFieldName': '$valueDefinition'

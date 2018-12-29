@@ -79,7 +79,7 @@
         *  a) 'providerId' - in defaultCube
         *  b) 'wsId/providerId' - in custom workspace
         */
-        getQueryDataProvider: function(providerId, defaultCube) {
+        getQueryDataProvider: function(providerId, defaultCube, notCheck) {
             var ids = providerId.split('/');
              if (ids.length > 1) {
                 var wid = ids[0];
@@ -90,7 +90,7 @@
                 var pid = ids[0];
                 var provider = defaultCube.getProviderById(pid);
             }
-            $this.throwError(provider, 'Data provider with id "{}" is undefined', providerId);
+            $this.throwError(notCheck || provider, 'Data provider with id "{}" is undefined', providerId);
             return provider;
         },
 
@@ -98,19 +98,19 @@
         *  a) 'sliceId' - in defaultCube
         *  b) 'wsId/sliceId' - in custom workspace
         */
-        getQuerySlice: function(sliceId, defaultCube) {
+        getQuerySlice: function(sliceId, defaultCube, notCheck) {
             var ids = sliceId.split('/');
              if (ids.length == 2) {
                 var wid = ids[0];
                 var sid = ids[1];
                 var ws = WorkspaceController.getWorkspace(wid);
-                var provider = ws.entry(sid);
+                var slice = ws.entry(sid);
             } else {
                 var sid = ids[0];
-                var provider = defaultCube.getWorkspace().entry(sid);
+                var slice = defaultCube.getWorkspace().entry(sid);
             }
-            $this.throwError(provider, 'Slice with id "{}" is undefined', sliceId);
-            return provider;
+            $this.throwError(notCheck || slice, 'Slice with id "{}" is undefined', sliceId);
+            return slice;
         },
 
         hasDeclaredSource: function(query) {
@@ -1356,9 +1356,20 @@
         },
 
         extractType: function (exp, query, cube, getQuery) {
+            function sliceFieldType(view, field) {
+                var slice = $this.getQuerySlice(view, cube, true);
+                if (slice) {
+                    var fields = slice.extractFields();
+                    return fields[field] ? fields[field].type : null;
+                }
+            }
             function extractFieldType(field){
                 if (query.$from) {
                     if (JSB.isString(query.$from)) {
+                        var type = sliceFieldType(query.$from, field);
+                        if (type) {
+                            return type;
+                        }
                         var sourceQuery = getQuery(query.$from);
                         $this.throwError(!!sourceQuery, 'View "{}" is not defined', query.$from);
                     } else if (Object.keys(query.$from).length > 0) {
@@ -1375,6 +1386,18 @@
                     $this.throwError(desc, 'Undefined field "{}" in data provider "{}"', field, query.$provider);
                     return desc.type || desc.nativeType;
                 } else if (query.$join) {
+                    if (JSB.isString(query.$join.$left)) {
+                        var type = sliceFieldType(query.$join.$left, field);
+                        if (type) {
+                            return type;
+                        }
+                    }
+                    if (JSB.isString(query.$join.$right)) {
+                        var type = sliceFieldType(query.$join.$right, field);
+                        if (type) {
+                            return type;
+                        }
+                    }
                     if (query.$join.$left.$select[field]) {
                         return $this.extractType(query.$join.$left.$select[field], query.$join.$left, cube, getQuery);
                     }
@@ -1391,6 +1414,12 @@
                 } else if (query.$union) {
                     for(var i = 0; i < query.$union.length; i++){
                         var unionQuery = query.$union[i];
+                        if (JSB.isString(unionQuery)) {
+                            var type = sliceFieldType(unionQuery, field);
+                            if (type) {
+                                return type;
+                            }
+                        }
                         if (unionQuery.$select[field]) {
                             return $this.extractType(unionQuery.$select[field], unionQuery, cube, getQuery);
                         }
@@ -1440,6 +1469,10 @@
                         if (!exp.$context || exp.$context == query.$context) {
                             return extractFieldType(exp.$field);
                         } else {
+                            var type = sliceFieldType(exp.$context, exp.$field);
+                            if (type) {
+                                return type;
+                            }
                             var outerQuery = getQuery(exp.$context);
                             if (outerQuery.$recursive) {
                                 outerQuery = outerQuery.$recursive.$start;
@@ -1450,6 +1483,9 @@
                             return fieldType;
                         }
                     }
+                    if (exp.$select) {
+                        return $this.extractType(exp.$select[Object.keys(exp.$select)[0]], exp, cube, getQuery);
+                    }
                     for(var op in exp) {
                         var type = extractType(exp[op]);
                         if (type) {
@@ -1459,7 +1495,6 @@
                 }
                 return null;
             }
-
             return extractType(exp);
         },
 

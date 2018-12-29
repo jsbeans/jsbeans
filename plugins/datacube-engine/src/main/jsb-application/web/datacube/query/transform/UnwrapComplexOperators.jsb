@@ -25,6 +25,18 @@
 
         /** Разворачивает $gr* агрегаторы в натуральные подзапросы */
 		unwrapGOperators: function(dcQuery) {
+            function copySource(target, source){
+                if(source.$from) {
+                } else if(source.$provider) {
+                    target.$provider = JSB.clone(source.$provider);
+                } else if(source.$join) {
+                    target.$join = JSB.clone(source.$join);
+                } else if(source.$union) {
+                    target.$union = JSB.clone(source.$union);
+                } else if(source.$recursive) {
+                    target.$recursive = JSB.clone(source.$recursive);
+                }
+            }
 		    function unwrapForQuery(query) {
                 function createSubQuery(op, exp) {
                     var innerOp;
@@ -46,7 +58,7 @@
                             subQuery.$select[innerOp] = {};
                             subQuery.$select[innerOp]['$'+innerOp] = exp;
                             subQuery.$filter = query.$filter && JSB.clone(query.$filter);
-                            subQuery.$from = query.$from;
+                            copySource(subQuery, query);
                             return subQuery;
                     }
                     switch(op){
@@ -87,7 +99,7 @@
                             }
                             subQuery.$groupBy = query.$groupBy && JSB.clone(query.$groupBy);
                             subQuery.$filter = query.$filter && JSB.clone(query.$filter);
-                            subQuery.$from = query.$from;
+                            copySource(subQuery, query);
                             return subQuery;
                         })()
                     };
