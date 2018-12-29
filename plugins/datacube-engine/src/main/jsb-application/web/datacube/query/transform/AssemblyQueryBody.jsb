@@ -109,7 +109,7 @@
                         var body = JSB.clone(bestSlice.getQuery());
                         /// заменить в запросе источник - установить $from вместо $cube и добавить вью
                         delete query.$cube;
-                        var name = query.$from =bestSlice.getFullId();
+                        var name = query.$from = bestSlice.getFullId();
                         if (!dcQuery.$views[name]) {
                             embeddedSlices[name] = name;
                             dcQuery.$views[name] = body;

@@ -112,6 +112,8 @@
                     try {
                         // translator`s transform
                         query = QueryTransformer.transformForTranslator(translators[i].getJsb().$name, query, $this.cube);
+
+                        $this.tracer && $this.tracer.profile('query prepared for '+translators[i].getJsb().$name, $this.preparedQuery);
                         // try translate
                         var it = translators[i].translatedQueryIterator(query, params);
                         if (it) {

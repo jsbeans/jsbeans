@@ -18,14 +18,13 @@
         propagateGlobalFilter: function(dcQuery, cube) {
             var cubeFilter = $this._collectCubeFilter(dcQuery);
             var cubeDimensions = QueryUtils.extractCubeDimensions(cube);
-
             if (cubeFilter.$and.length > 0) {
                 var embeddedQueries = [];
                 QueryUtils.walkQueries(dcQuery, {}, null,
                     function(subQuery){
                         if (embeddedQueries.indexOf(subQuery) == -1) {
                             var outputFields = QueryUtils.extractOutputFields(subQuery);
-                            var queryFilter = $this._generateSubFilter(cubeFilter, outputFields, cubeDimensions, dcQuery);
+                            var queryFilter = $this._generateSubFilter(cubeFilter, outputFields, cubeDimensions, subQuery, dcQuery);
                             if (queryFilter) {
                                 subQuery.$postFilter = QueryUtils.mergeFilters(subQuery.$postFilter, queryFilter);
                             }
@@ -49,11 +48,12 @@
             return cubeFilter;
         },
 
-        _generateSubFilter: function(cubeFilter, queryFields, cubeDimensions, dcQuery) {
+        _generateSubFilter: function(cubeFilter, queryFields, cubeDimensions, query, dcQuery) {
             var queryFilter = QueryUtils.rebuildFilter(cubeFilter,
                 function fieldsCallback(field, context, opPath) {
                     if (cubeDimensions[field] && queryFields[field]) {
-                        return {$field: field};
+                        var e = {$field: field};
+                        return e;
                     }
                     return null;
                 },

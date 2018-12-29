@@ -10,76 +10,67 @@
         ],
 
 		transform: function(dcQuery, cubeOrDataProvider){
-            $this.unwrapPostFilters(dcQuery);
+            QueryUtils.walkQueries(dcQuery, {}, null, function(query){
+                if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
+                    $this._unwrapForQuery(query);
+                }
+            });
             return dcQuery;
 		},
 
-        /** Разворачивает $postFilter:
-        *  1) если фильтруется группировочное поле (оно же поле куба), то переносится в основной фильтр
-        *  2) если фильтруется выходное поле, то создается запрос-обертка с $filter
-        */
-		unwrapPostFilters: function(dcQuery) {
-		    function unwrapForQuery(query) {
-		        function subFilter(post) {
-		            return QueryUtils.filterFilterByFields(query.$postFilter, query, function isAccepted(field, expr, opPath){
-		                if (field == null) return true;
-		                if (!query.$groupBy || query.$groupBy.length === 0) {
-		                    return post;
-		                }
-                        for(var i = 0; i < query.$groupBy.length; i++){
-                            var g = query.$groupBy[i];
-                            if (typeof g === 'string' || typeof g.$field === 'string' && (!g.$context || g.$context == query.$context)) {
-                                if((g.$field || g) == field) {
-                                    return post;
-                                }
-                            }
+		_unwrapForQuery: function(query) {
+		    var postFilter = query.$postFilter;
+            var complexFields = {};
+
+            /// 1) если фильтруется обычное выходное поле - вставляется в текущий $filter с заменой field на $select[field]
+            var queryFilter = QueryUtils.rebuildFilter(postFilter,
+                function fieldsCallback(field, context, opPath) {
+                    var exp = query.$select[field];
+                    QueryUtils.throwError(exp, '$postFilter использует поле "{}", которое отсутствует в запросе "{}"', field, query.$context);
+                    if (QueryUtils.isSubQueryExpression(exp) || QueryUtils.isAggregatedExpression(exp)){
+                        complexFields[field] = true;
+                        return null;
+                    }
+                    return JSB.clone(exp);
+                },
+                function expressionCallback(expr, opPath) {
+                }
+            );
+            query.$filter = QueryUtils.mergeFilters(query.$filter, queryFilter);
+            if (!query.$filter) delete query.$filter;
+            delete query.$postFilter;
+
+            /// 2) если в $select[field] подзапрос или агрегация - создается запрос-обертка, для вьюх производится замена контекстов
+            if (Object.keys(complexFields).length > 0) {
+                var queryFilter = QueryUtils.rebuildFilter(postFilter,
+                    function fieldsCallback(field, context, opPath) {
+                        if (complexFields[field]){
+                             return {$field: field};
                         }
-                        return !post;
-                    });
-		        }
-
-		        // embed group fields to main filter
-		        if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
-                    var filter = subFilter(true);
-                    if (filter) {
-                        if (!query.$filter) query.$filter = {};
-                        if (!query.$filter.$and) query.$filter.$and = [];
-                        query.$filter.$and.push(filter);
-                        query.$postFilter = subFilter(false);
-                        if (!query.$postFilter) delete query.$postFilter;
+                        return null;
+                    },
+                    function expressionCallback(expr, opPath) {
                     }
-		        }
+                );
 
-		        // create wrap query for post filter
-		        if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
-    		        var queryFields = ['$context', '$select', '$filter', '$groupBy', '$from', '$distinct', '$sort', '$sql'];
-    		        var postFilter = query.$postFilter;
-                    delete query.$postFilter;
-		            var subQuery = {};
-		            // move query fields to subQuery
-		            for (var i in queryFields) {
-		                var field = queryFields[i];
-		                if (typeof query[field] !== 'undefined') {
-		                    subQuery[field] = query[field];
-		                    delete query[field];
-		                }
+                var wrapQuery = {
+                    $context: query.$context,
+                    $select: {},
+                    $filter: queryFilter,
+                    $from: JSB.clone(query)
+                };
+                if (query.$id) {
+                    wrapQuery.$id = query.$id;
+                     delete wrapQuery.$from.$id;
+                }
+                QueryUtils.updateContext(wrapQuery.$from, query.$context, 'wrapped_'+query.$context);
+                for (var alias in query.$select) {
+                    wrapQuery.$select[alias] = {$field: alias};
+                }
 
-		            }
-		            // build $select
-		            query.$select = {};
-                    for(var alias in subQuery.$select) if (typeof subQuery.$select[alias] !== 'undefined') {
-                        query.$select[alias] = alias;
-                    }
+                QueryUtils.jsonReplaceBody(query, wrapQuery);
+            }
 
-                    // build post filter query
-                    query.$filter = postFilter;
-                    query.$from = subQuery;
-		        }
-		    }
-
-            QueryUtils.walkQueries(dcQuery, {}, null, function(query){
-                unwrapForQuery(query);
-            });
 		},
 	}
 }

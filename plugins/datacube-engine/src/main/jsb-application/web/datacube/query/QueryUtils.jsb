@@ -861,15 +861,18 @@
             }
             function walkBinaryCondition(op, args, path) {
                 var newArgs = [];
-                var notChanged = true;
+                var changed = false;
                 for (var i in args) {
                     var e = walkExpression(args[i], path.concat([i]));
+                    if (e === null) {
+                        return null;
+                    }
+                    changed = changed || e !== undefined;
                     if (e || e === undefined) {
-                        notChanged = notChanged && e === undefined;
                         newArgs.push(e);
                     }
                 }
-                if (notChanged) {
+                if (!changed) {
                     return;
                 }
                 return newArgs.length  == args.length ? newArgs : null;
@@ -880,15 +883,15 @@
                 }
 
                 var args = [];
-                var notChanged = true;
+                var changed = false;
                 for (var i in array) {
                     var e = walkMultiFilter(array[i], path);
+                    changed = changed || e === null || e !== undefined;
                     if (e || e === undefined) {
-                        notChanged = notChanged && e === undefined;
                         args.push(e?e:array[i]);
                     }
                 }
-                if (notChanged) {
+                if (!changed) {
                     return;
                 }
                 return args.length > 0 ? args : null;
@@ -899,7 +902,7 @@
                 }
 
                 var newFilter = {$and:[]};
-                var notChanged = true;
+//                var notChanged = true;
                 for (var field in exps) if (exps[field] != null) {
                     if (field.startsWith('$')) {
                         var op = field;
@@ -908,7 +911,7 @@
                             case '$and':
                                 var args = walkAndOr(exps[op], path.concat([op]));
                                 if (args || args === undefined) {
-                                    notChanged = notChanged && args === undefined;
+//                                    notChanged = notChanged && args === undefined;
                                     if (op == '$or') {
                                         if (args.length == 1) {
                                             newFilter.$and.push(args[0]);
@@ -923,7 +926,7 @@
                             case '$not':
                                 var e = walkMultiFilter(exps[op], path.concat([op]));
                                 if (e || e === undefined) {
-                                 notChanged = notChanged && e === undefined;
+//                                    notChanged = notChanged && e === undefined;
                                     newFilter.$and.push({$not: e?e:exps.$not});
                                 }
                                 break;
@@ -931,7 +934,7 @@
                                 // $op: [left, right] expression
                                 var args = walkBinaryCondition(op, exps[op], path.concat([op]));
                                 if (args || args === undefined) {
-                                    notChanged = notChanged && args === undefined;
+//                                    notChanged = notChanged && args === undefined;
                                     var e = {};
                                     e[op] = args?args: exps[op];
                                     newFilter.$and.push(e);
@@ -939,23 +942,26 @@
                         }
                     } else {
                         // field: {$eq: expr}
-                        var opp = Object.keys(exps[field])[0];
-                        var rightExpr = exps[field][opp];
+                        var oop = Object.keys(exps[field])[0];
+                        var rightExpr = exps[field][oop];
                         // $op: [left, right] expression
                         var e = {};
                         e[oop] = [{$field:field}, rightExpr];
                         var args = walkBinaryCondition(oop, e[oop], path.concat([oop]));
                         if (args || args === undefined) {
-                            notChanged = notChanged && args === undefined;
-                            var e = {};
-                            e[op] = args?args: exps[op];
-                            newFilter.$and.push(e);
+//                            notChanged = notChanged && args === undefined;
+                            if (args) {
+                                e[oop] = args;
+                                newFilter.$and.push(e);
+                            } else {
+                                newFilter.$and.push(e);
+                            }
                         }
                     }
                 }
-                if (notChanged) {
-                    return;
-                }
+//                if (notChanged) {
+//                    return;
+//                }
                 switch(Object.keys(newFilter.$and).length){
                     case 0 : return null;
                     case 1 : return newFilter.$and[0];
@@ -975,16 +981,41 @@
                         if (QuerySyntax.isAggregateOperator(f, true)) {
                             return true;
                         }
-                        findAggregated(e[f]);
+                        if(findAggregated(e[f])) {
+                            return true;
+                        }
                     }
                 } else if (JSB.isArray(e)) {
                     for (var i = 0; i < e.length; i++) {
-                        findAggregated(e[i]);
+                        if(findAggregated(e[i])) {
+                            return true;
+                        }
                     }
                 }
                 return false;
 		    }
 		    return findAggregated(expr);
+		},
+
+		isSubQueryExpression: function(exp){
+		    function walk(e) {
+		        if (e == null) {
+		        } else if(JSB.isObject(e)) {
+		            if (e.$select) return true;
+		            for(var i in e) if (e.hasOwnProperty(i)) {
+		                if(walk(e[i])) {
+		                    return null;
+		                }
+		            }
+		        } else if(JSB.isArray(e)) {
+		            for(var i = 0; i < e.length; i++) {
+		                if(walk(e[i])){
+		                    return null;
+		                }
+		            }
+                }
+		    }
+		    return walk(exp);
 		},
 
         extractCubeProvidersInQuery: function(query, cube, rootQuery) {
@@ -1708,14 +1739,7 @@ debugger
 		},
 
 		extractCubeDimensions: function(cube) {
-		    // TODO
-		    return cube.getDimensions? cube.getDimensions() : {
-		        "INN": "INN",
-		        "KPP": "KPP",
-		        "OGRN":  "OGRN",
-		        "LegalOrganization": "LegalOrganization",
-		        "ChiefName":"ChiefName",
-		    };
+		    return cube.getDimensions();
 		},
 
 

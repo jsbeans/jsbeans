@@ -68,7 +68,7 @@
                 var transformer = $this.transformers[transformerName];
 
                 dcQuery = transformer.transform(dcQuery, defaultCube);
-                if (!dcQuery) throw new Error('Failed transform ' + $this.transformers[i].getJsb().$name);
+                if (!dcQuery) throw new Error('Failed transform ' + transformer.getJsb().$name);
             }
             return dcQuery;
 		},
@@ -81,7 +81,7 @@
                 var transformer = $this.transformers[transformerName];
 
                 dcQuery = transformer.transform(dcQuery, defaultCube);
-                if (!dcQuery) throw new Error('Failed transform ' + $this.transformers[i].getJsb().$name);
+                if (!dcQuery) throw new Error('Failed transform ' + transformer.getJsb().$name);
             }
 		    return dcQuery;
 		},
