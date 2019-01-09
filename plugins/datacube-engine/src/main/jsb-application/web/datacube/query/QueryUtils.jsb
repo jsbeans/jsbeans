@@ -81,14 +81,17 @@
         */
         getQueryDataProvider: function(providerId, defaultCube, notCheck) {
             var ids = providerId.split('/');
-             if (ids.length > 1) {
+            if (ids.length > 1) {
                 var wid = ids[0];
                 var pid = ids[1];
-                var ws = WorkspaceController.getWorkspace(wid);
-                var provider = ws.entry(pid);
+                if (WorkspaceController.existsWorkspace(wid)) {
+                    var ws = WorkspaceController.getWorkspace(wid);
+                    var provider = ws.existsEntry(pid) ? ws.entry(pid) : null;
+                }
             } else {
                 var pid = ids[0];
-                var provider = defaultCube.getProviderById(pid);
+                var ws = defaultCube.getWorkspace();
+                var provider = ws.existsEntry(pid) ? ws.entry(pid) : null;
             }
             $this.throwError(notCheck || provider, 'Data provider with id "{}" is undefined', providerId);
             return provider;
@@ -100,14 +103,17 @@
         */
         getQuerySlice: function(sliceId, defaultCube, notCheck) {
             var ids = sliceId.split('/');
-             if (ids.length == 2) {
+            if (ids.length > 1) {
                 var wid = ids[0];
                 var sid = ids[1];
-                var ws = WorkspaceController.getWorkspace(wid);
-                var slice = ws.entry(sid);
+                if (WorkspaceController.existsWorkspace(wid)) {
+                    var ws = WorkspaceController.getWorkspace(wid);
+                    var slice = ws.existsEntry(sid) ? ws.entry(sid) : null;
+                }
             } else {
                 var sid = ids[0];
-                var slice = defaultCube.getWorkspace().entry(sid);
+                var ws = defaultCube.getWorkspace();
+                var slice = ws.existsEntry(sid) ? ws.entry(sid) : null;
             }
             $this.throwError(notCheck || slice, 'Slice with id "{}" is undefined', sliceId);
             return slice;
@@ -1357,6 +1363,7 @@
 
         extractType: function (exp, query, cube, getQuery) {
             function sliceFieldType(view, field) {
+
                 var slice = $this.getQuerySlice(view, cube, true);
                 if (slice) {
                     var fields = slice.extractFields();
