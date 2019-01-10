@@ -43,7 +43,7 @@
             if(cube){
                 this.cube = cube;
             }
-
+//debugger;
             var cubeFields = d3.select(this.cubeFields.getElement().get(0));
 
             // enter

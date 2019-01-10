@@ -143,6 +143,7 @@
 
             // search
             var searchBox = new SearchBox({
+                useFA: true,
                 onChange: function(val){
                     $this.publish('DataCube.CubeEditor.search', val);
                 },
@@ -153,14 +154,20 @@
             this.append(searchBox);
 
             // create add buttons
-            var addBtn = this.$('<div class="addBtn fas fa-plus-circle"></div>');
+            var addBtn = this.$('<div class="addBtn fas fa-plus"></div>');
             this.append(addBtn);
 
-            var addAdvancedBtns = this.$('<ul class="hidden"></ul>');
+            var addAdvancedBtns = this.$('<ul></ul>');
             addBtn.append(addAdvancedBtns);
 
-            addAdvancedBtns.append('<li key="$join" class="joinIcon"><div class="tooltip">Join</div></li>');
-            addAdvancedBtns.append('<li key="$union" class="unionIcon"><div class="tooltip">Union</div></li>');
+            var joinBtn = this.$('<li key="$join" class="joinIcon excess"><div class="tooltip">Join</div></li>');
+            addAdvancedBtns.append(joinBtn);
+
+            var unionBtn = this.$('<li key="$union" class="unionIcon excess"><div class="tooltip">Union</div></li>');
+            addAdvancedBtns.append(unionBtn);
+
+            var fromBtn = this.$('<li key="$from" class="fromIcon excess"><div class="tooltip">From</div></li>');
+            addAdvancedBtns.append(fromBtn);
 
             addAdvancedBtns.find('li').click(function(evt){
                 evt.stopPropagation();
@@ -172,7 +179,7 @@
                     sources.push($this._selectedItems[i].entry);
                 }
 
-                if(sourceType === '$join'){
+                if(sourceType === '$join' && sources.length === 2){
                     ToolManager.activate({
                         id: 'joinSettingsTool',
                         cmd: 'show',
@@ -269,16 +276,33 @@
             this.subscribe('_jsb_diagramSelectionChanged', function(sender, msg, selectedItems){
                 var keysCount = Object.keys(selectedItems).length;
 
+                // excess - мало
+                // flaw - много
+                switch(keysCount){
+                    case 0:
+                        addAdvancedBtns.children().removeClass('flaw').addClass('excess');
+                        break;
+                    case 1:
+                        fromBtn.removeClass('flaw excess');
+                        joinBtn.removeClass('flaw').addClass('excess');
+                        unionBtn.removeClass('flaw').addClass('excess');
+                        break;
+                    case 2:
+                        fromBtn.removeClass('excess').addClass('flaw');
+                        joinBtn.removeClass('flaw excess');
+                        unionBtn.removeClass('flaw excess');
+                        break;
+                    default:
+                        fromBtn.removeClass('excess').addClass('flaw');
+                        joinBtn.removeClass('excess').addClass('flaw');
+                        unionBtn.removeClass('flaw excess');
+                        break;
+                }
+
                 if(keysCount > 0){
                     removeBtn.removeClass('hidden');
                 } else {
                     removeBtn.addClass('hidden');
-                }
-
-                if(keysCount === 0 || keysCount === 1 || keysCount > 2){
-                    addAdvancedBtns.addClass('hidden');
-                } else {
-                    addAdvancedBtns.removeClass('hidden');
                 }
 
                 $this._selectedItems = selectedItems;

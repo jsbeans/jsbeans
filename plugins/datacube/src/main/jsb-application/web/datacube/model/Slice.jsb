@@ -58,6 +58,10 @@
         var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
             sources = [];
 
+        if(query['$provider']){
+            return sources;
+        }
+
         if(!query){
             query = this.query;
         }
@@ -66,14 +70,18 @@
             if(query[fromKeys[i]]){
                 switch(fromKeys[i]){
                     case '$from':
-                        sources.push(query[fromKeys[i]]);
+                        if(query[fromKeys[i]]){
+                            sources.push(query[fromKeys[i]]);
+                        }
                         break;
                     case '$join':
-                        var left = query.$join.$left,
-                            right = query.$join.$right;
+                        if(query.$join.$left){
+                            sources.push(query.$join.$left);
+                        }
 
-                        sources.push(left);
-                        sources.push(right);
+                        if(query.$join.$right){
+                            sources.push(query.$join.$right);
+                        }
                         break;
                     case '$union':
                         sources = query.$union;
@@ -314,41 +322,48 @@
 		    var sources = opts.sources,
 		        query = {};
 
-		    function createSelect(query, source, context){
-		        var fields = source.extractFields();
-
+		    function createSelect(query, sources, useContext){
 		        query['$select'] = query['$select'] || {};
 
-                for(var i in fields){
-                    if(context){
-                        if(query['$select'][i]){
-                            /*
-                            var cnt = 2;
+		        for(var j = 0; j < sources.length; j++){
+		            var fields = sources[j].extractFields(),
+		                context = null;
 
-                            while(true){
-                                if(!query['$select'][i + ' (' + cnt + ')']){
-                                    query['$select'][i + ' (' + cnt + ')'] = {
-                                        $context: context,
-                                        $field: i
+		            if(useContext){
+		                context = sources[j].getFullId();
+		            }
+
+                    for(var i in fields){
+                        if(context){
+                            if(query['$select'][i]){
+                                /*
+                                var cnt = 2;
+
+                                while(true){
+                                    if(!query['$select'][i + ' (' + cnt + ')']){
+                                        query['$select'][i + ' (' + cnt + ')'] = {
+                                            $context: context,
+                                            $field: i
+                                        }
+                                        break;
                                     }
-                                    break;
-                                }
 
-                                cnt++;
+                                    cnt++;
+                                }
+                                */
+                            } else {
+                                query['$select'][i] = {
+                                    $context: context,
+                                    $field: i
+                                }
                             }
-                            */
                         } else {
                             query['$select'][i] = {
-                                $context: context,
                                 $field: i
                             }
                         }
-                    } else {
-                        query['$select'][i] = {
-                            $field: i
-                        }
                     }
-                }
+		        }
 		    }
 
 		    query['$context'] = opts.name;
@@ -356,28 +371,38 @@
 		    switch(opts.sourceType){
 		        case '$provider':
 		        case '$from':
-		            query[opts.sourceType] = sources[0].getFullId();
+		            query[opts.sourceType] = sources[0] ? sources[0].getFullId() : undefined;
 
-		            createSelect(query, sources[0]);
+		            if(sources.length > 1){
+		                sources.splice(1, sources.length - 1);
+		            }
+
+		            createSelect(query, sources);
 		            break;
                 case '$join':
                     query['$join'] = {
-                        $left: sources[0].getFullId(),
-                        $right: sources[1].getFullId()
+                        $left: sources[0] ? sources[0].getFullId() : undefined,
+                        $right: sources[1] ? sources[1].getFullId() : undefined
                     }
-                    query['$join'] = JSB.merge(query['$join'], opts.sourceOpts);
 
-                    createSelect(query, sources[0], sources[0].getFullId());
-                    createSelect(query, sources[1], sources[1].getFullId());
+                    if(opts.sourceOpts){
+                        query['$join'] = JSB.merge(query['$join'], opts.sourceOpts);
+                    }
+
+		            if(sources.length > 2){
+		                sources.splice(1, sources.length - 2);
+		            }
+
+                    createSelect(query, sources, true);
                     break;
                 case '$union':
                     query['$union'] = [];
 
                     for(var i = 0; i < sources.length; i++){
                         query['$union'].push(sources[i].getFullId());
-
-                        createSelect(query, sources[i]);
                     }
+
+                    createSelect(query, sources);
                     break;
 		    }
 

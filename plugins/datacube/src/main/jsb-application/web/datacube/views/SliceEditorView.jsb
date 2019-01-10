@@ -17,6 +17,8 @@
 		ready: false,
 		ignoreHandlers: false,
 		measurements: {},
+
+		isNew: false,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -118,22 +120,24 @@
 			var scrollBox = new ScrollBox();
 			vSplitBox.addToPane(0, scrollBox);
 
+            // old
+            if(!this.isNew){
+                this.queryEditor = new QueryEditor({
+                    editorView: $this,
+                    measurements: this.measurements,
+                    onChange: function(){
+                        $this.updateTextQuery();
+                    }
+                });
+                this.queryEditor.addClass('queryEditor');
+                scrollBox.append(this.queryEditor);
+            }
 
-			this.queryEditor = new QueryEditor({
-			    editorView: $this,
-			    measurements: this.measurements,
-				onChange: function(){
-					$this.updateTextQuery();
-				}
-			});
-			this.queryEditor.addClass('queryEditor');
-			scrollBox.append(this.queryEditor);
-
-
-			/*
-			this.queryEditor = new SchemeController();
-			scrollBox.append(this.queryEditor);
-			*/
+            // new
+            if(this.isNew){
+                this.queryEditor = new SchemeController();
+                scrollBox.append(this.queryEditor);
+			}
 			
 			this.textQueryEditor = new MultiEditor({
 				valueType: "org.jsbeans.types.JsonObject",
@@ -178,34 +182,38 @@
 			        return;
 			    }
 
-                var sliceSelectOptions = [];
+			    // old
+			    if(!$this.isNew){
+                    var sliceSelectOptions = [];
 
-                for(var i in data.cubeSlices){
-                    if($this.slice.getId() === data.cubeSlices[i].getId()){
-                        continue;
+                    for(var i in data.cubeSlices){
+                        if($this.slice.getId() === data.cubeSlices[i].getId()){
+                            continue;
+                        }
+
+                        sliceSelectOptions.push({
+                            entry: data.cubeSlices[i],
+                            key: i,
+                            value: RendererRepository.createRendererFor(data.cubeSlices[i], {showSource: true}).getElement()
+                        });
                     }
 
-                    sliceSelectOptions.push({
-                        entry: data.cubeSlices[i],
-                        key: i,
-                        value: RendererRepository.createRendererFor(data.cubeSlices[i], {showSource: true}).getElement()
-                    });
+                    $this.queryEditor.setOption('cubeFields', data.cubeFields);
+                    $this.queryEditor.setOption('cubeSlices', data.cubeSlices);
+                    $this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
+
+                    $this.updateQuery();
+                    $this.updateTextQuery();
+                    $this.updateGrid();
                 }
 
-			    $this.queryEditor.setOption('cubeFields', data.cubeFields);
-			    $this.queryEditor.setOption('cubeSlices', data.cubeSlices);
-			    $this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
-
-                $this.updateQuery();
-                $this.updateTextQuery();
-                $this.updateGrid();
-
-                /*
-                $this.queryEditor.refresh({
-                    data: data,
-                    values: $this.query
-                });
-                */
+                // new
+                if($this.isNew){
+                    $this.queryEditor.refresh({
+                        data: data,
+                        values: $this.query
+                    });
+                }
 			});
 		},
 		

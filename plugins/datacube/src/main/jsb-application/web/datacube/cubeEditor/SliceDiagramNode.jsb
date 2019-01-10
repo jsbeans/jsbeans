@@ -256,35 +256,38 @@
 
             // set link type
             if(this.leftConnectorElement){
-                var fromType = this.entry.getFromType(),
-                    fromClass = '',
-                    fromName = this.leftConnectorElement.children('.tooltip');
+                var fromType = this.entry.getFromType();
 
-                if(fromName.length === 0){
-                    fromName = this.$('<div class="tooltip"></div>');
-                    this.leftConnectorElement.append(fromName);
+                if(fromType !== '$cube'){
+                    var fromClass = '',
+                        fromName = this.leftConnectorElement.children('.tooltip');
+
+                    if(fromName.length === 0){
+                        fromName = this.$('<div class="tooltip"></div>');
+                        this.leftConnectorElement.append(fromName);
+                    }
+
+                    switch(fromType){
+                        case '$from':
+                            fromClass = 'fromIcon';
+                            fromName.text('From');
+                            break;
+                        case '$join':
+                            fromClass = 'joinIcon';
+                            fromName.text('Join');
+                            break;
+                        case '$union':
+                            fromClass = 'unionIcon';
+                            fromName.text('Union');
+                            break;
+                        case '$recursive':
+                            fromClass = 'recursiveIcon';
+                            fromName.text('Recursive');
+                            break;
+                    }
+
+                    this.leftConnectorElement.removeClass().addClass('connector left hasIcon ' + fromClass);
                 }
-
-                switch(fromType){
-                    case '$from':
-                        fromClass = 'fromIcon';
-                        fromName.text('From');
-                        break;
-                    case '$join':
-                        fromClass = 'joinIcon';
-                        fromName.text('Join');
-                        break;
-                    case '$union':
-                        fromClass = 'unionIcon';
-                        fromName.text('Union');
-                        break;
-                    case '$recursive':
-                        fromClass = 'recursiveIcon';
-                        fromName.text('Recursive');
-                        break;
-                }
-
-                this.leftConnectorElement.removeClass().addClass('connector left hasIcon ' + fromClass);
             }
 
             this.fields = opts && opts.fields || {};

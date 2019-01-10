@@ -5803,7 +5803,7 @@ JSB({
 		},
 		error: function(str){
 			console.log('ERROR: ' + this._prepareObj(str));
-			//debugger;
+			debugger;
 		}
 	}
 });

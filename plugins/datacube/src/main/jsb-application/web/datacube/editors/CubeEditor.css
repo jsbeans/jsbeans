@@ -72,18 +72,72 @@
     }
 }
 
+.cubeEditor > .jsb-searchBox.useFA > .searchIcon {
+    border: 2px solid #dc143c;
+    padding: 5px;
+    background: none;
+}
+
+.cubeEditor > .jsb-searchBox.useFA.open > .searchIcon {
+    padding: 6px 0 0 9px;
+}
+
+.cubeEditor > .jsb-searchBox.useFA > .searchIcon:after {
+    background: #dc143c;
+}
+
+.cubeEditor > .jsb-searchBox.useFA > .searchIcon:hover:after {
+    transform: scale(0.82);
+}
+
+.cubeEditor > .jsb-searchBox.useFA > .searchIcon:after,
+.cubeEditor > .addBtn:after,
+.cubeEditor > .removeBtn:after {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    content: '';
+
+    top: -2px;
+    left: -2px;
+    padding: 2px;
+    z-index: -1;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.cubeEditor > .addBtn,
+.cubeEditor > .removeBtn {
+    border-radius: 50%;
+}
+
+.cubeEditor > .addBtn:after {
+    background: #169f85;
+}
+
+.cubeEditor > .removeBtn:after {
+    background: #c35555;
+}
+
+.cubeEditor > .addBtn:hover:after,
+.cubeEditor > .removeBtn:hover:after {
+    transform: scale(0.85);
+}
+
 .cubeEditor > .addBtn,
 .cubeEditor > .removeBtn {
     position: absolute;
     bottom: 20px;
-    font-size: 45px;
     cursor: pointer;
     z-index: 10;
+    color: white;
 }
 
 .cubeEditor > .addBtn {
+    border: 2px solid #169f85;
     right: 20px;
-    color: #169f85;
+    padding: 5px;
+    font-size: 35px;
 }
 
 .cubeEditor > .addBtn > ul {
@@ -110,11 +164,23 @@
 }
 
 .cubeEditor > .addBtn > ul > li:nth-child(1) {
-    animation-delay: 0.2s;
+    animation-delay: 0.3s;
 }
 
 .cubeEditor > .addBtn > ul > li:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.cubeEditor > .addBtn > ul > li:nth-child(3) {
     animation-delay: 0.1s;
+}
+
+.cubeEditor > .addBtn > ul > li.excess {
+    background-color: yellow;
+}
+
+.cubeEditor > .addBtn > ul > li.flaw {
+    background-color: lightgrey;
 }
 
 .cubeEditor > .addBtn > ul > li > .tooltip {
@@ -146,11 +212,15 @@
 }
 
 .cubeEditor > .removeBtn {
+    padding: 8px;
+    font-size: 30px;
     left: 20px;
-    color: #c35555;
+    border: 2px solid #c35555;
 }
 
 .cubeEditor .unionIcon,
+.cubeEditor .fromIcon,
+.cubeEditor .recursiveIcon,
 .cubeEditor .joinIcon {
     background-size: 75%;
     background-repeat: no-repeat;
