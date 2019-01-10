@@ -1,24 +1,32 @@
 {
 	$name: 'Unimap.Render.EntryBinding',
-	$parent: 'Unimap.Render.Basic',
+	$parent: 'Unimap.Render.Item',
 	$client: {
 	    $require: ['JSB.Widgets.RendererRepository',
 	               'css:EntryBinding.css'],
 
+	    _items: [],
+	    _renders: [],
+	    
 	    construct: function(){
 	        this.addClass('entryBindingRender');
-
-	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
-	        this.append(name);
-
-	        this.createRequireDesc(name);
-	        this.createDescription(name);
+	        $base();
+	        
+/*
+	        if(this._scheme.name && this._scheme.name.length > 0){
+		        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
+		        this.append(name);
+		        
+		        this.createRequireDesc(name);
+		        this.createDescription(name);
+	        }
 
 	        if(this._values.values.length > 0){
 	            this.addItem(this._values.values[0]);
 	        } else {
 	            this.addItem();
 	        }
+*/	        
 	    },
 	    
 	    generateEmptyName: function(){
@@ -28,10 +36,29 @@
 	    	return 'Перетащите сюда объект';
 	    },
 
-	    addItem: function(values){
-	        this._item = this.$('<div class="item"></div>').text($this.generateEmptyName());
+	    addItem: function(values, itemIndex){
+	    	if(!values){
+                values = {};
+	            if(!itemIndex){
+	                itemIndex = this._values.values.length;
+	            }
 
-            this._item.droppable({
+                this._values.values[itemIndex] = values;
+            }
+	    	
+	    	var item = null;
+	    	
+	    	if(this._scheme.multiple){
+	    		item = this.$('<div class="item multipleItem" idx="' + itemIndex + '"></div>').text($this.generateEmptyName());
+	    		this.multipleBtn.before(item);
+	    	} else {
+		        item = this.$('<div class="item"></div>').text($this.generateEmptyName());
+		        this.append(item);
+	    	}
+	    	
+	    	this._items[itemIndex] = item;
+
+            item.droppable({
                 accept: function(d){
                     if(d && d.length > 0 && d.get(0).draggingItems){
                         for(var i in d.get(0).draggingItems){
@@ -66,67 +93,122 @@
                 hoverClass: 'hoverDraggable',
                 drop: function(evt, ui){
                     var d = ui.draggable;
-
+                    var itemIdx = parseInt(item.attr('idx'));
                     for(var i in d.get(0).draggingItems){
 						var obj = d.get(0).draggingItems[i].obj;
 						if(!JSB().isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
 							continue;
 						}
-						$this.setValueFromEntry(obj.getTargetEntry());
+						$this.setValueFromEntry(obj.getTargetEntry(), itemIdx);
 						break;
                     }
                 }
             });
 
-            this.append(this._item);
+           
 
             if(values){
-                this.setValue(values.value);
-            }
-
-	        if(!values){
-	            values = {
+                this.setValue(values.value, null, itemIndex);
+            } else {
+            	values = {
 	                value: {}
 	            };
-	            this._values.values.push(values);
-	        }
+	            this._values.values[itemIndex] = values;
+            }
+	    },
+	    
+	    removeItem: function(itemIndex){
+	    	if(!itemIndex){
+	    		itemIndex = 0;
+	    	}
+	    	
+	    	$this._values.values.splice(itemIndex, 1);
+	    	var item = this._items[itemIndex];
+	    	this._items.splice(itemIndex, 1);
+	    	
+	    	// fix items idx
+	    	for(var i = itemIndex; i < this._items.length; i++){
+	    		this._items[i].attr('idx', i);
+	    	}
+	    	
+	    	if(this._renders[itemIndex]){
+	    		this._renders[itemIndex].destroy();
+	    		this._renders.splice(itemIndex, 1);
+	    	}
+/*
+            var errIndex = $this._errorList.indexOf(itemIndex);
+            if(errIndex > -1){
+                $this._errorList.splice(errIndex, 1);
+
+                if($this._errorList.length === 0){
+                    $this.hideError();
+                }
+            }
+*/            
+            
+            item.remove();
+
 	    },
 
 	    destroy: function(){
-            if(this._render){
-                this._render.destroy();
-            }
+	    	for(var i = 0; i < this._renders.length; i++){
+	    		if(this._renders[i]){
+	    			this._renders[i].destroy();
+	    		}
+	    	}
+	    	this._renders = [];
 
 	        $base();
 	    },
 
-	    setValue: function(val, entry){
-            this._values.values[0] = {
+	    setValue: function(val, entry, itemIdx){
+	    	if(!itemIdx){
+	    		itemIdx = 0;
+	    	}
+            this._values.values[itemIdx] = {
                 value: val
             }
+            
+            var item = this._items[itemIdx];
 
             function createValue(entry){
-            	$this._item.addClass('filled');
-                $this._render = RendererRepository.createRendererFor(entry);
-                $this._item.empty();
-                $this._item.append($this._render.getElement());
+            	item.addClass('filled');
+                var render = RendererRepository.createRendererFor(entry);
+                item.empty();
+                item.append(render.getElement());
+                $this._renders[itemIdx] = render;
 
-                var removeButton = $this.$('<i class="btn btnDelete fas fa-times" title="Удалить"></i>');
+                var removeButton = $this.$('<i class="btn btnDelete fas fa-times-circle" title="Удалить"></i>');
                 removeButton.click(function(evt){
                     evt.stopPropagation();
-                    $this.removeBinding();
+                    if($this._scheme.multiple){
+                    	$this.removeItem(parseInt(item.attr('idx')));
+                    } else {
+                    	$this.removeBinding(parseInt(item.attr('idx')));
+                    }
                     
                 });
-                $this._item.append(removeButton);
+                item.append(removeButton);
             }
 
-            if(this._render){
-                this._render.destroy();
+            if(this._renders[itemIdx]){
+            	this._renders[itemIdx].destroy();
+            	this._renders[itemIdx] = null;
             }
             
-            this._item.empty();
-            this._item.removeClass('filled');
-            $this._item.text($this.generateEmptyName());
+            item.empty();
+            item.removeClass('filled');
+            item.text($this.generateEmptyName());
+
+            if($this._scheme.multiple){
+	    		var removeButton = $this.$('<i class="btn btnDelete fas fa-times-circle" title="Удалить"></i>');
+	            removeButton.click(function(evt){
+	                evt.stopPropagation();
+	                $this.removeItem(parseInt(item.attr('idx')));
+	            });
+	            item.append(removeButton);
+            }
+
             
 	        if(val && Object.keys(val).length > 0){
 	            if(entry){
@@ -143,15 +225,22 @@
 	        }
 	    },
 	    
-	    removeBinding: function(){
-            this._render.destroy();
-            this._item.find('.btnDelete').remove();
-            this._item.removeClass('filled');
-            
-            $this.setValue(null);
+	    removeBinding: function(itemIdx){
+	    	if(!itemIdx){
+	    		itemIdx = 0;
+	    	}
+	    	if(this._renders[itemIdx]){
+	    		this._renders[itemIdx].destroy();
+	    	}
+	    	var item = this._items[itemIdx];
+	    	if(item){
+	            item.find('.btnDelete').remove();
+	            item.removeClass('filled');
+	    	}
+            $this.setValue(null, null, itemIdx);
             $this.onchange();
             
-            this._item.text($this.generateEmptyName());
+            item.text($this.generateEmptyName());
         },
 	    
 	    getValue: function(){
@@ -160,15 +249,19 @@
 	    	}
 	    	return null;
 	    },
+	    
+	    getValues: function(){
+	    	
+	    },
 
-	    setValueFromEntry: function(entry){
+	    setValueFromEntry: function(entry, itemIdx){
 	        var val = {
                 workspaceId: entry.getWorkspace().getId(),
                 entryId: entry.getId(),
                 name: entry.getName()
             };
 
-	        this.setValue(val, entry);
+	        this.setValue(val, entry, itemIdx);
 	        this.onchange();
 	    }
 	},

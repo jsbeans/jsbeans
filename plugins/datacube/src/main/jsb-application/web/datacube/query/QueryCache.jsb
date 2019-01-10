@@ -334,16 +334,20 @@
 				
 				// copy data
 				if(otherDesc.rows > 0){
+					var otherRows = otherDesc.rows;
 					var cacheIt = otherCache.openTableIterator(otherDesc);
 					var rows = [];
-					for(var i = 0; i < otherDesc.rows; i++){
-						var el = cacheIt.next();
-						if(!el){
-							break;
+					try {
+						for(var i = 0; i < otherRows; i++){
+							var el = cacheIt.next();
+							if(!el){
+								break;
+							}
+							rows.push(el.DATA);
 						}
-						rows.push(el.DATA);
+					} finally {
+						try { cacheIt.close(); } catch(e){}	
 					}
-					try { cacheIt.close(); } catch(e){}
 					
 					$this.appendTableRows($this.cacheMap[qId], rows, 0, true);
 				}

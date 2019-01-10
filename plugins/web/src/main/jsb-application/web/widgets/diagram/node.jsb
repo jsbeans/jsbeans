@@ -44,6 +44,7 @@
 				if(!$this.getElement().is(':visible')){
 					return;
 				}
+				$this.updateConnectors();
 				$this.updateLinks();
 				$this.diagram.updateLayout($this);
 			};
@@ -266,7 +267,7 @@
 				origin = handle;
 			}
 			if(!origin){
-				throw 'Invalid connector descriptor specified - either origin or handle should existed';
+				throw new Error('Invalid connector descriptor specified - either origin or handle should existed');
 			}
 			opts.origin = origin;
 			opts.handle = handle;
@@ -315,6 +316,13 @@
 			var links = this.getLinks();
 			for(var i in links){
 				links[i].redraw();
+			}
+		},
+		
+		updateConnectors: function(){
+			var conns = this.getConnectors();
+			for(var cId in conns){
+				conns[cId].updateOrigin();
 			}
 		},
 		

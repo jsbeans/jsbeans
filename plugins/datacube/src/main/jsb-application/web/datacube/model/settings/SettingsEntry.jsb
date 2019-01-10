@@ -1,6 +1,7 @@
 {
 	$name: 'DataCube.Model.SettingsEntry',
 	$parent: 'JSB.Workspace.Entry',
+	$require: ['Unimap.ValueSelector'],
 	
 	$scheme: {
 		
@@ -29,14 +30,50 @@
         return scheme;
 	},
 	
+	createContext: function(settings){
+		return new ValueSelector({
+			bootstrap: 'Datacube.Unimap.Bootstrap',
+			values: settings,
+			scheme: $this.extractSettingsScheme(),
+			createDefaultValues: true,
+			updateValues: true
+		});
+	},
+	
 	$client: {
 		_settings: null,
+		_settingsContext: null,
+		
+		loadSettingsContext: function(c){
+			if(this._settingsContext){
+				if(c){
+					c.call($this, this._settingsContext);
+				}
+				return;
+			}
+			this.loadSettings(function(settings, fail){
+				if(fail){
+					if(c){
+						c.call($this, null, fail);
+					}
+					return;
+				}
+				$this._settingsContext = $this.createContext(settings);
+				if(c){
+					c.call($this, $this._settingsContext);
+				}
+			});
+		},
 		
 		loadSettings: function(callback){
 			if($this._settings){
 				callback.call($this, JSB.clone($this._settings));
 			} else {
-				this.server().getSettings(function(settings){
+				this.server().getSettings(function(settings, fail){
+					if(fail){
+						callback.call($this, null, fail);
+						return;
+					}
 					$this._settings = settings;
 					callback.call($this, JSB.clone(settings));
 				});
@@ -59,16 +96,23 @@
 		},
 		
 		_updateClientSettings: function(settings){
-			if($this._settings && !JSB.isEqual($this._settings, settings)){
+			if(!$this._settings || !JSB.isEqual($this._settings, settings)){
 				$this._settings = settings;
 				$this.publish('DataCube.Model.SettingsEntry.settingsUpdated', JSB.clone(settings));
+				
+				if($this._settingsContext){
+					// renew context
+					$this._settingsContext = $this.createContext(settings);
+					
+					$this.publish('DataCube.Model.SettingsEntry.settingsContextUpdated', $this._settingsContext);
+				}
+				
 			}
 		}
 	},
 	
 	$server: {
-		$require: ['JSB.Workspace.WorkspaceController',
-		           'Unimap.ValueSelector'],
+		$require: ['JSB.Workspace.WorkspaceController'],
 		_settingsContext: null,
 	
 		$bootstrap: function(){
@@ -98,13 +142,7 @@
 		
 		getSettingsContext: function(){
 			if(!this._settingsContext){
-				this._settingsContext = new ValueSelector({
-					bootstrap: 'Datacube.Unimap.Bootstrap',
-					values: this.getSettings(),
-					scheme: this.extractSettingsScheme(),
-					createDefaultValues: true,
-					updateValues: true
-				});
+				this._settingsContext = this.createContext(this.getSettings());
 			}
 			
 			return this._settingsContext;
