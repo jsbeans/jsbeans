@@ -132,8 +132,20 @@
         }
     },
 
-    removeValue: function(){
-        //
+    removeValue: function(index){
+    	if(!this._values){
+    		return;
+    	}
+
+        if(index){
+            if(this._values[index]){
+                this._values.splice(index, 1);
+            }
+        } else {
+            if(this._values[0]){
+                this._values.splice(0, 1);
+            }
+        }
     },
 
     removeValues: function(){
