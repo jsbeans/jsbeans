@@ -10,10 +10,14 @@
 
             this.addClass('jsb-searchBox');
 
+            if(this.options.useFA){
+                this.addClass('useFA');
+            }
+
             this.editor = this.$('<input type="text" placeholder="Поиск...">');
             this.append(this.editor);
 
-            var searchBtn = this.$('<div class="search"></div>');
+            var searchBtn = this.$('<div class="searchIcon"></div>');
             this.append(searchBtn);
             searchBtn.click(function(){
                 $this.toggleClass('open');
@@ -54,6 +58,7 @@
 
 	    options: {
 	        placeholder: null,
+	        useFA: false,
 
 	        // events
 	        onChange: null,

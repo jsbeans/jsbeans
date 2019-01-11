@@ -4,6 +4,8 @@
 	           'JSB.Widgets.DomController',
 	           'css:Control.css'],
 	$client: {
+	    _innerBeans: [],
+
 		$constructor: function(opts){
 		    opts = opts || {};
 		    $base(opts);
@@ -40,17 +42,13 @@
         },
 
         append: function(c){
-            var ret = this.getElement().append(this.resolveElement(c));
+            var ret = this.getElement().append(this._resolveElement(c, true));
+
             return ret;
         },
 
 		attach: function(){
-			if(!this.replacingMark || this.isAttached()){
-				return;
-			}
-			this.replacingMark.before(this.getElement());
-			this.replacingMark.remove();
-			this.replacingMark = null;
+		    // todo
 		},
 
 		attr: function(){
@@ -68,22 +66,27 @@
 				this.removeClass(c);
 			}
 		},
+
+		contains: function(element){
+		    return this.$.contains(this.getElement(), element);
+		},
 		
 		destroy: function(){
+		    /*
+		    for(var i = 0; i < this._innerBeans.length; i++){
+		        if(this.contains(this._innerBeans.getElement())){
+		            this._innerBeans.destroy();
+                }
+		    }
+		    */
+
 			if(this.getElement()){
 				this.getElement().remove();
 			}
 		},
 
 		detach: function(){
-			if(!this.isAttached()){
-				return;
-			}
-
-			// create replacing placeholder mark
-			this.replacingMark = this.$('<div id="'+this.getId()+'_rmark"></div>');
-			this.getElement().after(this.replacingMark);
-			this.getElement().detach();
+		    // todo
 		},
 
 		enable: function(b){
@@ -104,24 +107,6 @@
             return this.options[opt];
         },
 
-        getRelativePosition: function(relativeToElt){
-            var pt = {
-                left: 0,
-                top: 0
-            };
-            var curElt = this.getElement();
-            var wOff = curElt.offset();
-            if(relativeToElt == null){
-                return wOff;
-            }
-            var targetElt = this.$(relativeToElt);
-            var rOff = targetElt.offset();
-            return {
-                left: wOff.left - rOff.left,
-                top: wOff.top - rOff.top
-            }
-        },
-
 		hasClass: function(cls){
 			return this.getElement().hasClass(cls);
 		},
@@ -134,26 +119,8 @@
 			return this.$.contains(document, this.getElement().get(0));
 		},
 
-		isContentReady: function(sel){
-			if(!sel){
-				sel = '*[jsb]';
-			}
-			var ctrls = this.find(sel);
-			for(var i = 0; i < ctrls.length; i++){
-				if(!this.$(ctrls[i]).attr('_id')){
-					return false;
-				}
-			}
-			return true;
-		},
-
 		isEnabled: function(){
 			return this.options.enabled;
-		},
-
-		localToScreen: function(x, y){
-			var pt = this.getRelativePosition();
-			return {x: x + pt.left, y: y + pt.top};
 		},
 
 		on: function(eventName, func){
@@ -167,7 +134,7 @@
 		},
 
 		prepend: function(c){
-			var ret = this.getElement().prepend(this.resolveElement(c));
+			var ret = this.getElement().prepend(this._resolveElement(c, true));
 			return ret;
 		},
 
@@ -175,26 +142,27 @@
 			return this.getElement().removeClass(c);
 		},
 
-        resolveElement: function(c){
-            if(JSB().isFunction(c.getElement)){
-                c = c.getElement();
-            } else if(!JSB().isString(c)){
-                c = this.$(c);
-            }
-            return c;
-        },
-
 		setOption: function(opt, b){
 			this.options[opt] = b;
-		},
-		
-		screenToLocal: function(x, y){
-			var pt = this.getRelativePosition();
-			return {x: x - pt.left, y: y - pt.top};
 		},
 
 		toggleClass: function(c){
             return this.getElement().toggleClass(c);
-		}
+		},
+
+		// private methods
+        _resolveElement: function(c, isChildBean){
+            if(JSB.isInstanceOf(c, 'JSB.Controls.Control') || JSB.isInstanceOf(c, 'JSB.Widgets.Control')){
+                c = c.getElement();
+
+                if(isChildBean){
+                    this._innerBeans.push(c);
+                }
+            } else if(!JSB().isString(c)){
+                c = this.$(c);
+            }
+
+            return c;
+        }
 	}
 }

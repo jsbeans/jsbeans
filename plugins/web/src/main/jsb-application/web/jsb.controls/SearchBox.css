@@ -37,7 +37,7 @@
 }
 
 /* search btn */
-.jsb-searchBox > .search {
+.jsb-searchBox > .searchIcon {
     position: absolute;
     margin: auto;
     top: 0;
@@ -52,8 +52,27 @@
     cursor: pointer;
 }
 
-.jsb-searchBox > .search::before,
-.jsb-searchBox > .search::after {
+.jsb-searchBox.useFA > .searchIcon {
+    font-family: Font Awesome\ 5 Free;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+    font-weight: 900;
+    font-size: 25px;
+    padding: 7px;
+    color: white;
+}
+
+.jsb-searchBox.useFA > .searchIcon:before {
+    content: "\f002";
+}
+
+.jsb-searchBox:not(.useFA) > .searchIcon::before,
+.jsb-searchBox:not(.useFA) > .searchIcon::after {
     content: "";
     position: absolute;
     margin: auto;
@@ -64,7 +83,7 @@
     transition: all .5s;
 }
 
-.jsb-searchBox > .search::before {
+.jsb-searchBox:not(.useFA) > .searchIcon::before {
     top: 12px;
     left: 12px;
     width: 12px;
@@ -73,7 +92,7 @@
     transform: rotate(45deg);
 }
 
-.jsb-searchBox > .search::after {
+.jsb-searchBox:not(.useFA) > .searchIcon::after {
     top: -5px;
     left: -5px;
     width: 12px;
@@ -89,18 +108,22 @@
     cursor: text;
 }
 
-.jsb-searchBox.open > .search {
+.jsb-searchBox.open > .searchIcon {
     background: #151515;
-    /*z-index: 6;*/
+    padding: 7.5px 0 0 10.5px;
 }
 
-.jsb-searchBox.open > .search::before {
+.jsb-searchBox.useFA.open > .searchIcon:before {
+    content: "\f00d";
+}
+
+.jsb-searchBox:not(.useFA).open > .searchIcon::before {
     top: 0;
     left: 0;
     width: 25px;
 }
 
-.jsb-searchBox.open > .search::after {
+.jsb-searchBox:not(.useFA).open > .searchIcon::after {
     top: 0;
     left: 0;
     width: 25px;
