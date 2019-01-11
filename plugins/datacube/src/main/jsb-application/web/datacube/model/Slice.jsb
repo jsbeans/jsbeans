@@ -116,6 +116,14 @@
 			});
 		},
 		
+		destroy: function(){
+			if($this.queryCache){
+				$this.queryCache.destroy();
+				$this.queryCache = null;
+			}
+			$base();
+		},
+		
 		setName: function(name){
 			$base(name);
 			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});

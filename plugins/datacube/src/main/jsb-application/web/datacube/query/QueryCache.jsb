@@ -31,6 +31,7 @@
 		},
 		
 		destroy: function(){
+			$this.clear();
 			QueryCacheController.unregisterCache(this);
 			$base();
 		},
@@ -394,7 +395,7 @@
 				var rows = [];
 				for(var i = 0; i < $this.batchSize; i++){
 					var el = desc.it.next();
-					if(!el){
+					if(!el || $this.isDestroyed()){
 						try { desc.it.close(); } catch(e){}
 						desc.it = null;
 						desc.complete = true;
@@ -624,7 +625,7 @@
 
 				return {
 					next: function(){
-						if(closed){
+						if(closed || $this.isDestroyed()){
 							return;
 						}
 						
