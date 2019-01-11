@@ -226,6 +226,10 @@
         return this._scheme;
     },
 
+    getValues: function(){
+        return this._values;
+    },
+
     updateValues: function(scheme, fullValues){
         scheme = scheme || this._scheme;
         fullValues = fullValues || {
