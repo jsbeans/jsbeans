@@ -9,6 +9,7 @@
     $constructor: function(opts){
         this._scheme = opts.scheme;
         this._values = opts.values && opts.values.values || {};
+        this._commonFields = opts.values && opts.values.commonFields || {};
         this._linkedFields = opts.values && opts.values.linkedFields || {};
         this._context = opts.context;
 
@@ -224,6 +225,14 @@
 
     getScheme: function(){
         return this._scheme;
+    },
+
+    getValues: function(){
+        return {
+            commonFields: this._commonFields,
+            linkedFields: this._linkedFields,
+            values: this._values
+        }
     },
 
     updateValues: function(scheme, fullValues){
