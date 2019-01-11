@@ -1018,7 +1018,7 @@
 //                    query.$from ? '$from' : query.$join ? '$join' : query.$union ? '$union' : query.$provider ? '$provider' : '',
 //                    sql
 ////            );
-//if (sql =='"Q2"."ChiefName"'
+//if (sql =='"Q4"."KPP"'
 //) {
 //    debugger;
 //    $this._translateFieldInternal(field, context, useAlias, callerContext);
@@ -1060,7 +1060,7 @@
             */
 
             function translateSourceField(sourceQuery) {
-                if (sourceQuery.$provider && !QueryUtils.queryHasBody(sourceQuery)) {
+                if (/*sourceQuery.$provider && */!QueryUtils.queryHasBody(sourceQuery)) {
                     return $this._translateExpression(sourceQuery.$select[field], sourceQuery);
                 }
                 return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);

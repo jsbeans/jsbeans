@@ -1371,6 +1371,14 @@
                 }
             }
             function extractFieldType(field){
+                if (field.startsWith('${') && field.endsWith('}')) {
+                    var param = field;
+                    if(query.$params && query.$params.hasOwnProperty(param)) {
+                        return query.$params[param].$type;
+                    }
+                    return null;
+                }
+
                 if (query.$from) {
                     if (JSB.isString(query.$from)) {
                         var type = sliceFieldType(query.$from, field);

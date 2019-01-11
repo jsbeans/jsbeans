@@ -21,7 +21,7 @@
 		    $this.query = JSB.clone(dcQuery);
 			$this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
 			$this.queryEngine = queryEngine;
-		    $this.params = params;
+		    $this.params = params || {};
 
 		    $this.tracer = $this.traceEnabled ? new QueryTracer($this.qid) : null;
             $this.tracer && $this.tracer.start({
