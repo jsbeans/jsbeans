@@ -30,6 +30,7 @@
             getMainSelector: this.getMainSelector,
             getRenderByName: this.getRenderByName,
             getRenderName: this.getRenderName,
+            removeValue: this.removeValue,
             removeAllValues: this.removeAllValues,
             setName: this.setName,
             setFullValue: this.setFullValue,
