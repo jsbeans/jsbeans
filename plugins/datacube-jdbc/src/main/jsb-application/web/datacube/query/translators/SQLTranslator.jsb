@@ -267,7 +267,14 @@
             if (JSB.isString(exp)) {
                 if (exp.match(/^\$\{.*\}/g)) {
                     // is parameter value - as is
-                    return exp;
+
+                    return exp + (
+                        dcQuery.$params
+                            && dcQuery.$params[exp]
+                            && dcQuery.$params[exp].$type
+                        ? '::' + JDBC.translateType(dcQuery.$params[exp].$type, $this.vendor)
+                        : ''
+                    );
                 } else {
                     // is field
                     return this._translateField(exp, dcQuery.$context, useAlias, dcQuery.$context);

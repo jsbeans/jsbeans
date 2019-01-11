@@ -165,6 +165,7 @@
 		        desc: 'Подзапрос',
 		        values: {
 		            '$views': '$views',
+		            '$params': '$params',
 		            '$select': '$select',
 		            '$groupBy': '$groupBy',
 		            '$filter': '$filter',
@@ -189,7 +190,7 @@
 		        optional: ['$context', '$filter', '$groupBy', '$distinct',
 		                '$postFilter', '$cubeFilter', '$sort', '$finalize',
 		                '$sql','$limit', '$offset', '$views',
-		                '$from', '$join', '$union', '$select', '$recursive', '$cube', '$provider'],
+		                '$from', '$join', '$union', '$recursive', '$cube', '$provider'],
 		        incompatible: [
 		            ['$from', '$join', '$union', '$recursive', '$cube', '$provider']
 		        ]
@@ -223,6 +224,17 @@
 		        category: 'Источник запроса',
 		        desc: 'Идентификатор первичного источника данных',
 		        values: []
+		    });
+
+		    new this.ComplexObject({
+		        name: '$params',
+		        desc: 'Определение параметров и переопределение значений по умолчанию',
+		        displayName: 'Параметры',
+		        category: 'Выражения запроса',
+		        customKey: '#paramName',
+		        values: {
+		            '#paramName': '$paramDefinition'
+		        },
 		    });
 
 		    new this.ComplexObject({
@@ -1346,6 +1358,26 @@
 		        },
 		        optional: ['$context']
 		    });
+
+		    new this.ComplexObject({
+		        name: '$paramDefinition',
+		        displayName: 'Параметр',
+		        desc: 'Параметр и значение по умолчанию',
+		        values: {
+		            '$type': '$typeName',
+		            '$value': '$const',
+		            '$defaultValue': '$const'
+		        },
+		        optional: ['$type', '$value']
+		    });
+
+		    new this.EConstString({
+		        name: '$typeName',
+		    	displayName: '$type',
+		        desc: 'Тип значения',
+		        editable: true,
+		        value: 'string',
+		    });
 		
 		    new this.SingleObject({
 		        name: '$const',
@@ -1413,7 +1445,10 @@
 		
 		    new this.EConstString({
 		        name: '$param',
-		        disabled:true
+		    	displayName: 'Параметр',
+		        desc: 'Подставить значение глобального параметра',
+		        editable: true
+		        //disabled:true
 		    });
 		    
 		    new this.EConstString({

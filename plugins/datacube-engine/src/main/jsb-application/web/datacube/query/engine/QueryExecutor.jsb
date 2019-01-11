@@ -43,6 +43,8 @@
 
                 $this._prepareQuery();
 
+                $this._defineParametersDefaultValues();
+
                 $this.providers = QueryUtils.extractProviders($this.query, $this.cube);
                 $this.tracer && $this.tracer.profile('query providers extracted', Object.keys($this.providers).length);
 
@@ -161,6 +163,19 @@
 		_prepareQuery: function() {
 		    $this.originalQuery = $this.query;
 		    return $this.query = $this.preparedQuery = QueryTransformer.transform($this.query, $this.cube || $this.providers[0]);
+		},
+
+		_defineParametersDefaultValues: function() {
+            QueryUtils.walkQueries($this.query, {},
+                function(q){
+                    for(var p in q.$params) {
+                        var name = p.substring(2, p.length - 1);
+                        if (!$this.params.hasOwnProperty(name)) {
+                            $this.params[name] = q.$params[p].$defaultValue;
+                        }
+                    }
+                }
+            );
 		},
 
 //		_getProviderGroupKey: function (provider) {
