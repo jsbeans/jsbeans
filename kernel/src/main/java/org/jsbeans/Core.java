@@ -33,8 +33,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 //import ch.qos.logback.classic.Level;
@@ -115,31 +117,30 @@ public class Core {
     }
     
     private static void resolvePluginDependencies() {
-    	orderedPluginTypes.addAll(pluginTypes);
-    	orderedPluginTypes.sort(new Comparator<Class<? extends PluginActivator>>() {
-			@Override
-			public int compare(Class<? extends PluginActivator> o1, Class<? extends PluginActivator> o2) {
-				DependsOn depO1Annot = o1.getAnnotation(DependsOn.class);
-				if (depO1Annot != null){
-					for (Class<? extends PluginActivator> depClass : depO1Annot.value()){
-						if (depClass.equals(o2) || this.compare(depClass, o2) == 1) {
-		                    return 1;
-		                }
-					}
-				}
-				
-				DependsOn depO2Annot = o2.getAnnotation(DependsOn.class);
-				if (depO2Annot != null){
-					for (Class<? extends PluginActivator> depClass : depO2Annot.value()){
-						if (depClass.equals(o1) || this.compare(o1, depClass) == -1) {
-		                    return -1;
-		                }
-					}
-				}
-				
-				return 0;
-			}
-		});
+    	Set<Class<? extends PluginActivator>> pluginTypesSet = new HashSet<Class<? extends PluginActivator>>();
+    	Set<Class<? extends PluginActivator>> usedPluginTypesSet = new HashSet<Class<? extends PluginActivator>>();
+    	pluginTypesSet.addAll(pluginTypes);
+    	
+    	while(pluginTypesSet.size() > 0){
+	    	for(Class<? extends PluginActivator> paType : pluginTypesSet){
+	    		DependsOn depAnnot = paType.getAnnotation(DependsOn.class);
+	    		boolean hasDeps = false;
+	    		if(depAnnot != null){
+	    			for (Class<? extends PluginActivator> depClass : depAnnot.value()){
+	    				if(!usedPluginTypesSet.contains(depClass)){
+	    					hasDeps = true;
+	    					break;
+	    				}
+	    			}
+	    		}
+	    		if(!hasDeps){
+	    			orderedPluginTypes.add(paType);
+	    			usedPluginTypesSet.add(paType);
+	    			pluginTypesSet.remove(paType);
+	    			break;
+	    		}
+	    	}
+    	}
     }
 
     private static void loadBaseConfiguration() {

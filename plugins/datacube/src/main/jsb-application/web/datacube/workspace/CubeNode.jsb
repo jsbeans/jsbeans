@@ -25,7 +25,7 @@
 			$this.toolbox.append(createSliceBtn.getElement());
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender){
-				if(sender != $this.descriptor.entry){
+				if(sender != $this.getTargetEntry()){
 					return;
 				}
 				$this.update();

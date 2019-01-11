@@ -272,7 +272,7 @@
                                 $select: q
                             });
                         }
-                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
+                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, false);
                         break;
                     case 'dataProvider':
                         var fields = obj.provider.extractFields();
@@ -283,13 +283,13 @@
                         obj.query = JSB.merge(obj.query, {
                             $select: q
                         });
-                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
+                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, false);
                         break;
                     case 'slice':
                     	if(JSB.isEqual(obj.query, obj.slice.getQuery())){
-                    		this.it = obj.slice.executeQuery({useCache: true});
+                    		this.it = obj.slice.executeQuery({useCache: false});
                     	} else {
-                    		this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
+                    		this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, false);
                     	}
                         break;
                     default:

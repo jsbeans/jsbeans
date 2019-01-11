@@ -605,6 +605,7 @@
 	margin: 8px;
 	width: 25px;
     height: 25px;
+    border-radius: 20px;
 }
 
 .schemeEditor[sname = "$query"] > .btnCreate > ._dwp_icon {
