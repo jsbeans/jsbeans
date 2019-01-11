@@ -66,7 +66,7 @@ public class JsBridge {
         LockEntry l = (LockEntry) lockMap.get(str);
         if(l != null){
 	        if(l.getLocks() > 0) {
-	            l.unlock();
+        		l.unlock();
 	            if(l.canRemove()) {
 	            	synchronized (lockMap) {
 	            		if (lockMap.containsKey(str) && l.canRemove()){

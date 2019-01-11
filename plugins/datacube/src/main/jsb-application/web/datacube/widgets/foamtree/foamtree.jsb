@@ -275,7 +275,7 @@
                                 var name = $this._schemeOpts.series[i].nameSelector.value(),
                                     value = $this._schemeOpts.series[i].dataSelector.value();
 
-                                if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
+                                if($this._schemeOpts.series[i].skipEmptyNamedGroups && (!name || name.length === 0)){
                                     break;
                                 }
 

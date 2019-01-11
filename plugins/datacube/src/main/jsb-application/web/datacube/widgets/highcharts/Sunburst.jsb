@@ -318,7 +318,7 @@
                                     parent = prevId;
                                 }
 
-                                if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
+                                if($this._schemeOpts.series[i].skipEmptyNamedGroups && (!name || name.length === 0)){
                                     break;
                                 }
 

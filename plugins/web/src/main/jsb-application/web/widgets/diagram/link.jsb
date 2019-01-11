@@ -187,7 +187,7 @@
 		getTarget: function(){
 			return this.target;
 		},
-
+		
 		createPathFromPoints: function(pts){
 			var pathStr = '';
 			for(var i = 0; i < pts.length; i++ ){
@@ -321,11 +321,13 @@
 				
 				if(this.sourceHead){
 					var odd = '';
+					var sourceOffset = this.options.heads.source.offset || 0;
+					var srcPoint = pathNode.getPointAtLength(sourceOffset + 1);
 					if(pathLength > 1){
-						var o = _getOrientation(ptSource, 1);
+						var o = _getOrientation(ptSource, sourceOffset + 1);
 						odd = ' rotate(' + o + ')';
 					}
-					this.sourceHead.attr('transform', 'translate(' + ptSource.x + ' ' + ptSource.y + ')' + odd);
+					this.sourceHead.attr('transform', 'translate(' + srcPoint.x + ' ' + srcPoint.y + ')' + odd);
 					
 					// strip source
 					if(this.options.heads.source.strip && pathLength > this.options.heads.source.strip){
@@ -337,11 +339,13 @@
 				}
 				if(this.targetHead){
 					var odd = '';
+					var targetOffset = this.options.heads.target.offset || 0;
+					var tgtPoint = pathNode.getPointAtLength(pathLength - 1 - targetOffset);
 					if(pathLength > 1){
-						var o = _getOrientation(ptTarget, pathLength - 1);
+						var o = _getOrientation(ptTarget, pathLength - 1 - targetOffset);
 						odd = ' rotate(' + o + ')';
 					}
-					this.targetHead.attr('transform', 'translate(' + ptTarget.x + ' ' + ptTarget.y + ')' + odd);
+					this.targetHead.attr('transform', 'translate(' + tgtPoint.x + ' ' + tgtPoint.y + ')' + odd);
 					
 					// strip target
 					if(this.options.heads.target.strip && pathLength > this.options.heads.target.strip){

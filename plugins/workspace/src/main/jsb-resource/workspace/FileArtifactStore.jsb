@@ -173,7 +173,11 @@
 				}
 				if(Object.keys(entry._artifacts).length == 0){
 					if(FileSystem.exists(eDir)){
-						FileSystem.remove(eDir);
+						try {
+							FileSystem.remove(eDir);
+						} catch(ed){
+							JSB.getLogger().warn(ed);
+						}
 					}
 				}
 			} catch(e){

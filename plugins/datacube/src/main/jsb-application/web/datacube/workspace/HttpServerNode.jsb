@@ -29,7 +29,7 @@
 			this.find('.status').empty().append('Сервисов: <span class="count">0</span>');
 			
 /*			
-			var details = this.descriptor.entry.getDetails();
+			var details = $this.getTargetEntry().getDetails();
 			if(!details || !details.updated){
 				this.find('.status').empty().text('Схема не загружена');
 			} else {

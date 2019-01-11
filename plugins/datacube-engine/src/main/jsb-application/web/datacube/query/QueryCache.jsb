@@ -31,6 +31,7 @@
 		},
 		
 		destroy: function(){
+			$this.clear();
 			QueryCacheController.unregisterCache(this);
 			$base();
 		},
@@ -334,16 +335,20 @@
 				
 				// copy data
 				if(otherDesc.rows > 0){
+					var otherRows = otherDesc.rows;
 					var cacheIt = otherCache.openTableIterator(otherDesc);
 					var rows = [];
-					for(var i = 0; i < otherDesc.rows; i++){
-						var el = cacheIt.next();
-						if(!el){
-							break;
+					try {
+						for(var i = 0; i < otherRows; i++){
+							var el = cacheIt.next();
+							if(!el){
+								break;
+							}
+							rows.push(el.DATA);
 						}
-						rows.push(el.DATA);
+					} finally {
+						try { cacheIt.close(); } catch(e){}	
 					}
-					try { cacheIt.close(); } catch(e){}
 					
 					$this.appendTableRows($this.cacheMap[qId], rows, 0, true);
 				}
@@ -369,6 +374,9 @@
 			if(!position){
 				position = 0;
 			}
+			
+			JSB.cancelDefer($this.getId() + 'closeIterator_' + desc.qId);
+			
 			if(!desc.it){
 				desc.it = $this.cube.executeQuery(desc.query, desc.params, desc.provider);
 				desc.lastUpdated = Date.now();
@@ -382,14 +390,12 @@
 						break;
 					}
 				}
-			} else {
-				JSB.cancelDefer($this.getId() + 'closeIterator_' + desc.qId);
 			}
 			if(!desc.complete){
 				var rows = [];
 				for(var i = 0; i < $this.batchSize; i++){
 					var el = desc.it.next();
-					if(!el){
+					if(!el || $this.isDestroyed()){
 						try { desc.it.close(); } catch(e){}
 						desc.it = null;
 						desc.complete = true;
@@ -619,7 +625,7 @@
 
 				return {
 					next: function(){
-						if(closed){
+						if(closed || $this.isDestroyed()){
 							return;
 						}
 						
@@ -701,12 +707,19 @@
 					dataHash: ''
 				};
 				$this.removeCacheTable(cDesc);
+				
+				$this.lock('cacheFill_' + qId);
+				try {
+					$this._fillNextBatch(cDesc);
+				} finally {
+					$this.unlock('cacheFill_' + qId);
+				}
+				
 				$this.cacheMap[qId] = cDesc;
 			} finally {
 				$this.unlock('cache_' + qId);
 			}
 			
-			$this._fillNextBatch(this.cacheMap[qId]);
 			$this.store();
 			
 			return produceIterator(this.cacheMap[qId]);

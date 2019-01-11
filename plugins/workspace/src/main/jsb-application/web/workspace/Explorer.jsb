@@ -1687,11 +1687,21 @@
 			var nTree = {};
 			for(var chId in children){
 				var chEntry = children[chId];
+				if(!chEntry){
+					// failed entry
+					JSB.getLogger().error('Missing entry with id: "' + chId + '" in parent "' + pEntry.getName() + '"');
+					continue;
+				}
 				var isLink = false;
 				var linkEntry = null;
 				if(chEntry.isLink()){
 					isLink = true;
 					linkEntry = chEntry.getTargetEntry();
+					if(!linkEntry){
+						// target entry has already been removed
+						JSB.getLogger().error('Target entry of link "'+chEntry.getId()+'" has already been removed');
+						continue;
+					}
 				}
 				nTree[chId] = {
 					children: {},

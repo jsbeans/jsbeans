@@ -1142,6 +1142,9 @@
 						if($this.completed[iteratorId]){
 							break;
 						}
+						if(!$this.iterators[iteratorId]){
+							throw new Error('Fetch broke');
+						}
 						var el = $this.iterators[iteratorId].next();
 /*						var el = null;
 						try {

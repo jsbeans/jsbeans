@@ -202,17 +202,25 @@
 				$this.executeScheduledJob(params);
 			});
 		},
-
-		ensureQueryCache: function(){
-			if(!this.queryCache){
-				var mtx = this.getId() + '_queryCache';
-				JSB.getLocker().lock(mtx);
-				if(!this.queryCache){
-					this.queryCache = new QueryCache(this, this.cube);
-				}
-				JSB.getLocker().unlock(mtx);
+		
+		destroy: function(){
+			if($this.queryCache){
+				$this.queryCache.destroy();
+				$this.queryCache = null;
 			}
-			return this.queryCache;
+			$base();
+		},
+		
+		setName: function(name){
+			$base(name);
+			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
+			this.doSync();
+		},
+		
+		setQuery: function(q){
+			if(this.query && q && JSB.isEqual(this.query, q)){
+				return;
+			}
 		},
 
 		executeQuery: function(opts){

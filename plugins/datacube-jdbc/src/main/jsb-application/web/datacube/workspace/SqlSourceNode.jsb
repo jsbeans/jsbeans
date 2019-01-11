@@ -33,7 +33,7 @@
 				this.find('.status').empty().text(status);
 				return;
 			}
-			var details = this.descriptor.entry.getDetails();
+			var details = $this.getTargetEntry().getDetails();
 			if(!details || !details.updated){
 				this.find('.status').empty().text('Схема не загружена');
 			} else {

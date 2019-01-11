@@ -302,7 +302,7 @@
                         break;
                     case 'slice':
                     	if(JSB.isEqual(obj.query, obj.slice.getQuery())){
-                    		this.it = obj.slice.executeQuery({useCache: true});
+                    		this.it = obj.slice.executeQuery({useCache: false});
                     	} else {
                     		this.it = obj.cube.executeQuery(obj.query, obj.queryParams, true);
                     	}

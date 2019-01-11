@@ -15,8 +15,10 @@ public class LockEntry {
 	}
 	
 	public void unlock() {
+		try {
+			this._lock.unlock();
+		} catch(Exception e){}
 		this._count--;
-		this._lock.unlock();
 	}
 	
 	public ReentrantLock getLock() {

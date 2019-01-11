@@ -182,6 +182,11 @@
 					.attr('d', 'M0,0 L-20,-10 L-15,0 L-20,10 z');
 			});
 			
+			this.registerShape('diamond', function(){
+				return this.defs.append('path')
+					.attr('d', 'M0,0 L-20,-10 L-40,0 L-20,10 z');
+			});
+			
 			// add highlight filter
 			this.registerShape('highlightFilter', function(){
 				var filter = this.defs.append('filter');

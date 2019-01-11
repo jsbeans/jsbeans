@@ -1,5 +1,4 @@
 .entryBindingRender > .name {
-    width: 100px;
     display: inline-block;
     line-height: 22px;
     font-size: 15px;
@@ -8,7 +7,11 @@
     margin-right: 5px;
 }
 
-.entryBindingRender > .item {
+.entryBindingRender > .multipleContainer {
+	display: inline-block;
+}
+
+.entryBindingRender .item {
     background: rgba(24, 108, 138, 0.2);
     color: #555;
     border: 1px dotted rgba(2, 47, 78, 0.4);
@@ -22,28 +25,28 @@
     max-width: 100%;
 }
 
-.entryBindingRender > .item.filled {
+.entryBindingRender .item.filled {
     min-width: initial;
 }
 
-.entryBindingRender > .item:not(.filled){
+.entryBindingRender .item:not(.filled){
 	font-size: 11px;
 	color: #667b84;
 	padding: 5px 6px;
 }
 
-.entryBindingRender > .item > * {
+.entryBindingRender .item > * {
     vertical-align: middle;
 }
 
-.entryBindingRender > .item > .widgetRenderer {
+.entryBindingRender .item > .widgetRenderer {
     max-width: calc(100% - 17px);
 }
 
-.entryBindingRender > .item > .btnDelete {
+.entryBindingRender .item > .btnDelete {
     margin-left: 5px;
 }
 
-.entryBindingRender > .item > .error {
+.entryBindingRender .item > .error {
     color: darkred;
 }
