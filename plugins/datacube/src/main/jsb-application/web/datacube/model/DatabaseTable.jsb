@@ -14,7 +14,7 @@
 		},
 
 		extractFields: function(){
-		    throw new Error('Method "extractFields" should be overriden');
+		    throw new Error('Method "extractFields" should be overridden');
 		},
 
 		extractFieldsForDisplay: function(){

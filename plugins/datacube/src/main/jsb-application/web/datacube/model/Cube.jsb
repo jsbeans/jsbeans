@@ -108,44 +108,20 @@
 			var dimensions = {},
 			    fieldArray = [];
 
+
 			for(var i in this.fields){
 			    if(this.fields[i].isDimension){
 			        dimensions[i] = {
 			            slices: this.fields[i].slices
 			        }
 			    }
-
-			    fieldArray.push({
-			        isDimension: this.fields[i].isDimension,
-			        key: i
-			    });
 			}
-
-			fieldArray.sort(function(a, b){
-                if(a.isDimension && !b.isDimension){
-                    return -1;
-                }
-
-                if(!a.isDimension && b.isDimension){
-                    return 1;
-                }
-
-                if(a.key > b.key){
-                    return 1;
-                }
-
-                if(a.key < b.key){
-                    return -1;
-                }
-
-                return 0;
-            });
 
 			return {
 			    diagramOpts: this.diagramOpts,
 			    dimensions: dimensions,
-			    fields: this.fields,
-			    fieldArray: fieldArray,
+			    fields: this.extractFields(true),
+			    fieldsMap: this.fields,
 				slices: this.slices
 			};
 		},
@@ -238,7 +214,39 @@
 		    }
 		},
 
-		extractFields: function(){
+		extractFields: function(isForDisplay){
+		    if(isForDisplay){
+		        var fields = [];
+
+		        for(var i in this.fields){
+		            fields.push(JSB.merge(this.fields[i], {
+		                key: i
+		            }));
+		        }
+
+                fields.sort(function(a, b){
+                    if(a.isDimension && !b.isDimension){
+                        return -1;
+                    }
+
+                    if(!a.isDimension && b.isDimension){
+                        return 1;
+                    }
+
+                    if(a.key > b.key){
+                        return 1;
+                    }
+
+                    if(a.key < b.key){
+                        return -1;
+                    }
+
+                    return 0;
+                });
+
+		        return fields;
+		    }
+
 		    return this.fields;
 		},
 
@@ -337,7 +345,7 @@
 
 			this.sliceCount = Object.keys(this.slices).length;
 
-			this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.fields }, {session: true});
+			this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.extractFields(true) }, {session: true});
 
 			this.store();
 		},
@@ -352,26 +360,36 @@
 		        for(var i in sliceFields){
 		            if(!$this.fields[i]){
 		                $this.fields[i] = {
-		                    slices: [sliceId],
-		                    type: sliceFields[i].type
+		                    slices: {},
+		                    type: [sliceFields[i].type]
+                        };
+
+                        $this.fields[i].slices[sliceId] = {
+                            type: sliceFields[i].type
                         };
 
 		                isNeedUpdate = true;
 		            } else {
-		                $this.fields[i].slices.push(sliceId);
+		                if(!$this.fields[i].slices[sliceId]){
+                            $this.fields[i].slices[sliceId] = {
+                                type: sliceFields[i].type
+                            };
+
+                            isNeedUpdate = true;
+		                }
 		            }
 		        }
 
 		        // remove un-existed
 		        for(var i in $this.fields){
-		            var sliceIndex = $this.fields[i].slices.indexOf(sliceId);
+		            if($this.fields[i].slices[sliceId] && !sliceFields[i]){
+		                delete $this.fields[i].slices[sliceId];
 
-		            if(sliceIndex > -1 && !sliceFields[i]){
-		                $this.fields[i].slices.splice(sliceIndex, 1);
-
-		                if($this.fields[i].slices.length === 0){
+		                if(Object.keys($this.fields[i].slices).length === 0){
 		                    delete $this.fields[i];
 		                }
+
+		                isNeedUpdate = true;
 		            }
 		        }
 
@@ -389,7 +407,46 @@
 		    }
 
             if(isNeedUpdate){
-                this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.fields }, {session: true});
+                // check types conflicts
+                for(var i in this.fields){
+                    var type = null,
+                        conflictType = null,
+                        hasTypesConflict = false,
+                        conflictDesc = {};
+
+                    for(var j in this.fields[i].slices){
+                        var curType = this.fields[i].slices[j].type;
+
+                        if(!type){  // first element of object
+                            type = curType;
+                            conflictType = type;
+                            conflictDesc[type] = [j];
+                        } else {
+                            if(type !== curType){
+                                hasTypesConflict = true;
+
+                                if(conflictDesc[curType]){
+                                    conflictDesc[curType].push(j);
+                                } else {
+                                    conflictDesc[curType] = [j];
+                                    conflictType += '/' + curType;
+                                }
+                            }
+                        }
+                    }
+
+                    this.fields[i].hasTypesConflict = hasTypesConflict;
+
+                    if(hasTypesConflict){
+                        this.fields[i].conflictDesc = conflictDesc;
+                        this.fields[i].type = conflictType;
+                    } else {
+                        this.fields[i].conflictDesc = undefined;
+                        this.fields[i].type = type;
+                    }
+                }
+
+                this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.extractFields(true) }, {session: true});
 
                 if(!noStore){
                     this.store();

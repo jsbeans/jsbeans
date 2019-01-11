@@ -109,7 +109,7 @@
 			var q = params.query;
 			if(Object.keys(q.$select).length == 0){
 				// insert all cube fields
-				var fields = cube.getManagedFields();
+				var fields = cube.extractFields();
 				for(var fName in fields){
 					q.$select[fName] = fName;
 				}

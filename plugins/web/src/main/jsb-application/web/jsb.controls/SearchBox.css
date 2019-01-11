@@ -47,9 +47,12 @@
     height: 40px;
     background: crimson;
     border-radius: 50%;
-    transition: all 1s;
     z-index: 5;
     cursor: pointer;
+}
+
+.jsb-searchBox:not(.useFA) > .searchIcon {
+    transition: all 1s;
 }
 
 .jsb-searchBox.useFA > .searchIcon {

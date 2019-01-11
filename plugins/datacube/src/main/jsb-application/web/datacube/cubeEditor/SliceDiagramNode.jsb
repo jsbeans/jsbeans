@@ -207,29 +207,33 @@
                     return 0;
                 });
 
-                var fieldsElementsData = d3.select(this.fieldList.getElement().get(0)).selectAll('div.sliceField').data(fields);
+                var fieldsBox = d3.select(this.fieldList.getElement().get(0));
 
                 // enter
-                var fieldsElementsEnter = fieldsElementsData.enter().append('div').classed('cubeFieldIcon sliceField', true);
+                fieldsBox.selectAll('div.sliceField').data(fields).enter().append(function(d){
+                    var el = $this.$('<div class="cubeFieldIcon sliceField"></div>');
 
-                fieldsElementsEnter.append('div').classed('key', true);
-                fieldsElementsEnter.append('div').classed('type', true);
+                    el.append('<div class="key"></div>');
+                    el.append('<div class="type"></div>');
+
+                    return el.get(0);
+                });
 
                 // update
-                var fieldsElements = d3.select(this.fieldList.getElement().get(0)).selectAll('div.sliceField');
+                var sliceFields = fieldsBox.selectAll('div.sliceField').data(fields);
 
-                fieldsElements.classed('dimension', function(d){
+                sliceFields.classed('dimension', function(d){
                         return d.isDimension;
                     });
-                fieldsElements.select('.key').text(function(d){
+                sliceFields.select('.key').text(function(d){
                         return d.key;
                     });
-                fieldsElements.select('.type').text(function(d){
+                sliceFields.select('.type').text(function(d){
                         return d.type;
                     });
 
                 // exit
-                fieldsElementsData.exit().remove();
+                fieldsBox.selectAll('div.sliceField').data(fields).exit().remove();
             }
 
             // update links

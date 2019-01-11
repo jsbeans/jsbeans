@@ -43,41 +43,60 @@
             if(cube){
                 this.cube = cube;
             }
-//debugger;
-            var cubeFields = d3.select(this.cubeFields.getElement().get(0));
+
+            var fieldBox = d3.select(this.cubeFields.getElement().get(0));
 
             // enter
-            cubeFields.selectAll('.jsb-checkbox').data(opts.fieldArray).enter()
-                      .append(function(d){
-                            return new Checkbox({
-                                onChange: function(b){
-                                    if(b){
-                                        this.addClass('dimension');
-                                        d.isDimension = true;
-                                        $this.addDimension(this.getLabel());
-                                    } else {
-                                        this.removeClass('dimension');
-                                        d.isDimension = false;
-                                        $this.removeDimensions(this.getLabel());
-                                    }
-                                }
-                            }).getElement().get(0);
-                        });
+            fieldBox.selectAll('.field').data(opts.fields).enter().append(function(d){
+                var el = $this.$('<div class="field"></div>');
+
+                el.append(new Checkbox({
+                    onChange: function(b){
+                        if(b){
+                            this.addClass('dimension');
+                            d.isDimension = true;
+                            $this.addDimension(this.getLabel());
+                        } else {
+                            this.removeClass('dimension');
+                            d.isDimension = false;
+                            $this.removeDimensions(this.getLabel());
+                        }
+                    }
+                }).getElement());
+
+                el.append('<div class="type"></div>');
+
+                return el.get(0);
+            });
 
             // update
-            cubeFields.selectAll('.jsb-checkbox').data(opts.fieldArray).attr('test', function(d){
+            var cubeFields = fieldBox.selectAll('.field').data(opts.fields);
+
+            cubeFields.select('.jsb-checkbox').attr('test', function(d){
                 var cb = $this.$(this).jsb();
                 cb.setLabel(d.key);
                 cb.setChecked(d.isDimension, true);
                 cb.classed('dimension', d.isDimension);
-            })
-            .style('top', function(d, i) {
+            });
+
+            // todo: create tooltip with description
+            cubeFields.select('.type').html(function(d){
+                if(d.hasTypesConflict){
+                    this.classList.add('conflict');
+                } else {
+                    this.classList.remove('conflict');
+                }
+
+                return d.type;
+            });
+
+            cubeFields.style('top', function(d, i) {
                 return (i*23) + 3 + "px";
               }
             );
 
             // exit
-            cubeFields.selectAll('.jsb-checkbox').data(opts.fieldArray).exit().remove();
+            fieldBox.selectAll('.field').data(opts.fields).exit().remove();
         },
 
         removeDimensions: function(field){
@@ -97,7 +116,7 @@
         },
 
         sort: function(){
-		    d3.select(this.cubeFields.getElement().get(0)).selectAll('.jsb-checkbox')
+		    d3.select(this.cubeFields.getElement().get(0)).selectAll('.field')
                 .sort(function(a, b){
                     if(a.isDimension && !b.isDimension){
                         return -1;
