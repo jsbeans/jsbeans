@@ -126,17 +126,17 @@
                 && !query.$recursive;
         },
 
-        findView: function(name, rootQuery){
+        findView: function(name, callerQuery, rootQuery){
             var view;
             $this.walkQueries(rootQuery, {},
                 function(query){
-                    if(query == rootQuery || query.$context == dcQuery.$context) {
+                    if(callerQuery && (query == callerQuery || query.$context == callerQuery.$context)) {
                         // stop and go back
                         return false;
                     }
                 },
                 function(query){
-                    if (!view) {
+                    if (!view && query.$views) {
                         view = query.$views[name];
                     }
                     if (view) {
@@ -145,6 +145,24 @@
                 }
             );
             return view;
+        },
+
+        indexViews: function(rootQuery){
+            var views = {};
+            $this.walkQueries(rootQuery, {},
+                function(query){
+                    if(query.$views) {
+                        for(var name in query.$views) {
+                            if (views[name]) {
+                                Log.debug('Duplicate view name "' + name + '"');
+                            } else {
+                                views[name] = query.$views[name];
+                            }
+                        }
+                    }
+                }
+            );
+            return views;
         },
 
         walkQueries: function (dcQuery, options, enterCallback, leaveCallback/**false=break: callback(q) and this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}*/) {
@@ -164,6 +182,7 @@
             var trace = options.trace || false;
             var visitedQueries = new HashMap();
             var path = [];
+            var needBreak = false;
 
             if(trace) {
                 var oldCallback = leaveCallback;
@@ -225,14 +244,15 @@
                 path.push(query);
                 try {
 
-                    if (options.depth && queryDepth > options.depth) {
+                    if (needBreak || options.depth && queryDepth > options.depth) {
+                        needBreak = true;
                         return;
                     }
 
                     // walk current query
 
                     var res = enterCallback ? enterCallback.call(this, query) : null;
-                    if(res === false) return; /// stop and go back
+                    needBreak = needBreak || res === false;
 
                     // from
                     if (query.$from) {
@@ -252,7 +272,7 @@
                         if (!JSB.isObject(fromQuery)) {
                             throw new Error('Invalid $from type ' + typeof query.$from);
                         }
-                        var res = walkQuery.call(
+                        walkQuery.call(
                             {
                                 query : fromQuery,
                                 nestedPath: [],
@@ -265,13 +285,12 @@
                             fromQuery,
                             query
                         );
-                        if (res === false) return false;
                     }
 
                     // query operators
                     var keys = ['$union', '$join', '$recursive', '$select', '$filter', '$globalFilter', '$groupBy', '$sort', '$postFilter'];
-                    for (var i = 0; i < keys.length; i++) if (query[keys[i]] != null) {
-                        var res = walkExpression.call(
+                    for (var i = 0; i < keys.length; i++) if (!needBreak && query[keys[i]] != null) {
+                        walkExpression.call(
                             {
                                 query: query,
                                 nestedPath: this.nestedPath.concat([keys[i]]),
@@ -285,15 +304,14 @@
                             keys[i],
                             query
                         );
-                        if (res === false) return false;
                     }
 
                     // visit self query
                     if (!options.skipDuplicates || !visitedQueries.containsKey(query)){
                         visitedQueries.put(query, true);
                         var res = leaveCallback ? leaveCallback.call(this, query) : null;
+                        needBreak = needBreak || res === false;
                     }
-                    return res === false ? false : true;
                 } finally {
                     queryDepth--;
                     path.pop();
@@ -307,7 +325,7 @@
                     if (!fromQuery) {
                         fromQuery = options.getExternalView.call(this, exp);
                     }
-                    var res = walkQuery.call(
+                    walkQuery.call(
                         {
                             query : fromQuery,
                             nestedPath: this.nestedPath.concat([key]),
@@ -322,10 +340,9 @@
                         },
                         fromQuery
                     );
-                    if (res === false) return false;
                 } else if (JSB.isObject(exp)) {
                     if (exp.$select) {
-                        var res = walkQuery.call(
+                        walkQuery.call(
                             {
                                 query : exp,
                                 nestedPath: this.nestedPath.concat([key]),
@@ -340,10 +357,9 @@
                             },
                             exp
                         );
-                        if (res === false) return false;
                     } else {
-                        for (var f in exp) if (typeof exp[f] !== 'undefined') {
-                            var res = walkExpression.call(
+                        for (var f in exp) if (!needBreak && typeof exp[f] !== 'undefined') {
+                            walkExpression.call(
                                 {
                                     query: this.query,
                                     nestedPath: this.nestedPath.concat([f]),
@@ -355,12 +371,11 @@
                                 f,
                                 exp
                             );
-                            if (res === false) return false;
                         }
                     }
                 } else if (JSB.isArray(exp)) {
                     for (var i = 0; i < exp.length; i++) {
-                        var res = walkExpression.call(
+                        walkExpression.call(
                             {
                                 query: this.query,
                                 nestedPath: this.nestedPath.concat([i]),
@@ -372,14 +387,12 @@
                             i,
                              exp
                         );
-                        if (res === false) return false;
                     }
                 }
-                return true;
             }
 
 //debugger;
-            var res = dcQuery.$select
+            dcQuery.$select
                 ? walkQuery.call(
                     {
                         query : dcQuery,
@@ -405,8 +418,8 @@
                     null
                 );
             visitedQueries.clear();
-            trace && $this.logDebug('[qid='+dcQuery.$id+'] Walk sub-queries complete');
-            return res === false ? false : true;
+            trace && $this.logDebug('[qid='+(options.rootQuery ? options.rootQuery.$id : dcQuery.$id)+'] Walk sub-queries complete');
+            return !needBreak;
         },
 
         /** Обходит все, что может являться используемым полем источника запроса. Если callback возвращает выражение, то производится замена старого выражения на новое.
@@ -531,7 +544,7 @@
 		        var sourceFields = provider.extractFields();
 		    } else if (query.$from) {
                 if (JSB.isString(query.$from)) {
-                    var fromQuery = query.$views ? query.$views[query.$from] : $this.findView(query.$from, rootQuery);
+                    var fromQuery = query.$views ? query.$views[query.$from] : $this.findView(query.$from, query, rootQuery);
                     $this.throwError(!!fromQuery, 'View "{}" is not defined', query.$from);
                     var sourceFields = $this.extractOutputFields(fromQuery);
                 } else if (Object.keys(query.$from).length > 0) {
@@ -1747,7 +1760,7 @@ debugger
             }
         },
 
-		extractSliceDimensions: function(slice) {
+		extractSliceDimensions: function(slice, includeRecursive) {
 
 		    // TODO move to slice.extractDimensions() + updated cache
 		    var sliceDimensions = {};
@@ -1762,23 +1775,25 @@ debugger
 		        }
 		    }
 
-            // recursively collect sub-slices`s dimensions
-		    $this.walkQueries(sliceQuery, {
-		        getExternalView : function(name) {
-		            var subSlice = $this.getQuerySlice(name, slice.getCube());
-		            var subDims = $this.extractSliceDimensions(subSlice);
-		            // merge sub-dimensions
-		            for(var field in subDims) {
-		                if (!sliceDimensions[field]) {
-		                    sliceDimensions[field] = [subSlice.getId()];
-		                } else if (sliceDimensions[field].indexOf(subSlice.getId()) == -1) {
-		                    sliceDimensions[field] = sliceDimensions[field].concat(subDims[field]);
-		                }
+		    if (includeRecursive) {
+                // recursively collect sub-slices`s dimensions
+                $this.walkQueries(sliceQuery, {
+                    getExternalView : function(name) {
+                        var subSlice = $this.getQuerySlice(name, slice.getCube());
+                        var subDims = $this.extractSliceDimensions(subSlice, true);
+                        // merge sub-dimensions
+                        for(var field in subDims) {
+                            if (!sliceDimensions[field]) {
+                                sliceDimensions[field] = [subSlice.getId()];
+                            } else if (sliceDimensions[field].indexOf(subSlice.getId()) == -1) {
+                                sliceDimensions[field] = sliceDimensions[field].concat(subDims[field]);
+                            }
 
-		            }
-		            return {};
-		        }
-		    }, function(){});
+                        }
+                        return {};
+                    }
+                }, function(){});
+            }
 
 		    return sliceDimensions;
 		},

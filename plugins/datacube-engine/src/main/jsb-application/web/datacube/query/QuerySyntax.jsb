@@ -173,7 +173,6 @@
 		            '$postFilter': '$postFilter',
 		            '$cubeFilter': '$cubeFilter',
 		            '$sort': '$sort',
-		            '$finalize': '$finalize',
 		            '$limit': '$limit',
 		            '$sql': '$sqlQuery',
 
@@ -188,7 +187,7 @@
 		            '$provider':'$sourceSelect'
 		        },
 		        optional: ['$context', '$filter', '$groupBy', '$distinct',
-		                '$postFilter', '$cubeFilter', '$sort', '$finalize',
+		                '$postFilter', '$cubeFilter', '$sort',
 		                '$sql','$limit', '$offset', '$views',
 		                '$from', '$join', '$union', '$recursive', '$cube', '$provider'],
 		        incompatible: [
@@ -1293,44 +1292,6 @@
 		        value: 0,
 		        editable: true
 		    });
-
-		    new this.Group({
-		        name: '$finalize',
-		        category: 'Выражения запроса',
-		        displayName: 'Финальные преобразования',
-		        desc: 'Финальные преобразования выходных элементов (строк)',
-		        values: ['$finalizeFunction', '$finalizeFields']
-		    });
-		    
-		    new this.ComplexObject({
-		        name: '$finalizeFields',
-		        customKey: '#field',
-				values: {
-				    '#field': '$finalizeExpression'
-				}
-		    });
-		    
-		    new this.ComplexObject({
-		        name: '$finalizeExpression',
-		        values: {
-		            '$replace': '$finalizeReplace'
-		//	            '$group': '$finalizeGroup'
-		        },
-		    });
-		    
-		    new this.ComplexObject({
-		        name: '$finalizeReplace',
-		        desc: 'Замена элементов по таблице соответствия ключ-значение (ключем может быть строка "value" или регулярное выражение "/R/i")',
-		        customKey: '#value',
-		        values: {
-		            '#value': '$replaceWithValue'
-		        },
-		    });
-		    
-		    new this.Group({
-		        name: '$replaceWithValue',
-		        values: ['$constString', '$constNumber', '$constBoolean'],
-		    });
 		
 		    new this.EConstBoolean({
 		        name: '$distinctAll',
@@ -1455,13 +1416,15 @@
 		        name: '$sqlQuery',
 		    	displayName: 'Встроенный SQL запрос',
 		        desc: 'Заменить текущий запрос SQL выражением/запросом',
-		        editable: true
+		        editable: true,
+		        disabled: true
 		    });
 
 		    new this.EConstString({
 		        name: '$sql',
 		        desc: 'Подставить SQL выражение/запрос',
-		        editable: true
+		        editable: true,
+		        disabled: true
 		    });
 
 		

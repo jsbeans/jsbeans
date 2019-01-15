@@ -6,7 +6,7 @@
 		$require: [
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Transforms.QueryTransformer',
-		    'DataCube.Query.Weight.QueryWeigher',
+		    'DataCube.Query.Cost.SliceCost',
         ],
 
         $constructor: function(){
@@ -215,7 +215,7 @@
 		        if (allFields) {
 		            /// высчитать число соваввших измерений
                     var countDimensions = 0;
-                    var sliceDimensions = QueryUtils.extractSliceDimensions(slice);
+                    var sliceDimensions = QueryUtils.extractSliceDimensions(slice, true);
                     for(var field in usedDimensions) {
                         if (sliceDimensions[field]) {
                             countDimensions ++;
@@ -263,30 +263,16 @@
 		},
 
 		_selectTheEasiestSlice: function(slices, cube){
-		    var weights = {};
 		    var array = [];
 		    for(var id in slices) {
 		        var slice = slices[id];
-                var id = slice.getId();
-                weights[id] = $this._calculateSliceWeight(slice);
                 array.push(slice);
 		    }
 
-		    array.sort(function min2max(a,b){
-		        var aId = a.getId();
-		        var bId = b.getId();
-		        var aW = weights[aId];
-		        var bW = weights[bId];
-		        if (aW > bW) return 1;
-		        if (aW < bW) return -1;
-		        return 0;
+		    array.sort(function (a,b){
+		        return SliceCost.compareSlices(a, b);
 		    });
             return array[0];
-		},
-
-		_calculateSliceWeight: function(slice) {
-            var w = QueryWeigher.calculateSliceWeight(slice);
-            return w;
 		},
 	}
 }

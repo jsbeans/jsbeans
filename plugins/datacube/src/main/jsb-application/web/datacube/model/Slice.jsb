@@ -310,7 +310,7 @@
 		        if ($this.query.$views && $this.query[name]) {
 		            return $this.query[name];
 		        }
-		        return QueryUtils.findView(name, $this.query);
+		        return QueryUtils.findView(name, null, $this.query);
 		    }
             var fieldsTypes = {}, // todo
                 fields = {};
