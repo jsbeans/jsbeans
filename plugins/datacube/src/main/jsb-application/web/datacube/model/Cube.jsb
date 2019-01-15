@@ -222,9 +222,11 @@
 		            var slices = [];
 
 		            for(var j in this.fields[i].slices){
+		                var idArr = j.split('/');
+
 		                slices.push(JSB.merge({}, this.fields[i].slices[j], {
 		                    key: j,
-		                    name: this.getWorkspace().entry(j).getName()
+		                    name: this.getWorkspace(idArr[0]).entry(idArr[1]).getName()
 		                }));
 		            }
 
@@ -363,7 +365,7 @@
 		updateCubeFields: function(slice, noStore){
 		    function updateFields(slice){
 		        var sliceFields = slice.extractFields(),
-		            sliceId = slice.getId(),
+		            sliceId = slice.getFullId(),
 		            isNeedUpdate = false;
 
                 // add new fields
