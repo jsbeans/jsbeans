@@ -164,6 +164,12 @@
             this.subscribe('DataCube.CubeEditor.toggleDimension', function(sender, msg, desc){
                 $this.toggleDimension(desc);
             });
+
+            this.subscribe('Datacube.CubeEditor.CubePanel.hoverField', function(sender, msg, desc){
+                if($this.fields[desc.field]){
+                    $this.highlightNode(desc.type === 'mouseIn');
+                }
+            });
 		},
 
 		highlightNode: function(bEnable){

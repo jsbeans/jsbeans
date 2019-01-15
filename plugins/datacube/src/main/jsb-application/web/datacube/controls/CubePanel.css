@@ -1,6 +1,3 @@
-.cubePanel {
-}
-
 .cubePanel > header {
     height: 31px;
     padding: 7px 2.5px 0 2.5px;
@@ -8,6 +5,14 @@
     vertical-align: middle;
     color: #555;
     font-size: 14px;
+}
+
+.cubePanel > header > .jsb-checkbox {
+    float: right;
+}
+
+.cubePanel.onlyDimensions > .jsb-scrollBox > .field:not(.dimension) {
+    display: none;
 }
 
 .cubePanel > .jsb-scrollBox {
@@ -31,6 +36,51 @@
     width: 50%;
 }
 
-.cubePanel > .jsb-scrollBox > .field > .type.conflict {
+.cubePanel > .jsb-scrollBox > .field.conflict > .type,
+.cubePanel > .jsb-scrollBox > .field.conflict > .tooltip > .tooltipLine > .fieldType {
     color: red;
+}
+
+.cubePanel > .jsb-scrollBox > .field.conflict > .type:before {
+    content: "\f071";
+    font-family: Font Awesome\ 5 Free;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    display: inline-block;
+    font-weight: 900;
+    padding-right: 3px;
+}
+
+.cubePanel > .jsb-scrollBox > .field > .tooltip {
+    display: none;
+    position: absolute;
+    font-size: 12px;
+    color: white;
+    background: #555;
+    padding: 8px;
+    border-radius: 10px;
+    top: 30px;
+    z-index: 10;
+    min-width: 200px;
+}
+
+.cubePanel > .jsb-scrollBox > .field:hover > .tooltip {
+    display: block;
+}
+
+.cubePanel > .jsb-scrollBox > .field > .tooltip:after{
+    content: "";
+    position: absolute;
+    background: #555;
+    height: 18px;
+    width: 18px;
+    top: -10px;
+    left: 15%;
+    -webkit-clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.cubePanel > .jsb-scrollBox > .field > .tooltip > .tooltipLine > * {
+    display: inline-block;
+    width: 50%;
 }

@@ -48,6 +48,7 @@
 
 		options: {
 			label: null,
+			labelPosition: 'right',
 			checked: false,
 			content: null,
 
@@ -107,7 +108,14 @@
 		setLabel: function(str){
 		    if(!this._label){
 		        this._label = this.$('<div class="caption"></div>');
-		        this.getElement().find('.check-elem').after(this._label);
+
+		        if(this.options.labelPosition === 'right'){
+		            this.getElement().find('.check-elem').after(this._label);
+		        }
+
+		        if(this.options.labelPosition === 'left'){
+		            this.getElement().find('.check-elem').before(this._label);
+		        }
 		    }
 
 			this._label.text(str);

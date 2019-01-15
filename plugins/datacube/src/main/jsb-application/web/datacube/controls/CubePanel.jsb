@@ -3,8 +3,7 @@
 	$parent: 'JSB.Widgets.Widget',
     $client: {
         $require: ['JSB.Controls.ScrollBox',
-                   'JSB.Controls.Checkbox',
-                   'JSB.Widgets.ToolManager'],
+                   'JSB.Controls.Checkbox'],
 
         $constructor: function(opts){
             $base(opts);
@@ -14,6 +13,15 @@
 
             var caption = this.$('<header>Поля и измерения куба</header>');
             this.append(caption);
+
+            var onlyDimensionsCheckbox = new Checkbox({
+                label: 'Только измерения',
+                labelPosition: 'left',
+                onChange: function(b){
+                    $this.getElement().toggleClass('onlyDimensions');
+                }
+            });
+            caption.append(onlyDimensionsCheckbox.getElement());
 
 			// select fields
 			this.cubeFields = new ScrollBox({
@@ -44,7 +52,8 @@
                 this.cube = cube;
             }
 
-            var fieldBox = d3.select(this.cubeFields.getElement().get(0));
+            var fieldBox = d3.select(this.cubeFields.getElement().get(0)),
+                tooltip = null;
 
             // enter
             fieldBox.selectAll('.field').data(opts.fields).enter().append(function(d){
@@ -53,11 +62,11 @@
                 el.append(new Checkbox({
                     onChange: function(b){
                         if(b){
-                            this.addClass('dimension');
+                            el.addClass('dimension');
                             d.isDimension = true;
                             $this.addDimension(this.getLabel());
                         } else {
-                            this.removeClass('dimension');
+                            el.removeClass('dimension');
                             d.isDimension = false;
                             $this.removeDimensions(this.getLabel());
                         }
@@ -65,6 +74,21 @@
                 }).getElement());
 
                 el.append('<div class="type"></div>');
+                el.append('<div class="tooltip"></div>');
+
+                el.mouseenter(function(){
+                    $this.publish('Datacube.CubeEditor.CubePanel.hoverField', {
+                        field: d.key,
+                        type: 'mouseIn'
+                    });
+                });
+
+                el.mouseleave(function(){
+                    $this.publish('Datacube.CubeEditor.CubePanel.hoverField', {
+                        field: d.key,
+                        type: 'mouseOut'
+                    });
+                });
 
                 return el.get(0);
             });
@@ -72,21 +96,21 @@
             // update
             var cubeFields = fieldBox.selectAll('.field').data(opts.fields);
 
+            cubeFields.classed('dimension', function(d){
+                return d.isDimension;
+            });
+
+            cubeFields.classed('conflict', function(d){
+                return d.hasTypesConflict;
+            });
+
             cubeFields.select('.jsb-checkbox').attr('test', function(d){
                 var cb = $this.$(this).jsb();
                 cb.setLabel(d.key);
                 cb.setChecked(d.isDimension, true);
-                cb.classed('dimension', d.isDimension);
             });
 
-            // todo: create tooltip with description
             cubeFields.select('.type').html(function(d){
-                if(d.hasTypesConflict){
-                    this.classList.add('conflict');
-                } else {
-                    this.classList.remove('conflict');
-                }
-
                 return d.type;
             });
 
@@ -94,6 +118,35 @@
                 return (i*23) + 3 + "px";
               }
             );
+
+            // tooltip
+            cubeFields.select('.tooltip').selectAll('.tooltipLine').data(function(d){
+                return d.slices;
+            }).enter().append(function(){
+                var el = $this.$('<div class="tooltipLine"></div>');
+
+                //el.append('<div class="sliceIcon"></div>');
+                el.append('<div class="sliceName"></div>');
+                el.append('<div class="fieldType"></div>');
+
+                return el.get(0);
+            });
+
+            var tooltipLines = cubeFields.select('.tooltip').selectAll('.tooltipLine').data(function(d){
+                return d.slices;
+            });
+
+            tooltipLines.select('.sliceName').text(function(d){
+                return d.name;
+            });
+
+            tooltipLines.select('.fieldType').text(function(d){
+                return d.type;
+            });
+
+            cubeFields.select('.tooltip').selectAll('.tooltipLine').data(function(d){
+                return d.slices;
+            }).exit().remove();
 
             // exit
             fieldBox.selectAll('.field').data(opts.fields).exit().remove();

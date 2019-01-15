@@ -137,7 +137,7 @@
     border: 2px solid #169f85;
     right: 20px;
     padding: 5px;
-    font-size: 35px;
+    font-size: 30px;
 }
 
 .cubeEditor > .addBtn > ul {
@@ -212,8 +212,8 @@
 }
 
 .cubeEditor > .removeBtn {
-    padding: 8px;
-    font-size: 30px;
+    padding: 7px;
+    font-size: 24px;
     left: 20px;
     border: 2px solid #c35555;
 }

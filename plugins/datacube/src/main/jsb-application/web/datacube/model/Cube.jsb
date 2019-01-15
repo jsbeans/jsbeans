@@ -219,7 +219,19 @@
 		        var fields = [];
 
 		        for(var i in this.fields){
-		            fields.push(JSB.merge(this.fields[i], {
+		            var slices = [];
+
+		            for(var j in this.fields[i].slices){
+		                var idArr = j.split('/');
+
+		                slices.push(JSB.merge({}, this.fields[i].slices[j], {
+		                    key: j,
+		                    name: this.getWorkspace(idArr[0]).entry(idArr[1]).getName()
+		                }));
+		            }
+
+		            fields.push(JSB.merge({}, this.fields[i], {
+		                slices: slices,
 		                key: i
 		            }));
 		        }
@@ -332,11 +344,11 @@
 			var sliceFields = slice.entry.extractFields();
 
 			for(var i in sliceFields){
-			    var sliceIndex = this.fields[i].slices.indexOf(sliceId);
+			    if(this.fields[i].slices[sliceId]){
+			        delete this.fields[i].slices[sliceId];
+			    }
 
-                this.fields[i].slices.splice(sliceIndex, 1);
-
-                if($this.fields[i].slices.length === 0){
+                if(Object.keys(this.fields[i].slices).length === 0){
                     delete this.fields[i];
                 }
 			}
@@ -353,7 +365,7 @@
 		updateCubeFields: function(slice, noStore){
 		    function updateFields(slice){
 		        var sliceFields = slice.extractFields(),
-		            sliceId = slice.getId(),
+		            sliceId = slice.getFullId(),
 		            isNeedUpdate = false;
 
                 // add new fields
@@ -464,7 +476,7 @@
 		    var entryId = entry.getFullId();
 
 		    if(this.hasChildEntry(entry)){
-		        this.slices[entryId].diagramOpts = JSB.merge(this.slices[entryId].diagramOpts, diagramOpts);
+		        JSB.merge(this.slices[entryId].diagramOpts, diagramOpts);
 		    } else {
 		        return;
 		    }

@@ -18,7 +18,7 @@
 
 .sliceDiagramNode.dataSourceSlice.selected,
 .sliceDiagramNode.dataSourceSlice.highlighted {
-	box-shadow: 0 0 1px 3px #3c6192;
+	box-shadow: 0 0 1px 3px #f5f017;
 }
 
 /* header && footer color */
