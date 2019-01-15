@@ -36,10 +36,14 @@
     background-position: -66px 0;
 }
 
-.jsb-checkbox > .caption{
+.jsb-checkbox > .caption {
     display: inline-block;
     vertical-align: middle;
     line-height: 20px;
+}
+
+.jsb-checkbox > .check-elem + .caption,
+.jsb-checkbox >  .caption + .check-elem {
     margin-left: 5px;
 }
 

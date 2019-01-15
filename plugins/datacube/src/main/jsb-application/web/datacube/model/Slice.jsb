@@ -150,11 +150,13 @@
 				share: false
 			});
 		},
+
+		fieldsTypes: {},
 		
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
 
-			if(opts){
+			if(opts){   // new slice
 			    this.cube = opts.cube;
                 this.property('cube', this.cube.getId());
 
@@ -170,7 +172,7 @@
                     }
                 }
 				this.property('queryParams', this.queryParams);
-			} else {
+			} else {    // load existed slice
 				if(this.property('cube')){
 					this.cube = this.getWorkspace().entry(this.property('cube'));
 				}
@@ -183,6 +185,10 @@
 				    var idArr = this.property('source').split('/');
 
 				    this.source = this.getWorkspace(idArr[0]).entry(idArr[1]);
+				}
+
+				if(this.property('fieldsTypes')){
+				    this.fieldsTypes = this.property('fieldsTypes');
 				}
 			}
 			var ctx = this.getSettingsContext();
@@ -215,12 +221,6 @@
 			$base(name);
 			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
 			this.doSync();
-		},
-		
-		setQuery: function(q){
-			if(this.query && q && JSB.isEqual(this.query, q)){
-				return;
-			}
 		},
 
 		executeQuery: function(opts){
@@ -306,19 +306,17 @@
 		},
 
         extractFields: function(){
-		    function getQuery(name) {
-		        if ($this.query.$views && $this.query[name]) {
-		            return $this.query[name];
-		        }
-		        return QueryUtils.findView(name, $this.query);
-		    }
-            var fieldsTypes = {}, // todo
+            var fieldsTypes = this.fieldsTypes,
                 fields = {};
 
             if(this.query.$select){
                 for(var i in this.query.$select){
+                    if(!this.fieldsTypes[i]){
+                        this.updateFieldsTypes();
+                    }
+
                     fields[i] = {
-                        type: QueryUtils.extractType(this.query.$select[i], this.query, $this.getCube(), getQuery)
+                        type: this.fieldsTypes[i]
                     };
                 }
             }
@@ -495,6 +493,7 @@
 		    var updates = {},
 		        result = {};
 
+            // name
 		    if(JSB.isDefined(params.name) && !JSB.isEqual(this.getName(), params.name)){
 		        $super.setName(params.name);
 
@@ -503,9 +502,12 @@
 		        updates.name = params.name;
 		    }
 
+		    // query
 		    if(JSB.isDefined(this.getName(params.query)) && !JSB.isEqual(this.query, params.query)){
                 this.query =  params.query;
                 this.property('query', this.query);
+
+                this.updateFieldsTypes();
 
     			this.invalidate();
     			this.loadCacheFromCube();
@@ -534,6 +536,21 @@
 			}
 			this.ensureQueryCache();
 			this.queryCache.update();
+		},
+
+		updateFieldsTypes: function(){
+		    function getQuery(name) {
+		        if ($this.query.$views && $this.query[name]) {
+		            return $this.query[name];
+		        }
+		        return QueryUtils.findView(name, $this.query);
+		    }
+
+		    for(var i in this.query.$select){
+		        this.fieldsTypes[i] = QueryUtils.extractType(this.query.$select[i], this.query, this.getCube(), getQuery);
+		    }
+
+		    this.property('fieldsTypes', this.fieldsTypes);
 		},
 		
 		onChangeSettings: function(){
