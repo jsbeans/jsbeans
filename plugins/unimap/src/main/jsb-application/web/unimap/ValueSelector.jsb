@@ -227,7 +227,11 @@
     },
 
     getValues: function(){
-        return this._values;
+    	return {
+            commonFields: this._commonFields,
+            linkedFields: this._linkedFields,
+            values: this._values
+        };
     },
 
     updateValues: function(scheme, fullValues){

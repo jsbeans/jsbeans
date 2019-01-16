@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Model.SettingsEntry',
 	$parent: 'JSB.Workspace.Entry',
-	$require: ['Unimap.ValueSelector'],
+	$require: ['Unimap.ValueSelector', 'Datacube.Unimap.Bootstrap'],
 	
 	$scheme: {
 		
@@ -170,6 +170,10 @@
 			$this.publish('DataCube.Model.SettingsEntry.settingsUpdated', settings);
 			$this.client()._updateClientSettings(settings);
 			$this.doSync();
+		},
+		
+		storeSettingsContext: function(){
+			this.property('_settings', this.getSettingsContext().getValues());
 		}
 	}
 }
