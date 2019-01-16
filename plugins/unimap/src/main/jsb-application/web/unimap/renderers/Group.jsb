@@ -4,6 +4,9 @@
 	$require: ['JSB.Controls.Panel', 
 	           'JSB.Controls.Checkbox',
 	           'css:Group.css'],
+
+    $alias: 'group',
+
 	$client: {
 	    _defaultSchemeOpts: {
 	        sortable: true

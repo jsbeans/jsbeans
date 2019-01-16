@@ -1,6 +1,8 @@
 {
-    $name: 'Datacube.ValueSelectors.EmbeddedWidgetBinding',
-    $parent: 'Unimap.ValueSelectors.Basic',
+    $name: 'Datacube.Selectors.EmbeddedWidgetBinding',
+    $parent: 'Unimap.Selectors.Basic',
+
+    $alias: 'embeddedWidget',
 
     isValueSkipping: function(){
         return this._selectorOpts.valueSkipping;

@@ -1,5 +1,8 @@
 {
-    $name: 'Unimap.ValueSelectors.Basic',
+    $name: 'Unimap.Selectors.Basic',
+    $require: ['Unimap.Repository'],
+
+    $alias: 'basic',
 
     _excludeMethods: ['$', '$constructor', '$parent'],
 

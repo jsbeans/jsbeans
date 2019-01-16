@@ -3,6 +3,9 @@
 	$parent: 'Unimap.Render.Item',
 	$require: ['JSB.Controls.ComboEditor',
 	           'css:NamesBinding.css'],
+
+	$alias: 'namesBinding',
+
 	$client: {
 	    construct: function(){
 	        this.addClass('namesBinding');

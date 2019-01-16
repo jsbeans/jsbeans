@@ -2,7 +2,11 @@
 	$name: 'Unimap.Render.Basic',
 	$parent: 'JSB.Controls.Control',
 	$require: ['Unimap.Controller',
+	           'Unimap.Repository',
 	           'css:Basic.css'],
+
+    $alias: 'basic',
+
     $client: {
         _basicOpts: {},
         _defaultSchemeOpts: {},
@@ -80,8 +84,7 @@
                 scheme: scheme,
                 values: {values: values},
                 context: this._schemeController.getContext(),
-                onchange: onchange,
-                rendersMap: this._schemeController.getRenderMap(),
+                onchange: onchange
             });
         },
 

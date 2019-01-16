@@ -1,6 +1,8 @@
 {
-    $name: 'Datacube.ValueSelectors.EntryBinding',
-    $parent: 'Unimap.ValueSelectors.Basic',
+    $name: 'Datacube.Selectors.EntryBinding',
+    $parent: 'Unimap.Selectors.Basic',
+
+    $alias: 'entryBinding',
     
     $client: {
     	getEntry: function(callback){
@@ -33,5 +35,4 @@
     		return eArr;
     	}
     }
-
 }

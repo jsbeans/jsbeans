@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Model.SettingsEntry',
 	$parent: 'JSB.Workspace.Entry',
-	$require: ['Unimap.ValueSelector'],
+	$require: ['Unimap.Selector'],
 	
 	$scheme: {
 		
@@ -31,8 +31,7 @@
 	},
 	
 	createContext: function(settings){
-		return new ValueSelector({
-			bootstrap: 'Datacube.Unimap.Bootstrap',
+		return new Selector({
 			values: settings,
 			scheme: $this.extractSettingsScheme(),
 			createDefaultValues: true,

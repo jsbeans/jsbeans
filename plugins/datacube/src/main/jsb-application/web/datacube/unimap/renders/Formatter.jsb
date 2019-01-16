@@ -1,6 +1,9 @@
 {
 	$name: 'Unimap.Render.Formatter',
 	$parent: 'Unimap.Render.Basic',
+
+	$alias: 'formatter',
+
 	$client: {
 	    $require: ['JSB.Widgets.ToolManager', 
 	               'DataCube.Formatter.AddTool', 

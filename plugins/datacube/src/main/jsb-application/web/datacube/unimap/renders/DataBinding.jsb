@@ -7,6 +7,9 @@
 	           'DataCube.Controls.SchemeSelector', 
 	           'Unimap.Render.DataBindingCache',
 	           'css:DataBinding.css'],
+
+	$alias: 'dataBinding',
+
 	$client: {
         _dataList: [],
         _cubeFieldList: [],

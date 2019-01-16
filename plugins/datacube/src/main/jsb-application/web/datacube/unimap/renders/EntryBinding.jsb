@@ -1,6 +1,9 @@
 {
 	$name: 'Unimap.Render.EntryBinding',
 	$parent: 'Unimap.Render.Item',
+
+	$alias: 'entryBinding',
+
 	$client: {
 	    $require: ['JSB.Widgets.RendererRepository',
 	               'css:EntryBinding.css'],

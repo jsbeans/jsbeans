@@ -1,6 +1,10 @@
 {
 	$name: 'Unimap.Render.ParserSourceBinding',
 	$parent: 'Unimap.Render.Basic',
+
+	$alias: 'parserBinding',
+	$selector: 'Datacube.Selectors.SourceSelector',
+
 	$client: {
 	    $require: ['JSB.Widgets.Button', 
 	               'Unimap.Render.DataBindingCache',

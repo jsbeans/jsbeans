@@ -1,6 +1,10 @@
 {
 	$name: 'Unimap.Render.AutocompleteGroup',
 	$parent: 'Unimap.Render.Group',
+
+	$alias: 'autocompleteGroup',
+	$selector: 'Unimap.Selectors.Group',
+
 	$client: {
 	    changeLinkTo: function(values, render){
 	        if(this._values.values.length > 0 || !this._scheme.linkedFields || !values.values[0].binding){

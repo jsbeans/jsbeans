@@ -3,7 +3,6 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
 	    $require: ['Unimap.Controller',
-	               'Datacube.Unimap.Bootstrap',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'JSB.Widgets.PrimitiveEditor',
@@ -105,7 +104,6 @@
                 $this.styleScheme = new Controller({
                     scheme: entry.scheme,
                     values: { values: styles },
-                    bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(key, values){
                         $this.setStyles($this.styleScheme.getValues().values);
                     }

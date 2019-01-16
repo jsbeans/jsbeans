@@ -1,6 +1,9 @@
 {
 	$name: 'Unimap.Render.EmbeddedWidgetBinding',
 	$parent: 'Unimap.Render.Basic',
+
+	$alias: 'embeddedWidget',
+
 	$client: {
 	    _beans: [],
 

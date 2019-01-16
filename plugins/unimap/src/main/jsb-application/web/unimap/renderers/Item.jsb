@@ -4,6 +4,9 @@
 	$require: ['JSB.Controls.Checkbox', 
 	           'JSB.Controls.Editor',
 	           'css:Item.css'],
+
+	$alias: 'item',
+
 	$client: {
 	    _editors: [],
 

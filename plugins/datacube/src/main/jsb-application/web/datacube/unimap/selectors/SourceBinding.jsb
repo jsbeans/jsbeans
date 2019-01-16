@@ -1,6 +1,8 @@
 {
-    $name: 'Datacube.ValueSelectors.SourceSelector',
-    $parent: 'Unimap.ValueSelectors.Basic',
+    $name: 'Datacube.Selectors.SourceSelector',
+    $parent: 'Unimap.Selectors.Basic',
+
+    $alias: 'sourceBinding',
 
     binding: function(){
         return this._values[0].binding;

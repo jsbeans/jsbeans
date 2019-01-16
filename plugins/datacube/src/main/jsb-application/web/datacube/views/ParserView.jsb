@@ -3,10 +3,9 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
 	    $require: ['Unimap.Controller',
-	               'Unimap.ValueSelector',
+	               'Unimap.Selector',
 	               'JSB.Controls.Select',
 	               'DataCube.ParserManager',
-	               'Datacube.Unimap.Bootstrap',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
@@ -260,17 +259,13 @@
 					if($this.schemeRenderer){
 						$this.schemeRenderer.destroy();
 					}
-					
-					var bootstrap = 'Datacube.Unimap.Bootstrap';
-					var valSel = new ValueSelector({
-						bootstrap: bootstrap
-					});
+
+					var valSel = new Selector();
 					var vals = valSel.createDefaultValues(pDesc.scheme);
 					
 					$this.schemeRenderer = new Controller({
 	                    scheme: pDesc.scheme,
 	                    values: vals,
-	                    bootstrap: bootstrap,
 	                    context: $this.entry.getId(),
 	                    onchange: function(key, values){
 	                    	$this.schemeChanged(key, values);
@@ -303,11 +298,10 @@
 				}
 				pDesc = null;
 			}
-			var bootstrap = 'Datacube.Unimap.Bootstrap';
+
 			var newSchemeRenderer = new Controller({
                 scheme: pDesc.scheme,
                 values: values,
-                bootstrap: bootstrap,
                 context: $this.entry.getId(),
                 onchange: function(key, values){
                 	$this.schemeChanged(key, values);

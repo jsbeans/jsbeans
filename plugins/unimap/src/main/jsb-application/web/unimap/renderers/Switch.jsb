@@ -3,6 +3,9 @@
 	$parent: 'Unimap.Render.Basic',
 	$require: ['JSB.Controls.Switch',
 	           'css:Switch.css'],
+
+	$alias: 'switch',
+
 	$client: {
 	    construct: function(){
 	        this.addClass('switchRender');

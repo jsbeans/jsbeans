@@ -1,6 +1,8 @@
 {
-    $name: 'Datacube.ValueSelectors.Formatter',
-    $parent: 'Unimap.ValueSelectors.Basic',
+    $name: 'Datacube.Selectors.Formatter',
+    $parent: 'Unimap.Selectors.Basic',
+
+    $alias: 'formatter',
 
     getBindingFields: function(){
         var result = [],

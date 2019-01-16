@@ -3,7 +3,6 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
 	    $require: ['Unimap.Controller',
-	               'Datacube.Unimap.Bootstrap',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.Button',
                    'css:SettingsView.css'
@@ -57,7 +56,6 @@
                 $this.widgetSchemeRenderer = new Controller({
                     scheme: $this.entry.extractSettingsScheme(),
                     values: settings,
-                    bootstrap: 'Datacube.Unimap.Bootstrap',
                     context: $this.entry.getId()
                 });
                 $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());

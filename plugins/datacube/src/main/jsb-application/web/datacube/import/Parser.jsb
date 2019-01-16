@@ -384,7 +384,7 @@
 	},
 	
 	$server: {
-		$require: ['Unimap.ValueSelector',
+		$require: ['Unimap.Selector',
 		           'DataCube.ParserManager',
 		           'JSB.Crypt.MD5',
 		           'Moment'],
@@ -432,8 +432,7 @@
 			
 			this.lastProgress = -1;
 			
-			this.context = new ValueSelector({
-				bootstrap: 'Datacube.Unimap.Bootstrap',
+			this.context = new Selector({
 				values: this.values,
 				scheme: this.getParserScheme(this.getJsb())
 			});
