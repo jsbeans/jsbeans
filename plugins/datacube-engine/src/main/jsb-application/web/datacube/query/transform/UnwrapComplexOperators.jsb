@@ -27,6 +27,7 @@
 		unwrapGOperators: function(dcQuery) {
             function copySource(target, source){
                 if(source.$from) {
+                    target.$from = JSB.clone(source.$from);
                 } else if(source.$provider) {
                     target.$provider = JSB.clone(source.$provider);
                 } else if(source.$join) {

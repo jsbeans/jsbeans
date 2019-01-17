@@ -13,6 +13,7 @@
 		vendor: 'PostgreSQL',
 
         _translatedContexts: {},
+        _views: {},
         
         $bootstrap: function(){
         	TranslatorRegistry.register(this);
@@ -67,6 +68,8 @@
 
 		translateQuery: function() {
 		    $this._updateVendor();
+		    $this._views = QueryUtils.indexViews($this.dcQuery);
+
 		    // translate query
 		    var sql = $this.translateQueryExpression($this.dcQuery, true);
 		    QueryUtils.logDebug('\n[qid="{}"] Translated SQL Query (2): \n{}', $this.dcQuery.$id, sql);
@@ -75,10 +78,15 @@
 
 		translateQueryExpression: function(query, asRoot) {
 
+            if (JSB.isString(query)) {
+                var sourceQuery = $this._getSourceQuery(query, null);
+                return $this._quotedName($this._translateContext(query)) +
+                        ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
+            }
+
             var sqlSource = $this._translateSourceQueryExpression(query, asRoot);
 
             var sql = '';
-
             if (asRoot || QueryUtils.queryHasBody(query)) {
                 var selectSql = '';
                 for(var alias in query.$select) {
@@ -137,6 +145,29 @@
 //            return $this._translatedContexts[context];
         },
 
+        _isViewQuery: function(query, byContext){
+            for(var name in $this._views) {
+                if ($this._views[name] == query || byContext && $this._views[name].$context == query.$context) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+//        _findCachedView: function(name){
+//            var view = QueryUtils.findView(name, null, $this.dcQuery);
+//            if (view) {
+//                if ($this._views[name]) {
+//                    if($this._views[name] != view) {
+//                        Log.debug('Duplicate view name "' + name + '"');
+//                    }
+//                } else {
+//                    $this._views[name] = view;
+//                }
+//            }
+//            return view;
+//        },
+
         _generateUid: function(){
             //return JSB.generateUid();
             return '' + (this.lastId = (this.lastId||0) + 1);
@@ -150,6 +181,20 @@
             };
             return JSON.stringify(key);
         },
+
+        _getSourceQuery: function(view, callerQuery) {
+            if (JSB.isObject(view)) {
+                return view;
+            }
+            var q = $this.contextQueries[view] || QueryUtils.findView(view, callerQuery, $this.dcQuery);
+if (!q) {
+debugger
+QueryUtils.findView(view, callerQuery, $this.dcQuery);
+}
+            QueryUtils.throwError(q, 'View or query context "{}" is not defined', view);
+            return q;
+        },
+
 
         _prepareEmbeddedSQL: function(sql, dcQuery){
             if (this.cube) {
@@ -705,7 +750,7 @@
 		    $base();
 		},
 
-        _findQueryView: function(context){
+        _getQueryByContext: function(context){
             var queryView = $this.contextQueryViews[context];
             if (!queryView) {
                 throw new Error('Internal error: Cannot find View for query ' + context);
@@ -714,29 +759,31 @@
         },
 
 		_translateSourceQueryExpression: function(query, asRoot) {
-            var sqlSource = '';
-            if (typeof query === 'string') {
-                sqlSource += $this._quotedName($this._translateContext(query));
-                sqlSource +=  ' AS ' + $this._quotedName($this._translateContext(query));
-            } else if (query.$provider) {
-                sqlSource += $this._translateQueryProvider(query, asRoot);
-                sqlSource += '';
+		    function asView(name){
+                var sqlSource = $this._quotedName($this._translateContext(name));
+                var sourceQuery = $this._getSourceQuery(name, query);
+                sqlSource +=  ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
+                return sqlSource;
+		    }
+
+            if (query.$provider) {
+                return $this._translateQueryProvider(query, asRoot);
             } else if (query.$from) {
-                sqlSource += $this.translateQueryExpression(query.$from);
-                sqlSource += '';
+                if (JSB.isString(query.$from)) {
+                    return asView(query.$from);
+                } else {
+                    return $this.translateQueryExpression(query.$from);
+                }
             } else if (query.$join) {
-                sqlSource += $this._translateJoin(query);
-                sqlSource += '';
+                return $this._translateJoin(query);
             } else if (query.$union) {
-                sqlSource += $this._translateUnion(query);
-                sqlSource += '';
+                return $this._translateUnion(query);
             } else if (query.$recursive) {
-                sqlSource += $this._translateRecursive(query);
-                sqlSource +=  ' AS ' + $this._quotedName($this._translateContext(query.$context));
+                return $this._translateRecursive(query) +
+                        ' AS ' + $this._quotedName($this._translateContext(query.$context));
             } else {
                 QueryUtils.throwError(0, 'Invalid source in query "{}"', query.$context);
             }
-            return sqlSource;
 		},
 
 //		_getProvider: function(id) {
@@ -785,7 +832,7 @@
                     if(QueryUtils.isAggregatedExpression(e)) {
                         // if source field
                         if (query.$from) {
-                            var sourceQuery = JSB.isObject(query.$from) ? query.$from : $this.contextQueries[query.$from];
+                            var sourceQuery = $this._getSourceQuery(query.$from, query);
                             if (sourceQuery.$select[filteredField]) {
                                 return false;
                             }
@@ -959,7 +1006,7 @@
 //                throw new Error('Operator $recursiveSelect supports only aggregate function in $aggregateExpr');
 //            }
 //
-//            var view = $this._findQueryView(dcQuery.$context);
+//            var view = $this._getQueryByContext(dcQuery.$context);
 //            if (!view) {
 //                throw new Error('Query view not found: ' + dcQuery.$context);
 //            }
@@ -1018,7 +1065,7 @@
 //                    query.$from ? '$from' : query.$join ? '$join' : query.$union ? '$union' : query.$provider ? '$provider' : '',
 //                    sql
 ////            );
-//if (sql =='"Q4"."KPP"'
+//if (context == "Q2"//sql =='"Q4"."KPP"'
 //) {
 //    debugger;
 //    $this._translateFieldInternal(field, context, useAlias, callerContext);
@@ -1060,16 +1107,16 @@
             */
 
             function translateSourceField(sourceQuery) {
-                if (/*sourceQuery.$provider && */!QueryUtils.queryHasBody(sourceQuery)) {
+                if (!$this._isViewQuery(sourceQuery) && /*sourceQuery.$provider && */!QueryUtils.queryHasBody(sourceQuery)) {
                     return $this._translateExpression(sourceQuery.$select[field], sourceQuery);
                 }
                 return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);
             }
 
-            if (callerQuery.$join && (query == callerQuery.$join.$left || query == callerQuery.$join.$right)) {
+            if (callerQuery.$join && (query == $this._getSourceQuery(callerQuery.$join.$left, callerQuery) || query == $this._getSourceQuery(callerQuery.$join.$right, callerQuery))) {
                 /// is callerQuery field
                 if (query.$select[field]) {
-                    if (!QueryUtils.queryHasBody(query)) {
+                    if (!$this._isViewQuery(query) && !QueryUtils.queryHasBody(query)) {
                         return $this._translateExpression(query.$select[field], query);
                     }
 
@@ -1079,9 +1126,7 @@
 
 
             if (query.$from) {
-                var sourceQuery = JSB.isObject(query.$from) ? query.$from : $this.contextQueries[query.$from];
-                QueryUtils.throwError(sourceQuery, 'Source query is undefined with context: {}', query.$from.$context||query.$from);
-
+                var sourceQuery = $this._getSourceQuery(query.$from, query);
                 /// is source field
                 if (sourceQuery.$select[field]) {
                     return translateSourceField(sourceQuery);
@@ -1089,11 +1134,13 @@
 
             } else if (query.$join) {
                 /// is source field
-                if (query.$join.$left.$select[field]) {
-                    return translateSourceField(query.$join.$left);
+                var leftQuery = $this._getSourceQuery(query.$join.$left, query);
+                if (leftQuery.$select[field]) {
+                    return translateSourceField(leftQuery);
                 }
-                if (query.$join.$right.$select[field]) {
-                    return translateSourceField(query.$join.$right);
+                var rightQuery = $this._getSourceQuery(query.$join.$right, query);
+                if (rightQuery.$select[field]) {
+                    return translateSourceField(rightQuery);
                 }
 
             } else if (query.$union) {

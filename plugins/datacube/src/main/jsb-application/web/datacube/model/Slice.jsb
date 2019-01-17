@@ -152,7 +152,7 @@
 		},
 
 		fieldsTypes: {},
-		
+
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
 
@@ -543,7 +543,7 @@
 		        if ($this.query.$views && $this.query[name]) {
 		            return $this.query[name];
 		        }
-		        return QueryUtils.findView(name, $this.query);
+		        return QueryUtils.findView(name, null, $this.query);
 		    }
 
 		    for(var i in this.query.$select){
@@ -552,7 +552,7 @@
 
 		    this.property('fieldsTypes', this.fieldsTypes);
 		},
-		
+
 		onChangeSettings: function(){
 			var ctx = this.getSettingsContext();
 			
