@@ -1447,6 +1447,8 @@
                             if (type) {
                                 return type;
                             }
+                            unionQuery = getQuery(unionQuery);
+                            $this.throwError(unionQuery, 'Undefined view "{}"', query.$union[i]);
                         }
                         if (unionQuery.$select[field]) {
                             return $this.extractType(unionQuery.$select[field], unionQuery, cube, getQuery);
