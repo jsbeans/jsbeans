@@ -4,6 +4,12 @@
 
     _values: null,
 
+    $client: {
+        ensureInitialized: function(callback){
+            this.ensureTrigger('_initialized', callback);
+        }
+    },
+
     $constructor: function(opts){
         opts = opts || {};
 
@@ -13,9 +19,19 @@
         this._linkedFields = opts.values && opts.values.linkedFields || {};
         this._context = opts.context;
 
-        this._selectors = Repository.createAllSelectors({
-            mainSelector: this
-        })
+        if(JSB.isClient()){
+            Repository.ensureInitialized(function(){
+                $this._selectors = Repository.createAllSelectors({
+                    mainSelector: $this
+                });
+
+                $this.setTrigger('_initialized');
+            });
+        } else {
+            this._selectors = Repository.createAllSelectors({
+                mainSelector: this
+            });
+        }
 
         if(opts.createDefaultValues && Object.keys(this._values).length === 0){
     		var defValues = this.createDefaultValues();

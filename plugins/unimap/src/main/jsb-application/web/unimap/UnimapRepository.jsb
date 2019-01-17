@@ -9,7 +9,7 @@
 	_selectorsMap: {},
 
 	createAllSelectors: function(opts){
-        if(JSB.isClient() && !this.matchTrigger('ready')){
+        if(JSB.isClient() && !this.matchTrigger('_initialized')){
             throw new Error('Unimap repository has not been initialized yet');
         }
 
@@ -29,7 +29,7 @@
 	},
 
 	_create: function(type, opts){
-        if(JSB.isClient() && !this.matchTrigger('ready')){
+        if(JSB.isClient() && !this.matchTrigger('_initialized')){
             throw new Error('Unimap repository has not been initialized yet');
         }
 
@@ -70,13 +70,13 @@
 						c.call($this);
 					});
 				}, function(){
-					$this.setTrigger('ready');
+					$this.setTrigger('_initialized');
 				});
 			});
 		},
 
-		ensureReady: function(callback){
-			this.ensureTrigger('ready', callback);
+		ensureInitialized: function(callback){
+			this.ensureTrigger('_initialized', callback);
 		},
 
 		createRender: function(opts){
