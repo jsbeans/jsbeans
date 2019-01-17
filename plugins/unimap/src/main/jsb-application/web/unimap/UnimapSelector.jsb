@@ -19,11 +19,26 @@
         this._linkedFields = opts.values && opts.values.linkedFields || {};
         this._context = opts.context;
 
+        function updateValues(){
+            if(opts.createDefaultValues && Object.keys($this._values).length === 0){
+                var defValues = $this.createDefaultValues();
+
+                $this._values = defValues.values;
+                $this._linkedFields = defValues.linkedFields;
+            }
+
+            if(opts.updateValues){
+                $this.updateValues();
+            }
+        }
+
         if(JSB.isClient()){
             Repository.ensureInitialized(function(){
                 $this._selectors = Repository.createAllSelectors({
                     mainSelector: $this
                 });
+
+                updateValues();
 
                 $this.setTrigger('_initialized');
             });
@@ -31,17 +46,8 @@
             this._selectors = Repository.createAllSelectors({
                 mainSelector: this
             });
-        }
 
-        if(opts.createDefaultValues && Object.keys(this._values).length === 0){
-    		var defValues = this.createDefaultValues();
-
-            this._values = defValues.values;
-            this._linkedFields = defValues.linkedFields;
-        }
-
-        if(opts.updateValues){
-            this.updateValues();
+            updateValues();
         }
     },
 
