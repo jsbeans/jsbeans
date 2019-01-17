@@ -58,6 +58,10 @@
 	user-select: text;
 }
 
+._dwp_primitiveEditor.resizable textarea {
+	resize: both;
+}
+
 ._dwp_primitiveEditor textarea.readonly {
 	border-color: rgba(187, 187, 187, 0.5);
 	background: -webkit-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);

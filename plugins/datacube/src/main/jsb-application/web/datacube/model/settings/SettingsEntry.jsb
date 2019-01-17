@@ -169,6 +169,10 @@
 			$this.publish('DataCube.Model.SettingsEntry.settingsUpdated', settings);
 			$this.client()._updateClientSettings(settings);
 			$this.doSync();
+		},
+		
+		storeSettingsContext: function(){
+			this.property('_settings', this.getSettingsContext().getValues());
 		}
 	}
 }

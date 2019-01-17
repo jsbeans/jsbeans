@@ -66,6 +66,9 @@
 				this.editBoxElt.attr('readonly', true);
 				this.editBoxElt.addClass('readonly');
 			}
+			if(this.options.resizable){
+				this.addClass('resizable');
+			}
 			this.getElement().append(this.editBoxElt);
 			if(this.options.mode == 'inplace'){
 				this.plainElt = this.$('<div class="_dwp_plain"></div>');
@@ -212,6 +215,10 @@
 					self.options.onFocus.call(self, evt);
 				}
 			});
+			
+			if(JSB.isDefined(this.options.value)){
+				this.setData(this.options.value);
+			}
 		},
 		
 		keyPressedMap: {},

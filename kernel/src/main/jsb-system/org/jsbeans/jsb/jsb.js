@@ -1416,6 +1416,18 @@ if(!(function(){return this;}).call(null).JSB){
 			if(b1 == b2){
 				return true;
 			}
+			if(b1 === undefined && b2 === undefined){
+				return true;
+			}
+			if(b1 === undefined || b2 === undefined){
+				return false;
+			}
+			if(b1 === null && b2 === null){
+				return true;
+			}
+			if(b1 === null || b2 === null){
+				return false;
+			}
 			if(Object.prototype.toString.call(b1) != Object.prototype.toString.call(b2)){
 				return false;
 			}

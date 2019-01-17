@@ -32,14 +32,17 @@
 			this.ensureTrigger('ready', callback);
 		},
 		
-		createRendererFor: function(obj, opts){
+		createRendererFor: function(obj, opts, eType){
 			if(!this.matchTrigger('ready')){
 				throw new Error('RendererRepository has not been initialized yet');
 			}
-			if(!JSB.isBean(obj)){
-				throw new Error('Invalid object passed');
+			if(!eType){
+				if(!JSB.isBean(obj)){
+					throw new Error('Unable to resolve renderer for specified object');
+				}
+				eType = obj.getJsb().$name;
 			}
-			var rName = this.rendererMap[obj.getJsb().$name];
+			var rName = this.rendererMap[eType];
 			if(!rName){
 				var bestNt = null;
 				var bestDist = null;
@@ -53,7 +56,7 @@
 					}
 				}
 				if(bestNt){
-					rName = this.rendererMap[obj.getJsb().$name] = this.rendererMap[bestNt];
+					rName = this.rendererMap[eType] = this.rendererMap[bestNt];
 				}
 			}
 			if(!rName || !JSB.get(rName)){
@@ -62,6 +65,7 @@
 			var RendererClass = JSB.get(rName).getClass();
 			return new RendererClass(obj, opts);
 		}
+		
 	},
 	
 	$server: {
