@@ -142,10 +142,10 @@
 
 .cubeEditor > .addBtn > ul {
     position: absolute;
-    bottom: 45px;
-    right: -5px;
+    bottom: 35px;
+    right: -8px;
     list-style: none;
-    padding: 10px;
+    padding: 10px 10px 15px 10px;
 }
 
 .cubeEditor > .addBtn > ul > li {

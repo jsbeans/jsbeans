@@ -374,42 +374,46 @@
 
 		    query['$context'] = opts.name;
 
-		    switch(opts.sourceType){
-		        case '$provider':
-		        case '$from':
-		            query[opts.sourceType] = sources[0] ? sources[0].getFullId() : undefined;
+		    try{
+                switch(opts.sourceType){
+                    case '$provider':
+                    case '$from':
+                        query[opts.sourceType] = sources[0] ? sources[0].getFullId() : undefined;
 
-		            if(sources.length > 1){
-		                sources.splice(1, sources.length - 1);
-		            }
+                        if(sources.length > 1){
+                            sources.splice(1, sources.length - 1);
+                        }
 
-		            createSelect(query, sources);
-		            break;
-                case '$join':
-                    query['$join'] = {
-                        $left: sources[0] ? sources[0].getFullId() : undefined,
-                        $right: sources[1] ? sources[1].getFullId() : undefined
-                    }
+                        createSelect(query, sources);
+                        break;
+                    case '$join':
+                        query['$join'] = {
+                            $left: sources[0] ? sources[0].getFullId() : undefined,
+                            $right: sources[1] ? sources[1].getFullId() : undefined
+                        }
 
-                    if(opts.sourceOpts){
-                        query['$join'] = JSB.merge(query['$join'], opts.sourceOpts);
-                    }
+                        if(opts.sourceOpts){
+                            query['$join'] = JSB.merge(query['$join'], opts.sourceOpts);
+                        }
 
-		            if(sources.length > 2){
-		                sources.splice(1, sources.length - 2);
-		            }
+                        if(sources.length > 2){
+                            sources.splice(1, sources.length - 2);
+                        }
 
-                    createSelect(query, sources, true);
-                    break;
-                case '$union':
-                    query['$union'] = [];
+                        createSelect(query, sources, true);
+                        break;
+                    case '$union':
+                        query['$union'] = [];
 
-                    for(var i = 0; i < sources.length; i++){
-                        query['$union'].push(sources[i].getFullId());
-                    }
+                        for(var i = 0; i < sources.length; i++){
+                            query['$union'].push(sources[i].getFullId());
+                        }
 
-                    createSelect(query, sources);
-                    break;
+                        createSelect(query, sources);
+                        break;
+                }
+		    } catch(ex){
+		        JSB.getLogger().error(ex);
 		    }
 
 		    return query;
@@ -547,7 +551,13 @@
 		    }
 
 		    for(var i in this.query.$select){
-		        this.fieldsTypes[i] = QueryUtils.extractType(this.query.$select[i], this.query, this.getCube(), getQuery);
+		        try{
+		            this.fieldsTypes[i] = QueryUtils.extractType(this.query.$select[i], this.query, this.getCube(), getQuery);
+                } catch(ex){
+                    JSB.getLogger().error(ex);
+
+                    this.fieldsTypes[i] = '';
+                }
 		    }
 
 		    this.property('fieldsTypes', this.fieldsTypes);
