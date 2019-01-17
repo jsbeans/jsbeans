@@ -1381,6 +1381,8 @@
                 if (slice) {
                     var fields = slice.extractFields();
                     return fields[field] ? fields[field].type : null;
+                } else {
+                    return false;
                 }
             }
             function extractFieldType(field){
@@ -1446,11 +1448,11 @@
                             var type = sliceFieldType(unionQuery, field);
                             if (type) {
                                 return type;
+                            } else if (type === false) {
+                                unionQuery = getQuery(unionQuery);
                             }
-                            unionQuery = getQuery(unionQuery);
-                            $this.throwError(unionQuery, 'Undefined view "{}"', query.$union[i]);
                         }
-                        if (unionQuery.$select[field]) {
+                        if (JSB.isObject(unionQuery) && unionQuery.$select[field]) {
                             return $this.extractType(unionQuery.$select[field], unionQuery, cube, getQuery);
                         }
                     }
