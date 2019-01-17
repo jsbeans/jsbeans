@@ -1,5 +1,6 @@
 .jsb-checkbox {
     display: inline-block;
+    white-space: nowrap;
 }
 
 .jsb-checkbox > .check-elem {
@@ -40,11 +41,20 @@
     display: inline-block;
     vertical-align: middle;
     line-height: 20px;
+    width: calc(100% - 25px);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    text-align: right;
 }
 
 .jsb-checkbox > .check-elem + .caption,
 .jsb-checkbox >  .caption + .check-elem {
     margin-left: 5px;
+}
+
+.jsb-checkbox > .check-elem + .caption {
+    text-align: left;
 }
 
 .jsb-checkbox > .content.disabled,

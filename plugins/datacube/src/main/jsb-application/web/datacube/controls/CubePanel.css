@@ -8,7 +8,7 @@
 }
 
 .cubePanel > header > .jsb-checkbox {
-    float: right;
+    width: calc(100% - 160px);
 }
 
 .cubePanel.onlyDimensions > .jsb-scrollBox > .field:not(.dimension) {
