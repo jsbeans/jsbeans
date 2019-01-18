@@ -259,7 +259,7 @@
 						var val = parseFloat(d.valSelector.value() || 0);
 
 						var progress = 0;
-						if(max - min > 0 && val > 0){
+						if(max - min > 0 && val > min){
 							progress = (val - min) * 100 / (max - min);
 						}
 						
