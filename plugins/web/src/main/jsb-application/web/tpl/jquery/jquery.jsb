@@ -27,18 +27,18 @@
 	}
 }
 */
-// old
-
 {
 	$name:'JQuery',
 	$client:{
 		$singleton: true,
 
 		$bootstrap: function(readyCallback){
-			`#include 'jquery-3.3.1.js'`;
+			//`#include 'jquery-3.3.1.js'`;
+			`#include 'jquery-jsb-3.3.1.js'`;
 
-			JSB().addLibraryScope('$', window.jQuery.noConflict());
-			
+			//JSB().addLibraryScope('$', window.jQuery.noConflict());
+			JSB().addLibraryScope('$', JSBjQuery);
+
 			// override global variable to bind all plugins to JSB().$
 			var jQuery = JSB().$;
 

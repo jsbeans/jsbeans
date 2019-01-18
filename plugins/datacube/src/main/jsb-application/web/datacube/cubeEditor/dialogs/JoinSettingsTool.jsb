@@ -3,8 +3,7 @@
 	$parent: 'JSB.Widgets.Tool',
 	$require: ['JSB.Widgets.ToolManager',
                'Unimap.Controller',
-               'Unimap.ValueSelector',
-               'Datacube.Unimap.Bootstrap',
+               'Unimap.Selector',
                'JSB.Controls.Button',
 	           'css:JoinSettingsTool.css'],
 	$client: {
@@ -81,9 +80,8 @@
 				hasCaption: true,
 				tooltip: 'Сохранить',
 			    onclick: function(){
-			        var values = new ValueSelector({
-                        values: JSB.clone($this.controller.getValues()),
-                        bootstrap: 'Datacube.Unimap.Bootstrap'
+			        var values = new Selector({
+                        values: JSB.clone($this.controller.getValues())
                     });
 
                     var filters = values.find('filter').values(),

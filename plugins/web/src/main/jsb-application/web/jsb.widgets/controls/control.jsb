@@ -262,6 +262,10 @@
 			this.replacingMark.before(this.getElement());
 			this.replacingMark.remove();
 			this.replacingMark = null;
-		}
+		},
+
+		// temp before replace with JSB.Controls.Control
+		registerChild: function(){},
+		unregisterChild: function(){}
 	}
 }

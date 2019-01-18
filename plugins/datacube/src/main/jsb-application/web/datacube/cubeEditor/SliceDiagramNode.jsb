@@ -27,7 +27,7 @@
                         fields: res,
                         sources: self.options.sources
                     });
-		        })
+		        });
 		    },
 			onHighlight: function(bEnable){
 				this.highlightNode(bEnable);

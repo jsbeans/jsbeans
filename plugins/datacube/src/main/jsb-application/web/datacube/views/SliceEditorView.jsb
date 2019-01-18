@@ -11,7 +11,7 @@
 	           'JSB.Widgets.ToolManager',
 	           'DataCube.Export.ExportManager',
 	           'JSB.Widgets.RendererRepository',
-	           'DataCube.Query.SchemeController',
+	           //'DataCube.Query.SchemeController',
 	           'css:SliceEditorView.css'],
 	$client: {
 		ready: false,

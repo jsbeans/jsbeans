@@ -1,7 +1,8 @@
 {
 	$name: 'DataCube.Query.SchemeController',
 	$parent: 'JSB.Controls.Control',
-	$require: ['DataCube.Query.QuerySyntax',
+	$require: ['DataCube.Query.Syntax',
+	           'DataCube.Query.QuerySyntax',
 	           'DataCube.Query.RenderRepository'],
 
 	$client: {
@@ -22,11 +23,11 @@
 
         construct: function(values){
             var queryValues = QuerySyntax.getSchema('$query').values,
-                scheme = [],
+                descriptions = [],
                 order = 0;
 
             for(var i in values){
-                scheme.push({
+                descriptions.push({
                     key: i,
                     order: order++,
                     scheme: QuerySyntax.getSchema(queryValues[i]),
@@ -34,7 +35,7 @@
                 });
             }
 
-            scheme.sort(function(a, b){
+            descriptions.sort(function(a, b){
                 var aPriority = JSB.isDefined(a.scheme.priority) ? a.scheme.priority : 0.5,
                     bPriority = JSB.isDefined(b.scheme.priority) ? b.scheme.priority : 0.5;
 
@@ -49,12 +50,12 @@
                 return a.order - b.order;
             });
 
-            for(var i = 0; i < scheme.length; i++){
-                if(!scheme[i].render){
+            for(var i = 0; i < descriptions.length; i++){
+                if(!descriptions[i].scheme.render){
                     continue;
                 }
 
-                var render = this.createRender(null, scheme[i]);
+                var render = this.createRender(null, descriptions[i]);
 
                 if(render){
                     this.append(render);
@@ -62,12 +63,12 @@
             }
         },
 
-        createRender: function(parent, scheme){
-            if(scheme[i].key !== '$join'){  // debug
-                return;
-            }
-
-            var render = RenderRepository.createRenderFor(scheme[i].key, JSB.merge(scheme[i], {parent: parent}));
+        createRender: function(parent, desc){
+            var render = RenderRepository.createRender({
+                controller: this,
+                desc: desc,
+                parent: parent,
+            });
 
             if(render){
                 this._renders.push(render);

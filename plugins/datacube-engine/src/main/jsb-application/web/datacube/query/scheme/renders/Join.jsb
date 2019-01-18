@@ -5,50 +5,88 @@
 	$alias: '$join',
 
 	$client: {
-	    $require: ['JSB.Controls.Selectize'],
+	    $require: ['JSB.Controls.Select',
+	               'JSB.Controls.Selectize'],
 
-	    $constructor: function(opts) {
-	        $base(opts);
-
-console.log($);
-debugger;
+	    addItem: function(value){
+	        var item = this.$('<div class="item"></div>');
 
 	        var sources = this.getData('cubeSlices');
 
+            var firstField = new Select({
+                cssClass: 'firstField',
+                clearBtn: !this._scheme.multiple,
+                cloneOptions: true,
+                options: sources,
+                onchange: function(val){
+                    values.firstField = {
+                        $context: val.options.context,
+                        $field: val.key
+                    }
+
+                    $this.onchange();
+                }
+            });
+            item.append(firstField.getElement());
+
+            var comparison = new Select({
+                cssClass: 'comparison',
+                cloneOptions: true,
+                options: this._comparisonOpts,
+                value: values.comparison,
+                onchange: function(val){
+                    values.comparison = val.key;
+
+                    $this.onchange();
+                }
+            });
+            item.append(comparison.getElement());
+
+            var secondField = new Select({
+                cssClass: 'secondField',
+                clearBtn: !this._scheme.multiple,
+                cloneOptions: true,
+                options: sources,
+                onchange: function(val){
+                    values.secondField = {
+                        $context: val.options.context,
+                        $field: val.key
+                    }
+
+                    $this.onchange();
+                }
+            });
+            item.append(secondField.getElement());
+
+            this.multipleContainer.append(item);
+	    },
+
+	    construct: function(){
 	        // join type
 	        var joinType = new Selectize({
-	            labelField: 'title',
-	            options: [
-	                {id: '$eq', title: '='},
-	                {id: '$gte', title: '>='},
-	                {id: '$gt', title: '>'},
-	                {id: '$lte', title: '<='},
-	                {id: '$lt', title: '<'}
-	            ],
-	            valueField: 'id',
-
-	            onChange: function(value){
-	                //
-	            }
+	            //
 	        });
+
+debugger;
+
 	        this.append(joinType);
+	        this._beans[joinType.getId()] = joinType;
 
-	        // left source
-	        var leftSource = new Selectize({
-	            options: sources,
+	        // source 1
 
-	            onChange: function(value){
-	                //
-	            }
-	        });
-	        this.append(leftSource);
+	        // source 2
 
-	        // right source
+	        // fields
+	        this.fields = this.$('<div class="fields"></div>');
 
+            this.addBtn = this.$('<i class="btn fas fa-plus-circle"></i>');
+            this.addBtn.click(function(){
+                //$this.onMultipleBtnClick();
+            });
+            this.fields.append(this.addBtn);
+            this.append(this.fields);
 
-
-	        // join filters
-	        //
+	        //this.addItem();
 	    }
 	}
 }

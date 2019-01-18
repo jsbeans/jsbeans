@@ -29,7 +29,11 @@
 			this.getElement().css({
 				'position': 'absolute'
 			});
-			
+
+			if(this.options.position){
+			    this.setPosition(this.options.position, true);
+			}
+
 			// install drag handles
 			/*
 			for(var dhKey in this.dragHandles){
@@ -45,10 +49,6 @@
 				}
 			}
 
-			if(this.options.position){
-			    this.setPosition(this.options.position, true);
-			}
-			
 			if($this.options.checkSize){
 				$this.getElement().on({
 					resize: function(){

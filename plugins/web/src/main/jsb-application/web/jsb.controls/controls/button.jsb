@@ -4,7 +4,7 @@
 	$client: {
 		$require: ['css:button.css'],
 	    $constructor: function(opts){
-	        if(!opts.element) opts.element = '<button></button>';
+	        if(opts && !opts.element) opts.element = '<button></button>';
 	        $base(opts);
 
             this.addClass('jsb-button');

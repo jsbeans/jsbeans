@@ -5,7 +5,7 @@
 		updateCheckInterval: 0
 	},
 
-	_rendererMap: {},
+	_rendersMap: {},
 
 	$client: {
 		$constructor: function(){
@@ -15,8 +15,8 @@
 			this.ensureSynchronized(function(){
 				var jsbArr = [];
 
-				for(var eType in $this._rendererMap){
-					jsbArr.push($this._rendererMap[eType]);
+				for(var eType in $this._rendersMap){
+					jsbArr.push($this._rendersMap[eType]);
 				}
 
 				JSB.chain(jsbArr, function(jsbName, c){
@@ -33,32 +33,13 @@
 			this.ensureTrigger('ready', callback);
 		},
 
-		createRenderFor: function(renderName, opts){
+		createRender: function(opts){
 			if(!this.matchTrigger('ready')){
 				throw new Error('RendererRepository has not been initialized yet');
 			}
 
-			var rName = this.rendererMap[renderName];
+			var rName = this._rendersMap[opts.desc.scheme.render];
 
-			// todo: use basic render?
-            /*
-			if(!rName){
-				var bestNt = null;
-				var bestDist = null;
-				for(nt in this.rendererMap){
-					var dist = obj.getJsb().getSubclassOfDistance(nt);
-					if(!JSB.isNull(dist)){
-						if(JSB.isNull(bestDist) || bestDist > dist){
-							bestDist = dist;
-							bestNt = nt;
-						}
-					}
-				}
-				if(bestNt){
-					rName = this.rendererMap[obj.getJsb().$name] = this.rendererMap[bestNt];
-				}
-			}
-			*/
 			if(!rName || !JSB.get(rName)){
 				return null;
 			}
@@ -69,21 +50,14 @@
 	},
 
 	$server: {
-		registerRender: function(rendererType, renderName){
-			var rendererJsb = null;
+	    $constructor: function(opts){
+	        $base();
 
-			if(JSB.isString(rendererType)){
-				rendererJsb = JSB.get(rendererType);
-				if(!rendererJsb){
-					throw new Error('Unable to find renderer bean: ' + rendererType);
+			JSB.onLoad(function(){
+				if(this.isSubclassOf('DataCube.Query.Renders.Basic') && JSB.isDefined(this.$alias)){
+				    $this._rendersMap[this.$alias] = this.$name;
 				}
-			} else if(rendererType instanceof JSB){
-				rendererJsb = rendererType;
-			} else if(JSB.isBean(rendererType)){
-				rendererJsb = rendererType.getJsb();
-			}
-
-			this._rendererMap[renderName] = rendererJsb.$name;
-		}
+			});
+	    }
 	}
 }

@@ -35,14 +35,6 @@
                 }
             });
 
-            this.find('> .caption').click(function(evt){
-                $this.setChecked(!$this.find('> .check-elem').hasClass('checked'));
-
-                if($this.options.onclick){
-                    $this.options.onclick.call($this, evt);
-                }
-            });
-
 			this.setChecked(this.options.checked, true);
 		},
 
@@ -116,6 +108,14 @@
 		        if(this.options.labelPosition === 'left'){
 		            this.getElement().find('.check-elem').before(this._label);
 		        }
+
+                this._label.click(function(evt){
+                    $this.setChecked(!$this.find('> .check-elem').hasClass('checked'));
+
+                    if($this.options.onclick){
+                        $this.options.onclick.call($this, evt);
+                    }
+                });
 		    }
 
 			this._label.text(str);

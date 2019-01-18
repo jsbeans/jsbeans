@@ -110,7 +110,12 @@
                 cb.setChecked(d.isDimension, true);
             });
 
-            cubeFields.select('.type').html(function(d){
+            cubeFields.select('.type').text(function(d){
+                if(d.type === ''){
+                    this.classList.addClass('error');
+                    return 'error';
+                }
+
                 return d.type;
             });
 
@@ -161,10 +166,10 @@
 
         search: function(value){
 		    if(value){
-                this.cubeFields.find('.caption:not(:icontains("' + value + '"))').closest('.jsb-checkbox').addClass('hidden');
-                this.cubeFields.find('.caption:icontains("' + value + '")').closest('.jsb-checkbox').removeClass('hidden');
+                this.cubeFields.find('.caption:not(:icontains("' + value + '"))').closest('.field').addClass('hidden');
+                this.cubeFields.find('.caption:icontains("' + value + '")').closest('.field').removeClass('hidden');
             } else {
-                this.cubeFields.find('.jsb-checkbox').removeClass('hidden');
+                this.cubeFields.find('.field').removeClass('hidden');
             }
         },
 

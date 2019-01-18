@@ -4,7 +4,7 @@
 	           'JSB.Widgets.DomController',
 	           'css:Control.css'],
 	$client: {
-	    _innerBeans: [],
+	    _innerBeans: {},
 
 		$constructor: function(opts){
 		    opts = opts || {};
@@ -42,9 +42,7 @@
         },
 
         append: function(c){
-            var ret = this.getElement().append(this._resolveElement(c, true));
-
-            return ret;
+            return this.getElement().append(c);
         },
 
 		attach: function(){
@@ -68,21 +66,35 @@
 		},
 
 		contains: function(element){
-		    return this.$.contains(this.getElement(), element);
+		    if(JSB.isBean(element)){
+		        if(JSB.isInstanceOf(element, 'JSB.Controls.Control') || JSB.isInstanceOf(element, 'JSB.Widgets.Control')){
+		            element = element.getElement().get(0);
+		        } else {
+		            throw new Error('Not allow type of argument (bean must be JSB.Controls.Control or JSB.Widgets.Control)');
+		        }
+		    } else if(element instanceof this.$) {
+		        element = element.get(0);
+		    } else if(element instanceof Element) {
+		        // allow
+            } else {
+                throw new Error('Not allow type of argument (must be bean (JSB.Controls.Control or JSB.Widgets.Control), jQuery or HTML element');
+            }
+
+		    return this.$.contains(this.getElement().get(0), element);
 		},
 		
 		destroy: function(){
-		    /*
-		    for(var i = 0; i < this._innerBeans.length; i++){
-		        if(this.contains(this._innerBeans.getElement())){
-		            this._innerBeans.destroy();
+		    for(var i in this._innerBeans){
+		        if(this.contains(this._innerBeans[i].getElement())){
+		            this._innerBeans[i].destroy();
                 }
 		    }
-		    */
 
 			if(this.getElement()){
 				this.getElement().remove();
 			}
+
+			$base();
 		},
 
 		detach: function(){
@@ -134,8 +146,7 @@
 		},
 
 		prepend: function(c){
-			var ret = this.getElement().prepend(this._resolveElement(c, true));
-			return ret;
+			return this.getElement().prepend(c);
 		},
 
 		removeClass: function(c){
@@ -148,21 +159,6 @@
 
 		toggleClass: function(c){
             return this.getElement().toggleClass(c);
-		},
-
-		// private methods
-        _resolveElement: function(c, isChildBean){
-            if(JSB.isInstanceOf(c, 'JSB.Controls.Control') || JSB.isInstanceOf(c, 'JSB.Widgets.Control')){
-                c = c.getElement();
-
-                if(isChildBean){
-                    this._innerBeans.push(c);
-                }
-            } else if(!JSB().isString(c)){
-                c = this.$(c);
-            }
-
-            return c;
-        }
+		}
 	}
 }

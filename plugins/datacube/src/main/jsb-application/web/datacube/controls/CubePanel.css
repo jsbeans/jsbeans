@@ -37,6 +37,7 @@
 }
 
 .cubePanel > .jsb-scrollBox > .field.conflict > .type,
+.cubePanel > .jsb-scrollBox > .field > .type.error,
 .cubePanel > .jsb-scrollBox > .field.conflict > .tooltip > .tooltipLine > .fieldType {
     color: red;
 }

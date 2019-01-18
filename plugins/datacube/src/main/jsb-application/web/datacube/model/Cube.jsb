@@ -81,7 +81,7 @@
 
 									this.slices[desc.id] = {
 									    entry: slice,
-									    diagramOpts: desc.diagramOpts
+									    diagramOpts: desc.diagramOpts || {}
 									};
 								}
 							}
@@ -188,7 +188,7 @@
 			});
 
 			this.slices[slice.getFullId()] = {
-			    diagramOpts: opts.diagramOpts,
+			    diagramOpts: opts.diagramOpts || {},
 			    entry: slice
 			};
 
@@ -476,7 +476,7 @@
 		    var entryId = entry.getFullId();
 
 		    if(this.hasChildEntry(entry)){
-		        JSB.merge(this.slices[entryId].diagramOpts, diagramOpts);
+		        JSB.merge(this.slices[entryId].diagramOpts || {}, diagramOpts);
 		    } else {
 		        return;
 		    }

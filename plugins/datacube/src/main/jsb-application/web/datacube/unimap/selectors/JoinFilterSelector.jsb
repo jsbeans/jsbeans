@@ -1,6 +1,6 @@
 {
-    $name: 'Datacube.ValueSelectors.JoinFilterSelector',
-    $parent: 'Unimap.ValueSelectors.Basic',
+    $name: 'Datacube.Selectors.JoinFilterSelector',
+    $parent: 'Unimap.Selectors.Basic',
 
     value: function(){
         if(!this._values || !this._values[0]){
