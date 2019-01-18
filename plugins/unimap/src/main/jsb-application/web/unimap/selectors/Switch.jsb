@@ -1,6 +1,8 @@
 {
-    $name: 'Unimap.ValueSelectors.Switch',
-    $parent: 'Unimap.ValueSelectors.Basic',
+    $name: 'Unimap.Selectors.Switch',
+    $parent: 'Unimap.Selectors.Basic',
+
+    $alias: 'switch',
 
     createDefaultValues: function(key, scheme, values, opts){
         $base(key, scheme, values, opts);

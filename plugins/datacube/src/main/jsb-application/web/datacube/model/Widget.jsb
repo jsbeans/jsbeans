@@ -69,7 +69,7 @@
 
 		$require: ['DataCube.Query.QueryEngine',
 		           'JSB.Workspace.WorkspaceController',
-		           'Unimap.ValueSelector'],
+		           'Unimap.Selector'],
 		
         $bootstrap: function(){
         	WorkspaceController.registerExplorerNode(null, this, {
@@ -86,9 +86,7 @@
 		$constructor: function(id, workspace, dashboard, name, wType, values){
 			$base(id, workspace);
 
-            var valueSelector = new ValueSelector({
-                bootstrap: 'Datacube.Unimap.Bootstrap'
-            });
+            var valueSelector = new Selector();
 
 			if(dashboard){  // create new
 				this.dashboard = dashboard;

@@ -20,7 +20,7 @@
 				});
 			}
 			
-			WidgetRegistry.lookupWidgetAttr(entry.getWidgetType(), 'icon', function(icon){
+			WidgetRegistry.lookupItemAttr(entry.getWidgetType(), 'icon', function(icon){
 				$this.icon.css('background-image', 'url(' + icon + ')');
 			});
 		}

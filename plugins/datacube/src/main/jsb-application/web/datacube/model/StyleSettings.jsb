@@ -43,7 +43,7 @@
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'Unimap.ValueSelector'],
+		           'Unimap.Selector'],
 
         $bootstrap: function(){
         	WorkspaceController.registerExplorerNode(null, this, {
@@ -65,9 +65,7 @@
             this._styles = this.property('styles');
 
             if(!this._styles){
-                var valueSelector = new ValueSelector({
-                    bootstrap: 'Datacube.Unimap.Bootstrap'
-                });
+                var valueSelector = new Selector();
 
                 this._styles = valueSelector.createDefaultValues(this.scheme);
 

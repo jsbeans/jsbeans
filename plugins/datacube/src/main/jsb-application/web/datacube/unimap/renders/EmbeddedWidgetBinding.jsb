@@ -1,6 +1,9 @@
 {
 	$name: 'Unimap.Render.EmbeddedWidgetBinding',
 	$parent: 'Unimap.Render.Basic',
+
+	$alias: 'embeddedWidget',
+
 	$client: {
 	    _beans: [],
 
@@ -56,7 +59,7 @@
                 accept: function(d){
                     if(d && d.length > 0 && d.get(0).draggingItems){
                         for(var i in d.get(0).draggingItems){
-							if(JSB.isInstanceOf(d.get(0).draggingItems[i], "DataCube.Widgets.WidgetListItem")){
+							if(JSB.isInstanceOf(d.get(0).draggingItems[i], "DataCube.Renderers.WidgetRegistryRenderer")){
 								return true;
 							}
                         }
@@ -72,10 +75,10 @@
 
                     for(var i in d.get(0).draggingItems){
                         $this._values.values[0] = {
-                            binding: {name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb},
+                            binding: {name: d.get(0).draggingItems[i].getObject().name, jsb: d.get(0).draggingItems[i].getObject().jsb},
                             value: {}
                         }
-                        $this.setValue({name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb}, true);
+                        $this.setValue({name: d.get(0).draggingItems[i].getObject().name, jsb: d.get(0).draggingItems[i].getObject().jsb}, true);
                         break;
                     }
                 }

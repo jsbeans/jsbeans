@@ -17,11 +17,12 @@
 
 /* top nodes */
 ._dwp_treeViewContainer > ._dwp_treeViewNode {
-	margin-left: 10px;
+	margin-left: 0;
 }
 
 ._dwp_treeViewContainer > ._dwp_treeViewNode:first-child {
 	border-top: none !important;
+	margin-left: 0 !important;
 }
 
 ._dwp_treeViewNode {
@@ -50,9 +51,10 @@
 */
 
 ._dwp_treeViewNode > ._dwp_nodeHeader {
+	position: relative;
 	display: inline-block;
 	border: 1px solid transparent;
-	padding: 0 2px;
+	padding: 0;
 	vertical-align: top;
 	max-width: 100%;
     box-sizing: border-box;
@@ -86,6 +88,7 @@
 }
 
 ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_expandCollapseToggle {
+	position: absolute;
 	display: inline-block;
 	vertical-align: middle;
 	width: 10px;
@@ -95,8 +98,9 @@
 	transform: rotate(90deg);
 	transition: transform 300ms;
 	opacity: 0.6;
-	margin-left: -10px;
-	margin-right: 2px;
+    top: 50%;
+    margin-top: -5px;
+    left: 0;
 }
 
 ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_expandCollapseToggle.hidden {
@@ -124,6 +128,7 @@
 	display: inline-block;
 	vertical-align: middle;
 	max-width: 100%;
+	margin-left: 12px;
 }
 
 ._dwp_treeViewNode > ._dwp_childContainer {
@@ -131,6 +136,10 @@
 
 ._dwp_treeViewNode.collapsed > ._dwp_childContainer {
 	display: none;
+}
+
+._dwp_treeViewNode > ._dwp_childContainer > ._dwp_treeViewNode {
+	margin-left: 16px;
 }
 
 ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_itemContainer > ._dwp_dummyChild {

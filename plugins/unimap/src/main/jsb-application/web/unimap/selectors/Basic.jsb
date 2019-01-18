@@ -1,5 +1,8 @@
 {
-    $name: 'Unimap.ValueSelectors.Basic',
+    $name: 'Unimap.Selectors.Basic',
+    $require: ['Unimap.Repository'],
+
+    $alias: 'basic',
 
     _excludeMethods: ['$', '$constructor', '$parent'],
 
@@ -30,6 +33,7 @@
             getMainSelector: this.getMainSelector,
             getRenderByName: this.getRenderByName,
             getRenderName: this.getRenderName,
+            removeValue: this.removeValue,
             removeAllValues: this.removeAllValues,
             setName: this.setName,
             setFullValue: this.setFullValue,
@@ -132,8 +136,20 @@
         }
     },
 
-    removeValue: function(){
-        //
+    removeValue: function(index){
+    	if(!this._values){
+    		return;
+    	}
+
+        if(index){
+            if(this._values[index]){
+                this._values.splice(index, 1);
+            }
+        } else {
+            if(this._values[0]){
+                this._values.splice(0, 1);
+            }
+        }
     },
 
     removeValues: function(){

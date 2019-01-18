@@ -3,7 +3,6 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
 	    $require: ['Unimap.Controller',
-	               'Datacube.Unimap.Bootstrap',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
@@ -89,7 +88,6 @@
                 $this.widgetSchemeRenderer = new Controller({
                     scheme: widget.getEntry().extractWidgetScheme(),
                     values: widget.getValues(),
-                    bootstrap: 'Datacube.Unimap.Bootstrap',
                     context: widget.getEntry().getId()
                 });
                 $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());

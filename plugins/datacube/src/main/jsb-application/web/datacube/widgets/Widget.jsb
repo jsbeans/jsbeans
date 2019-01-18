@@ -39,8 +39,7 @@
 		$require: ['JSB.Crypt.MD5', 
 		           'DataCube.Export.Export', 
 		           'JQuery.UI.Loader', 
-		           'Unimap.ValueSelector',
-		           'Datacube.Unimap.Bootstrap',
+		           'Unimap.Selector',
 		           'JSB.Widgets.ToolBar',
 		           'css:Widget.css'],
 
@@ -677,10 +676,9 @@
 			}
 
 			if(!this.context[ctxName]){
-				this.context[ctxName] = new ValueSelector({
+				this.context[ctxName] = new Selector({
 				    context: ctxName,
-				    values: JSB.clone(this.values),
-				    bootstrap: 'Datacube.Unimap.Bootstrap'
+				    values: JSB.clone(this.values)
 				});
 			}
 
@@ -923,9 +921,8 @@
 		},
 
 		setStyles: function(styles){
-		    return new ValueSelector({
-                values: { values: styles },
-                bootstrap: 'Datacube.Unimap.Bootstrap'
+		    return new Selector({
+                values: { values: styles }
             });
 		},
 
@@ -978,7 +975,7 @@
 		$require: ['DataCube.Widgets.WidgetRegistry', 
 		           'JSB.Crypt.MD5', 
 		           'JSB.Workspace.WorkspaceController', 
-		           'Unimap.ValueSelector',
+		           'Unimap.Selector',
 		           'JSB.Web.Download',
 		           'DataCube.Export.ExportManager'],
 
@@ -1311,7 +1308,7 @@
 		    }
 
 		    if(opts.styleScheme){
-                var valueSelector = new ValueSelector({
+                var valueSelector = new Selector({
                     values: { values: WorkspaceController.getWorkspace(opts.styleScheme.workspaceId).entry(opts.styleScheme.entryId).getStyles() }
                 });
 

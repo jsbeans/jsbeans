@@ -110,7 +110,16 @@
 		
 		getWidget: function(id){
 			if(id){
-				return this.widgets[id].w;
+				if(this.widgets[id]){
+					return this.widgets[id].w;
+				} else {
+					for(var wId in this.widgets){
+						if(this.widgets[wId].tab.id == id){
+							return this.widgets[wId].w;
+						}
+					}
+					throw new Error('Failed to find widget by id: ' + id);
+				}
 			}
 			
 			if(Object.keys(this.widgets).length === 0){
@@ -122,6 +131,7 @@
 		
 		getTab: function(id){
 			if(id){
+				id = this.getWidget(id).getId();
 				return this.widgets[id].tab;
 			}
 			if(Object.keys(this.widgets).length === 0){
@@ -133,7 +143,7 @@
 		
 		switchWidget: function(w){
 			if(JSB().isString(w)){
-				w = this.widgets[w].w;
+				w = this.getWidget(w);
 			}
 			var tab = this.widgets[w.getId()].tab;
 			this.wcView.switchTab(tab);

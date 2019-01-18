@@ -1,6 +1,9 @@
 {
 	$name: 'Unimap.Render.CompleteWidgetBinding',
 	$parent: 'Unimap.Render.Basic',
+
+	$alias: 'completeWidget',
+
 	$client: {
 	    $require: ['JSB.Widgets.RendererRepository',
 	               'css:CompleteWidgetBinding.css'],

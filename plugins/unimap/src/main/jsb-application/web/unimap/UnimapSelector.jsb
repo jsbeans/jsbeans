@@ -1,32 +1,53 @@
 {
-    $name: 'Unimap.ValueSelector',
-    $require: ['Unimap.ValueSelectors.Basic', 'Unimap.Bootstrap'],
+    $name: 'Unimap.Selector',
+    $require: ['Unimap.Repository'],
 
-    _rendersMap: {},
-    _baseSelector: null,
     _values: null,
 
+    $client: {
+        ensureInitialized: function(callback){
+            this.ensureTrigger('_initialized', callback);
+        }
+    },
+
     $constructor: function(opts){
+        opts = opts || {};
+
         this._scheme = opts.scheme;
         this._values = opts.values && opts.values.values || {};
+        this._commonFields = opts.values && opts.values.commonFields || {};
         this._linkedFields = opts.values && opts.values.linkedFields || {};
         this._context = opts.context;
 
-        this._baseSelector = new Basic({
-            mainSelector: $this
-        });
+        function updateValues(){
+            if(opts.createDefaultValues && Object.keys($this._values).length === 0){
+                var defValues = $this.createDefaultValues();
 
-        this.createRendersMapByClasses(JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getValueSelectorsMap());
+                $this._values = defValues.values;
+                $this._linkedFields = defValues.linkedFields;
+            }
 
-        if(opts.createDefaultValues && Object.keys(this._values).length === 0){
-    		var defValues = this.createDefaultValues();
-
-            this._values = defValues.values;
-            this._linkedFields = defValues.linkedFields;
+            if(opts.updateValues){
+                $this.updateValues();
+            }
         }
 
-        if(opts.updateValues){
-            this.updateValues();
+        if(JSB.isClient()){
+            Repository.ensureInitialized(function(){
+                $this._selectors = Repository.createAllSelectors({
+                    mainSelector: $this
+                });
+
+                updateValues();
+
+                $this.setTrigger('_initialized');
+            });
+        } else {
+            this._selectors = Repository.createAllSelectors({
+                mainSelector: this
+            });
+
+            updateValues();
         }
     },
 
@@ -72,20 +93,11 @@
         };
     },
 
-    createRendersMapByClasses: function(rendersMap){
-        for(var i in rendersMap){
-            this._rendersMap[i] = new rendersMap[i]({
-                mainSelector: this
-            });
-        }
-    },
-
     destroy: function(){
-        this._baseSelector.destroy();
-
-        for(var i in this._rendersMap){
-            this._rendersMap[i].destroy();
+        for(var i in this._selectors){
+            this._selectors[i].destroy();
         }
+
         $base();
     },
 
@@ -215,15 +227,23 @@
     },
 
     getRenderByName: function(name){
-        if(this._rendersMap[name]){
-            return this._rendersMap[name];
+        if(this._selectors[name]){
+            return this._selectors[name];
         } else {
-            return this._baseSelector;
+            return this._selectors['basic'];
         }
     },
 
     getScheme: function(){
         return this._scheme;
+    },
+
+    getValues: function(){
+        return {
+            commonFields: this._commonFields,
+            linkedFields: this._linkedFields,
+            values: this._values
+        }
     },
 
     updateValues: function(scheme, fullValues){

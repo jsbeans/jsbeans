@@ -3,6 +3,9 @@
 	$parent: 'Unimap.Render.Item',
 	$require: ['JSB.Controls.ComboEditor',
 	           'css:ComboEditor.css'],
+
+    $alias: 'comboEditor',
+
 	$client: {
 	    _editors: [],
 

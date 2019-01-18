@@ -1,6 +1,9 @@
 {
 	$name: 'Unimap.Render.SourceBinding',
 	$parent: 'Unimap.Render.Item',
+
+	$alias: 'sourceBinding',
+
 	$client: {
 	    $require: ['JSB.Controls.Editor', 
 	               'DataCube.Providers.DataProviderRepository', 

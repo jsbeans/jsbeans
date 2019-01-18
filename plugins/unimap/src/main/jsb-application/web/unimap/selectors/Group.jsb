@@ -1,6 +1,8 @@
 {
-    $name: 'Unimap.ValueSelectors.Group',
-    $parent: 'Unimap.ValueSelectors.Basic',
+    $name: 'Unimap.Selectors.Group',
+    $parent: 'Unimap.Selectors.Basic',
+
+    $alias: 'group',
 
     addValue: function(){
         var scheme = this.getMainSelector().getScheme();

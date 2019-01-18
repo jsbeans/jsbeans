@@ -1,6 +1,9 @@
 {
 	$name: 'Unimap.Render.StylesBinding',
 	$parent: 'Unimap.Render.Basic',
+
+	$alias: 'styleBinding',
+
 	$client: {
 	    $require: ['JSB.Widgets.RendererRepository',
 	               'css:StylesBinding.css'],

@@ -1,6 +1,8 @@
 {
-    $name: 'Datacube.ValueSelectors.DataBindingSelector',
-    $parent: 'Unimap.ValueSelectors.Basic',
+    $name: 'Datacube.Selectors.DataBindingSelector',
+    $parent: 'Unimap.Selectors.Basic',
+
+    $alias: 'dataBinding',
 
     binding: function(){
         if(!this._values || this._values.length === 0){

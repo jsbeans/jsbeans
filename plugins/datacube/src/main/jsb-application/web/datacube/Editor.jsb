@@ -79,8 +79,12 @@
 						options: {}
 					},
 					widgetExplorer: {
-						jsb: 'DataCube.Widgets.WidgetExplorer',
-						title: 'Виджеты'
+						jsb: 'JSB.Widgets.RegistryExplorer',
+						title: 'Виджеты',
+						options: {
+							registry: 'DataCube.Widgets.WidgetRegistry',
+							itemRenderer: 'WidgetRegistryRenderer'
+						}
 					}
 				}
 			});

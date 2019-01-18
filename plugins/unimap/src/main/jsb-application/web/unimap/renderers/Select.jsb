@@ -3,6 +3,9 @@
 	$parent: 'Unimap.Render.Item',
 	$require: ['JSB.Controls.Select',
 	           'css:Select.css'],
+
+	$alias: 'select',
+
 	$client: {
 	    _selectors: [],
 

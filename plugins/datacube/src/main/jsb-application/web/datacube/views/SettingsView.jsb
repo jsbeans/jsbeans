@@ -3,7 +3,6 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
 	    $require: ['Unimap.Controller',
-	               'Datacube.Unimap.Bootstrap',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.Button',
                    'css:SettingsView.css'
@@ -48,21 +47,21 @@
 		refresh: function(){
 			this.entry = this.getCurrentEntry();
 
-            
             $this.schemeBlock.loader();
             $this.entry.loadSettings(function(settings){
-                if($this.widgetSchemeRenderer){
-                    $this.widgetSchemeRenderer.destroy();
-                }
-                $this.widgetSchemeRenderer = new Controller({
-                    scheme: $this.entry.extractSettingsScheme(),
-                    values: settings,
-                    bootstrap: 'Datacube.Unimap.Bootstrap',
-                    context: $this.entry.getId()
-                });
-                $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
+            	$this.entry.loadSettingsScheme(function(scheme){
+                    if($this.widgetSchemeRenderer){
+                        $this.widgetSchemeRenderer.destroy();
+                    }
+                    $this.widgetSchemeRenderer = new Controller({
+                        scheme: scheme,
+                        values: settings,
+                        context: $this.entry.getId()
+                    });
+                    $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
 
-                $this.schemeBlock.loader('hide');
+                    $this.schemeBlock.loader('hide');
+            	});
             });
 
 		},

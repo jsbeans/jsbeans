@@ -1,0 +1,22 @@
+@CHARSET "UTF-8";
+
+.widgetRegistryRenderer {
+	padding: 4px 2px;
+}
+
+.widgetRegistryRenderer > .icon {
+	position: absolute;
+    left: 0;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    background-size: 100%;
+    margin-top: -10px;
+    background-repeat: no-repeat;
+}
+
+.widgetRegistryRenderer > .title {
+	padding-left: 22px;
+    padding-top: 1px;
+}
+

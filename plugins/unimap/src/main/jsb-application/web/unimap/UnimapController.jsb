@@ -1,8 +1,9 @@
 {
 	$name: 'Unimap.Controller',
 	$parent: 'JSB.Controls.Control',
-	$require: ['Unimap.Bootstrap',
+	$require: ['Unimap.Repository',
 	           'css:UnimapController.css'],
+
 	$client: {
 	    $constructor: function(opts){
 	        $base(opts);
@@ -17,19 +18,12 @@
                 this.createCommonFieldsMap(opts.values.commonFields);
             }
 
-            if(opts.rendersMap){
-                this._rendersMap = opts.rendersMap;
-            } else {
-                this._rendersMap = JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getRendersMap();
-            }
-
             this.construct();
 	    },
 
 	    // inner variables
 	    _commonFieldsMap: {},
 	    _renders: [],
-	    _rendersMap: {},
 	    _linksMap: {},
 
         addRender: function(render){
@@ -94,8 +88,7 @@
 	    },
 
         createRender: function(parent, key, scheme, values, opts){
-            var constructor = this.getRenderByName(scheme.render);
-            var render = new constructor({
+            var render = Repository.createRender({
                 key: key,
                 scheme: scheme,
                 values: values,
@@ -224,18 +217,6 @@
 	        } else {
 	            return [];
 	        }
-	    },
-
-	    getRenderByName: function(name){
-	        if(this._rendersMap[name]){
-	            return this._rendersMap[name];
-	        } else {
-	            throw new Error('Render with name ' + name + ' does not exist');
-	        }
-	    },
-
-	    getRenderMap: function(){
-	        return this._rendersMap;
 	    },
 
 	    getValueByKey: function(key){
