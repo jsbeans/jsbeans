@@ -59,7 +59,7 @@
                 accept: function(d){
                     if(d && d.length > 0 && d.get(0).draggingItems){
                         for(var i in d.get(0).draggingItems){
-							if(JSB.isInstanceOf(d.get(0).draggingItems[i], "DataCube.Renderers.WidgetRepositoryRenderer")){
+							if(JSB.isInstanceOf(d.get(0).draggingItems[i], "DataCube.Renderers.WidgetRegistryRenderer")){
 								return true;
 							}
                         }

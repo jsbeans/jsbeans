@@ -3,7 +3,6 @@
 	$parent: 'JSB.Widgets.Widget',
 	$client: {
 	    $require: ['Unimap.Controller',
-	               'Datacube.Unimap.Bootstrap',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.Button',
                    'JSB.Widgets.PrimitiveEditor',
@@ -80,18 +79,19 @@
 				$this.nameEditor.setData(this.entry.getName());
 	            $this.schemeBlock.loader();
 	            $this.entry.loadSettings(function(settings){
-	                if($this.widgetSchemeRenderer){
-	                    $this.widgetSchemeRenderer.destroy();
-	                }
-	                $this.widgetSchemeRenderer = new Controller({
-	                    scheme: $this.entry.extractSettingsScheme(),
-	                    values: settings,
-	                    bootstrap: 'Datacube.Unimap.Bootstrap',
-	                    context: $this.entry.getId()
-	                });
-	                $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
-	
-	                $this.schemeBlock.loader('hide');
+	            	$this.entry.loadSettingsScheme(function(scheme){
+		                if($this.widgetSchemeRenderer){
+		                    $this.widgetSchemeRenderer.destroy();
+		                }
+		                $this.widgetSchemeRenderer = new Controller({
+		                    scheme: scheme,
+		                    values: settings,
+		                    context: $this.entry.getId()
+		                });
+		                $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
+		
+		                $this.schemeBlock.loader('hide');
+	            	});
 	            });
 			}
 
@@ -109,11 +109,6 @@
 	            this.server().saveSettings(this.entry, this.nameEditor.getData().getValue(), values, function(){
 	            	$this.getElement().loader('hide');
 	            })
-/*	            
-	            this.entry.saveSettings(values, function(){
-	                $this.getElement().loader('hide');
-	            });
-*/	            
             }
 		},
 

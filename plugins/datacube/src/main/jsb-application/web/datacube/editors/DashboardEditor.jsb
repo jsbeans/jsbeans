@@ -30,7 +30,7 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
-							if(JSB.isInstanceOf(obj, 'DataCube.Renderers.WidgetRepositoryRenderer')){
+							if(JSB.isInstanceOf(obj, 'DataCube.Renderers.WidgetRegistryRenderer')){
 								return true;
 							}
 							if(obj.obj && JSB.isInstanceOf(obj.obj, 'DataCube.WidgetNode')){
@@ -50,7 +50,7 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
-							if(JSB.isInstanceOf(obj, 'DataCube.Renderers.WidgetRepositoryRenderer')){
+							if(JSB.isInstanceOf(obj, 'DataCube.Renderers.WidgetRegistryRenderer')){
 								$this.entry.server().createWidgetWrapper(obj.getObject().jsb, obj.getObject().name, function(widgetEntry, fail){
 									if(widgetEntry){
 										var wWrapper = new WidgetWrapper(widgetEntry, $this, {

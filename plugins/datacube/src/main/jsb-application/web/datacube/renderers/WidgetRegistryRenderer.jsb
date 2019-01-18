@@ -1,15 +1,15 @@
 {
-	$name: 'DataCube.Renderers.WidgetRepositoryRenderer',
+	$name: 'DataCube.Renderers.WidgetRegistryRenderer',
 	$parent: 'JSB.Widgets.Renderer',
 	$require: ['JSB.Widgets.RendererRepository',
-	           'css:WidgetRepositoryRenderer.css'],
+	           'css:WidgetRegistryRenderer.css'],
 	$client: {
 		$constructor: function(wDesc, opts){
 			var self = this;
 			opts = opts || {};
 			//opts.editable = false;
 			$base(wDesc, opts);
-			this.addClass('widgetRepositoryRenderer');
+			this.addClass('widgetRegistryRenderer');
 			
 			this.icon = $this.$('<div class="icon"></div>');
 			this.append(this.icon);
@@ -28,7 +28,7 @@
 	
 	$server: {
 		$bootstrap: function(){
-			RendererRepository.registerRenderer(this, 'WidgetRepositoryRenderer');
+			RendererRepository.registerRenderer(this, 'WidgetRegistryRenderer');
 		}
 	}
 }

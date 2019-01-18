@@ -84,7 +84,7 @@
 						title: 'Виджеты',
 						options: {
 							registry: 'DataCube.Widgets.WidgetRegistry',
-							itemRenderer: 'WidgetRepositoryRenderer'
+							itemRenderer: 'WidgetRegistryRenderer'
 						}
 					}
 				}

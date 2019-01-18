@@ -67,7 +67,7 @@
 			return this.registry;
 		},
 		
-		getItemtAttr: function(jsb, attr){
+		getItemAttr: function(jsb, attr){
 			var desc = this.registryByType[jsb];
 			if(!desc){
 				return;

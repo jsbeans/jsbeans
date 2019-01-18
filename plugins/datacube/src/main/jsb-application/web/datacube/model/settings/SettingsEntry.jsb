@@ -7,33 +7,10 @@
 		
 	},
 	
-	extractSettingsScheme: function(){
-		var scheme = {},
-            curJsb = this.getJsb(),
-            schemesArray = [];
-
-        while(curJsb){
-            if(!curJsb.isSubclassOf('DataCube.Model.SettingsEntry')){
-                break;
-            }
-            var wScheme = curJsb.getDescriptor().$scheme;
-            if(wScheme && Object.keys(wScheme).length > 0){
-                schemesArray.push(wScheme);
-            }
-            curJsb = curJsb.getParent();
-        }
-
-        for(var i = schemesArray.length - 1; i > -1; i--){
-            JSB.merge(true, scheme, schemesArray[i]);
-        }
-
-        return scheme;
-	},
-	
-	createContext: function(settings){
+	createContext: function(settings, scheme){
 		return new Selector({
 			values: settings,
-			scheme: $this.extractSettingsScheme(),
+			scheme: scheme,
 			createDefaultValues: true,
 			updateValues: true
 		});
@@ -41,6 +18,7 @@
 	
 	$client: {
 		_settings: null,
+		_settingsScheme: null,
 		_settingsContext: null,
 		
 		loadSettingsContext: function(c){
@@ -57,10 +35,14 @@
 					}
 					return;
 				}
-				$this._settingsContext = $this.createContext(settings);
-				if(c){
-					c.call($this, $this._settingsContext);
-				}
+				$this.loadSettingsScheme(function(scheme, fail){
+					$this._settingsContext = $this.createContext(settings, scheme);
+					if(c){
+						$this._settingsContext.ensureInitialized(function(){
+							c.call($this, $this._settingsContext);	
+						});
+					}
+				});
 			});
 		},
 		
@@ -75,6 +57,21 @@
 					}
 					$this._settings = settings;
 					callback.call($this, JSB.clone(settings));
+				});
+			}
+		},
+		
+		loadSettingsScheme: function(callback){
+			if($this._settingsScheme){
+				callback.call($this, $this._settingsScheme);
+			} else {
+				this.server().getSettingsScheme(function(scheme, fail){
+					if(fail){
+						callback.call($this, null, fail);
+						return;
+					}
+					$this._settingsScheme = scheme;
+					callback.call($this, $this._settingsScheme);
 				});
 			}
 		},
@@ -101,7 +98,7 @@
 				
 				if($this._settingsContext){
 					// renew context
-					$this._settingsContext = $this.createContext(settings);
+					$this._settingsContext = $this.createContext(settings, $this._settingsScheme);
 					
 					$this.publish('DataCube.Model.SettingsEntry.settingsContextUpdated', $this._settingsContext);
 				}
@@ -141,7 +138,7 @@
 		
 		getSettingsContext: function(){
 			if(!this._settingsContext){
-				this._settingsContext = this.createContext(this.getSettings());
+				this._settingsContext = this.createContext(this.getSettings(), this.getSettingsScheme());
 			}
 			
 			return this._settingsContext;
@@ -153,6 +150,29 @@
 		
 		getSettings: function(){
 			return $this.property('_settings');
+		},
+		
+		getSettingsScheme: function(){
+			var scheme = {},
+            curJsb = this.getJsb(),
+            schemesArray = [];
+
+	        while(curJsb){
+	            if(!curJsb.isSubclassOf('DataCube.Model.SettingsEntry')){
+	                break;
+	            }
+	            var wScheme = curJsb.getDescriptor().$scheme;
+	            if(wScheme && Object.keys(wScheme).length > 0){
+	                schemesArray.push(wScheme);
+	            }
+	            curJsb = curJsb.getParent();
+	        }
+	
+	        for(var i = schemesArray.length - 1; i > -1; i--){
+	            JSB.merge(true, scheme, schemesArray[i]);
+	        }
+	
+	        return scheme;
 		},
 		
 		applySettings: function(settings){
