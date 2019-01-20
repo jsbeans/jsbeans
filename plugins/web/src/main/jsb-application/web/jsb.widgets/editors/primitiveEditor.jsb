@@ -69,6 +69,9 @@
 			if(this.options.resizable){
 				this.addClass('resizable');
 			}
+			if(this.options.cssClass){
+				this.addClass(this.options.cssClass);
+			}
 			this.getElement().append(this.editBoxElt);
 			if(this.options.mode == 'inplace'){
 				this.plainElt = this.$('<div class="_dwp_plain"></div>');

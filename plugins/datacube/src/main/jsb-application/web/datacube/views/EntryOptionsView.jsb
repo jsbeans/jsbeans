@@ -44,7 +44,7 @@
 	        this.warningBlock = this.$('<div class="warningBlock hidden"></div>');
 	        this.schemeBlock.append(this.warningBlock);
 	        
-	        this.subscribe('DataCube.Model.SettingsEntry.settingsUpdated', function(sender, msg, settings){
+	        this.subscribe(['DataCube.Model.SettingsEntry.settingsUpdated', 'JSB.Workspace.Entry.updated'], function(sender, msg, settings){
 	        	if(sender != $this.getCurrentEntry()){
 	        		return;
 	        	}
