@@ -7,6 +7,8 @@
 	           'JSB.Widgets.RendererRepository',
 	           'css:JoinFilterBinding.css'],
 
+    $alias: 'joinFilter',
+
     $client: {
         _sources: [],
         _comparisonOpts: ['$eq', '$gte', '$gt', '$lte', '$lt'],
