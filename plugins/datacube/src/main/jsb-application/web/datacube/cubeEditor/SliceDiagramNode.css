@@ -216,8 +216,16 @@
 
 /* footer */
 .sliceDiagramNode > footer {
-    height: 10px;
 	border-top: 1px solid #4b794e;
+    padding: 5px 3px;
+}
+
+.sliceDiagramNode > footer > .sqlTableRenderer {
+    width: 100%;
+}
+
+.sliceDiagramNode > footer > .sqlTableRenderer > .title {
+    max-width: calc(100% - 40%);
 }
 
 /* gripper */

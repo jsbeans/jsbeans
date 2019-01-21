@@ -100,18 +100,6 @@
 			});
 			header.append(editBtn.getElement());
 
-			if(dataSource){
-                var renderer = RendererRepository.createRendererFor(dataSource, {showSource: true});
-                header.append(renderer.getElement());
-
-                renderer.getElement().click(function(evt){
-                    evt.stopPropagation();
-                    // todo: show original source data
-                });
-
-                this.addClass('dataSourceSlice');
-			}
-
 			// source link type
 			/*
 			var sourceMessage = this.$('<span class="source">Тип связи: </span>');
@@ -138,9 +126,21 @@
                 iri: 'connector/right/' + this.getId()
             });
 
-			this.status = this.$('<footer></footer>');
-			this.append(this.status);
-			
+			var footer = this.$('<footer></footer>');
+			this.append(footer);
+
+			if(dataSource){
+                var renderer = RendererRepository.createRendererFor(dataSource, {showSource: true});
+                footer.append(renderer.getElement());
+
+                renderer.getElement().click(function(evt){
+                    evt.stopPropagation();
+                    // todo: show original source data
+                });
+
+                this.addClass('dataSourceSlice');
+			}
+
 			this.subscribe('DataCube.Model.Slice.renameSlice', {session: true}, function(sender, msg, desc){
 				var entry = desc.entry;
 
