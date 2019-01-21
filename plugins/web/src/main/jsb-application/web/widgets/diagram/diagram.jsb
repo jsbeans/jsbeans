@@ -187,6 +187,11 @@
 					.attr('d', 'M0,0 L-20,-10 L-40,0 L-20,10 z');
 			});
 			
+			this.registerShape('pentagon', function(){
+				return this.defs.append('path')
+					.attr('d', 'M0,0 L-10,-12 L-24,-8 L-24,8 L-10,12 z');
+			});
+			
 			// add highlight filter
 			this.registerShape('highlightFilter', function(){
 				var filter = this.defs.append('filter');

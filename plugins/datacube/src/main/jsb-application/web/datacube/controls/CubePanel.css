@@ -1,10 +1,17 @@
 .cubePanel > header {
-    height: 31px;
-    padding: 7px 2.5px 0 2.5px;
-    border-bottom: 1px solid grey;
+	height: 32px;
+    padding: 8px 6px 0 6px;
+    border-bottom: 1px solid #d8d8d8;
     vertical-align: middle;
-    color: #555;
+	color: #5f7588;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px #fff;
     font-size: 14px;
+    background: -webkit-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+    background: -moz-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+    background: linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+    background: -o-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+    background: -ms-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
 }
 
 .cubePanel > header > .jsb-switch {
@@ -18,7 +25,8 @@
 }
 
 .cubePanel > header > .jsb-switch > label:before {
-    border-radius: 15px;
+	border-radius: 15px;
+    background-color: #a7a4a4;
 }
 
 .cubePanel > header > .jsb-switch > input:checked + label:after {
@@ -26,6 +34,7 @@
 }
 
 .cubePanel > header > .jsb-switch > label:after {
+	box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.2);
     width: 15px;
     height: 15px;
 }
@@ -36,24 +45,59 @@
 
 .cubePanel > .jsb-scrollBox {
     height: calc(100% - 32px);
-    padding: 5px;
 }
 
 .cubePanel > .jsb-scrollBox > .field {
-    position: absolute;
     display: block;
-    margin-bottom: 3px;
     transition-duration: 0.5s;
     width: 100%;
 }
 
+.cubePanel > .jsb-scrollBox > .field:nth-child(even) {
+	background-color: #eff3f5;
+}
+
+.cubePanel > .jsb-scrollBox > .field:nth-child(odd) {
+	background-color: #fafcfd;
+}
+
 .cubePanel > .jsb-scrollBox > .field > * {
     display: inline-block;
+	
 }
 
 .cubePanel > .jsb-scrollBox > .field > .jsb-checkbox {
-    width: 50%;
+    width: 60%;
+    border-right: 1px solid #abc1ca;
+	padding: 2px 4px;
+	color: #214958;
 }
+
+.cubePanel > .jsb-scrollBox > .field > .jsb-checkbox > .check-elem {
+	box-sizing: content-box;
+	border: 1px solid #54848e;
+    border-radius: 6px;
+}
+
+.cubePanel > .jsb-scrollBox > .field > .type {
+	padding: 2px 4px;
+    font-family: monospace;
+	color: #6d6d6d;
+}
+
+.cubePanel > .jsb-scrollBox > .field > .type[type="string"] {}
+
+.cubePanel > .jsb-scrollBox > .field > .type[type="integer"] {}
+
+.cubePanel > .jsb-scrollBox > .field > .type[type="double"] {}
+
+.cubePanel > .jsb-scrollBox > .field > .type[type="boolean"] {}
+
+.cubePanel > .jsb-scrollBox > .field > .type[type="date"] {}
+
+.cubePanel > .jsb-scrollBox > .field > .type[type="array"] {}
+
+.cubePanel > .jsb-scrollBox > .field > .type[type="object"] {}
 
 .cubePanel > .jsb-scrollBox > .field.conflict > .type,
 .cubePanel > .jsb-scrollBox > .field > .type.error,

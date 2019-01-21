@@ -8,10 +8,24 @@
     display: none;
 }
 
+.sliceEditor.active > .toolbar {
+	display: block;
+}
+
 .sliceEditor > .toolbar {
-    height: 31px;
-    padding: 2.5px;
-    border-bottom: 1px solid grey;
+	display: none;
+	height: 32px;
+    padding: 3px 6px;
+    border-bottom: 1px solid #c5c5c5;
+    background: -webkit-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+    background: -moz-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+    background: linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+    background: -o-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+    background: -ms-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+}
+
+.sliceEditor > .toolbar > .caption {
+	display: none;
 }
 
 .sliceEditor > .toolbar > .okBtn {

@@ -4,9 +4,9 @@
     width: 400px;
 }
 
-.joinSettingsTool > .header {
-    text-align: center;
-    font-size: 1.3em;
+.joinSettingsTool > header {
+	font-size: 18px;
+    color: #863301;
 }
 
 .joinSettingsTool > .okBtn {

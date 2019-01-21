@@ -49,13 +49,34 @@
                     }
                 }],
                 heads: {
-                    target: {
+                    source: {
                         shape: 'arrow',
-                        strip: 0
+                        offset: 3,
+                        strip: 6
                     }
                 },
                 userSelect: false
 			};
+			
+			var fromLink = JSB.merge({}, linkOpts, {});
+			var joinLink = JSB.merge({}, linkOpts, {
+				heads: {
+					source: {
+                        shape: 'diamond',
+                        offset: 3,
+                        strip: 6
+                    }
+				}
+			});
+			var unionLink = JSB.merge({}, linkOpts, {
+				heads: {
+					source: {
+                        shape: 'pentagon',
+                        offset: 3,
+                        strip: 6
+                    }
+				}
+			});
 
 			// create diagram
 			this.diagram = new Diagram({
@@ -106,9 +127,9 @@
 				},
 
 				links: {
-				    $from: linkOpts,
-					$join: linkOpts,
-					$union: linkOpts
+				    $from: fromLink,
+					$join: joinLink,
+					$union: unionLink
 				}
 			});
 			this.append(this.diagram);

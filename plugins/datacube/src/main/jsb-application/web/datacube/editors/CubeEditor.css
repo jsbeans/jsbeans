@@ -51,6 +51,20 @@
     position: absolute;
     right: 20px;
     top: 20px;
+    overflow: initial;
+}
+
+.cubeEditor > .jsb-searchBox > input {
+	background: #a4c1d6;
+    border: 1px solid #2c5f86;
+    color: #000;
+    text-shadow: none;
+    padding-left: 10px;
+    font-family: arial;
+    font-weight: normal;
+    letter-spacing: normal;
+	opacity: 0.8 !important;
+	margin-right: 4px;
 }
 
 /* edit buttons */
@@ -73,17 +87,18 @@
 }
 
 .cubeEditor > .jsb-searchBox.useFA > .searchIcon {
-    border: 2px solid #dc143c;
-    padding: 5px;
+    border: 2px solid #0d5188;
+    padding: 6px;
     background: none;
+    font-size: 24px;
 }
 
 .cubeEditor > .jsb-searchBox.useFA.open > .searchIcon {
-    padding: 5px 0 0 9px;
+    padding: 6px 0 0 9px;
 }
 
 .cubeEditor > .jsb-searchBox.useFA > .searchIcon:after {
-    background: #dc143c;
+    background: #427fad;
 }
 
 .cubeEditor > .jsb-searchBox.useFA > .searchIcon:hover:after {
@@ -112,7 +127,7 @@
 }
 
 .cubeEditor > .addBtn:after {
-    background: #169f85;
+    background: #1f792a;
 }
 
 .cubeEditor > .removeBtn:after {
@@ -134,10 +149,10 @@
 }
 
 .cubeEditor > .addBtn {
-    border: 2px solid #169f85;
+    border: 2px solid #105f1a;
     right: 20px;
-    padding: 5px;
-    font-size: 30px;
+    padding: 6px 7px 6px 8px;
+    font-size: 24px;
 }
 
 .cubeEditor > .addBtn > ul {
@@ -212,10 +227,10 @@
 }
 
 .cubeEditor > .removeBtn {
-    padding: 7px;
+    padding: 6px 7px 6px 8px;
     font-size: 24px;
     left: 20px;
-    border: 2px solid #c35555;
+    border: 2px solid #862424;
 }
 
 .cubeEditor .unionIcon,
@@ -241,4 +256,50 @@
 
 .cubeEditor .recursiveIcon {
     background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgdmVyc2lvbj0iMS4xIgogICB4PSIwcHgiCiAgIHk9IjBweCIKICAgdmlld0JveD0iMCAwIDcwIDc1IgogICBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAxMDAgMTAwIgogICB4bWw6c3BhY2U9InByZXNlcnZlIgogICBpZD0ic3ZnOCIKICAgc29kaXBvZGk6ZG9jbmFtZT0ibm91bl9yZXR1cm5fNjAwMzcuc3ZnIgogICB3aWR0aD0iNzAiCiAgIGhlaWdodD0iNzUiCiAgIGlua3NjYXBlOnZlcnNpb249IjAuOTIuMSByMTUzNzEiPjxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTE0Ij48cmRmOlJERj48Y2M6V29yawogICAgICAgICByZGY6YWJvdXQ9IiI+PGRjOmZvcm1hdD5pbWFnZS9zdmcreG1sPC9kYzpmb3JtYXQ+PGRjOnR5cGUKICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPjxkYzp0aXRsZT48L2RjOnRpdGxlPjwvY2M6V29yaz48L3JkZjpSREY+PC9tZXRhZGF0YT48ZGVmcwogICAgIGlkPSJkZWZzMTIiIC8+PHNvZGlwb2RpOm5hbWVkdmlldwogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBib3JkZXJvcGFjaXR5PSIxIgogICAgIG9iamVjdHRvbGVyYW5jZT0iMTAiCiAgICAgZ3JpZHRvbGVyYW5jZT0iMTAiCiAgICAgZ3VpZGV0b2xlcmFuY2U9IjEwIgogICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwIgogICAgIGlua3NjYXBlOnBhZ2VzaGFkb3c9IjIiCiAgICAgaW5rc2NhcGU6d2luZG93LXdpZHRoPSIxNTY3IgogICAgIGlua3NjYXBlOndpbmRvdy1oZWlnaHQ9IjkzOSIKICAgICBpZD0ibmFtZWR2aWV3MTAiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGZpdC1tYXJnaW4tdG9wPSIwIgogICAgIGZpdC1tYXJnaW4tbGVmdD0iMCIKICAgICBmaXQtbWFyZ2luLXJpZ2h0PSIwIgogICAgIGZpdC1tYXJnaW4tYm90dG9tPSIwIgogICAgIGlua3NjYXBlOnpvb209IjEuODg4IgogICAgIGlua3NjYXBlOmN4PSIzNSIKICAgICBpbmtzY2FwZTpjeT0iMjIuNSIKICAgICBpbmtzY2FwZTp3aW5kb3cteD0iMCIKICAgICBpbmtzY2FwZTp3aW5kb3cteT0iMCIKICAgICBpbmtzY2FwZTp3aW5kb3ctbWF4aW1pemVkPSIwIgogICAgIGlua3NjYXBlOmN1cnJlbnQtbGF5ZXI9InN2ZzgiIC8+PHBhdGgKICAgICBkPSJtIDQ0LjMsNi4zIGMgMCwwIDAsMCAwLDAgQyA0Mi44LDIuNiAzOS4yLDAgMzUsMCAyOS41LDAgMjUsNC41IDI1LDEwIGMgMCwwLjEgMCwwLjIgMCwwLjMgbCAtMjAsMiAzLjUsNC45IEMgMy4yLDIzLjMgMCwzMS4zIDAsNDAgMCw1OS4zIDE1LjcsNzUgMzUsNzUgNTQuMyw3NSA3MCw1OS4zIDcwLDQwIDcwLDIzLjkgNTkuMSwxMC4zIDQ0LjMsNi4zIFogTSAzNSw0IGMgMy4zLDAgNiwyLjcgNiw2IDAsMy4zIC0yLjcsNiAtNiw2IC0zLjMsMCAtNiwtMi43IC02LC02IDAsLTMuMyAyLjcsLTYgNiwtNiB6IG0gMCw2MSBDIDIxLjIsNjUgMTAsNTMuOCAxMCw0MCAxMCwzNC42IDExLjcsMjkuNyAxNC42LDI1LjYgbCAyLjcsMy43IDcuOSwtMTcuNiBjIDAuOCw0LjggNC45LDguMyA5LjgsOC4zIDMuMiwwIDYsLTEuNSA3LjgsLTMuNyAwLDAgMCwwIDAsMCBDIDUyLjgsMTkuNSA2MCwyOC45IDYwLDQwIDYwLDUzLjggNDguOCw2NSAzNSw2NSBaIgogICAgIGlkPSJwYXRoMiIKICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIiAvPjwvc3ZnPg==) !important;
+}
+
+/* links */
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link {}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link > path {
+	stroke-width: 6px;
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link > .head.source > .shape {
+	transform: scale(0.8);
+}
+
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$from"] > path {
+	stroke: #678e52;
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$from"] > .head.source > .shape {
+	fill: #678e52;
+    stroke: #446930;
+    stroke-width: 3px;
+    transform: scale(0.9);
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$join"] > path {
+	stroke: #548792;
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$join"] > .head.source > .shape {
+	fill: #548792;
+    stroke: #30616b;
+    stroke-width: 3px;
+	transform: scale(0.7);
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$union"] > path {
+	stroke: #8a8740;
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$union"] > .head.source > .shape {
+	fill: #8a8740;
+    stroke: #636027;
+    stroke-width: 3px;
+    transform: scale(0.8);
 }

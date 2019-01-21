@@ -118,7 +118,7 @@
 
                     return d.type;
                 })
-                .property('fieldKey', function(d){
+                .attr('type', function(d){
                     return d.type;
                 });
 

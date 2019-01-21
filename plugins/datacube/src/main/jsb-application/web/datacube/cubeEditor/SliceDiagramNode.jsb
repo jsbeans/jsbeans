@@ -53,7 +53,7 @@
             var dataSource = this.entry.getSource();
 
 			this.addClass('sliceDiagramNode');
-
+/*
 			// drag handle
 			var dragHandle = this.$('<div class="dragHandle"><div></div><div></div><div></div></div>');
 			this.append(dragHandle);
@@ -63,9 +63,15 @@
 				selector: dragHandle,
 				type: 'drag'
 			});
-
+*/
 			var header = this.$('<header></header>');
 			this.append(header);
+			
+			this.installHandle({
+			    key: 'drag',
+				selector: header,
+				type: 'drag'
+			});
 
 			// left connector
 			if(!dataSource){
@@ -247,6 +253,7 @@
                 var fromType = this.entry.getFromType();
 
                 if(fromType !== '$cube'){
+                	/*
                     var fromClass = '',
                         fromName = this.leftConnectorElement.children('.tooltip');
 
@@ -275,7 +282,7 @@
                     }
 
                     this.leftConnectorElement.removeClass().addClass('connector left hasIcon ' + fromClass);
-
+                    */
                     // update links
                     var oldLinks = this._sources,
                         newLinks = opts && opts.sources || this.entry.extractSources(opts && opts.query || this.entry.getQuery());

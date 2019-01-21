@@ -4,24 +4,33 @@
 	box-shadow: 1px 1px 3px #999999;
 	border: 1px solid #4b794e;
 	position: relative;
+	border-radius: 6px;
 	width: 256px;
 }
 
 .sliceDiagramNode.dataSourceSlice {
-    border: 1px solid #000;
+	border: 1px solid #8e8544;
 }
 
 .sliceDiagramNode.selected,
 .sliceDiagramNode.highlighted {
-	box-shadow: 0 0 1px 3px #639a67;
+	box-shadow: 0 0 0 8px #5fab69;
 }
 
 .sliceDiagramNode.dataSourceSlice.selected,
 .sliceDiagramNode.dataSourceSlice.highlighted {
-	box-shadow: 0 0 1px 3px #f5f017;
+	box-shadow: 0 0 0 8px #c5c346;
 }
 
 /* header && footer color */
+.sliceDiagramNode > header {
+	border-bottom: 1px solid #4b794e;
+}
+
+.sliceDiagramNode.dataSourceSlice > header {
+	border-bottom: 1px solid #8e8544;
+}
+
 .sliceDiagramNode > header,
 .sliceDiagramNode > footer {
 	background: -webkit-linear-gradient(top, #c1efcc 0%, #a4d8aa 100%);
@@ -50,6 +59,7 @@
 }
 
 /* dragHandle */
+/*
 .sliceDiagramNode > .dragHandle {
     border-bottom: 1px solid #4b794e;
     background-color: #54c70a;
@@ -69,12 +79,15 @@
     border: 1px solid #524507;
     background: #927903;
 }
+*/
 
 /* header */
 .sliceDiagramNode > header {
     position: relative;
     padding: 2px;
     padding-left: 5px;
+    cursor: move;
+	border-radius: 6px 6px 0 0;
 }
 
 .sliceDiagramNode > header > *,
@@ -187,7 +200,7 @@
 }
 
 .sliceDiagramNode > .fields > .sliceField {
-    padding: 2px 4px;
+    padding: 0 4px;
 	position: relative;
 	white-space: nowrap;
 	box-sizing: border-box;
@@ -195,29 +208,52 @@
 }
 
 .sliceDiagramNode > .fields > .sliceField:nth-child(odd) {
-	background-color: #e0eaef;
+	background-color: #e5efe0;
 }
 
 .sliceDiagramNode > .fields > .sliceField:nth-child(even) {
-	background-color: #eef4f7;
+	background-color: #f0f7ee;
 }
+
+.sliceDiagramNode.dataSourceSlice > .fields > .sliceField:nth-child(odd) {
+	background-color: #efeee0;
+}
+
+.sliceDiagramNode.dataSourceSlice > .fields > .sliceField:nth-child(even) {
+	background-color: #f7f7ee;
+}
+
 
 .sliceDiagramNode > .fields > .sliceField > * {
     display: inline-block;
 }
 
 .sliceDiagramNode > .fields > .sliceField > .key {
-    width: calc(70% - 7px);
+    width: calc(60% - 7px);
+    border-right: 1px solid #c1d6bb;
+    padding: 1px 0;
+}
+
+.sliceDiagramNode.dataSourceSlice > .fields > .sliceField > .key {
+	border-right: 1px solid #d5d6bb;
 }
 
 .sliceDiagramNode > .fields > .sliceField > .type {
     width: 30%;
+    font-family: monospace;
+    color: #555;
+    padding-left: 4px;
 }
 
 /* footer */
 .sliceDiagramNode > footer {
 	border-top: 1px solid #4b794e;
     padding: 5px 3px;
+    border-radius: 0 0 6px 6px;
+}
+
+.sliceDiagramNode.dataSourceSlice > footer {
+	border-top: 1px solid #8e8544;
 }
 
 .sliceDiagramNode > footer > .sqlTableRenderer {
