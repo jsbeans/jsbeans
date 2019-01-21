@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Widget',
     $client: {
         $require: ['JSB.Controls.ScrollBox',
-                   'JSB.Controls.Checkbox'],
+                   'JSB.Controls.Checkbox',
+                   'JSB.Controls.Switch'],
 
         $constructor: function(opts){
             $base(opts);
@@ -14,9 +15,8 @@
             var caption = this.$('<header>Поля и измерения куба</header>');
             this.append(caption);
 
-            var onlyDimensionsCheckbox = new Checkbox({
-                label: 'Только измерения',
-                labelPosition: 'left',
+            var onlyDimensionsCheckbox = new Switch({
+                title: 'Только измерения',
                 onChange: function(b){
                     $this.getElement().toggleClass('onlyDimensions');
                 }

@@ -7,8 +7,27 @@
     font-size: 14px;
 }
 
-.cubePanel > header > .jsb-checkbox {
-    width: calc(100% - 160px);
+.cubePanel > header > .jsb-switch {
+    float: right;
+    margin-right: 10px;
+}
+
+.cubePanel > header > .jsb-switch > label {
+    width: 30px;
+    height: 15px;
+}
+
+.cubePanel > header > .jsb-switch > label:before {
+    border-radius: 15px;
+}
+
+.cubePanel > header > .jsb-switch > input:checked + label:after {
+    margin-left: calc(100% - 15px);
+}
+
+.cubePanel > header > .jsb-switch > label:after {
+    width: 15px;
+    height: 15px;
 }
 
 .cubePanel.onlyDimensions > .jsb-scrollBox > .field:not(.dimension) {

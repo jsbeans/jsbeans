@@ -31,9 +31,13 @@
                 this.find('input').prop("checked", true);
             }
 
-            if(this.options.onchange && JSB.isFunction(this.options.onchange)){
+            if(this.options.title){
+                this.getElement().attr('title', this.options.title);
+            }
+
+            if(this.options.onChange && JSB.isFunction(this.options.onChange)){
                 this.checkbox.change(function(){
-                    $this.options.onchange.call($this, $this.$(this).prop("checked"));
+                    $this.options.onChange.call($this, $this.$(this).prop("checked"));
                 });
             }
 
@@ -52,14 +56,15 @@
 	    options: {
 	        checked: false,
 	        label: null,
-	        leftLabel: false
+	        leftLabel: false,
+	        title: null
 	    },
 
 	    setChecked: function(b, noHandle){
 	        this.checkbox.prop("checked", b);
 
-	        if(this.options.onchange && !noHandle){
-                this.options.onchange.call(this, b);
+	        if(this.options.onChange && !noHandle){
+                this.options.onChange.call(this, b);
             }
 	    },
 
