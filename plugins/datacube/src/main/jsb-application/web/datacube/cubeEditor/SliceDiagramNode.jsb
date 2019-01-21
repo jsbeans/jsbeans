@@ -27,6 +27,9 @@
                         fields: res,
                         sources: self.options.sources
                     });
+
+                    self.updateConnectors();
+                    self.updateLinks();
 		        });
 		    },
 			onHighlight: function(bEnable){
