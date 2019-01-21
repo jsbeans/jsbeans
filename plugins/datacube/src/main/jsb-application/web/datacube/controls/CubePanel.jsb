@@ -74,7 +74,7 @@
                 }).getElement());
 
                 el.append('<div class="type"></div>');
-                el.append('<div class="tooltip"></div>');
+                //el.append('<div class="tooltip"></div>');
 
                 el.mouseenter(function(){
                     $this.publish('Datacube.CubeEditor.CubePanel.hoverField', {
@@ -111,13 +111,16 @@
             });
 
             cubeFields.select('.type').text(function(d){
-                if(d.type === ''){
-                    this.classList.addClass('error');
-                    return 'error';
-                }
+                    if(d.type === ''){
+                        this.classList.addClass('error');
+                        return 'error';
+                    }
 
-                return d.type;
-            });
+                    return d.type;
+                })
+                .property('fieldKey', function(d){
+                    return d.type;
+                });
 
             cubeFields.style('top', function(d, i) {
                 return (i*23) + 3 + "px";
@@ -125,12 +128,12 @@
             );
 
             // tooltip
+            /*
             cubeFields.select('.tooltip').selectAll('.tooltipLine').data(function(d){
                 return d.slices;
             }).enter().append(function(){
                 var el = $this.$('<div class="tooltipLine"></div>');
 
-                //el.append('<div class="sliceIcon"></div>');
                 el.append('<div class="sliceName"></div>');
                 el.append('<div class="fieldType"></div>');
 
@@ -146,13 +149,16 @@
             });
 
             tooltipLines.select('.fieldType').text(function(d){
-                return d.type;
-            });
+                    return d.type;
+                })
+                .property('fieldKey', function(d){
+                    return d.type;
+                });
 
             cubeFields.select('.tooltip').selectAll('.tooltipLine').data(function(d){
                 return d.slices;
             }).exit().remove();
-
+            */
             // exit
             fieldBox.selectAll('.field').data(opts.fields).exit().remove();
         },

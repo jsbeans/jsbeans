@@ -20,6 +20,43 @@
 
 			this.addClass('cubeEditor');
 
+			var linkOpts = {
+                source: ['sliceLeft'],
+                target: ['sliceRight'],
+                joints: [{
+                    name: 'offsStart',
+                    position: function(){
+                        var ptStart = this.getLink().getSourcePosition();
+                        var ptEnd = this.getLink().getTargetPosition();
+                        var dist = Math.sqrt((ptEnd.x - ptStart.x)*(ptEnd.x - ptStart.x) + (ptEnd.y - ptStart.y)*(ptEnd.y - ptStart.y));
+                        var offs = dist / 4;
+                        if(ptStart && ptEnd){
+                            return {x: ptStart.x - 40, y: ptStart.y};
+                        }
+                        return null;
+                    }
+                },{
+                    name: 'offsEnd',
+                    position: function(){
+                        var ptStart = this.getLink().getSourcePosition();
+                        var ptEnd = this.getLink().getTargetPosition();
+                        var dist = Math.sqrt((ptEnd.x - ptStart.x)*(ptEnd.x - ptStart.x) + (ptEnd.y - ptStart.y)*(ptEnd.y - ptStart.y));
+                        var offs = dist / 4;
+                        if(ptStart && ptEnd){
+                            return {x: ptEnd.x + 40, y: ptEnd.y};
+                        }
+                        return null;
+                    }
+                }],
+                heads: {
+                    target: {
+                        shape: 'arrow',
+                        strip: 0
+                    }
+                },
+                userSelect: false
+			};
+
 			// create diagram
 			this.diagram = new Diagram({
 				minZoom: 0.25,
@@ -69,42 +106,9 @@
 				},
 
 				links: {
-					bind: {
-						source: ['sliceLeft'],
-						target: ['sliceRight'],
-						joints: [{
-							name: 'offsStart',
-							position: function(){
-								var ptStart = this.getLink().getSourcePosition();
-								var ptEnd = this.getLink().getTargetPosition();
-								var dist = Math.sqrt((ptEnd.x - ptStart.x)*(ptEnd.x - ptStart.x) + (ptEnd.y - ptStart.y)*(ptEnd.y - ptStart.y));
-								var offs = dist / 4;
-								if(ptStart && ptEnd){
-									return {x: ptStart.x - 40, y: ptStart.y};
-								}
-								return null;
-							}
-						},{
-							name: 'offsEnd',
-							position: function(){
-								var ptStart = this.getLink().getSourcePosition();
-								var ptEnd = this.getLink().getTargetPosition();
-								var dist = Math.sqrt((ptEnd.x - ptStart.x)*(ptEnd.x - ptStart.x) + (ptEnd.y - ptStart.y)*(ptEnd.y - ptStart.y));
-								var offs = dist / 4;
-								if(ptStart && ptEnd){
-									return {x: ptEnd.x + 40, y: ptEnd.y};
-								}
-								return null;
-							}
-						}],
-						heads: {
-							target: {
-								shape: 'arrow',
-								strip: 0
-							}
-						},
-						userSelect: false
-					}
+				    $from: linkOpts,
+					$join: linkOpts,
+					$union: linkOpts
 				}
 			});
 			this.append(this.diagram);

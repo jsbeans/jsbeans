@@ -242,28 +242,6 @@
                 fieldsBox.selectAll('div.sliceField').data(fields).exit().remove();
             }
 
-            // update links
-            var oldLinks = this._sources,
-                newLinks = opts && opts.sources || this.entry.extractSources(opts && opts.query || this.entry.getQuery());
-
-            for(var i in oldLinks){
-                if(!newLinks[i]){
-                    oldLinks[i].destroy();
-                    delete oldLinks[i];
-                }
-            }
-
-            for(var i = 0; i < newLinks.length; i++){
-                var id = newLinks[i];
-
-                if(!oldLinks[id]){
-                    oldLinks[id] = this.editor.createLink('bind', {
-                        sourceConnector: this.leftConnector,
-                        targetConnector: this.editor.getSlice(id).node.rightConnector
-                    });
-                }
-            }
-
             // set link type
             if(this.leftConnectorElement){
                 var fromType = this.entry.getFromType();
@@ -297,6 +275,28 @@
                     }
 
                     this.leftConnectorElement.removeClass().addClass('connector left hasIcon ' + fromClass);
+
+                    // update links
+                    var oldLinks = this._sources,
+                        newLinks = opts && opts.sources || this.entry.extractSources(opts && opts.query || this.entry.getQuery());
+
+                    for(var i in oldLinks){
+                        if(!newLinks[i]){
+                            oldLinks[i].destroy();
+                            delete oldLinks[i];
+                        }
+                    }
+
+                    for(var i = 0; i < newLinks.length; i++){
+                        var id = newLinks[i];
+
+                        if(!oldLinks[id]){
+                            oldLinks[id] = this.editor.createLink(fromType, {
+                                sourceConnector: this.leftConnector,
+                                targetConnector: this.editor.getSlice(id).node.rightConnector
+                            });
+                        }
+                    }
                 }
             }
 
