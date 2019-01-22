@@ -30,7 +30,9 @@
                 this.append(advBtnCont);
             }
 
-            this.construct();
+            Repository.ensureInitialized(function(){
+                $this.construct();
+            });
 	    },
 
 	    // inner variables

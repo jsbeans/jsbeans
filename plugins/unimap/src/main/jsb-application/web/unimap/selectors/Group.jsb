@@ -145,7 +145,7 @@
         }
 
         for(var i = 0; i < values.length; i++){
-            this.getMainSelector().findRendersByName(name, arr, values[i]);
+            this.getMainSelector().findRendersByName(name, arr, values[i], schemePath);
         }
 
         return arr;
