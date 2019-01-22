@@ -192,7 +192,7 @@
         return res;
     },
 
-    findRendersByName: function(name, arr, values){
+    findRendersByName: function(name, arr, values, schemePath){
         if(!arr){
             arr = [];
         }
@@ -202,13 +202,24 @@
         }
 
         for(var i in values){
-            var r = this.getRenderByName(values[i].render);
+            var r = this.getRenderByName(values[i].render),
+                curPath = schemePath;
 
-            if(values[i].render === name){
-                arr.push(r.getInstance({key: i, selector: values[i]}));
+            if(JSB.isString(curPath)){
+                if(curPath.length > 0){
+                    curPath += '.' + i;
+                } else {
+                    curPath += i;
+                }
+            } else {
+                curPath = i;
             }
 
-            r.findRendersByName && r.findRendersByName(name, arr, values[i].values);
+            if(values[i].render === name){
+                arr.push(r.getInstance({key: i, schemePath: curPath, selector: values[i]}));
+            }
+
+            r.findRendersByName && r.findRendersByName(name, arr, values[i].values, curPath);
         }
 
         return arr;
@@ -234,7 +245,26 @@
         }
     },
 
-    getScheme: function(){
+    getScheme: function(schemePath){
+        function findInObject(obj, str){
+            str = str.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+            str = str.replace(/^\./, '');           // strip a leading dot
+            var a = str.split('.');
+            for (var i = 0, n = a.length; i < n; ++i) {
+                var k = a[i];
+                if (k in obj) {
+                    obj = obj[k];
+                } else {
+                    return;
+                }
+            }
+            return obj;
+        }
+
+        if(schemePath && this._scheme){
+            return findInObject(this._scheme, schemePath);
+        }
+
         return this._scheme;
     },
 

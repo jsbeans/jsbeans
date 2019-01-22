@@ -121,13 +121,27 @@
         return res;
     },
 
-    findRendersByName: function(name, arr, values){
+	findRendersByName: function(name, arr, values, schemePath){
         if(!arr){
             arr = [];
         }
 
         if(!values){
             values = this._values;
+
+            if(!schemePath){
+                schemePath = this._schemePath;
+            }
+        }
+
+        if(JSB.isString(schemePath)){
+            if(schemePath.length > 0){
+        		if(schemePath.length - schemePath.lastIndexOf('items') !== 5){
+        			schemePath += '.items';
+        		}
+            } else {
+                schemePath += 'items';
+            }
         }
 
         for(var i = 0; i < values.length; i++){

@@ -35,6 +35,7 @@
             getRenderName: this.getRenderName,
             removeValue: this.removeValue,
             removeAllValues: this.removeAllValues,
+            scheme: this.scheme,
             setName: this.setName,
             setFullValue: this.setFullValue,
             setValue: this.setValue,
@@ -154,6 +155,12 @@
 
     removeValues: function(){
         //
+    },
+
+    scheme: function(){
+        if(this._schemePath){
+            return this.getMainSelector().getScheme(this._schemePath);
+        }
     },
 
     setName: function(name){
