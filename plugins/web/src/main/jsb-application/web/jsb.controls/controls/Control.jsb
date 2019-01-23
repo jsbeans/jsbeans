@@ -41,16 +41,20 @@
             return this.getElement().addClass(c);
         },
 
+        after: function(c){
+            return this.getElement().after(c);
+        },
+
         append: function(c){
             return this.getElement().append(c);
         },
 
-		attach: function(){
-		    // todo
-		},
-
 		attr: function(){
 			return this.getElement().attr.apply(this.getElement(), arguments);
+		},
+
+		before: function(c){
+		    return this.getElement().before(c);
 		},
 
 		children: function(selector){

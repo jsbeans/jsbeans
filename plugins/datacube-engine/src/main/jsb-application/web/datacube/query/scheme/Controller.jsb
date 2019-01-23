@@ -1,16 +1,21 @@
 {
 	$name: 'DataCube.Query.SchemeController',
 	$parent: 'JSB.Controls.Control',
-	$require: ['DataCube.Query.Syntax',
+	$require: ['JSB.Widgets.ToolManager',
+	           'DataCube.Query.Syntax',
 	           'DataCube.Query.QuerySyntax',
-	           'DataCube.Query.RenderRepository'],
+	           'DataCube.Query.SchemeTool',
+	           'DataCube.Query.RenderRepository',
+	           'css:Controller.css'],
 
 	$client: {
 	    _renders: [],
+	    _sliceId: null,
 
 	    $constructor: function(opts){
 	        $base(opts);
-            this.addClass('scheme');
+            this.addClass('queryController');
+
 
             // add + btn
 	    },
@@ -95,8 +100,25 @@
             RenderRepository.ensureReady(function(){
                 $this._data = opts.data || {};
 
+                $this._sliceId = opts.sliceId;
+
                 $this.construct(opts.values);
             });
+        },
+
+        showTool: function(element, key, callback){
+			var popupTool = ToolManager.activate({
+				id: 'querySchemeTool',
+				cmd: 'show',
+				data: this._data,
+				scope: null,
+				target: element,
+				constraints: [{
+					selector: element,
+					weight: 10.0
+				}],
+				callback: callback
+			});
         }
     }
 }

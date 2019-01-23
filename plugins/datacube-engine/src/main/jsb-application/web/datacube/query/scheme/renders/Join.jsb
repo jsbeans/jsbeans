@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Renders.Join',
-	$parent: 'DataCube.Query.Renders.Basic',
+	$parent: 'DataCube.Query.Renders.Source',
 
 	$alias: '$join',
 
@@ -64,24 +64,29 @@
 	    construct: function(){
 	        // join type
 	        var joinType = new Selectize({
-	            //
+	            label: 'JoinType',
+	            onlySelect: true,
+	            options: ['left inner', 'left outer'],
+	            value: this._values.$joinType
 	        });
-
-debugger;
-
 	        this.append(joinType);
-	        this._beans[joinType.getId()] = joinType;
 
 	        // source 1
+	        this.createSource(this._values.$left, function(element){
+	            joinType.after(element);
+	        });
 
 	        // source 2
+	        this.createSource(this._values.$right, function(element){
+	            joinType.after(element);
+	        });
 
 	        // fields
 	        this.fields = this.$('<div class="fields"></div>');
 
             this.addBtn = this.$('<i class="btn fas fa-plus-circle"></i>');
             this.addBtn.click(function(){
-                //$this.onMultipleBtnClick();
+                $this.addItem();
             });
             this.fields.append(this.addBtn);
             this.append(this.fields);

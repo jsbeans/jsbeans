@@ -9,18 +9,30 @@
 	$scheme: {
 	    $join: {
             name: '$join',
+            render: '$join',
             category: 'Источник запроса',
             displayName: 'Пересечение',
             desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
-            render: '$join',
             values: {
                 '$joinType': '$joinType',
                 '$filter': '$joinFilter',
-                '$left': '$sourceSelect',
+                '$left': ['$slice', ''],
                 '$right': '$sourceSelect'
             }
+	    },
+
+	    $source: {
+	        render: '#source',
+	        values: ['slice', 'query', 'view']
 	    }
 	},
+
+	$toolList: [
+	{
+	    name: '',
+	    category: '',
+	}
+	],
 
     getSchema: function (key){
         if(key){

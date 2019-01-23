@@ -1,0 +1,4 @@
+.queryController,
+.queryController .queryRender {
+    overflow: visible;
+}

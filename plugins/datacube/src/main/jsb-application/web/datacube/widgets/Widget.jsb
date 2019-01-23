@@ -943,7 +943,7 @@
             if(readyCallback){
                 readyCallback.call($this);
             }
-			/*
+
 			if(opts.sources){
 				this.sources = opts.sources;
 				
@@ -951,7 +951,7 @@
                 	JSB.chain(Object.keys($this.sources), function(srcId, callback){
                 		$this.filterManager.registerSource($this, $this.sources[srcId], function(){
                 			callback();
-                		})
+                		});
                 	}, function(){
                 		if(readyCallback){
                 			readyCallback.call($this);
@@ -967,7 +967,6 @@
         			readyCallback.call($this);
         		}
 			}
-			*/
 		}
 	},
 
