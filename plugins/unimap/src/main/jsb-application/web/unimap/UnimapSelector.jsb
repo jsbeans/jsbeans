@@ -2,6 +2,7 @@
     $name: 'Unimap.Selector',
     $require: ['Unimap.Repository'],
 
+    _idMap: null,
     _values: null,
 
     $client: {
@@ -190,6 +191,52 @@
         }
 
         return res;
+    },
+
+    findById: function(id, values, schemePath){
+        if(this._idMap[id]){
+            return this._idMap[id];
+        }
+
+        var res;
+
+        if(!values){
+            values = this._values;
+        }
+
+        for(var i in values){
+            if(values[i].id == id){
+                if(JSB.isString(schemePath)){
+                    if(schemePath.length > 0){
+                        schemePath += '.' + i;
+                    } else {
+                        schemePath += i;
+                    }
+                } else {
+                    schemePath = i;
+                }
+
+                res = this.getRenderByName(values[i].render).getInstance({ key: i, selector: values[i], schemePath: schemePath });
+                break;
+            }
+        }
+
+        if(res){
+            this._idMap[id] = res;
+
+            return res;
+        } else {
+            for(var i in values){
+                var r = this.getRenderByName(values[i] && values[i].render),
+                    res = r.findById ? r.findById(id, values[i].values, schemePath ? (schemePath + '.' + i) : i) : undefined;
+
+                if(res){
+                    this._idMap[id] = res;
+
+                    return res;
+                }
+            }
+        }
     },
 
     findRendersByName: function(name, arr, values, schemePath){

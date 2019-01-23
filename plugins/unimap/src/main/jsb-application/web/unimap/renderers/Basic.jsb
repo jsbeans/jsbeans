@@ -163,6 +163,7 @@
         createValues: function(){
             this._values.checked = this._scheme.optional === 'checked' ? true : undefined;
             this._values.values = [];
+            this._values.id = JSB.generateUid();
 
             if(this._scheme.value){
                 this._values.values[0] = {
@@ -188,6 +189,10 @@
 
         findRendersByKey: function(key){
             return this._schemeController.findRendersByKey(key);
+        },
+
+        getId: function(){
+            return this._values.id;
         },
 
         getLinkedRenders: function(){

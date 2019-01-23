@@ -111,6 +111,34 @@
         }
     },
 
+    findById: function(id, values, schemePath){
+        if(!values){
+            values = this._values;
+
+            if(!schemePath){
+                schemePath = this._schemePath;
+            }
+        }
+
+        if(JSB.isString(schemePath)){
+            if(schemePath.length > 0){
+        		if(schemePath.length - schemePath.lastIndexOf('items') !== 5){
+        			schemePath += '.items';
+        		}
+            } else {
+                schemePath += 'items';
+            }
+        }
+
+        for(var i = 0; i < values.length; i++){
+            var res = this.getMainSelector().findById(id, values[i], schemePath);
+
+            if(res){
+                return res;
+            }
+        }
+    },
+
     findAll: function(key, values){
         var res = this.find(key, values, true);
 

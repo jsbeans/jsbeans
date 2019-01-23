@@ -7,7 +7,9 @@
     _excludeMethods: ['$', '$constructor', '$parent'],
 
     $constructor: function(opts){
-        if(!opts){ opts = {}; }
+        if(!opts){
+            opts = {};
+        }
 
         this._mainSelector = opts.mainSelector;
 
@@ -75,6 +77,10 @@
 
     getDefaultValue: function(){
         return this._selectorOpts ? this._selectorOpts.defaultValue : undefined;
+    },
+
+    getId: function(){
+        return this._selectorOpts ? this._selectorOpts.id : undefined;
     },
 
     getInstance: function(opts){
@@ -272,6 +278,11 @@
 
         if(!JSB.isDefined(values.checked)){
             values.checked = scheme.optional === 'checked';
+            wasUpdated = true;
+        }
+
+        if(!JSB.isDefined(values.id)){
+            values.id = JSB.generateUid();;
             wasUpdated = true;
         }
 
