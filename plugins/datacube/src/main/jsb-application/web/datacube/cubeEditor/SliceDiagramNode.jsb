@@ -237,15 +237,13 @@
                 // update
                 var sliceFields = fieldsBox.selectAll('div.sliceField').data(fields);
 
-                sliceFields.classed('dimension', function(d){
-                        return d.isDimension;
-                    });
-                sliceFields.select('.key').text(function(d){
-                        return d.key;
-                    });
-                sliceFields.select('.type').text(function(d){
-                        return d.type;
-                    });
+                sliceFields.classed('dimension', function(d){ return d.isDimension; });
+                sliceFields.select('.key')
+                	.text(function(d){ return d.key; })
+                	.attr('title', function(d){return d.key;});
+                
+                sliceFields.select('.type')
+                	.text(function(d){ return d.type; });
 
                 // exit
                 fieldsBox.selectAll('div.sliceField').data(fields).exit().remove();

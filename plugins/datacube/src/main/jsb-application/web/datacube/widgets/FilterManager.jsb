@@ -11,17 +11,10 @@
 		$constructor: function(owner){
 			$base();
 			this.owner = owner;
-			this.subscribe('DataCube.Model.Cube.changed', {session: true}, function(sender, msg, params){
+			this.subscribe('DataCube.Model.Cube.updateCubeFields', {session: true}, function(sender, msg, params){
 				if($this.cubeFieldMap[sender.getId()]){
-					// update cube fields
-console.log('Need update method');
-debugger;
-                    /*
-					sender.server().getFieldMap(function(fm){
-						$this.cubeFieldMap[sender.getId()] = fm;	
-					});
-					 */
-				}
+                    $this.cubeFieldMap[sender.getId()] = params.fields;
+                }
 			});
 		},
 		
@@ -53,12 +46,14 @@ debugger;
 		
 		registerSource: function(widget, source, callback){
 			var cube = source.getCube();
+
 			if(this.cubeFieldMap[cube.getId()]){
 				callback.call($this);
 				return;
 			}
+
 			// get source fields
-			cube.server().getFieldMap(function(fm){
+			cube.server().extractFields(function(fm){
 				$this.cubeFieldMap[cube.getId()] = fm;
 				callback.call($this);
 			});
@@ -597,7 +592,6 @@ debugger;
 		
 		getFilters: function(){
 			return this.filters;
-		},
-		
+		}
 	}
 }

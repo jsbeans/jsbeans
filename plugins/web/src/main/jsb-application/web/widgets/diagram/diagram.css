@@ -9,7 +9,13 @@
 	cursor: move;
 }
 
-._jsb_diagram > ._jsb_diagramToolContainer {}
+._jsb_diagram > ._jsb_diagramToolContainer {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 0;
+	height: 0;
+}
 
 ._jsb_diagram > ._jsb_diagramToolContainer > ._jsb_diagramGrid {
 	background-image: url('cells-min.png');
@@ -23,14 +29,29 @@
 }
 
 
-._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet {}
+._jsb_diagram > ._jsb_diagramCanvas {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet {
+	position: absolute;
+	z-index: 1;
+	left: 50%;
+	top: 50%;
+	width: 0;
+	height: 0;
+}
 
 ._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet > ._jsb_diagramNode {
 }
 
 
 
-._jsb_diagram > ._jsb_diagramCanvas > svg {}
+._jsb_diagram > ._jsb_diagramCanvas > svg {
+	position: absolute;
+}
 
 /* link */
 

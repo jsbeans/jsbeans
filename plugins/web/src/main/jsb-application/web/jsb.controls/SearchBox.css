@@ -22,7 +22,7 @@
     text-shadow: 0 0 10px crimson;
     padding: 0 20px 0 20px;
     border-radius: 30px;
-    transition: all 1s;
+    transition: all 500ms;
     opacity: 0;
     z-index: 4;
     font-weight: bolder;

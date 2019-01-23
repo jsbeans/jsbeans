@@ -163,6 +163,7 @@
         createValues: function(){
             this._values.checked = this._scheme.optional === 'checked' ? true : undefined;
             this._values.values = [];
+            this._values.id = JSB.generateUid();
 
             if(this._scheme.value){
                 this._values.values[0] = {
@@ -192,9 +193,9 @@
 
         getData: function(){
             return this._schemeController.getData();
-        },
-
-        getLinkedRenders: function(){
+        },        getInternalId: function(){
+            return this._values.id;
+        },        getLinkedRenders: function(){
             return this._schemeController.getLinkedRenders(this.getKey());
         },
 

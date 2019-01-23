@@ -93,7 +93,6 @@
 							this.diagramOpts = snapshot.diagramOpts || this.diagramOpts;
 						}
 						this.loaded = true;
-						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
 						this.doSync();
 					}
 				} finally {

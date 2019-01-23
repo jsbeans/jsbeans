@@ -11,7 +11,9 @@
             this.append(this._select);
 
             JSB.loadScript('tpl/selectizejs/js/selectize.min.js', function(){
-                $this._init();
+                JSB.loadScript('tpl/selectizejs/js/plugins.js', function(){
+                    $this._init();
+                });
             });
 
             this.addClass('jsb-selectize');
@@ -19,13 +21,13 @@
 
 	    options: {
 	        // options
-	        label: null,
-	        labelField: 'title',
-	        maxItems: null,
+	        label: undefined,
+	        labelField: undefined,
+	        maxItems: undefined,
+	        onlySelect: false,
 	        options: [],
-	        plugins: ['hidden_textfield'],
-	        searchField: null,
-	        valueField: null,
+	        searchField: undefined,
+	        valueField: undefined,
 
 	        // events
 	        onChange: null
@@ -47,31 +49,54 @@
 	        this._label.text(label);
 	    },
 
-	    setValue: function(key, hEvt) {
+	    setValue: function(value, hEvt) {
+	        this._select[0].selectize.setValue(this.options.value, hEvt);
+	    },
+
+	    _checkOptions: function(){
+	        if(!JSB.isArray(this.options.options)){
+	            throw new Error('Options must be array');
+	        }
+
+	        if(this.options.options.length === 0){
+	            return;
+	        }
+
+	        if(!JSB.isObject(this.options.options[0])){
+	            var options = [];
+
+	            for(var i = 0; i < this.options.options.length; i++){
+	                options.push({
+	                    id: this.options.options[i]
+	                });
+	            }
+
+	            this.options.options = options;
+	            this.options.labelField = 'id';
+	            this.options.searchField = 'id';
+	            this.options.valueField = 'id';
+	        }
 	    },
 
 	    _init: function() {
-	        /*
-	            Hide textfield plugin
-	            https://github.com/selectize/selectize.js/issues/110#issuecomment-167840205
-	        */
-            Selectize.define('hidden_textfield', function(options) {
-                var self = this;
-                this.showInput = function() {
-                     this.$control.css({cursor: 'pointer'});
-                     this.$control_input.css({opacity: 0, position: 'relative', left: self.rtl ? 10000 : -10000 });
-                     this.isInputHidden = false;
-                 };
+	        this._checkOptions();
 
-                 this.setup_original = this.setup;
+	        this._select.selectize({
+	            labelField: this.options.labelField,
+	            maxItems: this.options.maxItems,
+	            plugins: this.options.onlySelect ? ['hidden_textfield'] : undefined,
+	            options: this.options.options,
+	            searchField: this.options.searchField,
+	            valueField: this.options.valueField
+	        });
 
-                 this.setup = function() {
-                      self.setup_original();
-                      this.$control_input.prop("disabled","disabled");
-                 }
-            });
+	        if(this.options.value){
+	            this.setValue(this.options.value, true);
+	        }
 
-	        this._select.selectize(this.options);
+	        if(this.options.label){
+	            this.setLabel(this.options.label);
+	        }
 	    }
     }
 }

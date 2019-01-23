@@ -1,2 +1,20 @@
 @import "../tpl/selectizejs/css/selectize.css";
 @import "../tpl/selectizejs/css/selectize.default.css";
+
+.jsb-selectize {
+    overflow: visible;
+}
+
+.jsb-selectize > * {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.jsb-selectize > label {
+    min-width: 100px;
+}
+
+.jsb-selectize > label + .selectize-control {
+    display: inline-block;
+    width: calc(100% - 100px);
+}

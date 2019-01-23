@@ -11,7 +11,7 @@
 	           'JSB.Widgets.ToolManager',
 	           'DataCube.Export.ExportManager',
 	           'JSB.Widgets.RendererRepository',
-	           //'DataCube.Query.SchemeController',
+	           'DataCube.Query.SchemeController',
 	           'css:SliceEditorView.css'],
 	$client: {
 		ready: false,
@@ -211,6 +211,7 @@
                 if($this.isNew){
                     $this.queryEditor.refresh({
                         data: data,
+                        sliceId: $this.slice.getId(),
                         values: $this.query
                     });
                 }

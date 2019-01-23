@@ -13,9 +13,11 @@
 	    $constructor: function(opts){
 	        $base(opts);
 
+	        this.addClass('queryRender');
+
 	        this._controller = opts.controller;
 	        this._scheme = opts.desc.scheme;
-	        this._values = opts.values;
+	        this._values = opts.desc.values;
 
 	        if(this._scheme.displayName){
 	            this.append('<div class="name">' + this._scheme.displayName + '</div>');
