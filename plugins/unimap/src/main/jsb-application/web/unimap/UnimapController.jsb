@@ -18,7 +18,10 @@
                 this.createCommonFieldsMap(opts.values.commonFields);
             }
 
-            this.construct();
+
+            Repository.ensureInitialized(function(){
+                $this.construct();
+            });
 	    },
 
 	    // inner variables

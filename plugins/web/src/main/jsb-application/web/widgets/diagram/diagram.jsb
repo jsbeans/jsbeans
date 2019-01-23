@@ -82,11 +82,6 @@
 			
 			var elt = this.getElement();
 			this.canvas = self.$('<div class="_jsb_diagramCanvas"></div>');
-			this.canvas.css({
-				'position': 'relative',
-				'width': '100%',
-				'height': '100%'
-			});
 			elt.append(this.canvas);
 			this.svg = d3.select(this.canvas.get(0)).append('svg')
 			    .attr('width', elt.width())
@@ -96,24 +91,9 @@
 			    
 			self.sheet = self.$('<div class="_jsb_diagramSheet"></div>');
 			this.canvas.append(self.sheet);
-			self.sheet.css({
-				'position': 'absolute',
-				'z-index': 1,
-				'left': '50%',
-				'top': '50%',
-				'width': 0,
-				'height': 0
-			});
 			$this.sheetRc = self.sheet.get(0).getBoundingClientRect();
 			
 			self.toolContainer = self.$('<div class="_jsb_diagramToolContainer"></div>');
-			self.toolContainer.css({
-				'position': 'absolute',
-				'left': '50%',
-				'top': '50%',
-				'width': 0,
-				'height': 0
-			});
 			elt.prepend(self.toolContainer);
 
 			self.grid = self.$('<div class="_jsb_diagramGrid"></div>');

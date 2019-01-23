@@ -2,6 +2,7 @@
     $name: 'Unimap.Selector',
     $require: ['Unimap.Repository'],
 
+    _idMap: {},
     _values: null,
 
     $client: {
@@ -13,10 +14,15 @@
     $constructor: function(opts){
         opts = opts || {};
 
+        opts.values = opts.values || {};
+        opts.values.values = opts.values.values || {};
+        opts.values.commonFields = opts.values.commonFields || {};
+        opts.values.linkedFields = opts.values.linkedFields || {};
+
         this._scheme = opts.scheme;
-        this._values = opts.values && opts.values.values || {};
-        this._commonFields = opts.values && opts.values.commonFields || {};
-        this._linkedFields = opts.values && opts.values.linkedFields || {};
+        this._values = opts.values.values;
+        this._commonFields = opts.values.commonFields;
+        this._linkedFields = opts.values.linkedFields;
         this._context = opts.context;
 
         function updateValues(){
@@ -192,7 +198,53 @@
         return res;
     },
 
-    findRendersByName: function(name, arr, values){
+    findByInternalId: function(id, values, schemePath){
+        if(this._idMap[id]){
+            return this._idMap[id];
+        }
+
+        var res;
+
+        if(!values){
+            values = this._values;
+        }
+
+        for(var i in values){
+            if(values[i].id == id){
+                if(JSB.isString(schemePath)){
+                    if(schemePath.length > 0){
+                        schemePath += '.' + i;
+                    } else {
+                        schemePath += i;
+                    }
+                } else {
+                    schemePath = i;
+                }
+
+                res = this.getRenderByName(values[i].render).getInstance({ key: i, selector: values[i], schemePath: schemePath });
+                break;
+            }
+        }
+
+        if(res){
+            this._idMap[id] = res;
+
+            return res;
+        } else {
+            for(var i in values){
+                var r = this.getRenderByName(values[i] && values[i].render),
+                    res = r.findByInternalId ? r.findByInternalId(id, values[i].values, schemePath ? (schemePath + '.' + i) : i) : undefined;
+
+                if(res){
+                    this._idMap[id] = res;
+
+                    return res;
+                }
+            }
+        }
+    },
+
+    findRendersByName: function(name, arr, values, schemePath){
         if(!arr){
             arr = [];
         }
@@ -202,13 +254,24 @@
         }
 
         for(var i in values){
-            var r = this.getRenderByName(values[i].render);
+            var r = this.getRenderByName(values[i].render),
+                curPath = schemePath;
 
-            if(values[i].render === name){
-                arr.push(r.getInstance({key: i, selector: values[i]}));
+            if(JSB.isString(curPath)){
+                if(curPath.length > 0){
+                    curPath += '.' + i;
+                } else {
+                    curPath += i;
+                }
+            } else {
+                curPath = i;
             }
 
-            r.findRendersByName && r.findRendersByName(name, arr, values[i].values);
+            if(values[i].render === name){
+                arr.push(r.getInstance({key: i, schemePath: curPath, selector: values[i]}));
+            }
+
+            r.findRendersByName && r.findRendersByName(name, arr, values[i].values, curPath);
         }
 
         return arr;
@@ -234,7 +297,26 @@
         }
     },
 
-    getScheme: function(){
+    getScheme: function(schemePath){
+        function findInObject(obj, str){
+            str = str.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+            str = str.replace(/^\./, '');           // strip a leading dot
+            var a = str.split('.');
+            for (var i = 0, n = a.length; i < n; ++i) {
+                var k = a[i];
+                if (k in obj) {
+                    obj = obj[k];
+                } else {
+                    return;
+                }
+            }
+            return obj;
+        }
+
+        if(schemePath && this._scheme){
+            return findInObject(this._scheme, schemePath);
+        }
+
         return this._scheme;
     },
 

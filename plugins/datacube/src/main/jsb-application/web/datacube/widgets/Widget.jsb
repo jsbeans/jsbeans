@@ -40,6 +40,7 @@
 		           'DataCube.Export.Export', 
 		           'JQuery.UI.Loader', 
 		           'Unimap.Selector',
+		           'Unimap.Repository',
 		           'JSB.Widgets.ToolBar',
 		           'css:Widget.css'],
 
@@ -160,6 +161,11 @@
 		    };
 
 		    this.selection = new Selection();
+
+		    // ensure all selectors for unimap ready
+		    Repository.ensureInitialized(function(){
+		        $this.setTrigger('_unimapRepoReady');
+		    });
 		},
 		
 		getSelection: function(){
@@ -414,7 +420,6 @@
 			}
 		},
 
-
 		removeAllFilters: function(){
             var fm = this.getFilterManager();
             if(fm){
@@ -425,7 +430,6 @@
                 this.getWrapper().updateFilters();
             }
 		},
-
 		
 		getCubeField: function(field){
 			var sourceArr = this.getSourceIds();
@@ -476,7 +480,7 @@
 		},
 
 		ensureInitialized: function(callback){
-			this.ensureTrigger(['_widgetInitialized', '_valuesLoaded'], callback);
+			this.ensureTrigger(['_widgetInitialized', '_valuesLoaded', '_unimapRepoReady'], callback);
 		},
 
 		exportData: function(format){

@@ -2491,12 +2491,18 @@
 			var op = Object.keys(q[field])[0];
 			var val = q[field][op][Object.keys(q[field][op])[0]];
 			
-			var filterId = this.addFilter({
+			var fDesc = {
 				type: '$and',
 				op: op,
 				field: field,
 				value: val
-			});
+			};
+			var cubeField = this.getCubeField(field);
+			if(cubeField){
+				fDesc.cubeField = cubeField;
+			}
+			
+			var filterId = this.addFilter(fDesc);
 			
 			this.refreshAll();
 			

@@ -7,7 +7,9 @@
     _excludeMethods: ['$', '$constructor', '$parent'],
 
     $constructor: function(opts){
-        if(!opts){ opts = {}; }
+        if(!opts){
+            opts = {};
+        }
 
         this._mainSelector = opts.mainSelector;
 
@@ -27,6 +29,7 @@
             checked: this.checked,
             getContext: this.getContext,
             getInstance: this.getInstance,
+            getInternalId: this.getInternalId,
             getKey: this.getKey,
             getLinkedFieldsByKey: this.getLinkedFieldsByKey,
             getLinkToSelector: this.getLinkToSelector,
@@ -35,6 +38,7 @@
             getRenderName: this.getRenderName,
             removeValue: this.removeValue,
             removeAllValues: this.removeAllValues,
+            scheme: this.scheme,
             setName: this.setName,
             setFullValue: this.setFullValue,
             setValue: this.setValue,
@@ -43,7 +47,7 @@
             values: this.values
         };
 
-        var methods = this.jsb.getMethods(true);
+        var methods = this.jsb.getMethods(true);    // change to false
 
         for(var i = 0; i < methods.length; i++){
             if(this._excludeMethods.indexOf(methods[i]) < 0){
@@ -74,6 +78,10 @@
 
     getDefaultValue: function(){
         return this._selectorOpts ? this._selectorOpts.defaultValue : undefined;
+    },
+
+    getInternalId: function(){
+        return this._selectorOpts ? this._selectorOpts.id : undefined;
     },
 
     getInstance: function(opts){
@@ -154,6 +162,12 @@
 
     removeValues: function(){
         //
+    },
+
+    scheme: function(){
+        if(this._schemePath){
+            return this.getMainSelector().getScheme(this._schemePath);
+        }
     },
 
     setName: function(name){
@@ -265,6 +279,11 @@
 
         if(!JSB.isDefined(values.checked)){
             values.checked = scheme.optional === 'checked';
+            wasUpdated = true;
+        }
+
+        if(!JSB.isDefined(values.id)){
+            values.id = JSB.generateUid();;
             wasUpdated = true;
         }
 
