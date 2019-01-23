@@ -1234,36 +1234,35 @@
 
 		    new this.Group({
 		        name: '$joinType',
-		        values: ['$joinTypeLIJ', '$joinTypeLOJ', '$joinTypeRIJ', '$joinTypeROJ', '$joinTypeFJ']
+		        values: ['$joinTypeIJ', '$joinTypeLOJ', '$joinTypeROJ', '$joinTypeFJ']
 		    });
 
 		    new this.EConstNumber({
-		        name: '$joinTypeLIJ',
-		    	displayName: 'left inner',
-		        value: 'left inner',
+		        name: '$joinTypeIJ',
+		    	displayName: 'inner',
+		        value: 'inner',
+		        description: 'Внутреннее объединение - вернет только совпадающие по условию объединения данные из обоих источников',
 		    });
 
 		    new this.EConstNumber({
 		        name: '$joinTypeLOJ',
 		    	displayName: 'left outer',
+		    	description: 'Внешнее объединение, внешний источник слева - вернет совпадающие по условию объединения данные из обоих источников и дополнит выборку оставшимися данными из внешнего источника.',
 		        value: 'left outer',
 		    });
 
-		    new this.EConstNumber({
-		        name: '$joinTypeRIJ',
-		    	displayName: 'right inner',
-		        value: 'right inner',
-		    });
 
 		    new this.EConstNumber({
 		        name: '$joinTypeROJ',
 		    	displayName: 'right outer',
+		    	description: 'Внешнее объединение, внешний источник справа - вернет совпадающие по условию объединения данные из обоих источников и дополнит выборку оставшимися данными из внешнего источника.',
 		        value: 'right outer',
 		    });
 
 		    new this.EConstNumber({
 		        name: '$joinTypeFJ',
 		    	displayName: 'full',
+		    	description: 'Пересечение объединением, оба источника внешние - вернет совпадающие по условию объединения данные из обоих источников и дополнит выборку оставшимися данными из обоих источников.',
 		        value: 'full',
 		    });
 
