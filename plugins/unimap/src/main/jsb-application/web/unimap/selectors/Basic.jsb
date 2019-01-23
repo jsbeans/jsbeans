@@ -29,6 +29,7 @@
             checked: this.checked,
             getContext: this.getContext,
             getInstance: this.getInstance,
+            getId: this.getId,
             getKey: this.getKey,
             getLinkedFieldsByKey: this.getLinkedFieldsByKey,
             getLinkToSelector: this.getLinkToSelector,
