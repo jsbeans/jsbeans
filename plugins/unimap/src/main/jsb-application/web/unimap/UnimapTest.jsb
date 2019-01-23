@@ -3,6 +3,8 @@
 	$parent: 'JSB.Controls.Control',
 	$require: ['Unimap.Controller', 'Unimap.Selector'],
 
+	// widget('Unimap.Test')
+
 	$client: {
         scheme: {
             source1: {
@@ -48,6 +50,10 @@ debugger;
                     var itemRenders = selector.findRendersByName('item');
 
                     var scheme2 = itemRenders[1].scheme();
+
+                    var id = itemRenders[1].getInternalId();
+
+                    var itemSelectorById = selector.findById(id);
 
                     selector.destroy();
                 });

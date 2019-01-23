@@ -191,7 +191,7 @@
             return this._schemeController.findRendersByKey(key);
         },
 
-        getId: function(){
+        getInternalId: function(){
             return this._values.id;
         },
 

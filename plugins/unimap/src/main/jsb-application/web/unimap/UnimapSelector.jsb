@@ -2,7 +2,7 @@
     $name: 'Unimap.Selector',
     $require: ['Unimap.Repository'],
 
-    _idMap: null,
+    _idMap: {},
     _values: null,
 
     $client: {

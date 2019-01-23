@@ -80,7 +80,7 @@
         return this._selectorOpts ? this._selectorOpts.defaultValue : undefined;
     },
 
-    getId: function(){
+    getInternalId: function(){
         return this._selectorOpts ? this._selectorOpts.id : undefined;
     },
 
