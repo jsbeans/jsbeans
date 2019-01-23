@@ -47,7 +47,7 @@
             values: this.values
         };
 
-        var methods = this.jsb.getMethods(true);
+        var methods = this.jsb.getMethods(true);    // change to false
 
         for(var i = 0; i < methods.length; i++){
             if(this._excludeMethods.indexOf(methods[i]) < 0){

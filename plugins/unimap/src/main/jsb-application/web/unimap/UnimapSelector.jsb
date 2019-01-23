@@ -14,10 +14,15 @@
     $constructor: function(opts){
         opts = opts || {};
 
+        opts.values = opts.values || {};
+        opts.values.values = opts.values.values || {};
+        opts.values.commonFields = opts.values.commonFields || {};
+        opts.values.linkedFields = opts.values.linkedFields || {};
+
         this._scheme = opts.scheme;
-        this._values = opts.values && opts.values.values || {};
-        this._commonFields = opts.values && opts.values.commonFields || {};
-        this._linkedFields = opts.values && opts.values.linkedFields || {};
+        this._values = opts.values.values;
+        this._commonFields = opts.values.commonFields;
+        this._linkedFields = opts.values.linkedFields;
         this._context = opts.context;
 
         function updateValues(){
