@@ -111,7 +111,7 @@
         }
     },
 
-    findById: function(id, values, schemePath){
+    findByInternalId: function(id, values, schemePath){
         if(!values){
             values = this._values;
 
@@ -131,7 +131,7 @@
         }
 
         for(var i = 0; i < values.length; i++){
-            var res = this.getMainSelector().findById(id, values[i], schemePath);
+            var res = this.getMainSelector().findByInternalId(id, values[i], schemePath);
 
             if(res){
                 return res;

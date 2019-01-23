@@ -193,7 +193,7 @@
         return res;
     },
 
-    findById: function(id, values, schemePath){
+    findByInternalId: function(id, values, schemePath){
         if(this._idMap[id]){
             return this._idMap[id];
         }
@@ -228,7 +228,7 @@
         } else {
             for(var i in values){
                 var r = this.getRenderByName(values[i] && values[i].render),
-                    res = r.findById ? r.findById(id, values[i].values, schemePath ? (schemePath + '.' + i) : i) : undefined;
+                    res = r.findByInternalId ? r.findByInternalId(id, values[i].values, schemePath ? (schemePath + '.' + i) : i) : undefined;
 
                 if(res){
                     this._idMap[id] = res;
