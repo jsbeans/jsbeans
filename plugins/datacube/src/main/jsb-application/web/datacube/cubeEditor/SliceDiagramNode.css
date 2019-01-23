@@ -98,6 +98,10 @@
 .sliceDiagramNode > header > .caption {
     display: inline-block;
     position: relative;
+	white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
     width: calc(100% - 20px);
 }
 
@@ -232,6 +236,10 @@
     width: calc(60% - 7px);
     border-right: 1px solid #c1d6bb;
     padding: 1px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 .sliceDiagramNode.dataSourceSlice > .fields > .sliceField > .key {
@@ -254,6 +262,19 @@
 
 .sliceDiagramNode.dataSourceSlice > footer {
 	border-top: 1px solid #8e8544;
+}
+
+.sliceDiagramNode.dataSourceSlice > footer > .renderer {
+	font-size: 11px;
+}
+
+.sliceDiagramNode.dataSourceSlice > footer > .renderer .icon {
+	width: 12px;
+    height: 12px;
+}
+
+.sliceDiagramNode.dataSourceSlice > footer > .renderer .title {
+	font-size: 11px;
 }
 
 .sliceDiagramNode > footer > .sqlTableRenderer {
