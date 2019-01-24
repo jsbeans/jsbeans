@@ -30,6 +30,15 @@
             ClickHouse: "ru.yandex.clickhouse.ClickHouseDriver",
 		},
 
+		VendorURLProtocols: {
+            MySQL:      "jdbc:mysql:",
+            PostgreSQL: "jdbc:postgresql:",
+            H2:         "jdbc:h2:",
+            SQLServer:  "jdbc:sqlserver:",
+            Oracle:     "jdbc:oracle:",
+            ClickHouse: "jdbc:clickhouse:",
+		},
+
 		RowExtractors: {
 		    Array: function(resultSet) {
 		        debugger;

@@ -212,12 +212,8 @@
 		},
 
 		_getProviderCollection: function (providerId){
-            for(var i = 0; i < $this.providers.length; i++) {
-                if ($this.providers[i].id == providerId) {
-                    return $this.providers[i].getCollectionName();
-                }
-            }
-            QueryUtils.throwError(0, 'Unknown data provider {}', providerId);
+		    var provider = QueryUtils.getQueryDataProvider(providerId, $this.cube);
+            return provider.getCollectionName();
 		},
 
 		_buildMatch: function(aggregate, query, filter){

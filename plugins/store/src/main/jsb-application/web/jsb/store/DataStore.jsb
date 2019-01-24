@@ -27,6 +27,10 @@
 			return this.config.type;
 		},
 
+		getVendor: function(){
+		    return null;
+		},
+
 		close: function() {
 			this.storeManager._removeStore(this);
 		    this.destroy();

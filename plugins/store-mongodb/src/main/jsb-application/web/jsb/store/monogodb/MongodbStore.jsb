@@ -69,6 +69,10 @@
             };
         },
 
+		getVendor: function(){
+		    return 'Mongodb';
+		},
+
 
 		asMongodb: function() {
 		    function prepareClose(conn, opts){
