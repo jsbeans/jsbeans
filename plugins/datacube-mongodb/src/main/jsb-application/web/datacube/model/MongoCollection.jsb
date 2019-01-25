@@ -210,6 +210,10 @@
 			return this.descriptor;
 		},
 
+		getCollectionName: function(){
+		    return this.descriptor.name;
+		},
+
 		updateDescriptor: function(desc){
 			this.descriptor = desc;
 			this.property('descriptor', this.descriptor);

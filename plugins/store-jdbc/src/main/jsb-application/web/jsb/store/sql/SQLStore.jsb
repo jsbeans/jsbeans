@@ -123,6 +123,16 @@
             });
         },
 
+		getVendor: function(){
+		    var url = this.config.url;
+		    for(var vendor in JDBC.VendorURLProtocols) {
+		        if (url.startsWith(JDBC.VendorURLProtocols[vendor])) {
+		            return vendor;
+		        }
+		    }
+		    return null;
+		},
+
 		asSQL: function() {
             return {
                 connectedJDBC: function(func){
