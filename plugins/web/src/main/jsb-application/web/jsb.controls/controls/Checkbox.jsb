@@ -49,10 +49,10 @@
 		},
 
 		// public methods
-		appendContent: function(c){
+		append: function(c){
 		    this._ensureContentBox();
 
-			return this._contentBox.append(this.resolveElement(c));
+			return this._contentBox.append(c);
 		},
 
 		enableContent: function(b){
@@ -156,7 +156,8 @@
 		// private methods
 		_ensureContentBox: function(){
 		    if(!this._contentBox){
-		        this._contentBox = this.append('<div class="content"></div>');
+		        this._contentBox = this.$('<div class="content"></div>');
+		        this.getElement().append(this._contentBox);
 		    }
 		}
 	}

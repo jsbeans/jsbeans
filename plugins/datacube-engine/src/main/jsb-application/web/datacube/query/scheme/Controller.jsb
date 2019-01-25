@@ -106,18 +106,28 @@
             });
         },
 
-        showTool: function(element, key, callback){
+        showTool: function(opts){
 			var popupTool = ToolManager.activate({
 				id: 'querySchemeTool',
 				cmd: 'show',
-				data: this._data,
+				data: {
+				    data: this._data,
+                    selectedId: opts.selectedId,
+                    sliceId: this._sliceId,
+				},
 				scope: null,
-				target: element,
+				target: {
+					selector: opts.element,
+					dock: 'bottom',
+					offsetVert: -1
+				},
+				/*
 				constraints: [{
 					selector: element,
 					weight: 10.0
 				}],
-				callback: callback
+				*/
+				callback: opts.callback
 			});
         }
     }

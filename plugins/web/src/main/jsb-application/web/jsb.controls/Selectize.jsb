@@ -87,7 +87,9 @@
 	            plugins: this.options.onlySelect ? ['hidden_textfield'] : undefined,
 	            options: this.options.options,
 	            searchField: this.options.searchField,
-	            valueField: this.options.valueField
+	            valueField: this.options.valueField,
+
+	            onChange: this.options.onChange
 	        });
 
 	        if(this.options.value){

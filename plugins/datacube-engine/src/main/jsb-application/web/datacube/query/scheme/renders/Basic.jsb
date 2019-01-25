@@ -1,12 +1,13 @@
 {
 	$name: 'DataCube.Query.Renders.Basic',
 	$parent: 'JSB.Controls.Control',
-	$require: ['DataCube.Query.RenderRepository'],
 
 	$alias: '$basic',
 
 	$client: {
-	    _beans: {},
+		$require: ['DataCube.Query.RenderRepository',
+    	           'css:Basic.css'],
+
 	    _controller: null,
 	    _values: null,
 
@@ -16,11 +17,12 @@
 	        this.addClass('queryRender');
 
 	        this._controller = opts.controller;
+	        this._key = opts.key;
 	        this._scheme = opts.desc.scheme;
 	        this._values = opts.desc.values;
 
 	        if(this._scheme.displayName){
-	            this.append('<div class="name">' + this._scheme.displayName + '</div>');
+	            this.append('<header>' + this._scheme.displayName + '</header>');
 	        }
 
 	        if(this._scheme.multiple){
@@ -42,8 +44,17 @@
 	        return this._controller.getData(key);
 	    },
 
-	    onMultipleBtnClick: function(){
-	        // open main tooltip
+	    getKey: function(){
+	        return this._key;
+	    },
+
+	    showTool: function(element, selectedId, callback){
+	        return this._controller.showTool({
+	            callback: callback,
+	            element: element,
+	            key: this.getKey(),
+	            selectedId: selectedId
+	        });
 	    }
 	}
 }

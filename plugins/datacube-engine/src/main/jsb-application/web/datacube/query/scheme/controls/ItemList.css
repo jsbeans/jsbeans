@@ -1,0 +1,54 @@
+.queryItemList {}
+
+.queryItemList > * {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.queryItemList > .categories {
+
+}
+
+.queryItemList > .categories > li {
+    margin: 0 0 -1px;
+    padding: 10px 20px;
+    font-weight: 600;
+    text-align: center;
+    color: #abc;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.queryItemList > .categories > li:hover {
+    color: #789;
+}
+
+.queryItemList > .categories > li.selected {
+    color: #0af;
+    border: 1px solid #abc;
+    border-left: 2px solid #0af;
+    border-right: 1px solid #fff;
+}
+
+.queryItemList > .items {
+    padding-left: 5px;
+    border-left: 1px solid #abc;
+}
+
+.queryItemList > .items > .categoryItem {
+
+}
+
+.queryItemList > .items .item {
+    padding: 5px 2px;
+    cursor: pointer;
+}
+
+.queryItemList > .items .item:hover {
+    background-color: #e3eff5;
+    color: #1091d2;
+}
+
+.queryItemList > .items .item.selected {
+    background-color: #a5d7f1;
+}

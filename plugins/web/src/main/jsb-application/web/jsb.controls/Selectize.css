@@ -18,3 +18,8 @@
     display: inline-block;
     width: calc(100% - 100px);
 }
+
+.jsb-selectize > .selectize-control {
+    min-width: 100px;
+    margin-left: 5px;
+}

@@ -4,8 +4,6 @@
 	           'JSB.Widgets.DomController',
 	           'css:Control.css'],
 	$client: {
-	    _innerBeans: {},
-
 		$constructor: function(opts){
 		    opts = opts || {};
 		    $base(opts);
@@ -88,12 +86,6 @@
 		},
 		
 		destroy: function(){
-		    for(var i in this._innerBeans){
-		        if(this.contains(this._innerBeans[i].getElement())){
-		            this._innerBeans[i].destroy();
-                }
-		    }
-
 			if(this.getElement()){
 				this.getElement().remove();
 			}

@@ -5,8 +5,7 @@
 	$alias: 'sourceBinding',
 
 	$client: {
-	    $require: ['JSB.Controls.Editor', 
-	               'DataCube.Providers.DataProviderRepository', 
+	    $require: ['JSB.Controls.Editor',
 	               'JSB.Widgets.RendererRepository', 
 	               'JSB.Controls.Button', 
 	               'Unimap.Render.DataBindingCache',
@@ -51,11 +50,6 @@
 
                             var entry = obj.getTargetEntry();
                             if(JSB.isInstanceOf(entry,'DataCube.Model.Slice')){
-                                return true;
-                            }
-
-                            var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
-                            if(dpInfo){
                                 return true;
                             }
                         }
@@ -278,11 +272,6 @@
 			var source = null;
 			if(JSB.isInstanceOf(entry, 'DataCube.Model.Slice')){
 				source = entry;
-			} else {
-				var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
-				if(dpInfo){
-					source = entry;
-				}
 			}
 
             var item;
@@ -431,31 +420,8 @@
 			try {
                 if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
                     iterator = source.executeQuery({useCache: true});
-                } else {
-                    // TODO
-                    var dpInfo = DataProviderRepository.queryDataProviderInfo(source);
-                    var ProviderClass = JSB.get(dpInfo.pType).getClass();
-                    var provider = new ProviderClass(JSB.generateUid(), source, null);
-                    provider.extractFields();
-
-                    var buffer = provider.find();
-                    iterator = {
-                        buffer: buffer,
-                        total: buffer.length,
-                        pos: 0,
-                        next: function(){
-                            if(this.pos >= this.total){
-                                return null;
-                            }
-                            return this.buffer[this.pos++];
-                        },
-                        close: function(){
-                            this.buffer = [];
-                            this.total = 0;
-                            this.pos = 0;
-                        }
-                    }
                 }
+
                 if(!iterator){
                     return null;
                 }

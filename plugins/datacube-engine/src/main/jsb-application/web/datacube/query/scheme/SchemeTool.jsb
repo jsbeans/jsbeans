@@ -4,6 +4,8 @@
 
 	$client: {
 	    $require: ['JSB.Widgets.ToolManager',
+	               'JSB.Widgets.RendererRepository',
+	               'DataCube.Query.ItemList',
 	               'css:SchemeTool.css'],
 
 		$bootstrap: function(){
@@ -26,32 +28,36 @@
 		_sliceId: null,
 
 		$constructor: function(){
-		    // search
+		    $base();
 
-		    // categories
-		    this.categories = this.$('<ul class="categories"></ul>');
-		    this.append(this.categories);
-
-		    // tabs
-		    this.categories.append(`
-		        <li>Срезы</li>
-		    `);
-
-		    // items
-		    var items = this.$('<div class="items"></div>');
-		    this.append(items);
-
-		    this.sliceItems = this.$('<div></div>');
-		    items.append(this.sliceItems);
+		    this.itemList = new ItemList({
+		        categories: ['Срезы'],
+		        onSelect: function(desc){
+		            $this.data.callback.call($this, desc);
+		            $this.close();
+		        }
+		    });
+		    this.append(this.itemList);
 		},
 
 		update: function(){
-		    var data = this.data.data;
+		    var data = this.data.data.data,
+		        sliceId = this.data.data.sliceId,
+		        selected = this.data.data.selectedId;
 
 		    // fill slices
-		    if(this._sliceId !== data.sliceId){
-		        this.sliceItems.empty();
-		        //
+		    if(this._sliceId !== sliceId){
+		        this._sliceId = sliceId;
+
+		        this.itemList.clearCategory('Срезы');
+
+		        for(var i in data.cubeSlices){
+		            this.itemList.addItem(RendererRepository.createRendererFor(data.cubeSlices[i]), i, 'Срезы');
+		        }
+            }
+
+            if(selected){
+                this.itemList.selectItem(selected);
             }
 		}
     }

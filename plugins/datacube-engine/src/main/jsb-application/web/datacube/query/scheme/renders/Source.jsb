@@ -5,26 +5,44 @@
 	$client: {
 	    $require: ['JSB.Widgets.RendererRepository'],
 
-	    createSource: function(value, callback){
-	        function click(evt){
-	            //
+	    createSource: function(value, appendElement, changeCallback){
+	        function click(selectedId){
+	            $this.showTool(appendElement, selectedId, function(desc){
+
+	                switch(desc.category){
+	                    case 'Срезы':
+	                        var slice = desc.item.getObject();
+
+                            appendElement.empty().append(RendererRepository.createRendererFor(slice));
+
+                            changeCallback.call($this, 'slice', slice);
+	                        break;
+	                }
+	            });
 	        }
 
 	        switch(typeof value){
 	            case 'object':  // query
 	                break;
                 case 'string':  // slice id
+                    // todo: use entry from data?
                     this.server().getEntry(value, function(res, fail){
                         var source = RendererRepository.createRendererFor(res);
-                        source.getElement().click(click);
+                        appendElement.append(source);
 
-                        callback.call($this, source);
+                        appendElement.click(function(){
+                            click(appendElement.children().jsb().getObject().getFullId());
+                        });
                     });
                     break;
                 default:
                     var source = this.$('<div>Источник не задан</div>');
-                    source.click(click);
-                    callback.call(this, source);
+
+                    appendElement.click(function(){
+                        click();
+                    });
+
+                    appendElement.append(source);
 	        }
 	    }
     },
