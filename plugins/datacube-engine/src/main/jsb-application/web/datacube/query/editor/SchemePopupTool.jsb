@@ -162,17 +162,24 @@
 				
 				var category = $this.categoriesElt.find('> .entry:first-child').attr('key');
 				if(selected){
-					category = $this.findCategoryByItem(selected.scheme) || category;
+					category = $this.findCategoryByItem(selected) || category;
 				} 
 				$this.selectCategory(category);
 			}
 		},
 		
-		findCategoryByItem: function(scheme){
-			var obj = $this.data.data.items;
+		findCategoryByItem: function(selected){
+			var obj = $this.data.data.items,
+			    scheme = selected.scheme;
+
 			if(JSB.isArray(obj)){
 				return;
 			}
+
+			if(selected.scheme === '$fieldExpr' && selected.context){
+			    scheme = '$fieldName';
+			}
+
 			for(var cat in obj){
 				var items = obj[cat];
 				for(var i = 0; i < items.length; i++){
@@ -242,7 +249,7 @@
                                     desc: null,
                                     element: element
                                 });
-                                if(selected && selected.scheme == item && selected.value == i){
+                                if(selected && (selected.scheme == '$fieldName' || selected.scheme == '$fieldExpr' && selected.context) && selected.value == i){
                                     $this.itemsListBox.selectItem(listItem.key, null, null, null, true);
                                     $this.itemsListBox.scrollTo(listItem.key);
                                 }
@@ -266,7 +273,7 @@
                                 desc: null,
                                 element: element
                             });
-                            if(selected && selected.scheme == item && selected.value == i){
+                            if(selected && selected.scheme == item && !selected.context && selected.value == i){
                                 $this.itemsListBox.selectItem(listItem.key, null, null, null, true);
                                 $this.itemsListBox.scrollTo(listItem.key);
                             }
