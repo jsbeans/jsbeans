@@ -9,6 +9,7 @@
 		connectors: {},
 		dragHandles: {},
 		resizeHandles: {},
+		selectHandles: {},
 		position: {x: 0, y: 0},
 		options: {
 			checkSize: true
@@ -97,7 +98,18 @@
 //			console.log('setPosition X:' + this.position.x + '; Y:' + this.position.y);
 		},
 		
+		isFixed: function(){
+			return this.options.fixed;
+		},
+		
 		getPosition: function(){
+			if(this.isFixed()){
+				var sheetRc = this.diagram.sheetRc;//.get(0).getBoundingClientRect();
+				var nodePos = this.getElement().get(0).getBoundingClientRect();
+				var x = (nodePos.left - sheetRc.left) / this.diagram.options.zoom;
+				var y = (nodePos.top - sheetRc.top) / this.diagram.options.zoom;
+				return {x: x, y: y};
+			}
 /*			var sheetRc = this.diagram.sheetRc;//.get(0).getBoundingClientRect();
 			var nodePos = this.getElement().get(0).getBoundingClientRect();
 			var x = (nodePos.left - sheetRc.left) / this.diagram.options.zoom;
@@ -255,7 +267,17 @@
 				});
 				self._installHandle(key, self.resizeHandles[key]);
 			});
-
+		},
+		
+		installSelectHandle: function(key, opts){
+			this.resolveSelector(opts.selector, function(sel){
+				$this.selectHandles[key] = JSB.merge({}, opts,{
+					selector: sel,
+					key: key,
+					type: 'select'
+				});
+				$this._installHandle(key, $this.selectHandles[key]);
+			});
 		},
 		
 		installConnector: function(cKey, opts){

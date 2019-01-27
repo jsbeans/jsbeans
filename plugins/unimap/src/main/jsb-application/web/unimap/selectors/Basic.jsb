@@ -23,7 +23,9 @@
                 this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
             }
         }
-
+        
+        this.Selector.prototype = $this;
+/*        
         this.Selector.prototype = {
             addMultipleValue: this.addMultipleValue,
             checked: this.checked,
@@ -47,13 +49,14 @@
             values: this.values
         };
 
-        var methods = this.jsb.getMethods(true);
+        var methods = this.jsb.getMethods(false);
 
         for(var i = 0; i < methods.length; i++){
             if(this._excludeMethods.indexOf(methods[i]) < 0){
                 this.Selector.prototype[methods[i]] = this[methods[i]];
             }
         }
+*/        
     },
 
     checked: function(){
@@ -192,6 +195,9 @@
         }
 
         for(var i = 0; i < values.length; i++){
+        	if(!this._values[i]){
+        		this._values[i] = {};
+        	}
             this._values[i].value = values[i];
         }
     },

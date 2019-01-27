@@ -16,6 +16,7 @@
 		options: {
 			enabled: true,
 			userLink: true,
+			checkSize: true,
 			allowLinkCallback: function(remoteConnector, linkId, callback){
 				return true;
 			},
@@ -60,6 +61,21 @@
 				this.node.resolveSelector(opts.origin, function(sel){
 					self.options.origin = sel;
 					self.install();
+				});
+			}
+			
+			if(this.options.checkSize && this.options.origin){
+				$this.options.origin.on({
+					resize: function(){
+						if(!$this.options.origin.is(':visible')){
+							return;
+						}
+						$this.updateOrigin();
+						var links = $this.getLinks();
+						for(var lId in links){
+							links[lId].redraw();
+						}
+					}
 				});
 			}
 		},
@@ -222,12 +238,12 @@
 			if(this.options.offsetY){
 				oy += this.options.offsetY;
 			}
-/*
-			return {
-				x: (ox - sheetRect.left) / this.node.diagram.getOption('zoom'),
-				y: (oy - sheetRect.top) / this.node.diagram.getOption('zoom')
-			};
-*/
+			
+			if(this.getNode().isFixed()){
+				ox /= this.getNode().diagram.getOption('zoom');
+				oy /= this.getNode().diagram.getOption('zoom');
+			}
+			
 			return {
 				x: nodePos.x + ox,
 				y: nodePos.y + oy

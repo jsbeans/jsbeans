@@ -90,6 +90,20 @@
 			$base();
 		},
 		
+		_checkFixed: function(){
+			if(this.source 
+				&& JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector')
+				&& this.source.getNode().isFixed()){
+				this.diagram._addFixedLink(this);
+			} else if(this.target 
+				&& JSB().isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector')
+				&& this.target.getNode().isFixed()){
+				this.diagram._addFixedLink(this);
+			} else {
+				this.diagram._removeFixedLink(this);
+			}
+		},
+		
 		setSource: function(obj){
 			if(this.source && JSB.isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') && this.source != obj){
 				// unbind source
@@ -102,6 +116,7 @@
 			} else {
 				throw 'Invalid source specified: ' + JSON.stringify(obj);
 			}
+			this._checkFixed();
 			this.updateConnectors();
 			this.redraw();
 		},
@@ -118,9 +133,12 @@
 			} else {
 				throw 'Invalid target specified: ' + JSON.stringify(obj);
 			}
+			this._checkFixed();
 			this.updateConnectors();
 			this.redraw();
 		},
+		
+		
 		
 		updateConnectors: function(){
 			if(!JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') || !JSB().isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector')){
@@ -240,10 +258,8 @@
 				}
 				
 				// add event handler
-				this.group.on({
-					click: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'click', event: d3.event});
-					}
+				this.group.on('click', function(evt){
+					self.publish('_jsb_diagramMouseEvent', {name: 'click', event: d3.event});
 				});
 			}
 			

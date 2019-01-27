@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.8 | jsbeans.org | (c) 2011-2018 Special Information Systems, LLC */
+/*! jsBeans v2.6.9 | jsbeans.org | (c) 2011-2019 Special Information Systems, LLC */
 if(!(function(){return this;}).call(null).JSB){
 (function(){
 	
@@ -4816,6 +4816,9 @@ JSB({
 				params: JSB().substComplexObjectInRpcResult(params),
 				sync: (sync ? true: false)
 			}, function(res){
+				if(self.isDestroyed()){
+					return;
+				}
 				var inst = this;
 				var args = arguments;
 				JSB().injectComplexObjectInRpcResult(res, function(r){

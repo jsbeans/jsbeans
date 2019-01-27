@@ -356,6 +356,9 @@
 					// filter nodes
 					for(var i in sMap){
 						if(JSB().isInstanceOf(sMap[i], 'JSB.Widgets.Diagram.Node')){
+							if(sMap[i].options && sMap[i].options.fixed){
+								continue;
+							}
 							selMap[i] = sMap[i];
 						}
 					}
