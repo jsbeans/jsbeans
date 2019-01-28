@@ -18,7 +18,7 @@
 		ignoreHandlers: false,
 		measurements: {},
 
-		isNew: true,
+		isNew: false,
 		
 		$constructor: function(opts){
 			$base(opts);

@@ -290,15 +290,8 @@
                         break;
                     case 'dataProvider':
                         var fields = obj.provider.extractFields();
-                        var q = {};
-                        for(var i in fields){
-                            q[i] = i;
-                        }
-                        obj.query = JSB.merge(obj.query, {
-                            $provider: obj.provider.getFullId(),
-                            $select: q
-                        });
-                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, true);
+
+                        this.it = obj.cube.executeQuery(obj.provider.createQuery(), obj.queryParams, true);
                         break;
                     case 'slice':
                     	if(JSB.isEqual(obj.query, obj.slice.getQuery())){
