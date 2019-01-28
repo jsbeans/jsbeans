@@ -20,6 +20,10 @@
             // add + btn
 	    },
 
+	    options: {
+	        onChange: undefined
+	    },
+
 	    clear: function(){
             for(var i = 0; i < this._renders.length; i++){
                 this._renders[i].destroy();
@@ -94,6 +98,12 @@
             }
 
             return this._data;
+        },
+
+        onChange: function(){
+            if(this.options.onChange){
+                this.options.onChange.call();
+            }
         },
 
         refresh: function(opts){

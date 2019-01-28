@@ -48,6 +48,10 @@
 	        return this._key;
 	    },
 
+	    onChange: function(){
+	        this._controller.onChange();
+	    },
+
 	    showTool: function(element, selectedId, callback){
 	        return this._controller.showTool({
 	            callback: callback,

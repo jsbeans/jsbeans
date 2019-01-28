@@ -36,8 +36,9 @@
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'JSB.Store.Sql.JDBC'],
 		
-		commentField: {
+		commentDesc: {
 		    field: '',
+		    hasComment: false,
 		    isUseComment: false,
 		    isObject: false
 		},
@@ -61,14 +62,10 @@
 			$base(id, workspace);
 			
 			if(opts){
-				this.descriptor = opts;
-				this.property('descriptor', this.descriptor);
-				this.setName(this.descriptor.schema + '.' + this.descriptor.name);
-				this.view = this.descriptor.isView || false;
-				$this.publish('DataCube.Model.SqlTable.updated');
+			    this.updateDescriptor(opts);
 			} else {
 				this.descriptor = this.property('descriptor');
-				this.commentField = this.property('commentField') || this.commentField;
+				this.commentDesc = this.property('commentDesc') || this.commentDesc;
 				this.missing = this.property('missing') || false;
 				this.view = this.descriptor.isView || false;
 			}
@@ -82,9 +79,9 @@
             for(var i in fields){
                 var fieldName = i;
 
-                if(this.commentField.isUseComment){
-                    if(this.commentField.isObject){
-                        fieldName = fields[i].comment[this.commentField.field];
+                if(this.commentDesc.isUseComment){
+                    if(this.commentDesc.isObject){
+                        fieldName = fields[i].comment[this.commentDesc.field];
                     } else { // string
                         fieldName = fields[i].comment;
                     }
@@ -110,21 +107,10 @@
 			    fields = {};
 
             for(var i in columns){
-                var nativeType = columns[i].datatypeName,
-                    comment = undefined;
-
-                if(columns[i].comment){
-                    try{
-                        comment = JSON.parse(columns[i].comment);
-                    } catch(ex){}
-
-                    if(!comment){
-                        comment = columns[i].comment;
-                    }
-                }
+                var nativeType = columns[i].datatypeName;
 
                 fields[i] = {
-                    comment: comment,
+                    comment: columns[i].comment,
                     name: i,
                     nativeType: nativeType,
                     type: JDBC.toJsonType(nativeType)
@@ -135,17 +121,19 @@
 		},
 
 		getCommentFields: function(){
-		    var comment = this._parseComment();
+		    if(this.commentDesc.hasComment){
+		        if(this.commentDesc.isObject){
+		            var columns = this.getDescriptor().columns;
 
-		    if(comment.type === 'object'){
-		        return comment.fields;
+                    for(var i in columns){
+                        return Object.keys(columns[i].comment);
+                    }
+		        } else {
+		            return ['Поле комментария'];
+		        }
+		    } else {
+		        return [];
 		    }
-
-		    if(comment.type === 'string'){
-		        return ['Поле комментария'];
-		    }
-
-		    return [];
 		},
 
 		getDescriptor: function(){
@@ -163,53 +151,64 @@
 		onChangeSettings: function(){
 		    var ctx = this.getSettingsContext();
 
-		    this.commentField = {
-                field: ctx.find('commentField').value(),
-                isUseComment: ctx.find('useComments').checked(),
-                isObject: this._parseComment().type === 'object'
-		    };
+		    this.commentDesc.field = ctx.find('commentField').value();
+		    this.commentDesc.isUseComment = ctx.find('useComments').checked();
 
-		    this.property('commentField', this.commentField);
+		    this.property('commentDesc', this.commentDesc);
 		},
 
 		updateDescriptor: function(desc){
-			if(!desc || JSB.isEqual(desc, this.descriptor)){
+			if(!desc){  // || JSB.isEqual(desc, this.descriptor)
 				return;
 			}
+
+			var commentDesc;
+
+			for(var i in desc.columns){
+			    if(!commentDesc){
+			        commentDesc = this.commentDesc;
+
+			        if(desc.columns[i].comment === 'null'){
+			            commentDesc.hasComment = false;
+			        } else {
+                        var comObject;
+
+                        try{
+                            comObject = JSON.parse(desc.columns[i].comment);
+                        } catch(ex){}
+
+                        if(comObject){
+                            commentDesc.isObject = true;
+                        } else {
+                            commentDesc.isObject = false;
+                        }
+
+                        commentDesc.hasComment = true;
+			        }
+
+			        this.commentDesc = commentDesc;
+			    }
+
+			    if(commentDesc.hasComment){
+			        if(commentDesc.isObject){
+			            try {
+			                desc.columns[i].comment = JSON.parse(desc.columns[i].comment);
+			            } catch(ex){
+			                JSB.getLogger().error('Error while parsing comment for "' + i + '" field in table ' + desc.name);
+			            }
+			        }
+			    } else {
+			        desc.columns[i].comment = undefined;
+			    }
+			}
+
+			this.property('commentDesc', this.commentDesc);
 			this.descriptor = desc;
 			this.property('descriptor', this.descriptor);
 			this.view = this.descriptor.isView || false;
 			this.setName(this.descriptor.schema + '.' + this.descriptor.name);
 			this.doSync();
 			$this.publish('DataCube.Model.SqlTable.updated');
-		},
-
-		_parseComment: function(){
-		    var columns = this.getDescriptor().columns,
-		        colNames = Object.keys(columns);
-
-            if(columns[colNames[0]].comment){
-                var comObject;
-
-                try{
-                    comObject = JSON.parse(columns[colNames[0]].comment);
-                } catch(ex){}
-
-                if(comObject){
-                    return {
-                        type: 'object',
-                        fields: Object.keys(comObject)
-                    };
-                } else {
-                    return {
-                        type: 'string'
-                    };
-                }
-            } else {
-                return {
-                    type: 'noComment'
-                };
-            }
 		}
 	}
 }

@@ -18,7 +18,7 @@
 		ignoreHandlers: false,
 		measurements: {},
 
-		isNew: false,
+		isNew: true,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -135,7 +135,11 @@
 
             // new
             if(this.isNew){
-                this.queryEditor = new SchemeController();
+                this.queryEditor = new SchemeController({
+                    onChange: function(){
+                        $this.updateTextQuery();
+                    }
+                });
                 scrollBox.append(this.queryEditor);
 			}
 			
@@ -214,6 +218,9 @@
                         sliceId: $this.slice.getId(),
                         values: $this.query
                     });
+
+                    $this.updateTextQuery();
+                    $this.updateGrid();
                 }
 			});
 		},
