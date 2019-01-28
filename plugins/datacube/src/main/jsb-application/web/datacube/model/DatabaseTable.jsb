@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Model.DatabaseTable',
-	$parent: 'JSB.Workspace.Entry',
-	
+	$parent: 'DataCube.Model.SettingsEntry',
+
 	missing: false,
 	
 	isMissing: function(){
@@ -9,9 +9,33 @@
 	},
 	
 	$server: {
-		$constructor: function(id, workspace){
-			$base(id, workspace);
-		},
+	    createQuery: function(useContext){
+	        return {
+	            $provider: this.getFullId(),
+	            $select: this.createQuerySelect(useContext)
+	        };
+	    },
+
+	    createQuerySelect: function(useContext){
+            var fields = this.extractFields(),
+                context = this.getFullId(),
+                select = {};
+
+            for(var i in fields){
+                if(useContext){
+                    select[i] = {
+                        $context: context,
+                        $field: i
+                    };
+                } else {
+                    select[i] = {
+                        $field: i
+                    };
+                }
+            }
+
+            return select;
+	    },
 
 		extractFields: function(){
 		    throw new Error('Method "extractFields" should be overridden');

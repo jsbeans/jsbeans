@@ -145,7 +145,7 @@
 		},
 		
 		onChangeSettings: function(){
-			// this method should be overriden
+			// this method should be overridden
 		},
 		
 		getSettings: function(){

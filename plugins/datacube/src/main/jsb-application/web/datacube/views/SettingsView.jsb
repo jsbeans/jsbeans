@@ -53,6 +53,7 @@
                     if($this.widgetSchemeRenderer){
                         $this.widgetSchemeRenderer.destroy();
                     }
+
                     $this.widgetSchemeRenderer = new Controller({
                         scheme: scheme,
                         values: settings,
@@ -63,7 +64,6 @@
                     $this.schemeBlock.loader('hide');
             	});
             });
-
 		},
 		
 

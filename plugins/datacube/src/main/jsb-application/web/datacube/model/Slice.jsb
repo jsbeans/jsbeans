@@ -326,65 +326,17 @@
 
 		generateQueryFromSource: function(opts){
 		    var sources = opts.sources,
-		        query = {};
-
-		    function createSelect(query, sources, useContext){
-		        query['$select'] = query['$select'] || {};
-
-		        for(var j = 0; j < sources.length; j++){
-		            var fields = sources[j].extractFields(),
-		                context = null;
-
-		            if(useContext){
-		                context = sources[j].getFullId();
-		            }
-
-                    for(var i in fields){
-                        if(context){
-                            if(query['$select'][i]){
-                                /*
-                                var cnt = 2;
-
-                                while(true){
-                                    if(!query['$select'][i + ' (' + cnt + ')']){
-                                        query['$select'][i + ' (' + cnt + ')'] = {
-                                            $context: context,
-                                            $field: i
-                                        }
-                                        break;
-                                    }
-
-                                    cnt++;
-                                }
-                                */
-                            } else {
-                                query['$select'][i] = {
-                                    $context: context,
-                                    $field: i
-                                }
-                            }
-                        } else {
-                            query['$select'][i] = {
-                                $field: i
-                            }
-                        }
-                    }
-		        }
-		    }
-
-		    query['$context'] = opts.name;
+		        query = {
+		            $context: opts.name,
+		            $select: {}
+		        };
 
 		    try{
                 switch(opts.sourceType){
                     case '$provider':
                     case '$from':
                         query[opts.sourceType] = sources[0] ? sources[0].getFullId() : undefined;
-
-                        if(sources.length > 1){
-                            sources.splice(1, sources.length - 1);
-                        }
-
-                        createSelect(query, sources);
+                        query['$select'] = sources[0].createQuerySelect();
                         break;
                     case '$join':
                         query['$join'] = {
@@ -396,20 +348,16 @@
                             query['$join'] = JSB.merge(query['$join'], opts.sourceOpts);
                         }
 
-                        if(sources.length > 2){
-                            sources.splice(1, sources.length - 2);
-                        }
-
-                        createSelect(query, sources, true);
+                        JSB.merge(query['$select'], sources[0].createQuerySelect(true), sources[1].createQuerySelect(true));
                         break;
                     case '$union':
                         query['$union'] = [];
 
                         for(var i = 0; i < sources.length; i++){
                             query['$union'].push(sources[i].getFullId());
-                        }
 
-                        createSelect(query, sources);
+                            JSB.merge(query['$select'], sources[i].createQuerySelect());
+                        }
                         break;
                 }
 		    } catch(ex){
@@ -580,7 +528,6 @@
 			if(this.queryCache){
 				this.queryCache.updateOptions(this.combineCacheOpts());
 			}
-			
 		},
 		
 		executeScheduledJob: function(job){

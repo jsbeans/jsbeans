@@ -12,9 +12,15 @@
 	    construct: function(){
 	        this.addClass('selectRender');
 
-	        this.createOptionsList();
+	        if(this._scheme.loadOptions){
+	            this.loadOptions(function(){
+	                $base();
+	            });
+	        } else {
+    	        this.createOptionsList();
 
-	        $base();
+    	        $base();
+	        }
 	    },
 
 	    addItem: function(values, itemIndex){
@@ -204,6 +210,27 @@
 	        }
 
 	        $base();
+	    },
+
+	    loadOptions: function(callback){
+	        this._scheme.loadOptions.call(function(items){
+	            var opList = [];
+
+	            if(JSB.isArray(items)){
+	                opList = items;
+	            } else {
+                    for(var i in items){
+                        opList.push({
+                            key: i,
+                            value: i
+                        });
+                    }
+	            }
+
+                $this._optionsList = opList;
+
+                callback.call($this);
+	        });
 	    }
 	}
 }
