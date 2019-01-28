@@ -156,9 +156,10 @@
 			}
 			
 			this.subscribe('_jsb_diagramConnectorUserHover', function(sender, msg, source){
-				if(!self.isEnabled()){
+				if(sender.diagram != $this.getNode().diagram || !self.isEnabled()){
 					return;
 				}
+				
 				self._lalCallCnt++;
 				if(source == self){
 					// highlight source connector
@@ -184,7 +185,7 @@
 			});
 			
 			this.subscribe('_jsb_diagramConnectorUserOut', function(sender, msg, source){
-				if(!self.isEnabled()){
+				if(sender.diagram != $this.getNode().diagram || !self.isEnabled()){
 					return;
 				}
 

@@ -20,7 +20,7 @@
 			onHighlight: function(bEnable){
 				this.group.classed('highlighted', bEnable);
 				if(bEnable){
-					this.group.attr('filter', 'url(#highlightFilter)');
+					this.group.attr('filter', 'url(#' + this.diagram.getShapeId('highlightFilter') + ')');
 				} else if(!this.isSelected()){
 					this.group.attr('filter', null);
 				}
@@ -28,7 +28,7 @@
 			onSelect: function(bEnable){
 				this.group.classed('selected', bEnable);
 				if(bEnable){
-					this.group.attr('filter', 'url(#highlightFilter)');
+					this.group.attr('filter', 'url(#' + this.diagram.getShapeId('highlightFilter') + ')');
 				} else if(!this.isHighlighted()){
 					this.group.attr('filter', null);
 				}
