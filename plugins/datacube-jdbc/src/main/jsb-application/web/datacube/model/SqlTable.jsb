@@ -110,10 +110,21 @@
 			    fields = {};
 
             for(var i in columns){
-                var nativeType = columns[i].datatypeName;
+                var nativeType = columns[i].datatypeName,
+                    comment = undefined;
+
+                if(columns[i].comment){
+                    try{
+                        comment = JSON.parse(columns[i].comment);
+                    } catch(ex){}
+
+                    if(!comment){
+                        comment = columns[i].comment;
+                    }
+                }
 
                 fields[i] = {
-                    comment: columns[i].comment,
+                    comment: comment,
                     name: i,
                     nativeType: nativeType,
                     type: JDBC.toJsonType(nativeType)
@@ -124,11 +135,17 @@
 		},
 
 		getCommentFields: function(){
-		    if(this.getDescriptor().columns.comment){
-                return Object.keys(this.getDescriptor().columns.comment);
-		    } else {
-		        return [];
+		    var comment = this._parseComment();
+
+		    if(comment.type === 'object'){
+		        return comment.fields;
 		    }
+
+		    if(comment.type === 'string'){
+		        return ['Поле комментария'];
+		    }
+
+		    return [];
 		},
 
 		getDescriptor: function(){
@@ -143,12 +160,16 @@
 		            : '"' + tableDescriptor.name + '"';
         },
 
-		isUseComment: function(){
-		    return this.commentField;
-		},
-
 		onChangeSettings: function(){
-		    debugger;
+		    var ctx = this.getSettingsContext();
+
+		    this.commentField = {
+                field: ctx.find('commentField').value(),
+                isUseComment: ctx.find('useComments').checked(),
+                isObject: this._parseComment().type === 'object'
+		    };
+
+		    this.property('commentField', this.commentField);
 		},
 
 		updateDescriptor: function(desc){
@@ -161,6 +182,34 @@
 			this.setName(this.descriptor.schema + '.' + this.descriptor.name);
 			this.doSync();
 			$this.publish('DataCube.Model.SqlTable.updated');
+		},
+
+		_parseComment: function(){
+		    var columns = this.getDescriptor().columns,
+		        colNames = Object.keys(columns);
+
+            if(columns[colNames[0]].comment){
+                var comObject;
+
+                try{
+                    comObject = JSON.parse(columns[colNames[0]].comment);
+                } catch(ex){}
+
+                if(comObject){
+                    return {
+                        type: 'object',
+                        fields: Object.keys(comObject)
+                    };
+                } else {
+                    return {
+                        type: 'string'
+                    };
+                }
+            } else {
+                return {
+                    type: 'noComment'
+                };
+            }
 		}
 	}
 }

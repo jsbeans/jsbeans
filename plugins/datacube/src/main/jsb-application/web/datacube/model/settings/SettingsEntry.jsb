@@ -3,9 +3,7 @@
 	$parent: 'JSB.Workspace.Entry',
 	$require: ['Unimap.Selector'],
 	
-	$scheme: {
-		
-	},
+	$scheme: {},
 	
 	createContext: function(settings, scheme){
 		return new Selector({

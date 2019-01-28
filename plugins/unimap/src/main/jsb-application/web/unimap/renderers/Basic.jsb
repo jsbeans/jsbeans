@@ -203,8 +203,8 @@
             return this._schemeController.getCommonGroupValues(commonGroup);
         },
 
-        getContext: function(){
-            return this._schemeController.getContext();
+        getContext: function(isObj){
+            return this._schemeController.getContext(isObj);
         },
 
         getKey: function(){

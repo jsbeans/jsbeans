@@ -189,7 +189,15 @@
 	        return this._commonFieldsMap[commonGroup] && this._commonFieldsMap[commonGroup].commonValues;
 	    },
 
-	    getContext: function(){
+	    getContext: function(isObj){
+	        if(isObj){
+	            if(typeof this._context === 'object'){
+	                return this._context;
+	            } else {
+	                return this;
+	            }
+	        }
+
 	        return this._context;
 	    },
 

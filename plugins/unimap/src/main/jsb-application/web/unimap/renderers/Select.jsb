@@ -213,7 +213,7 @@
 	    },
 
 	    loadOptions: function(callback){
-	        this._scheme.loadOptions.call(function(items){
+	        this._scheme.loadOptions.call(this.getContext(true), function(items){
 	            var opList = [];
 
 	            if(JSB.isArray(items)){

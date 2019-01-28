@@ -85,7 +85,7 @@
 				onInit: function(){
 				    $this.setTrigger('diagramReady');
 				},
-				onPositionChange: function(type, changes){
+				onPositionChanged: function(type, changes){
 				    if($this._cube){
 				        $this._cube.server().updateDiagramPosition(changes);
 				    }

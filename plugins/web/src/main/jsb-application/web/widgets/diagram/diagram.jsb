@@ -67,7 +67,8 @@
 			onChange: function(){},
 			onCreate: function(item){},
 			onRemove: function(item){},
-			onSelectionChanged: function(selected){}
+			onSelectionChanged: function(selected){},
+			onPositionChanged: function(type, changes){}
 		},
 		
 		

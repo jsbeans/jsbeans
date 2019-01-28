@@ -278,8 +278,8 @@
 					this.panStartPt = null;
 					this.diagram.removeClass('panning');
 
-					if(this.diagram.options.onPositionChange){
-					    this.diagram.options.onPositionChange.call(this.diagram, 'position', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
+					if(this.diagram.options.onPositionChanged){
+					    this.diagram.options.onPositionChanged.call(this.diagram, 'position', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
 					}
 				}
 				break;
@@ -427,8 +427,8 @@
 				currentZoom += /*Math.exp(currentZoom) */ params.delta * this.diagram.getOption('zoomStep') * currentZoom;
 				this.diagram.setZoom(currentZoom);
 
-                if(this.diagram.options.onPositionChange){
-                    this.diagram.options.onPositionChange.call(this.diagram, 'zoom', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
+                if(this.diagram.options.onPositionChanged){
+                    this.diagram.options.onPositionChanged.call(this.diagram, 'zoom', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
                 }
 
 				break;
