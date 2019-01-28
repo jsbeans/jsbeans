@@ -558,16 +558,6 @@
 							callback.call($this);
 						}
 					});
-/*					
-					for(var i = 0; i < opts.joints.length; i++){
-						var jDesc = opts.joints[i];
-						if(jDesc.jsb && JSB().isString(jDesc.jsb)){
-							JSB().lookup(opts.jsb, function(cls){
-								jDesc.jsb = cls.jsb;
-							});
-						}
-					}
-*/						
 				} else {
 					if(callback){
 						callback.call($this);
@@ -756,7 +746,7 @@
 			}
 		},
 		
-		removeLink: function(linkVal){
+		removeLink: function(linkVal, hideEvent){
 			var link = null;
 
 			if(JSB().isString(linkVal)){
@@ -793,7 +783,6 @@
 			if(this.fixedLinks[link.getId()]){
 				delete this.fixedLinks[link.getId()];
 			}
-			link.destroy();
 		},
 		
 		getLinks: function(){
