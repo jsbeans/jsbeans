@@ -36,6 +36,7 @@
 		
 		nodes: {},
 		links: {},
+		fixedLinks: {},
 		sheetRc: null,
 		
 		options: {
@@ -63,8 +64,10 @@
 			onChange: function(changeType, item){},
 			onCreate: function(item){},
 			onInit: function(){},
+			onChange: function(){},
+			onCreate: function(item){},
 			onRemove: function(item){},
-			onPositionChange: function(type, changes){}
+			onSelectionChanged: function(selected){}
 		},
 		
 		
@@ -118,34 +121,6 @@
 			this.controllers.normal = new Controller(this);
 			this.controllers.wiring = new WiringController(this);
 			
-			// setup layouts
-			if(this.options.layouts){
-				for(var lId in this.options.layouts){
-					this.setupLayout(lId, this.options.layouts[lId]);
-				}
-			}
-			
-			// setup nodes
-			if(this.options.nodes){
-				for(var nId in this.options.nodes){
-					this.setupNode(nId, this.options.nodes[nId]);
-				}
-			}
-			
-			// setup connectors
-			if(this.options.connectors){
-				for(var cId in this.options.connectors){
-					this.setupConnector(cId, this.options.connectors[cId]);
-				}
-			}
-			
-			// setup links
-			if(this.options.links){
-				for(var lId in this.options.links){
-					this.setupLink(lId, this.options.links[lId]);
-				}
-			}
-			
 			// register predefined shapes
 			this.registerShape('arrow', function(){
 				return this.defs.append('path')
@@ -183,16 +158,16 @@
 				var fc = filter.append('feComponentTransfer');
 				fc.append('feFuncR')
 					.attr('type', 'linear')
-					.attr('slope', 2);
+					.attr('slope', 0);
 				fc.append('feFuncG')
 					.attr('type', 'linear')
-					.attr('slope', 2);
+					.attr('slope', 1);
 				fc.append('feFuncB')
 					.attr('type', 'linear')
 					.attr('slope', 2);
 				
 				filter.append('feGaussianBlur')
-					.attr('stdDeviation', 1)
+					.attr('stdDeviation', 0)
 					.attr('result', 'blur');
 				
 				var feMerge = filter.append('feMerge');
@@ -216,6 +191,62 @@
 			
 			this.updateViewport();
 			this.useShape('highlightFilter');
+			
+			function _setupLayouts(callback){
+				// setup layouts
+				if($this.options.layouts){
+					var idArr = Object.keys($this.options.layouts);
+					JSB.chain(idArr, function(lId, c){
+						$this.setupLayout(lId, $this.options.layouts[lId], c);
+					}, callback);
+				} else {
+					callback.call($this);
+				}
+			}
+			
+			function _setupNodes(callback){
+				// setup nodes
+				if($this.options.nodes){
+					var idArr = Object.keys($this.options.nodes);
+					JSB.chain(idArr, function(nId, c){
+						$this.setupNode(nId, $this.options.nodes[nId], c);
+					}, callback);
+				} else {
+					callback.call($this);
+				}
+			}
+
+			function _setupConnectors(callback){
+				// setup connectors
+				if($this.options.connectors){
+					var idArr = Object.keys($this.options.connectors);
+					JSB.chain(idArr, function(cId, c){
+						$this.setupConnector(cId, $this.options.connectors[cId], c);
+					}, callback);
+				} else {
+					callback.call($this);
+				}
+			}
+			
+			function _setupLinks(callback){
+				// setup links
+				if($this.options.links){
+					var idArr = Object.keys($this.options.links);
+					JSB.chain(idArr, function(lId, c){
+						$this.setupLink(lId, $this.options.links[lId], c);
+					}, callback);
+				} else {
+					callback.call($this);
+				}
+			}
+			
+			JSB.chain([_setupLayouts, _setupNodes, _setupConnectors, _setupLinks], function(_setupFunc, c){
+				_setupFunc.call($this, c);
+			}, function(){
+				if($this.options.onInit){
+					$this.options.onInit.call($this);
+				}
+			})
 		},
 
 		_checkInit: function(){
@@ -317,6 +348,14 @@
 					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
 				}
 			});
+			this.subscribe('_jsb_diagramSelectionChanged', function(sender, msg, params){
+				if(sender != $this){
+					return;
+				}
+				if($this.options.onSelectionChanged){
+					$this.options.onSelectionChanged.call($this, params);
+				}
+			});
 		},
 		
 		pageToSheetCoords: function(pt){
@@ -386,10 +425,11 @@
 				top: -gridSideY,
 				width: gridSideX * 2,
 				height: gridSideY * 2
-			})
+			});
+			self.updateFixedLinks();
 		},
 		
-		setupLayout: function(key, opts){
+		setupLayout: function(key, opts, callback){
 			var self = this;
 
 			function _setupLayout(LayoutClass){
@@ -407,13 +447,19 @@
 						throw 'Unable to setup layout "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupLayout(cls);
+					if(callback){
+						callback.call($this);
+					}
 				});
 			} else {
 				_setupLayout(DefaultLayoutManager);
+				if(callback){
+					callback.call($this);
+				}
 			}
 		},
 		
-		setupNode: function(key, opts){
+		setupNode: function(key, opts, callback){
 			var self = this;
 
 			function _setupNode(){
@@ -433,13 +479,19 @@
 					}
 					_setupNode();
 					self.nodeDescs[key].nodeClass = cls;
+					if(callback){
+						callback.call($this);
+					}
 				});
 			} else {
 				_setupNode();
+				if(callback){
+					callback.call($this);
+				}
 			}
 		},
 		
-		setupConnector: function(key, opts){
+		setupConnector: function(key, opts, callback){
 			var self = this;
 			
 			function _setupConnector(){
@@ -458,14 +510,20 @@
 					}
 					_setupConnector();
 					self.connectorDescs[key].connectorClass = cls;
+					if(callback){
+						callback.call($this);
+					}
 				});
 			} else {
 				_setupConnector();
 				self.connectorDescs[key].connectorClass = Connector;
+				if(callback){
+					callback.call($this);
+				}
 			}
 		},
 		
-		setupLink: function(key, opts){
+		setupLink: function(key, opts, callback){
 			var self = this;
 			
 			function _setupLink(){
@@ -479,6 +537,44 @@
 				$this._checkInit();
 			}
 			
+			function _setupJoints(){
+				// check joints classes
+				if(opts.joints && JSB().isArray(opts.joints) && opts.joints.length > 0){
+					JSB.chain(opts.joints, function(jDesc, c){
+						if(jDesc.jsb && JSB().isString(jDesc.jsb)){
+							JSB().lookup(opts.jsb, function(cls){
+								jDesc.jsb = cls.jsb;
+								if(c){
+									c.call($this);
+								}
+							});
+						} else {
+							if(c){
+								c.call($this);
+							}
+						}
+					}, function(){
+						if(callback){
+							callback.call($this);
+						}
+					});
+/*					
+					for(var i = 0; i < opts.joints.length; i++){
+						var jDesc = opts.joints[i];
+						if(jDesc.jsb && JSB().isString(jDesc.jsb)){
+							JSB().lookup(opts.jsb, function(cls){
+								jDesc.jsb = cls.jsb;
+							});
+						}
+					}
+*/						
+				} else {
+					if(callback){
+						callback.call($this);
+					}
+				}
+			}
+			
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
 					if(!cls.jsb.isSubclassOf(Link)){
@@ -486,22 +582,14 @@
 					}
 					_setupLink();
 					self.linkDescs[key].linkClass = cls;
+					_setupJoints();
 				});
 			} else {
 				_setupLink();
+				_setupJoints();
 			}
 			
-			// check joints classes
-			if(opts.joints && JSB().isArray(opts.joints) && opts.joints.length > 0){
-				for(var i = 0; i < opts.joints.length; i++){
-					var jDesc = opts.joints[i];
-					if(jDesc.jsb && JSB().isString(jDesc.jsb)){
-						JSB().lookup(opts.jsb, function(cls){
-							jDesc.jsb = cls.jsb;
-						});
-					}
-				}	
-			}
+			
 		},
 		
 		getNode: function(id){
@@ -565,7 +653,11 @@
 			}
 			var node = new nodeClass(this, key, opts);
 			this.nodes[node.getId()] = node;
-			this.sheet.append(node.getElement());
+			if(node.options.fixed){
+				this.canvas.append(node.getElement());
+			} else {
+				this.sheet.append(node.getElement());
+			}
 			node.setInitialize();
 			
 			if(this.options.onChange){
@@ -645,7 +737,26 @@
 			return link;
 		},
 		
-		removeLink: function(linkVal, hideEvent){
+		_addFixedLink: function(link){
+			if(!this.links[link.getId()]){
+				return;
+			}
+			this.fixedLinks[link.getId()] = link;
+		},
+		
+		_removeFixedLink: function(linkId){
+			if(this.fixedLinks[linkId]){
+				delete this.fixedLinks[linkId];
+			}
+		},
+		
+		updateFixedLinks: function(){
+			for(var i in this.fixedLinks){
+				this.fixedLinks[i].redraw();
+			}
+		},
+		
+		removeLink: function(linkVal){
 			var link = null;
 
 			if(JSB().isString(linkVal)){
@@ -678,7 +789,11 @@
 				this.options.onRemove.call(this, link);
 			}
 
-		    delete this.links[link.getId()];
+			delete this.links[link.getId()];
+			if(this.fixedLinks[link.getId()]){
+				delete this.fixedLinks[link.getId()];
+			}
+			link.destroy();
 		},
 		
 		getLinks: function(){

@@ -128,11 +128,12 @@
 				if(opts.name){
 					this.setName(opts.name);
 				}
+				var settings = {};
 				if(opts.settings && JSB.isObject(opts.settings)){
-					$this.property('_settings', opts.settings);
-				} else {
-					$this.property('_settings', {});
-				}
+					settings = opts.settings;
+				} 
+				this._settingsContext = this.createContext(settings, this.getSettingsScheme());
+				this.storeSettings();
 			}
 		},
 		
@@ -187,12 +188,27 @@
 			}
 			$this.onChangeSettings();
 			$this.publish('DataCube.Model.SettingsEntry.settingsUpdated', settings);
-			$this.client()._updateClientSettings(settings);
+			$this.updateClientSettings();
 			$this.doSync();
 		},
 		
-		storeSettingsContext: function(){
-			this.property('_settings', this.getSettingsContext().getValues());
+		storeSettings: function(){
+			var settings = this.getSettingsContext().getValues();
+			$this.property('_settings', settings);
+			$this.publish('DataCube.Model.SettingsEntry.settingsUpdated', settings);
+			$this.updateClientSettings();
+		},
+		
+		ensureSettings: function(){
+			if(!this.getSettings()){
+				this.storeSettings();
+			}
+		},
+		
+		updateClientSettings: function(){
+			JSB.defer(function(){
+				$this.client()._updateClientSettings($this.property('_settings'));
+			}, 100, '_updateClientSettings_' + this.getId());
 		}
 	}
 }
