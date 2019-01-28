@@ -208,6 +208,27 @@
 				$this.executeScheduledJob(params);
 			});
 		},
+
+		createQuerySelect: function(useContext){
+            var fields = this.extractFields(),
+                context = this.getFullId(),
+                select = {};
+
+            for(var i in fields){
+                if(useContext){
+                    select[i] = {
+                        $context: context,
+                        $field: i
+                    };
+                } else {
+                    select[i] = {
+                        $field: i
+                    };
+                }
+            }
+
+            return select;
+		},
 		
 		destroy: function(){
 			if($this.queryCache){
