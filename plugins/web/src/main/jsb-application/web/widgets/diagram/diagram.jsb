@@ -122,6 +122,35 @@
 			this.controllers.normal = new Controller(this);
 			this.controllers.wiring = new WiringController(this);
 			
+			this.subscribe('_jsb_diagramMouseEvent', function(sender, msg, params){
+				// check sender
+				var owning = false;
+				if(JSB.isInstanceOf(sender, 'JSB.Widgets.Diagram')){
+					if(sender == $this){
+						owning = true;
+					}
+				} else if(JSB.isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') || JSB.isInstanceOf(sender, 'JSB.Widgets.Diagram.Link')){
+					if(sender.diagram == $this){
+						owning = true;
+					}
+				} else if(JSB.isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector')){
+					if(sender.getNode().diagram == $this){
+						owning = true;
+					}
+				}
+				
+				if(!owning){
+					return;
+				}
+				for(var i = self.controllerStack.length - 1; i >= 0; i--){
+					var res = self.controllerStack[i].onMessage(sender, msg, params);
+					if(res){
+						return;
+					}
+				}
+				self.controllers.normal.onMessage(sender, msg, params);
+			});
+			
 			// register predefined shapes
 			this.registerShape('arrow', function(){
 				return this.defs.append('path')
@@ -276,7 +305,7 @@
 		
 		registerShape: function(key, createCallback){
 			var desc = {
-				id: key/* + '_' + this.getId()*/,
+				id: key + '_' + this.getId(),
 				createCallback: createCallback,
 				element: null
 			};
@@ -290,6 +319,13 @@
 			if(!this.shapeDescs[key].element){
 				this.shapeDescs[key].element = this.shapeDescs[key].createCallback.call(this);
 				this.shapeDescs[key].element.attr('id', this.shapeDescs[key].id);
+			}
+			return this.shapeDescs[key].id;
+		},
+		
+		getShapeId: function(key){
+			if(!this.shapeDescs[key]){
+				return null;
 			}
 			return this.shapeDescs[key].id;
 		},

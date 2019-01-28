@@ -143,11 +143,12 @@
 			}
 			
 			this.subscribe('_jsb_diagramConnectorUserHover', function(sender, msg, source){
-				if(!$this.isEnabled()){
+				if(sender.diagram != $this.getNode().diagram || !self.isEnabled()){
 					return;
 				}
-				$this._lalCallCnt++;
-				if(source == $this){
+				
+				self._lalCallCnt++;
+				if(source == self){
 					// highlight source connector
 					$this.highlight(true, 'source');
 				} else {
@@ -171,7 +172,7 @@
 			});
 			
 			this.subscribe('_jsb_diagramConnectorUserOut', function(sender, msg, source){
-				if(!$this.isEnabled()){
+				if(sender.diagram != $this.getNode().diagram || !self.isEnabled()){
 					return;
 				}
 
