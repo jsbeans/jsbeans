@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.9 | jsbeans.org | (c) 2011-2019 Special Information Systems, LLC */
+/*! jsBeans v2.6.10 | jsbeans.org | (c) 2011-2019 Special Information Systems, LLC */
 if(!(function(){return this;}).call(null).JSB){
 (function(){
 	
@@ -3318,6 +3318,16 @@ if(!(function(){return this;}).call(null).JSB){
 					};
 					return {};
 				}
+				if(rType === '[object Function]'){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Function',
+							__data: res.toString()
+						}
+					};
+					return {};
+				}
 				if(rType === '[object Error]'){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3476,6 +3486,10 @@ if(!(function(){return this;}).call(null).JSB){
 					} else if(res.__type && res.__type == 'Date'){
 						if(callback){
 							callback(new Date(res.__data));
+						} 
+					} else if(res.__type && res.__type == 'Function'){
+						if(callback){
+							callback(eval('(' + res.__data + ')'));
 						} 
 					} else if(res.__type && res.__type == 'Error'){
 						if(callback){
