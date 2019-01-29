@@ -16,8 +16,6 @@
 		options: {
 			cellRoundMax: 2,
 			wiringClass: '_jsb_diagramWiringLinkMode',
-			wiringModeStyle: false,
-			userSelect: true,
 			
 			onHighlight: function(bEnable){
 				this.group.classed('highlighted', bEnable);
@@ -57,7 +55,7 @@
 					this.joints.push(joint);
 				}
 			}
-
+			
 			var isNeedRedraw = false;
 
 			if(this.options.sourceConnector){
@@ -74,7 +72,7 @@
 			    this.updateConnectors();
 			    this.redraw();
 			}
-
+			
 			this.subscribe('_jsb_diagramConnectorInstalled', function(sender, msg, params){
 				if(sender == self.source || sender == self.target){
 					self.redraw();
@@ -84,19 +82,12 @@
 		
 		installJoint: function(){},
 		
-		destroy: function(hideEvent){
+		destroy: function(){
 			if(this.diagram && this.diagram.hasLink(this)){
-				this.diagram._removeLink(this, hideEvent);
+				this.diagram.removeLink(this);
+				return;
 			}
-
-			// unselect & unhighlight
-			this.select(false);
-			this.highlight(false);
-
-			if(this.options.onRemove && !hideEvent){
-				this.options.onRemove.call(this);
-			}
-
+			
 			// unbind connectors
 			if(JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') && this.source.links[this.getId()]){
 				this.source.removeLink(this);
@@ -112,7 +103,7 @@
 			if(this.group){
 				this.group.remove();
 			}
-
+			
 			$base();
 		},
 		
@@ -147,7 +138,7 @@
 			this.redraw();
 		},
 
-		setTarget: function(obj, notRedraw){
+		setTarget: function(obj){
 			if(this.target && JSB.isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector') && this.target != obj){
 				// unbind source
 				this.target.removeLink(this);
@@ -244,6 +235,7 @@
 			}
 			return pathStr;
 		},
+
 		
 		redraw: function(){
 			if(JSB().isNull(this.source) || JSB().isNull(this.target)){
@@ -254,7 +246,6 @@
 			if(!this.group){
 				this.group = this.diagram.svg.append('g')
 					.classed('link', true)
-					.classed(this.options.wiringClass, this.options.wiringModeStyle)
 					.attr('key', this.key);
 				this.path = this.group.append('path');
 				this.sourceHead = null;
@@ -378,11 +369,7 @@
 			this.group.classed(this.options.wiringClass, bEnable);
 		},
 		
-		select: function(bEnable, isUserSelect){
-		    if(!this.options.userSelect && isUserSelect){
-		        return;
-		    }
-
+		select: function(bEnable){
 			if(bEnable){
 				if(!this.diagram.selected[this.getId()]){
 					this.diagram.selected[this.getId()] = this;
@@ -435,6 +422,7 @@
 				self.diagram.publish('_jsb_diagramHighlightChanged', self.diagram.getHighlighted());
 			}, 100, '_jsb_notifyUpdateHighlighted');
 		},
+
 		
 		isSelected: function(){
 			if(this.diagram.selected[this.getId()]){
@@ -459,5 +447,7 @@
 			}
 			return pArr;
 		}
-	}
+	},
+	
+	$server: {}
 }

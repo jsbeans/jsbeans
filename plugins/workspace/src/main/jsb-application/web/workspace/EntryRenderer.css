@@ -1,24 +1,30 @@
 @CHARSET "UTF-8";
 
-.entryRenderer > * {
-    vertical-align: middle;
-    display: inline-block;
+.entryRenderer {
 }
 
 .entryRenderer > .icon {
-    width: 20px;
+	width: 20px;
     height: 20px;
+    position: absolute;
+	left: 2px;
+	top: 50%;
+    margin-top: -10px;
     background-size: 100%;
-    background-repeat: no-repeat;
 }
 
 .entryRenderer > .title {
-    text-overflow: ellipsis;
+	text-overflow: ellipsis;
+    display: inline-block;
     overflow: hidden;
+    padding-left: 26px;
+	box-sizing: border-box;
+	padding-top: 1px;
+    padding-bottom: 1px;
     font-size: 14px;
     white-space: nowrap;
-    padding: 1px 0 1px 5px;
-    max-width: calc(100% - 20px);
+	vertical-align: middle;
+	max-width: 100%;
 }
 
 .entryRenderer > .title._dwp_primitiveEditor {

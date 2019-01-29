@@ -3,10 +3,12 @@
 .workspaceExplorerNode.jsonFileNode > .entryRenderer > .icon {
 	width: 26px;
     height: 26px;
+    margin-top: -13px;
 }
 
 .workspaceExplorerNode.jsonFileNode > .entryRenderer > .title {
 	padding-bottom: 10px;
+	padding-left: 32px;
 }
 
 .workspaceExplorerNode.jsonFileNode > .status {

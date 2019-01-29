@@ -11,10 +11,12 @@
 .workspaceExplorerNode.mongoSourceNode > .entryRenderer > .icon {
 	width: 26px;
     height: 26px;
+	margin-top: -13px;
 }
 
 .workspaceExplorerNode.mongoSourceNode > .entryRenderer > .title {
 	padding-bottom: 10px;
+	padding-left: 32px;
 }
 
 .workspaceExplorerNode.mongoSourceNode > .status {

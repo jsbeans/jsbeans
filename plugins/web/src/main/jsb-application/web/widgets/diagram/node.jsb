@@ -7,14 +7,18 @@
 	
 	$client: {
 		connectors: {},
-		diagram: null,
 		dragHandles: {},
 		resizeHandles: {},
 		selectHandles: {},
+		handles: {},
 		position: {x: 0, y: 0},
 		options: {
 			checkSize: true,
-			userSelect: true
+			
+			onPositionChanged: function(){},
+			onCreate: function(){},
+			onSelect: function(){},
+			onHighlight: function(){}
 		},
 		
 		$constructor: function(diagram, key, opts){
@@ -22,61 +26,61 @@
 			this.diagram = diagram;
 			this.key = key;
 			$base();
-
-			this.options = JSB().merge(this.options, this.diagram.nodeDescs[key].options, opts);
-
+			JSB().merge(this.options, this.diagram.nodeDescs[key].options, opts);
 			this.addClass('_jsb_diagramNode');
 			
 			this.getElement().css({
 				'position': 'absolute'
 			});
-
+			
 			if(this.options.position){
 			    this.setPosition(this.options.position, true);
 			}
-
+			
 			// install drag handles
-			/*
 			for(var dhKey in this.dragHandles){
 				if(!JSB().isNull(this.dragHandles[dhKey].installed) && !this.dragHandles[dhKey].installed){
 					this._installDragHandle(dhKey, this.dragHandles[dhKey]);
 				}
 			}
-			*/
+			
 			// install connector
 			for(var cKey in $this.connectors){
 				if(!JSB().isNull($this.connectors[cKey].installed) && !$this.connectors[cKey].installed){
 					$this.connectors[cKey].install();
 				}
 			}
-
+			
+			var resizeProc = function(){
+				if(!$this.getElement().is(':visible')){
+					return;
+				}
+				$this.updateConnectors();
+				$this.updateLinks();
+				$this.diagram.updateLayout($this);
+			};
+			
 			if($this.options.checkSize){
 				$this.getElement().on({
-					resize: function(){
-                        if(!$this.getElement().is(':visible')){
-                            return;
-                        }
-						$this.updateConnectors();
-                        $this.updateLinks();
-                        $this.diagram.updateLayout($this);
-					}
+					resize: resizeProc
 				});
 			} else {
 				$this.updateLinks();
 				$this.diagram.updateLayout($this);
 			}
-
-			this.getElement().click(function(evt){
-			    $this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {
-			        name: 'click',
-			        event: evt,
-			        handle: this
-			    });
-			});
+			
 		},
+		
+		_setInitialized: function(){
+		    this.setTrigger('_initialized');
 
-		createLink: function(){
-		    // todo
+		    if(this.options.onCreate){
+		        this.options.onCreate.call(this);
+		    }
+		},
+		
+		ensureInitialized: function(callback){
+		    this.ensureTrigger('_initialized', callback);
 		},
 		
 		destroy: function(){
@@ -93,92 +97,29 @@
 			
 			$base();
 		},
-
-		ensureInitialize: function(callback){
-		    this.ensureTrigger('_initialized', callback);
-		},
-
-		getDiagram: function(){
-		    return this.diagram;
-		},
-
-		getPosition: function(){
-			return {x: this.position.x, y: this.position.y};
-		},
-		/*
-		* types: 'drag', 'resize'
-		*/
-		installHandle: function(handleDesc){
-		    if(!handleDesc.key || !handleDesc.type){
-		        throw new Error('JSB.Widgets.DiagramNode: handle description must contains key & type fields.');
-		    }
-
-		    var selectors = handleDesc.selector;
-
-			if(!JSB().isArray(selectors)){
-				selectors = [selectors];
+		
+		setPosition: function(x, y, hideEvent){
+			
+			if(JSB().isObject(x)){
+				y = x.y;
+				x = x.x;
+				hideEvent = y;
 			}
-
-			for(var i = 0; i < selectors.length; i++){
-			    // set event handlers
-			    selectors[i].on({
-					click: function(evt){
-					    $this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: evt, handle: handleDesc});
-					},
-
-					mouseover: function(evt){
-					    $this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseover', event: evt, handle: handleDesc});
-					},
-
-					mouseout: function(evt){
-					    $this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseout', event: evt, handle: handleDesc});
-					},
-
-					mousedown: function(evt){
-					    $this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousedown', event: evt, handle: handleDesc});
-					},
-
-					mouseup: function(evt){
-					    $this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseup', event: evt, handle: handleDesc});
-					},
-
-					mousemove: function(evt){
-					    $this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousemove', event: evt, handle: handleDesc});
-					},
-
-					mousewheel: function(evt, delta){
-					    $this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta, handle: handleDesc});
-					}
-			    })
-			}
-		},
-
-		setInitialize: function(){
-		    this.setTrigger('_initialized');
-
-		    if(this.options.onCreate){
-		        this.options.onCreate.call(this);
-		    }
-		},
-
-		setPosition: function(position, hideEvent){
 			var cellSize = this.diagram.getOption('cellSize');
-
-			this.position.x = Math.round(position.x / cellSize) * cellSize;
-			this.position.y = Math.round(position.y / cellSize) * cellSize;
-
+			this.position.x = Math.round(x / cellSize) * cellSize;
+			this.position.y = Math.round(y / cellSize) * cellSize;
 			this.getElement().css({
 				'left': this.position.x,
 				'top': this.position.y,
 				'position': 'absolute'
 			});
-
+			
 			this.updateLinks();
 			this.diagram.updateLayout(this);
-
 			if(this.options.onPositionChanged && !hideEvent){
 				this.options.onPositionChanged.call(this, this.position.x, this.position.y);
 			}
+//			console.log('setPosition X:' + this.position.x + '; Y:' + this.position.y);
 		},
 		
 		isFixed: function(){
@@ -328,6 +269,14 @@
 			handleDesc.installed = true;
 		},
 		
+		installHandle: function(hDesc){
+			this.resolveSelector(hDesc.selector, function(sel){
+				$this.handles[hDesc.key] = hDesc;
+				$this.handles[hDesc.key].selector = sel;
+				$this._installHandle(hDesc.key, $this.handles[hDesc.key]);
+			});
+		},
+		
 		installDragHandle: function(key, opts){
 			var self = this;
 			this.resolveSelector(opts.selector, function(sel){
@@ -431,10 +380,7 @@
 			}
 		},
 		
-		select: function(bEnable, isUserSelect){
-			if(!this.options.userSelect && isUserSelect){
-		        return;
-		    }
+		select: function(bEnable){
 			if(bEnable){
 				if(!this.diagram.selected[this.getId()]){
 					this.diagram.selected[this.getId()] = this;
@@ -487,6 +433,7 @@
 				self.diagram.publish('_jsb_diagramHighlightChanged', self.diagram.getHighlighted());
 			}, 100, '_jsb_notifyUpdateHighlighted');
 		},
+
 		
 		isSelected: function(){
 			if(this.diagram.selected[this.getId()]){
@@ -501,5 +448,7 @@
 			}
 			return false;
 		}
-	}
+	},
+	
+	$server: {}
 }
