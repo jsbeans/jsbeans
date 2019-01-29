@@ -13,7 +13,7 @@
 		$constructor: function(providerOrProviders, cube){
 		    $base();
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
-		    QueryUtils.assert(cube && cube.getJsb().$name == 'DataCube.Model.Cube', 'Cube is undefined or failed');
+		    QueryUtils.assert(cube && cube.getJsb().isSubclassOf('DataCube.Model.Cube'), 'Cube is undefined or failed');
 
 		    this.cube = cube;
             this.queryEngine = cube.queryEngine;

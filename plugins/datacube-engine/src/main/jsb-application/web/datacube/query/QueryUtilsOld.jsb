@@ -1021,7 +1021,7 @@
                 return false;
             }
             // return true if cube field selected as is
-            var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
+            var fields = cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.Cube')
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
             if (fields[field]) {
@@ -1075,7 +1075,7 @@
         */
         generateDefaultSelect: function(dcQuery, cubeOrDataProvider) {
             if (Object.keys(dcQuery.$select).length == 0) {
-                if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
+                if (cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.Cube')) {
                     // add all cube fields
                     var managedFields = cubeOrDataProvider.getManagedFields();
                     for (var f in managedFields) if (typeof managedFields[f] !== 'undefined') {
@@ -1291,7 +1291,7 @@
         /** Производит замену алиасов на поле куба, если алиас равен полю куба
         */
         patchSimpleFieldAliases: function(dcQuery, cubeOrDataProvider) {
-            var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
+            var fields = cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.Cube')
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
 		    var queriesByContext = {};
@@ -1682,7 +1682,7 @@
         },
 
         extractType: function (exp, query, cubeOrDataProvider, queryByContext) {
-            var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
+            var fields = cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.Cube')
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
 
@@ -1757,7 +1757,7 @@
         },
 
         getFieldJdbcType: function(cubeOrDataProvider, field) {
-            if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
+            if (cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.Cube')) {
                 var cubeFields = cubeOrDataProvider.getManagedFields();
 //                for(var cubeField in cubeFields) if(typeof cubeFields[cubeField] !== 'undefined') {
                 var binding = cubeFields[field].binding;

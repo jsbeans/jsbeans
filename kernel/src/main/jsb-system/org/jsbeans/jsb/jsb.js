@@ -1125,6 +1125,10 @@ if(!(function(){return this;}).call(null).JSB){
 			return this._descriptor;
 		},
 		
+		getName: function(){
+			return this.getDescriptor().$name;
+		},
+		
 		getParent: function(){
 			if(this.$parent){
 				return JSB.get(this.$parent);

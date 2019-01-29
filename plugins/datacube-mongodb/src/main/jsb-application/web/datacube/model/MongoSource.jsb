@@ -75,7 +75,11 @@
 		loadAffectedCubes: function(){
 			// temp: load all cubes
 			var it = this.getWorkspace().search(function(eDesc){
-				return eDesc.eType == 'DataCube.Model.Cube';
+				var eJsb = JSB.get(eDesc.eType);
+				if(!eJsb){
+					return false;
+				}
+				return eJsb.isSubclassOf('DataCube.Model.Cube');
 			});
 			
 			while(it.hasNext()){
@@ -89,7 +93,12 @@
 		
 		fuxupAffectedCubes: function(){
 			var it = this.getWorkspace().search(function(eDesc){
-				return eDesc.eType == 'DataCube.Model.Cube';
+				var eJsb = JSB.get(eDesc.eType);
+				if(!eJsb){
+					return false;
+				}
+				return eJsb.isSubclassOf('DataCube.Model.Cube');
+
 			});
 			
 			while(it.hasNext()){

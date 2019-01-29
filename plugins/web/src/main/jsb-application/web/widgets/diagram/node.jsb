@@ -99,11 +99,10 @@
 		},
 		
 		setPosition: function(x, y, hideEvent){
-			
 			if(JSB().isObject(x)){
+				hideEvent = y;
 				y = x.y;
 				x = x.x;
-				hideEvent = y;
 			}
 			var cellSize = this.diagram.getOption('cellSize');
 			this.position.x = Math.round(x / cellSize) * cellSize;
