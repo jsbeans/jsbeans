@@ -174,12 +174,11 @@
                 return;
             }
 
-			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(source, 'DataCube.Model.QueryableEntry')){
 			    this._updateData({
-			    	cube: source.getCube(),
-			    	query: query || source.getQuery(),
-			    	slice: source,
-			    	type: 'slice'
+			    	type: 'queryable',
+			    	source: source,
+			    	query: query || {}
 			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Model.DatabaseTable')){
 			    this._updateData({
@@ -219,8 +218,8 @@
             	type: source.type 
             };
             
-            if(source.type == 'slice'){
-            	qObj.slice = source.slice;
+            if(source.type == 'queryable'){
+            	qObj.source = source.source;
             }
 
             $this.server().loadData( qObj, function(res){
@@ -293,13 +292,22 @@
 
                         this.it = obj.cube.executeQuery(obj.provider.createQuery(), obj.queryParams, true);
                         break;
-                    case 'slice':
+                    case 'queryable':
+                    	var qDesc = {
+                    		useCache: false,
+                    	};
+                    	if(Object.keys(obj.query).length > 0){
+                    		qDesc.extQuery = obj.query;
+                    	}
+                    	this.it = obj.source.executeQuery(qDesc);
+                    	break;
+/*                    case 'slice':
                     	if(JSB.isEqual(obj.query, obj.slice.getQuery())){
                     		this.it = obj.slice.executeQuery({useCache: false});
                     	} else {
                     		this.it = obj.cube.executeQuery(obj.query, obj.queryParams, true);
                     	}
-                        break;
+                        break;*/
                     default:
                     	throw new Error('DataCube.GridView.loadData error: unknown type "' + obj.type + '"');
                 }

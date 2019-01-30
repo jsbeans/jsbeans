@@ -34,9 +34,13 @@
             var translators = [];
             for(var translatorName in $this.translatorsJsb) {
                 var config = $this.translatorsCfg[translatorName];
-                if (config.providers.indexOf(providerType) !== -1) {
-                    var Translator = $this.translatorsJsb[translatorName].getClass();
-                    translators.push(new Translator(providers, defaultCube));
+                var providerJsb = JSB.get(providerType);
+                for(var i = 0; i < config.providers.length; i++){
+                	if(providerJsb.isSubclassOf(config.providers[i])){
+                		var Translator = $this.translatorsJsb[translatorName].getClass();
+                        translators.push(new Translator(providers, defaultCube));
+                        break;
+                	}
                 }
             }
             return translators;
