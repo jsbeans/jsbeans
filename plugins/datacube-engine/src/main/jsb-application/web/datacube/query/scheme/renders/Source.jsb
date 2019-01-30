@@ -51,9 +51,7 @@
         $require: ['JSB.Workspace.WorkspaceController'],
 
         getEntry: function(id){
-	        var idArr = id.split('/');
-
-	        return WorkspaceController.getWorkspace(idArr[0]).entry(idArr[1]);
+	        return WorkspaceController.getEntryByFullId(id);
         }
     }
 }

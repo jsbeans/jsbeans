@@ -2,8 +2,7 @@
 	$name: 'DataCube.Dialogs.JoinSettingsTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require: ['JSB.Widgets.ToolManager',
-               'Unimap.Controller',
-               'Unimap.Selector',
+               'DataCube.Query.SchemeController',
                'JSB.Controls.Button',
 	           'css:JoinSettingsTool.css'],
 	$client: {
@@ -14,7 +13,7 @@
 				id: 'joinSettingsTool',
 				jso: self,
 				wrapperOpts: {
-					exclusive: true,
+					exclusive: 'joinSettingsTool',
 					modal: true,
 					hideByOuterClick: false,
 					hideInterval: 0,
@@ -23,43 +22,9 @@
 			});
 		},
 
-		$scheme: {
-            joinType: {
-                render: 'select',
-                name: 'Тип пересечения',
-                items: {
-                    leftInner: {
-                        name: 'left inner'
-                    },
-                    leftOuter: {
-                        name: 'left outer'
-                    },
-                    rightInner: {
-                        name: 'right inner'
-                    },
-                    rightOuter: {
-                        name: 'right outer'
-                    },
-                    full: {
-                        name: 'full'
-                    }
-                }
-            },
-            filter: {
-                render: 'joinFilter',
-                name: 'Условие пересечения',
-                multiple: {
-                    createDefault: true
-                }
-            }
-		},
-
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('joinSettingsTool');
-
-			this.caption = this.$('<header>Настройки пересечения</header>');
-			this.append(this.caption);
 
 			var cancelBtn = new Button({
 			    caption: 'Отмена',
@@ -80,27 +45,7 @@
 				hasCaption: true,
 				tooltip: 'Сохранить',
 			    onclick: function(){
-			        var values = new Selector({
-                        values: JSB.clone($this.controller.getValues())
-                    });
-
-                    var filters = values.find('filter').values(),
-                        queryOpts = {
-                            $joinType: values.find('joinType').value(),
-                            $filter: {
-                                $and: []
-                            }
-                        };
-
-                    for(var i = 0; i < filters.length; i++){
-                        var obj = {};
-
-                        obj[filters[i]['comparison']] = [filters[i]['firstField'], filters[i]['secondField']];
-
-                        queryOpts.$filter.$and.push(obj);
-                    }
-
-			        $this.data.callback.call($this, queryOpts);
+                    $this.data.callback.call($this, $this.controller.getValues());
 
 			        $this.close()
 			    }
@@ -109,18 +54,24 @@
         },
 
         update: function(){
+            var sources = this.data.data.sources;
+
             if(this.controller){
                 this.controller.destroy();
             }
 
-            this.controller = new Controller({
+            this.controller = new SchemeController({
                 data: this.data.data,
-                scheme: this.$scheme,
-                values: {},
-                bootstrap: 'Datacube.Unimap.Bootstrap'
+                //sliceId: $this.slice.getId(),
+                values: {
+                    $join: {
+                        $left: sources[0] && sources[0].getFullId(),
+                        $right: sources[1] && sources[1].getFullId()
+                    }
+                }
             });
 
-            this.caption.after(this.controller.getElement());
+            this.prepend(this.controller);
         }
     }
 }

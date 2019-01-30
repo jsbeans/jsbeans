@@ -228,7 +228,6 @@
 			JSB.defer(function(){
 				$this.doSync();	
 			}, 0);
-			
 		},
 
 		remove: function(){

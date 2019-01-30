@@ -302,16 +302,20 @@
                         query['$select'] = sources[0].createQuerySelect();
                         break;
                     case '$join':
-                        query['$join'] = {
-                            $left: sources[0] ? sources[0].getFullId() : undefined,
-                            $right: sources[1] ? sources[1].getFullId() : undefined
+                        var selectLeft = {},
+                            selectRight = {};
+
+                        query['$join'] = opts.sourceOpts['$join'];
+
+                        if(query['$join'].$left){
+                            selectLeft = WorkspaceController.getEntryByFullId(query['$join'].$left).createQuerySelect(true);
                         }
 
-                        if(opts.sourceOpts){
-                            query['$join'] = JSB.merge(query['$join'], opts.sourceOpts);
+                        if(query['$join'].$right){
+                            selectRight = WorkspaceController.getEntryByFullId(query['$join'].$right).createQuerySelect(true);
                         }
 
-                        JSB.merge(query['$select'], sources[0].createQuerySelect(true), sources[1].createQuerySelect(true));
+                        JSB.merge(query['$select'], selectLeft, selectRight);
                         break;
                     case '$union':
                         query['$union'] = [];

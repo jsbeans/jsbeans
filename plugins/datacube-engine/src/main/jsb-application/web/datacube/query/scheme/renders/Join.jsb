@@ -5,8 +5,7 @@
 	$alias: '$join',
 
 	$client: {
-	    $require: ['JSB.Controls.Select',
-	               'JSB.Controls.Selectize',
+	    $require: ['JSB.Controls.Selectize',
 	               'css:Join.css'],
 
         $constructor: function(opts){
@@ -16,29 +15,46 @@
         },
 
 	    addItem: function(index){
-	        var item = this.$('<div class="item"></div>'),
+	        var item = this.$('<div class="field"></div>'),
 	            sources = this.getData('cubeSlices'),
-	            curValue = {};
+	            curValue = {
+	                compare: '$eq'
+	            },
+	            value = {};
+
+            if(!JSB.isDefined(index)){
+                index = this._values.$filter.$and.length;
+            }
 
             if(this._values.$filter.$and[index]){
+                value = this._values.$filter.$and[index];
+
                 curValue.compare = Object.keys(this._values.$filter.$and[index])[0];
 
                 if(curValue.compare){
                     curValue.first = this._values.$filter.$and[index][curValue.compare][0];
                     curValue.second = this._values.$filter.$and[index][curValue.compare][1];
                 }
+            } else {
+                this._values.$filter.$and[index] = value;
             }
 
 	        function updateCurValue(){
 	            if(curValue.compare){
-	                $this._values.$filter.$and[index] = {};
-	                $this._values.$filter.$and[index][curValue.compare] = [curValue.first, curValue.second];
+	                for(var i in value){
+	                    delete value[i];
+	                }
+
+	                value[curValue.compare] = [curValue.first, curValue.second];
+
+	                $this.onChange();
 	            }
 	        }
 
 	        var firstField = new Selectize({
-	            options: Object.keys(sources[this._values.$left].extractFields()),
-	            value: curValue.first.$field,
+	            cssClass: 'firstField',
+	            options: this._values.$left && Object.keys(sources[this._values.$left].extractFields()),
+	            value: curValue.first && curValue.first.$field,
 	            onChange: function(value){
 	                curValue.first = {
 	                    $context: $this._values.$left,
@@ -50,7 +66,8 @@
 	        item.append(firstField);
 
 	        var compare = new Selectize({
-	            options: ['$eq', ''],
+	            cssClass: 'compare',
+	            options: ['$eq', '$gte', '$gt', '$lte', '$lt'],
 	            value: curValue.compare,
 	            onChange: function(value){
 	                curValue.compare = value;
@@ -60,8 +77,9 @@
 	        item.append(compare);
 
 	        var secondField = new Selectize({
-	            options: Object.keys(sources[this._values.$right].extractFields()),
-	            value: curValue.second.$field,
+	            cssClass: 'secondField',
+	            options: this._values.$right && Object.keys(sources[this._values.$right].extractFields()),
+	            value: curValue.second && curValue.second.$field,
 	            onChange: function(value){
 	                curValue.second = {
 	                    $context: $this._values.$right,
@@ -72,33 +90,61 @@
 	        });
 	        item.append(secondField);
 
-	        // add remove btn
+	        var removeBtn = this.$('<div class="removeBtn fas fa-trash-alt"></div>');
+	        item.append(removeBtn);
+	        removeBtn.click(function(){
+	            var index = $this._values.$filter.$and.indexOf(value);
+	            $this._values.$filter.$and.splice(index, 1);
+
+	            item.remove();
+
+	            $this.onChange();
+	        });
 
             this.fields.append(item);
 	    },
 
 	    construct: function(){
+	        function changeSource(name, source){
+	            var selectors = $this.fields.find(name),
+	                options = Object.keys(source.extractFields());
+
+	            for(var i = 0; i < selectors.length; i++){
+	                var sel = $this.$(selectors[i]).jsb();
+	                sel.setOptions(options);
+	            }
+	        }
+
+	        if(!this._values.$joinType){
+	            this._values.$joinType = 'inner';
+	        }
+
 	        // join type
 	        var joinType = new Selectize({
+	            cssClass: 'joinType',
 	            label: 'JoinType',
 	            onlySelect: true,
-	            options: ['left inner', 'left outer'],
-	            value: this._values.$joinType
+	            options: ['inner', 'left outer', 'right outer', 'full'],
+	            value: this._values.$joinType,
+	            onChange: function(value){
+	                $this._values.$joinType = value;
+	                $this.onChange();
+	            }
 	        });
 	        this.append(joinType);
-console.log(this._values.$joinType);
+
 	        // source 1
 	        var sourceLeft = this.$('<div class="sourceLeft"></div>');
 	        this.append(sourceLeft);
-	        this.createSource(this._values.$left, sourceLeft, function(){
-	            //
+	        this.createSource(this._values.$left, sourceLeft, function(newSourceType, source){
+	            changeSource('.firstField', source);
 	        });
 
 	        // source 2
 	        var sourceRight = this.$('<div class="sourceRight"></div>');
 	        this.append(sourceRight);
-	        this.createSource(this._values.$right, sourceRight, function(){
-	            //
+	        this.createSource(this._values.$right, sourceRight, function(newSourceType, source){
+	            changeSource('.secondField', source);
 	        });
 
 	        // fields

@@ -15,7 +15,7 @@
 				id: 'querySchemeTool',
 				jso: self,
 				wrapperOpts: {
-					exclusive: true,
+					exclusive: 'querySchemeTool',
 					modal: false,
 					hideByOuterClick: true,
 					hideInterval: 0,
@@ -52,7 +52,9 @@
 		        this.itemList.clearCategory('Срезы');
 
 		        for(var i in data.cubeSlices){
-		            this.itemList.addItem(RendererRepository.createRendererFor(data.cubeSlices[i]), i, 'Срезы');
+		            if(i !== this._sliceId){
+		                this.itemList.addItem(RendererRepository.createRendererFor(data.cubeSlices[i]), i, 'Срезы');
+                    }
 		        }
             }
 

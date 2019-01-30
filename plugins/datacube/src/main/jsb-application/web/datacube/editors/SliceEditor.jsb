@@ -93,21 +93,18 @@
 	    update: function(data){
             var sliceId = data.entry.getId(),
                 slices = data.slices,
-                cubeSlices = {},
                 sliceSelectOptions = [];
 
             for(var i in slices){
-                if(sliceId === slices[i].entry.getId()){
+                if(sliceId === slices[i].getId()){
                     continue;
                 }
 
                 sliceSelectOptions.push({
-                    entry: slices[i].entry,
+                    entry: slices[i],
                     key: i,
-                    value: RendererRepository.createRendererFor(slices[i].entry, {showSource: true}).getElement()
+                    value: RendererRepository.createRendererFor(slices[i], {showSource: true}).getElement()
                 });
-
-                cubeSlices[i] = slices[i].entry;
             }
 
             this.sliceName.setData(data.entry.getName());
@@ -117,7 +114,7 @@
 
             this.queryEditor.setOption('sliceId', sliceId);
             this.queryEditor.setOption('cubeFields', data.cubeFields);
-            this.queryEditor.setOption('cubeSlices', cubeSlices);
+            this.queryEditor.setOption('cubeSlices', slices);
             this.queryEditor.setOption('measurements', this.measurements);
             this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
 

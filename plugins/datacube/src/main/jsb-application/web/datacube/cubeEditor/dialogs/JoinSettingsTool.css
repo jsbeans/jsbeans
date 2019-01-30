@@ -1,14 +1,22 @@
 .joinSettingsTool {
-    padding: 5px;
     overflow: visible;
-    width: 400px;
+    width: 500px;
 }
 
-.joinSettingsTool > header {
-	font-size: 18px;
-    color: #863301;
+.joinSettingsTool > .queryController {
+    margin-bottom: 10px;
+}
+
+.joinSettingsTool > .jsb-button {
+    margin-bottom: 5px;
+}
+
+.joinSettingsTool > .cancelBtn {
+    margin-left: 5px;
 }
 
 .joinSettingsTool > .okBtn {
-    margin-left: calc(100% - 84px - 106px);
+    margin-left: calc(100% - 84px - 106px - 10px);
+    background-color: #88bd69;
+    box-shadow: 0 0 0 1px #709659;
 }

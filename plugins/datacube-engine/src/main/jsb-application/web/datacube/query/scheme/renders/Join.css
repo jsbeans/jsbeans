@@ -1,5 +1,9 @@
 .joinRender > *:not(header) {
-    margin-left: 5px;
+    padding-left: 5px;
+}
+
+.joinRender > .joinType {
+    width: 210px;
 }
 
 .joinRender > .sourceLeft,
@@ -19,14 +23,67 @@
 }
 
 .joinRender > .sourceRight {
-    margin-left: 50px;
+    margin-left: 72px;
+}
+
+.joinRender > .sourceLeft,
+.joinRender > .sourceRight,
+.joinRender > .fields > .field > .firstField,
+.joinRender > .fields > .field > .secondField {
+    width: calc(50% - 50px);
+}
+
+.joinRender > .sourceLeft > .renderer,
+.joinRender > .sourceRight > .renderer {
+    width: 100%;
 }
 
 .joinRender > .fields {
 
 }
 
+.joinRender > .fields > .field {
+    margin-top: 5px;
+}
+
+.joinRender > .fields > .field > .firstField {
+    padding-right: 5px;
+}
+
+.joinRender > .fields > .field > .compare {
+    width: 70px;
+}
+
+.joinRender > .fields > .field > .secondField {
+    padding-left: 5px;
+}
+
+.joinRender > .fields > .field > .compare > .selectize-control {
+    min-width: 60px;
+}
+
+.joinRender > .fields > .field > * {
+    display: inline-block;
+}
+
+.joinRender > .fields > .field > .removeBtn {
+    border-radius: 100%;
+    border: 1px solid red;
+    padding: 5px;
+    color: white;
+    background: #f96363;
+    margin-left: 5px;
+}
+
 .joinRender > .addBtn {
-    color: green;
-    font-size: 20px;
+    color: #88bd69;
+    font-size: 22px;
+    margin: 0 5px 0 auto;
+    display: block;
+    width: 25px;
+}
+
+.joinRender > .fields > .field > .removeBtn,
+.joinRender > .addBtn {
+    cursor: pointer;
 }

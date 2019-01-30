@@ -49,7 +49,7 @@
 	    },
 
 	    onChange: function(){
-	        this._controller.onChange();
+	        //this._controller.onChange();
 	    },
 
 	    showTool: function(element, selectedId, callback){
