@@ -14,12 +14,11 @@
     min-width: 100px;
 }
 
-.jsb-selectize > label + .selectize-control {
+.jsb-selectize > label ~ .selectize-control {
     display: inline-block;
     width: calc(100% - 100px);
 }
 
 .jsb-selectize > .selectize-control {
-    min-width: 100px;
-    margin-left: 5px;
+    width: 100%;
 }

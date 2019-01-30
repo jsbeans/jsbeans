@@ -49,43 +49,53 @@
 	        this._label.text(label);
 	    },
 
+	    setOptions: function(options){
+	        // todo: recreate selectize when options is array of strings or change labelField/searchField/valueField
+	        this._select[0].selectize.clear();
+	        this._select[0].selectize.clearOptions();
+	        this._select[0].selectize.addOption(this._checkOptions(options));
+	        this._select[0].selectize.refreshOptions();
+	    },
+
 	    setValue: function(value, hEvt) {
 	        this._select[0].selectize.setValue(this.options.value, hEvt);
 	    },
 
-	    _checkOptions: function(){
-	        if(!JSB.isArray(this.options.options)){
+	    _checkOptions: function(options){
+	        if(!JSB.isArray(options)){
 	            throw new Error('Options must be array');
 	        }
 
-	        if(this.options.options.length === 0){
+	        if(options.length === 0){
 	            return;
 	        }
 
-	        if(!JSB.isObject(this.options.options[0])){
-	            var options = [];
+	        if(!JSB.isObject(options[0])){
+	            var opts = [];
 
-	            for(var i = 0; i < this.options.options.length; i++){
-	                options.push({
-	                    id: this.options.options[i]
+	            for(var i = 0; i < options.length; i++){
+	                opts.push({
+	                    id: options[i]
 	                });
 	            }
 
-	            this.options.options = options;
+	            options = opts;
 	            this.options.labelField = 'id';
 	            this.options.searchField = 'id';
 	            this.options.valueField = 'id';
 	        }
+
+	        return options;
 	    },
 
 	    _init: function() {
-	        this._checkOptions();
+	        var options = this._checkOptions(this.options.options);
 
 	        this._select.selectize({
 	            labelField: this.options.labelField,
 	            maxItems: this.options.maxItems,
 	            plugins: this.options.onlySelect ? ['hidden_textfield'] : undefined,
-	            options: this.options.options,
+	            options: options,
 	            searchField: this.options.searchField,
 	            valueField: this.options.valueField,
 

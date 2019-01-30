@@ -125,7 +125,7 @@
                 this.queryEditor = new QueryEditor({
                     editorView: $this,
                     measurements: this.measurements,
-                    onChange: function(){
+                    onChange: function(values){
                         $this.updateTextQuery();
                     }
                 });

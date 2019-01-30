@@ -16,6 +16,9 @@
 	        $base(opts);
             this.addClass('queryController');
 
+            if(opts && opts.data && opts.values){
+                this.refresh(opts);
+            }
 
             // add + btn
 	    },
@@ -31,15 +34,14 @@
 	    },
 
         construct: function(values){
-            var queryValues = QuerySyntax.getSchema('$query').values,
-                descriptions = [],
+            var descriptions = [],
                 order = 0;
 
             for(var i in values){
                 descriptions.push({
                     key: i,
                     order: order++,
-                    scheme: QuerySyntax.getSchema(queryValues[i]),
+                    scheme: QuerySyntax.getSchema(i),
                     values: values[i]
                 });
             }
@@ -70,6 +72,8 @@
                     this.append(render);
                 }
             }
+
+            this._values = values;
         },
 
         createRender: function(parent, desc){
@@ -100,9 +104,13 @@
             return this._data;
         },
 
+        getValues: function(){
+            return this._values;
+        },
+
         onChange: function(){
             if(this.options.onChange){
-                this.options.onChange.call();
+                this.options.onChange.call(this, this.getValues());
             }
         },
 

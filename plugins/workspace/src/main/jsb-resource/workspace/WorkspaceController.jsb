@@ -303,6 +303,12 @@
 		getEntry: function(wId, eId){
 			return this.getWorkspace(wId).entry(eId);
 		},
+
+		getEntryByFullId: function(fId){
+		    var idArr = fId.split('/');
+
+		    return this.getWorkspace(idArr[0]).entry(idArr[1]);
+		},
 		
 		getSystemEntry: function(eId){
 			var wId = Config.get('workspace.workspaceTypes.system.workspaceId');
@@ -621,6 +627,5 @@
 		constructBrowserViewEntryTypeSlice: function(wType) {
 			return this._constructBrowserViewTypeSlice(wType, this.browserViewRegistryEntry);
 		}
-
 	}
 }

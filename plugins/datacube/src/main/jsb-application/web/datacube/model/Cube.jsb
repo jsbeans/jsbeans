@@ -70,15 +70,9 @@
 							// construct slices
 							for(var i = 0; i < snapshot.slices.length; i++){
 								var desc = snapshot.slices[i],
-								    idArr = desc.id.split('/');
+								    slice = WorkspaceController.getEntryByFullId(desc.id);
 
-								if(this.getWorkspace(idArr[0]).existsEntry(idArr[1])){
-									var slice = this.getWorkspace(idArr[0]).entry(idArr[1]);
-
-									if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
-										continue;
-									}
-
+								if(slice && JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
 									this.slices[desc.id] = {
 									    entry: slice,
 									    diagramOpts: desc.diagramOpts || {}
@@ -221,11 +215,9 @@
 		            var slices = [];
 
 		            for(var j in this.fields[i].slices){
-		                var idArr = j.split('/');
-
 		                slices.push(JSB.merge({}, this.fields[i].slices[j], {
 		                    key: j,
-		                    name: this.getWorkspace(idArr[0]).entry(idArr[1]).getName()
+		                    name: WorkspaceController.getEntryByFullId(j).getName()
 		                }));
 		            }
 

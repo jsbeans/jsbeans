@@ -301,7 +301,7 @@
                         if(!oldLinks[id]){
                             oldLinks[id] = this.editor.createLink(fromType, {
                                 sourceConnector: this.leftConnector,
-                                targetConnector: this.editor.getSlice(id).node.rightConnector
+                                targetConnector: this.editor.getSliceNode(id).rightConnector
                             });
                         }
                     }

@@ -11,6 +11,7 @@
 
 	    _cube: null,
 	    _dimensions: {},
+	    _nodes: {},
 	    _slices: {},
 
 	    _selectedItems: {},
@@ -204,17 +205,19 @@
                     sources.push($this._selectedItems[i].entry);
                 }
 
-                if(sourceType === '$join' && sources.length === 2){
+                if(sourceType === '$join'){
                     ToolManager.activate({
                         id: 'joinSettingsTool',
                         cmd: 'show',
-                        data: sources,
+                        data: {
+                            cubeSlices: $this.getSlices(),
+                            sources: sources
+                        },
                         target: {
                             selector: $this.getElement()
                         },
                         callback: function(sourceOpts){
                             $this.addSlice(null, {
-                                sources: sources,
                                 sourceType: sourceType,
                                 sourceOpts: sourceOpts
                             });
@@ -347,10 +350,8 @@
 	                return;
 	            }
 
-                $this._slices[slice.getFullId()] = {
-                    entry: slice,
-                    node: $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this, position: position})
-                };
+                $this._slices[slice.getFullId()] = slice;
+                $this._nodes[slice.getFullId()] = $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this, position: position});
 	        });
 	    },
 
@@ -363,10 +364,8 @@
 				        return;
 				    }
 
-                    $this._slices[sliceRes.getFullId()] = {
-                        entry: sliceRes,
-                        node: $this.diagram.createNode('sliceDiagramNode', {entry: sliceRes, editor: $this})
-                    };
+				    $this._slices[sliceRes.getFullId()] = sliceRes;
+				    $this._nodes[sliceRes.getFullId()] = $this.diagram.createNode('sliceDiagramNode', {entry: sliceRes, editor: $this});
 
                     $this.publish('Datacube.CubeNode.createSlice', sliceRes);
 				});
@@ -380,18 +379,18 @@
 	        this._cubeFields = desc.fieldsMap;
 	        this._dimensions = desc.dimensions;
 	        this._slices = {};
+	        this._nodes = {};
 
 	        // create slices' nodes
 	        for(var i in desc.slices){
-	            this._slices[desc.slices[i].entry.getFullId()] = {
-	                entry: desc.slices[i].entry,
-	                node: this.diagram.createNode('sliceDiagramNode', {
-	                    dimensions: desc.dimensions,
-                        editor: this,
-                        entry: desc.slices[i].entry,
-                        position: desc.slices[i].diagramOpts && desc.slices[i].diagramOpts.position
-                    })
-	            };
+	            this._slices[desc.slices[i].entry.getFullId()] = desc.slices[i].entry;
+
+                this._nodes[desc.slices[i].entry.getFullId()] = this.diagram.createNode('sliceDiagramNode', {
+                    dimensions: desc.dimensions,
+                    editor: this,
+                    entry: desc.slices[i].entry,
+                    position: desc.slices[i].diagramOpts && desc.slices[i].diagramOpts.position
+                });
 	        }
 
 	        this.diagram.setPan(desc.diagramOpts.position);
@@ -418,8 +417,8 @@
 	        return this._dimensions;
 	    },
 
-	    getSlice: function(id){
-	        return this._slices[id];
+	    getSliceNode: function(id){
+	        return this._nodes[id];
 	    },
 
 	    getSlices: function(){
