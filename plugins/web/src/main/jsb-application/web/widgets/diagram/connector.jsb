@@ -44,15 +44,25 @@
 		},
 		
 		$constructor: function(node, key, opts){
+			var self = this;
 			$base();
 			this.node = node;
 			this.key = key;
+			JSB().merge(this.options, opts);
 
-			this.options = JSB().merge(this.options, node.getDiagram().getConnectorDescription(key).options, opts);
-
-			this.getNode().ensureInitialize(function(){
-			    $this.install();
-			});
+			if(opts.handle){
+				JSB().chain([opts.handle, opts.origin], this.node.resolveSelector, function(selArr){
+					self.options.handle = selArr[0];
+					self.options.origin = selArr[1];
+					
+					self.install();
+				});
+			} else {
+				this.node.resolveSelector(opts.origin, function(sel){
+					self.options.origin = sel;
+					self.install();
+				});
+			}
 			
 			if(this.options.checkSize && this.options.origin){
 				$this.options.origin.on({
@@ -97,12 +107,15 @@
 		},
 		
 		install: function(){
+			var self = this;
 			if(!this.node.diagram){
 				this.installed = false;
 				return;
 			}
 			
 			var cOpts = this.node.diagram.connectorDescs[this.key].options;
+			
+			this.options = JSB().merge(this.options, cOpts);
 			
 			if(this.options.origin){
 				this.updateOrigin();
@@ -116,27 +129,27 @@
 				for(var i = 0; i < handle.length; i++){
 					handle[i].on({
 						mouseover: function(evt){
-							$this.node.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
+							self.publish('_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
 						},
 						
 						mouseout: function(evt){
-							$this.node.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
+							self.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
 						},
 						
 						click: function(evt){
-							$this.node.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: evt});
+							self.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
 						},
 						
 						mousedown: function(evt){
-							$this.node.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
+							self.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
 						},
 
 						mouseup: function(evt){
-							$this.node.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
+							self.publish('_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
 						},
 
 						mousemove: function(evt){
-							$this.node.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
+							self.publish('_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
 						},
 					});
 				}
@@ -150,23 +163,23 @@
 				self._lalCallCnt++;
 				if(source == self){
 					// highlight source connector
-					$this.highlight(true, 'source');
+					self.highlight(true, 'source');
 				} else {
 					// highlight target connector if accepted
-					if(source.node != $this.node || source.options.acceptLocalLinks){
-						var lalStored = $this._lalCallCnt;
-						$this.node.diagram.lookupAppropriateLinks(source, $this, function(lMap){
-							if(lalStored != $this._lalCallCnt){
+					if(source.node != self.node || source.options.acceptLocalLinks){
+						var lalStored = self._lalCallCnt;
+						self.node.diagram.lookupAppropriateLinks(source, self, function(lMap){
+							if(lalStored != self._lalCallCnt){
 								return;
 							}
 							if(lMap && Object.keys(lMap).length > 0){
-								$this.highlight(true, 'target');
+								self.highlight(true, 'target');
 							} else {
-								$this.highlight(false, 'target');
+								self.highlight(false, 'target');
 							}
 						});
 					} else {
-						$this.highlight(false, 'target');
+						self.highlight(false, 'target');
 					}
 				}
 			});
@@ -176,11 +189,11 @@
 					return;
 				}
 
-				$this._lalCallCnt++;
-				if(source == $this){
-					$this.highlight(false, 'source');
+				self._lalCallCnt++;
+				if(source == self){
+					self.highlight(false, 'source');
 				} else {
-					$this.highlight(false, 'target');
+					self.highlight(false, 'target');
 				}
 			});
 
@@ -242,8 +255,8 @@
 			if(!this.options.onHighlight){
 				return;
 			}
-
-			this.options.onHighlight.call(this, bEnable, meta);
+			var self = this;
+			self.options.onHighlight.call(self, bEnable, meta);
 		},
 		
 		denyWiring: function(bEnable){
@@ -357,5 +370,8 @@
 		getNode: function(){
 			return this.node;
 		}
-	}
+		
+	},
+	
+	$server: {}
 }

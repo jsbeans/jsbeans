@@ -34,35 +34,35 @@
 			}
 			this.diagram.captureObj = {
 				click: function(evt){
-					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: evt});
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
 				},
 
 				mouseover: function(evt){
-					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
 				},
 				
 				mouseout: function(evt){
-					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
 				},
 				
 				click: function(evt){
-					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: evt});
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
 				},
 				
 				mousedown: function(evt){
-					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
 				},
 
 				mouseup: function(evt){
-					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
 				},
 
 				mousemove: function(evt){
-					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
 				},
 				
 				mousewheel: function(evt, delta){
-					$this.diagram.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
 				}
 			};
 			this.$(document).on(this.diagram.captureObj);
@@ -91,7 +91,8 @@
 					}
 					var nodeMap = this.diagram.getNodesUnderCursor(this.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY}));
 					if(Object.keys(nodeMap).length === 0){
-						this.select(this.diagram.getSelected(), false);
+						this.select(this.diagram.nodes, false);	
+						this.select(this.diagram.links, false);
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && params.event.which == 1) {
 					params.event.stopPropagation();
@@ -106,21 +107,20 @@
 						// toggle
 						sender.select(!sender.isSelected());
 					} else {
-						// remove old selected
-						var deselect = {},
-						    selected = this.diagram.getSelected();
-
-						for(var i in selected){
-							if(selected[i].getId() == sender.getId()){
-								continue;
-							}
-
-							deselect[i] = selected[i];
-						}
-						this.select(deselect, false);
-
 						// select new
 						sender.select(true);
+						
+						// remove old selected
+						var rMap = {};
+						for(var nodeId in this.diagram.nodes){
+							var node = this.diagram.nodes[nodeId];
+							if(node == sender){
+								continue;
+							}
+							rMap[nodeId] = node;
+						}
+						this.select(rMap, false);
+						this.select(this.diagram.links, false);
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Link') && params.event.which == 1){
 					params.event.stopPropagation();
@@ -277,9 +277,8 @@
 				} else if(params.event.which == 3){
 					this.panStartPt = null;
 					this.diagram.removeClass('panning');
-
 					if(this.diagram.options.onPositionChanged){
-					    this.diagram.options.onPositionChanged.call(this.diagram, 'position', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
+						this.diagram.options.onPositionChanged.call(this.diagram, 'position', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
 					}
 				}
 				break;
@@ -426,11 +425,9 @@
 				var currentZoom = this.diagram.getZoom();
 				currentZoom += /*Math.exp(currentZoom) */ params.delta * this.diagram.getOption('zoomStep') * currentZoom;
 				this.diagram.setZoom(currentZoom);
-
-                if(this.diagram.options.onPositionChanged){
-                    this.diagram.options.onPositionChanged.call(this.diagram, 'zoom', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
-                }
-
+				if(this.diagram.options.onPositionChanged){
+					this.diagram.options.onPositionChanged.call(this.diagram, 'zoom', {position: this.diagram.getPan(), zoom: this.diagram.getZoom()});
+				}
 				break;
 			}
 		},
@@ -445,8 +442,10 @@
 		select: function(objMap, bEnable){
 			for(var objId in objMap){
 				var obj = objMap[objId];
-				obj.select(bEnable, true);
+				obj.select(bEnable);
 			}
 		}
+		
+
 	}
 }

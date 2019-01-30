@@ -315,6 +315,11 @@
 			return this.getEntry(wId, eId);
 		},
 		
+		getSystemWorkspace: function(){
+			var wId = Config.get('workspace.workspaceTypes.system.workspaceId');
+			return this.getWorkspace(wId);
+		},
+		
 		getUsers: function(){
 			// In future - need to obtain an allowed list of users to share with via security service.
 			// TEMP: return all users that have at least one workspace.

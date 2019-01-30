@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Model.Cube',
-	$parent: 'JSB.Workspace.Entry',
+	$parent: 'DataCube.Model.EntityContainer',
 
 	sliceCount: 0,
 

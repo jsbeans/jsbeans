@@ -253,7 +253,9 @@
 	max-height: 400px;
 }
 
-._dwp_droplistTool[key="createMenu"] .menuSeparator {}
+._dwp_droplistTool[key="createMenu"] .menuSeparator {
+	min-height: inherit !important;
+}
 
 ._dwp_droplistTool[key="createMenu"] .menuSeparator > .separator {
 	border-bottom: 1px solid #98b2c1;

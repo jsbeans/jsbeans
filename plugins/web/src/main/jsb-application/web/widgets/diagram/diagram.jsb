@@ -15,13 +15,6 @@
 	},
 	
 	$client: {
-	    _initializing: {
-	        connectors: 0,
-	        links: 0,
-	        nodes: 0,
-	        layouts: 0
-	    },
-
 		connectorDescs: {},
 		linkDescs: {},
 		nodeDescs: {},
@@ -52,7 +45,9 @@
 			background: null,
 
 			links: {
-				'_jsb_diagramUserWiringLink': {}
+				'_jsb_diagramUserWiringLink': {
+					
+				}
 			},
 			layouts: {
 				'default': {
@@ -61,14 +56,12 @@
 			},
 			
 			// event handlers
-			onChange: function(changeType, item){},
-			onCreate: function(item){},
 			onInit: function(){},
 			onChange: function(){},
 			onCreate: function(item){},
 			onRemove: function(item){},
 			onSelectionChanged: function(selected){},
-			onPositionChanged: function(type, changes){}
+			onPositionChanged: function(type, pt){}
 		},
 		
 		
@@ -79,6 +72,7 @@
 			JSB().loadScript('tpl/d3/d3.min.js', function(){
 				$this.init();
 			});
+			
 		},
 		
 		init: function(){
@@ -117,6 +111,7 @@
 				'position': 'absolute',
 				'display': 'none'
 			});
+			
 			
 			// setup controllers
 			this.controllers.normal = new Controller(this);
@@ -278,30 +273,6 @@
 				}
 			})
 		},
-
-		_checkInit: function(){
-		    if(!this.options.onInit){
-		        return;
-		    }
-
-		    if(Object.keys(this.options.layouts).length !== this._initializing.layouts){
-		        return;
-		    }
-
-		    if(Object.keys(this.options.nodes).length !== this._initializing.nodes){
-		        return;
-		    }
-
-		    if(Object.keys(this.options.connectors).length !== this._initializing.connectors){
-		        return;
-		    }
-
-		    if(Object.keys(this.options.links).length !== this._initializing.links){
-		        return;
-		    }
-
-		    this.options.onInit.call(this);
-		},
 		
 		registerShape: function(key, createCallback){
 			var desc = {
@@ -356,35 +327,37 @@
 		},
 		
 		setupEventHandlers: function(){
+			var self = this;
 			this.getElement().on({
 				click: function(evt){
-					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'click', event: evt});
+					self.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
 				},
 
 				mouseover: function(evt){
-					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
+					self.publish('_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
 				},
 				
 				mouseout: function(evt){
-					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
+					self.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
 				},
 
 				mousedown: function(evt){
-					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
+					self.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
 				},
 
 				mouseup: function(evt){
-					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
+					self.publish('_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
 				},
 
 				mousemove: function(evt){
-					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
+					self.publish('_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
 				},
 				
 				mousewheel: function(evt, delta){
-					$this.onMouseEvent($this, '_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
+					self.publish('_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
 				}
 			});
+			
 			this.subscribe('_jsb_diagramSelectionChanged', function(sender, msg, params){
 				if(sender != $this){
 					return;
@@ -473,9 +446,6 @@
 				var lmInst = new LayoutClass(self, opts);
 				self.layoutManagers[key] = lmInst;
 				lmInst.key = key;
-
-				$this._initializing.layouts++;
-				$this._checkInit();
 			}
 			
 			if(opts.jsb){
@@ -504,9 +474,6 @@
 					self.nodeDescs[key] = {};
 				}
 				self.nodeDescs[key].options = opts;
-
-				$this._initializing.nodes++;
-				$this._checkInit();
 			}
 			
 			if(opts.jsb){
@@ -536,9 +503,7 @@
 					self.connectorDescs[key] = {};
 				}
 				self.connectorDescs[key].options = opts;
-
-				$this._initializing.connectors++;
-				$this._checkInit();
+				
 			}
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
@@ -569,9 +534,6 @@
 				}
 				self.linkDescs[key].options = opts;
 				self.updateScheme();
-
-				$this._initializing.links++;
-				$this._checkInit();
 			}
 			
 			function _setupJoints(){
@@ -595,6 +557,16 @@
 							callback.call($this);
 						}
 					});
+/*					
+					for(var i = 0; i < opts.joints.length; i++){
+						var jDesc = opts.joints[i];
+						if(jDesc.jsb && JSB().isString(jDesc.jsb)){
+							JSB().lookup(opts.jsb, function(cls){
+								jDesc.jsb = cls.jsb;
+							});
+						}
+					}
+*/						
 				} else {
 					if(callback){
 						callback.call($this);
@@ -617,6 +589,10 @@
 			}
 			
 			
+		},
+		
+		destroy: function(){
+			$base();
 		},
 		
 		getNode: function(id){
@@ -685,10 +661,11 @@
 			} else {
 				this.sheet.append(node.getElement());
 			}
-			node.setInitialize();
+			
+			node._setInitialized();
 			
 			if(this.options.onChange){
-				this.options.onChange.call(this, 'createNode', node);
+				this.options.onChange.call(this);
 			}
 			if(this.options.onCreate){
 				this.options.onCreate.call(this, node);
@@ -722,7 +699,7 @@
 			}
 			
 			if(this.options.onChange){
-				this.options.onChange.call(this, 'removeNode', node);
+				this.options.onChange.call(this);
 			}
 			if(this.options.onRemove){
 				this.options.onRemove.call(this, node);
@@ -745,7 +722,8 @@
 			node.destroy();
 		},
 		
-		createLink: function(linkKey, opts, hideEvent){
+		createLink: function(linkKey, opts){
+			var self = this;
 			var linkDesc = this.linkDescs[linkKey];
 			var linkClass = Link;
 			if(linkDesc.linkClass){
@@ -754,10 +732,10 @@
 			var link = new linkClass(this, linkKey, opts);
 			this.links[link.getId()] = link;
 			
-			if(this.options.onChange && !hideEvent){
-				this.options.onChange.call(this, 'createLink', link);
+			if(this.options.onChange){
+				this.options.onChange.call(this);
 			}
-			if(this.options.onCreate && !hideEvent){
+			if(this.options.onCreate){
 				this.options.onCreate.call(this, link);
 			}
 			
@@ -783,9 +761,8 @@
 			}
 		},
 		
-		removeLink: function(linkVal, hideEvent){
+		removeLink: function(linkVal){
 			var link = null;
-
 			if(JSB().isString(linkVal)){
 				link = this.links[linkVal];
 				if(!node){
@@ -803,23 +780,26 @@
 					throw 'ERROR(removeLink): Unknown link argument passed: ' + JSON.stringify(linkVal);
 				}
 			}
-
-			link.destroy(hideEvent);
-		},
-
-		_removeLink: function(link, hideEvent){
-			if(this.options.onChange && !hideEvent){
-				this.options.onChange.call(this, 'removeLink', link);
+			
+			if(link.options.onRemove){
+				link.options.onRemove.call(link);
 			}
-
-			if(this.options.onRemove && !hideEvent){
+			if(this.options.onChange){
+				this.options.onChange.call(this);
+			}
+			if(this.options.onRemove){
 				this.options.onRemove.call(this, link);
 			}
+			
+			// unselect & unhighlight
+			link.select(false);
+			link.highlight(false);
 
 			delete this.links[link.getId()];
 			if(this.fixedLinks[link.getId()]){
 				delete this.fixedLinks[link.getId()];
 			}
+			link.destroy();
 		},
 		
 		getLinks: function(){
@@ -1075,7 +1055,7 @@
 			if(!this.options.autoLayout){
 				return;
 			}
-
+			var self = this;
 			function _getManagersForNode(item){
 				var lmans = [];
 				if(!item.options.layout){
@@ -1126,7 +1106,7 @@
 			
 			// call managers
 			for(var lman in manNodeMap){
-				var lm = $this.layoutManagers[lman];
+				var lm = self.layoutManagers[lman];
 				if(!lm){
 					throw 'Unable to find layout manager: ' + lman;
 				}
@@ -1139,20 +1119,8 @@
 		        x: this.grid.width(),
 		        y: this.grid.height()
 		    };
-		},
-
-		onMouseEvent: function(sender, msg, desc){
-            for(var i = this.controllerStack.length - 1; i >= 0; i--){
-                if(this.controllerStack[i].onMessage(sender, msg, desc)){
-                    return;
-                }
-            }
-
-            this.controllers.normal.onMessage(sender, msg, desc);
-		},
-
-		getConnectorDescription: function(key){
-		    return this.connectorDescs[key];
 		}
-	}
+	},
+	
+	$server: {}
 }

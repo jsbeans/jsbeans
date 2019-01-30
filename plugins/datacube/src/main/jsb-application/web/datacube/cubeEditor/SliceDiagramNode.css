@@ -271,10 +271,12 @@
 .sliceDiagramNode.dataSourceSlice > footer > .renderer .icon {
 	width: 12px;
     height: 12px;
+    margin-top: -6px;
 }
 
 .sliceDiagramNode.dataSourceSlice > footer > .renderer .title {
 	font-size: 11px;
+	padding-left: 18px;
 }
 
 .sliceDiagramNode > footer > .sqlTableRenderer {
