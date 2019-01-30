@@ -46,24 +46,12 @@
                 $this.updateData(obj.cube, obj.query);
             });
 
-            this.subscribe('DataCube.CubeEditor.dataSourceNodeSelected', function(editor, msg, obj){
-                $this.updateData(obj.source, undefined, obj.cube);
-            });
-
-            this.subscribe('DataCube.CubeEditor.sliceNodeEdit', function(editor, msg, slice){
-                $this.updateData(slice);
-            });
-
             // deselected
             this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(editor, msg, obj){
                 $this.clear();
             });
 
             this.subscribe('DataCube.CubeEditor.cubeNodeDeselected', function(editor, msg, obj){
-                $this.clear();
-            });
-
-            this.subscribe('DataCube.CubeEditor.dataSourceNodeDeselected', function(editor, msg, obj){
                 $this.clear();
             });
 
@@ -289,8 +277,6 @@
                         this.it = obj.cube.executeQuery(obj.query, obj.queryParams, true);
                         break;
                     case 'dataProvider':
-                        var fields = obj.provider.extractFields();
-
                         this.it = obj.cube.executeQuery(obj.provider.createQuery(), obj.queryParams, true);
                         break;
                     case 'slice':
