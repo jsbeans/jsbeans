@@ -1,0 +1,32 @@
+@CHARSET "UTF-8";
+
+.jsb-sidePanel {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.jsb-sidePanel > .panel {
+	pointer-events: all;
+	z-index: 1;
+	position: absolute;
+	max-width: 100%;
+	max-height: 100%;
+	transition: 500ms;
+}
+
+.jsb-sidePanel > .panel.top,
+.jsb-sidePanel > .panel.bottom {
+	left: 0;
+	right: 0
+}
+
+.jsb-sidePanel > .panel.left,
+.jsb-sidePanel > .panel.right {
+	top: 0;
+	bottom: 0;
+}

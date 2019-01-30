@@ -365,7 +365,7 @@
 			}
 		},
 		
-		queryExplorerNodeType: function(wType, entryType){
+		queryExplorerNodes: function(wType, entryType){
 			if(!entryType){
 				throw new Error('Expected entryType');
 			}
@@ -392,6 +392,12 @@
 			regEntryArr.sort(function(a, b){
 				return b.priority - a.priority;
 			});
+			
+			return regEntryArr;
+		},
+		
+		queryExplorerNodeType: function(wType, entryType) {
+			var regEntryArr = this.queryExplorerNodes(wType, entryType);
 			if(regEntryArr.length > 0){
 				return regEntryArr[0].nodeType;
 			}

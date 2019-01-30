@@ -32,7 +32,6 @@
 		construct: function(){
 			var self = this;
 			this.addClass('_dwp_droplistTool');
-			debugger;
 			this.listbox = new ListBox({
 				onSelectionChanged: function(key, item, evt){
 					if(!item.dontClose){
