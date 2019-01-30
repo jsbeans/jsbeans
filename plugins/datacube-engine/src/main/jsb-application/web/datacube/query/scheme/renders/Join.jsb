@@ -5,8 +5,7 @@
 	$alias: '$join',
 
 	$client: {
-	    $require: ['JSB.Controls.Select',
-	               'JSB.Controls.Selectize',
+	    $require: ['JSB.Controls.Selectize',
 	               'css:Join.css'],
 
         $constructor: function(opts){
@@ -54,7 +53,7 @@
 
 	        var firstField = new Selectize({
 	            cssClass: 'firstField',
-	            options: Object.keys(sources[this._values.$left].extractFields()),
+	            options: this._values.$left && Object.keys(sources[this._values.$left].extractFields()),
 	            value: curValue.first && curValue.first.$field,
 	            onChange: function(value){
 	                curValue.first = {
@@ -79,7 +78,7 @@
 
 	        var secondField = new Selectize({
 	            cssClass: 'secondField',
-	            options: Object.keys(sources[this._values.$right].extractFields()),
+	            options: this._values.$right && Object.keys(sources[this._values.$right].extractFields()),
 	            value: curValue.second && curValue.second.$field,
 	            onChange: function(value){
 	                curValue.second = {

@@ -13,7 +13,7 @@
 				id: 'joinSettingsTool',
 				jso: self,
 				wrapperOpts: {
-					exclusive: true,
+					exclusive: 'joinSettingsTool',
 					modal: true,
 					hideByOuterClick: false,
 					hideInterval: 0,

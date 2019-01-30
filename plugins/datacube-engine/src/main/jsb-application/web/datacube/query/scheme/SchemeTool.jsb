@@ -15,7 +15,7 @@
 				id: 'querySchemeTool',
 				jso: self,
 				wrapperOpts: {
-					exclusive: true,
+					exclusive: 'querySchemeTool',
 					modal: false,
 					hideByOuterClick: true,
 					hideInterval: 0,

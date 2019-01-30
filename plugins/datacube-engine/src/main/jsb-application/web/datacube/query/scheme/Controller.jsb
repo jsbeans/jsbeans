@@ -2,7 +2,7 @@
 	$name: 'DataCube.Query.SchemeController',
 	$parent: 'JSB.Controls.Control',
 	$require: ['JSB.Widgets.ToolManager',
-	           'DataCube.Query.Syntax',
+	           //'DataCube.Query.Syntax',
 	           'DataCube.Query.QuerySyntax',
 	           'DataCube.Query.SchemeTool',
 	           'DataCube.Query.RenderRepository',
@@ -41,7 +41,7 @@
                 descriptions.push({
                     key: i,
                     order: order++,
-                    scheme: QuerySyntax.getSchema(i),
+                    scheme: QuerySyntax.getSchema(i) || {},
                     values: values[i]
                 });
             }

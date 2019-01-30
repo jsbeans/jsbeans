@@ -22,12 +22,12 @@
 	    options: {
 	        // options
 	        label: undefined,
-	        labelField: undefined,
+	        labelField: 'id',
 	        maxItems: undefined,
 	        onlySelect: false,
 	        options: [],
-	        searchField: undefined,
-	        valueField: undefined,
+	        searchField: 'id',
+	        valueField: 'id',
 
 	        // events
 	        onChange: null
