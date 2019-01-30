@@ -155,6 +155,15 @@
 
 		toggleClass: function(c){
             return this.getElement().toggleClass(c);
+		},
+		
+		resolveElement: function(c){
+			if(JSB().isInstanceOf(c, 'JSB.Widgets.Control') || JSB().isInstanceOf(c, 'JSB.Controls.Control')){
+				c = c.getElement();
+			} else if(!JSB().isString(c)){
+				c = this.$(c);
+			}
+			return c;
 		}
 	}
 }

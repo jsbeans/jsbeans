@@ -11,6 +11,7 @@
 	$server: {
 	    createQuery: function(useContext){
 	        return {
+	            $context: this.getName(),
 	            $provider: this.getFullId(),
 	            $select: this.createQuerySelect(useContext)
 	        };
