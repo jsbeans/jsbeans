@@ -1,261 +1,149 @@
 {
 	$name: 'DataCube.Query.Engine.QueryExecutor',
-	$session: false,
+
 	$server: {
 		$require: [
-		    'DataCube.Query.Engine.QueryTracer',
-		    'DataCube.Query.Transforms.QueryTransformer',
-		    'DataCube.Query.Views.QueryViewsBuilder',
-		    'DataCube.Query.Engine.Cursors.CursorBuilder',
-
-		    'DataCube.Query.Translators.TranslatorRegistry',
-
+		    'DataCube.Query.Engine.Engine',
+		    'DataCube.Query.Console',
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
-		    'JSB.Crypt.MD5'
+		    'JSB.Crypt.MD5',
+
+		    'java:java.util.concurrent.ConcurrentHashMap',
         ],
 
-        traceEnabled: true,
+        pool: null,
 
-		$constructor: function(queryEngine, cube, dcQuery, params){
-		    $this.query = JSB.clone(dcQuery);
-			$this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
-			$this.queryEngine = queryEngine;
-		    $this.params = params || {};
-
-		    $this.tracer = $this.traceEnabled ? new QueryTracer($this.qid) : null;
-            $this.tracer && $this.tracer.start({
-                query: $this.query,
-                params: params
-            });
-
-            $this.cube = cube;
-            $this.tracer && $this.tracer.profile('cube query', $this.cube.id);
-
-            QueryTransformer.initialize();
+		$constructor: function(queryDescriptor){
+            $this.cube = queryDescriptor.cube;
+		    $this.query = JSB.clone(queryDescriptor.query);
+		    $this.params = queryDescriptor.params || {};
+		    $this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
+		    $this.pool = new ConcurrentHashMap();
 		},
 
 		execute: function(){
-		    try {
-                var tStarted = Date.now();
+            var startEngine = Config.get('datacube.query.engine.start');
 
-//		        $this.tracer && $this.tracer.profile('execute query started');
+            $this.executeEngine(startEngine, {
+                cube: $this.cube,
+                query: $this.query,
+                params: $this.params,
+            });
 
-                $this._prepareQuery();
+            var it = $this.awaitIterator();
+            return it;
+		},
 
-                $this._defineParametersDefaultValues();
+        /** Асинхронный запуск движка по имени, который регистрируется в пуле
+        */
+		executeEngine: function(name, queryDescriptor) {
 
-                $this.providers = QueryUtils.extractProviders($this.query, $this.cube);
-                $this.tracer && $this.tracer.profile('query providers extracted', Object.keys($this.providers).length);
+		    var engine = $this.getEngine(name);
 
-		        $this.contextQueries = QueryUtils.indexContextQueries($this.query);
-                $this.tracer && $this.tracer.profile('query prepared', $this.preparedQuery);
+		    var key = $this.getId() + '/' + name;
+		    $this.pool.put(key, {
+		        key: key,
+		        queryDescriptor: queryDescriptor,
+		        status: 'prepared',
+		    });
+		    JSB.defer(function(){
+		        try {
+		            var task = $this.pool.get(key);
+    		        task.status = 'started';
+		            task.iterator = engine.execute(name, $this, queryDescriptor);
+		        } catch(e) {
+		            task.error = e;
+		        } finally {
+		            task.status = 'completed';
+		        }
+		    }, 1, key);
+		},
 
-                var tPrepared = Date.now();
+		getEngine: function(name){
+		    var engines = Config.get('datacube.query.engines');
+		    for(var i = 0; i < engines.length; i++) {
+		        var e = engines[i];
+		        if (e.alias == name || e.jsb == name) {
+		            var inst = JSB.getInstance(e.jsb);
+		            QueryUtils.throwError(inst, 'Query engine "{}" instance is null', e.jsb);
+		            return inst;
+		        }
+		    }
+		    QueryUtils.throwError(0, 'Unknown query engine configuration "{}"', e.jsb);
+		},
 
-                $this.builder = new CursorBuilder($this, $this.query);
-                var rootCursor = $this.builder.buildAnyCursor($this.query, $this.params, null);
-                $this.tracer && $this.tracer.profile('root cursor created', rootCursor.analyze());
-                var it =  rootCursor.asIterator();
-                var oldNext = it.next;
-                var tReady = Date.now();
-                var tExecuted;
-                it.next = function(){
-                    try {
-                        return oldNext.call(rootCursor);
-                    } catch(e){
-                        $this.tracer && $this.tracer.failed('execute query next failed', e);
-                        this.close();
-                        throw e;
-                    } finally {
-                        if (!tExecuted) {
-                            tExecuted = Date.now();
-                            $this.tracer && $this.tracer.profile('query stat', {
-                                prepare: (tPrepared - tStarted)/1000,
-                                cursor: (tReady - tPrepared)/1000,
-                                lookup: (tExecuted - tReady)/1000,
-                                total: (tExecuted - tStarted)/1000,
-                            });
-                        }
+        /** Ожидает, пока все движки не закончат свою работу, и возвращает итератор с лучшим оценочным временем выполнения
+        */
+		awaitIterator: function(){
+
+		    /// wait all completed
+            W: while(true) {
+                Kernel.sleep(20);
+                for(var it = $this.pool.entrySet().iterator(); it.hasNext(); ) {
+                    var task = it.next().getValue();
+                    if(task.status !== 'completed') {
+                        continue W;
                     }
-                };
-                return it;
-
-            } catch(e) {
-                $this.tracer && $this.tracer.failed('execute query failed', e);
-                throw e;
+                }
+                break;
             }
+
+            var its = [];
+            var error;
+            for(var it = $this.pool.entrySet().iterator(); it.hasNext(); ) {
+                var task = it.next().getValue();
+                if(task.iterator) {
+                    its.push(task.iterator);
+                    Console.message({
+                        message: 'Iterator created [{}]: {}',
+                        params:[task.iterator.meta.id, task.iterator.meta],
+                    });
+                    if (task.iterator.meta.translatedQuery) {
+                        Console.message({
+                            message: 'Translated query [{}]: {}',
+                            params:[task.iterator.meta.id, '\n'+(
+                                JSB.isString(task.iterator.meta.translatedQuery)
+                                    ? task.iterator.meta.translatedQuery
+                                    : JSON.stringify(task.iterator.meta.translatedQuery)
+                            )],
+                        });
+                    }
+                }
+                if (task.error) {
+                    Console.message({
+                        message: 'Query execution error',
+                        error: task.error
+                    });
+                    if (!error) {
+                        error = task.error;
+                    }
+                }
+            }
+
+            QueryUtils.throwError(its.length || error, 'Compatible query engine not found, all engines no return iterator');
+            if (its.length == 0 && error) throw error;
+
+            /// select iterator
+            var jsb = Config.get('datacube.query.engine.selector.jsb');
+            var method = Config.get('datacube.query.engine.selector.method');
+            var IteratorSelector = JSB.getInstance(jsb);
+            var it = IteratorSelector[method].call(IteratorSelector, its);
+            Console.message({
+                message: 'Iterator selected [{}]: {}',
+                params:[it.meta.id, it.meta],
+            });
+            return it;
 		},
 
 		destroy: function() {
-		    $this.builder && $this.builder.destroy();
-            $this.tracer  && $this.tracer.complete('builder destroyed');
-		    $this.tracer  && $this.tracer.destroy();
-		    $base();
-		},
-
-		tryTranslateQuery: function(query, params) {
-		    var lastKey, singleType;
-            var providers = QueryUtils.extractProviders(query, $this.cube);
-            providers.forEach(function(provider){
-                var newKey = provider.getJsb().$name + '/' + provider.getStore().getName();
-                if (lastKey && newKey != lastKey) {
-                    singleType = null;
-                }
-                if (!lastKey) {
-                    lastKey = newKey;
-                    singleType = provider.getJsb().$name;
-                }
-            });
-
-            if (singleType) {
-                var translators = TranslatorRegistry.lookupTranslators(singleType, providers, $this.cube);
-                for(var i = 0; i < translators.length; i++) {
-                    try {
-                        // translator`s transform
-                        query = QueryTransformer.transformForTranslator(translators[i].getJsb().$name, query, $this.cube);
-
-                        $this.tracer && $this.tracer.profile('query prepared for '+translators[i].getJsb().$name, '\n'+JSON.stringify($this.preparedQuery));
-                        // try translate
-                        var it = translators[i].translatedQueryIterator(query, params);
-                        if (it) {
-                            // translated
-                            return it;
-                        }
-                    } catch(e) {
-                        for(var i = 0; i < translators.length; i++) {
-                            translators[i].close();
-                        }
-                        throw e;
-                    }
-                }
+            for(var it = $this.pool.entrySet().iterator(); it.hasNext(); ) {
+                var key = it.next().getKey();
+                JSB.cancelDefer(key);
+                $this.pool.remove(key);
             }
-
-		    // not translated
-		    return null;
-		},
-
-//		tryTranslateQuery: function(query, params) {
-//		    var providers = QueryUtils.extractProviders(query, $this.cube);
-//		    /**  Трансряторы подбираются по типам провайдеров и группируются так, что неважно
-//		    */
-//		    var providersGroups = $this._groupSameProviders(providers);
-//            if (providers.length == 1 || providersGroups.length == 1) {
-//                if (TranslatorRegistry.hasTranslator(providers[0])) {
-//                    try {
-//                        var translator = TranslatorRegistry.newTranslator(
-//                                providers,
-//                                $this.cube
-//                        );
-//                        var it = translator.translatedQueryIterator(query, params);
-//                        if (it) {
-//                            return it;
-//                        }
-//                    } catch(e) {
-//                        if(translator) translator.close();
-//                        throw e;
-//                    }
-//                }
-//            }
-//            return null;
-//		},
-
-		_prepareQuery: function() {
-		    $this.originalQuery = $this.query;
-		    return $this.query = $this.preparedQuery = QueryTransformer.transform($this.query, $this.cube || $this.providers[0]);
-		},
-
-		_defineParametersDefaultValues: function() {
-            QueryUtils.walkQueries($this.query, {},
-                function(q){
-                    for(var p in q.$params) {
-                        var name = p.substring(2, p.length - 1);
-                        if (!$this.params.hasOwnProperty(name)) {
-                            $this.params[name] = q.$params[p].$defaultValue;
-                        }
-                    }
-                }
-            );
-		},
-
-//		_getProviderGroupKey: function (provider) {
-////		    var jsbSqlTableDataProvider = JSB.get('DataCube.Providers.SqlTableDataProvider');
-////		    if (jsbSqlTableDataProvider) {
-////		        var SqlTableDataProvider = jsbSqlTableDataProvider.getClass();
-////                // store key for SQL or unique for other
-////                return provider instanceof SqlTableDataProvider
-////                    ? provider.getJsb().$name + '/' + provider.getStore().getName()
-////                    : provider.id;
-////            }
-////            return provider.id;
-//            return provider.getJsb().$name + '/' + provider.getStore().getName();
-//        },
-
-//        _extractProviders: function(query){
-//
-//            if (query.$context == $this.query.$context) {
-//                return $this.providers;
-//            }
-//
-//            var allProvidersMap = {};
-//            for(var i = 0; i < $this.providers.length; i++) {
-//                var provider = $this.providers[i];
-//                allProvidersMap[QueryUtils.getQueryProviderId(provider)] = provider;
-//            }
-//
-//            var providers = [];
-//            var providersMap = {};
-//            QueryUtils.walkSubQueries(query, function(q){
-//                if (q.$provider) {
-//                    if(!providersMap[q.$provider]) {
-//                        var provider = allProvidersMap[q.$provider];
-//                        providersMap[q.$provider] = provider;
-//                        providers.push(provider);
-//                    }
-//                }
-//            });
-//            return providers;
-//        },
-
-        /** Объединяет провайдеры в группы по типам
-        */
-//		_groupSameProviders: function(providers){
-//		    var groupsMap = {/**key:[provider]*/}; //
-//
-//            for(var i = 0; i < providers.length; i++) {
-//                var provider = providers[i];
-//                var key = $this._getProviderGroupKey(provider);
-//                groupsMap[key] = groupsMap[key] || [];
-//                groupsMap[key].push(provider);
-//            }
-//		    var groups = []; // [[]]
-//		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
-//		        groups.push(groupsMap[k]);
-//		    }
-//		    return groups;
-//		},
-
-		_initContextFields: function(ctx){
-            ctx.fields = {};
-            QueryUtils.walkQueryFields(ctx.query, /**includeSubQueries=*/false, function (field, context, query){
-                var id = (context||query.$context) + '/' + field;
-                ctx.fields[id] = ctx.fields[id] || {
-                    id: id,
-                    name: field,
-                    context: context,
-//                            isOutput: !!query.$select[field] || !query.$groupBy, /// если нет группировки - к выходным добавляются все входные поля
-                    usages: 0,
-                };
-                ctx.fields[id].usages++;
-                ctx.fields[id].type = QueryUtils.extractType(
-                        field, query,
-                        $this.cube,
-                        function (c) {
-                            return $this.contextQueries[c];
-                        }
-                );
-            });
-
+            $this.pool = null;
+		    $base();
 		},
 	}
 }

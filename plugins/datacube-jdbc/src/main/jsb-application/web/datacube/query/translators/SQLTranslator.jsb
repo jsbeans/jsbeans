@@ -66,22 +66,52 @@
 		    };
 		},
 
-		translateQuery: function() {
-		    $this._updateVendor();
+		translatedQueryIterator: function(dcQuery, params){
+		    var it = $base(dcQuery, params);
+		    it.meta.id = $this.getJsb().$name+'/'+$this.vendor+'#'+JSB.generateUid();
+		    it.meta.vendor = $this.vendor;
+		    return it;
+		},
+
+		translateQuery: function(query) {
 		    $this._views = QueryUtils.indexViews($this.dcQuery);
 
 		    // translate query
-		    var sql = $this.translateQueryExpression($this.dcQuery, true);
-		    QueryUtils.logDebug('\n[qid="{}"] Translated SQL Query (2): \n{}', $this.dcQuery.$id, sql);
+		    var sql = $this.translateQueryExpression(query||$this.dcQuery, true);
+//		    QueryUtils.logDebug('\n[qid="{}"] Translated SQL Query (2): \n{}', $this.dcQuery.$id, sql);
             return sql;
 		},
 
 		translateQueryExpression: function(query, asRoot) {
 
+            /// is view
             if (JSB.isString(query)) {
                 var sourceQuery = $this._getSourceQuery(query, null);
                 return $this._quotedName($this._translateContext(query)) +
                         ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
+            }
+
+            /// is remote query
+            if(query.$provider && $this._isRemoteDataProvider(query.$provider)) {
+                var dataProvider = QueryUtils.getQueryDataProvider(query.$provider, $this.cube);
+                var url = dataProvider.getStore().config.url;
+                var desc = JDBC.parseURL(url);
+                switch($this.vendor) {
+                    case 'PostgreSQL':
+                            var remoteQuery = $this._translateRemoteQuery(query);
+                            var sql = QueryUtils.sformat(
+                                    "dblink('dbname={} host={} port={} user={} password={}', '{}')",
+                                    desc.dbname, desc.host, desc.port,
+                                    dataProvider.getStore().config.properties.user||'',
+                                    dataProvider.getStore().config.properties.password||'',
+                                    remoteQuery
+                            );
+                            return sql;
+                        break;
+//                    default:
+//                       QueryUtils.throwError(0, 'Unsupported vendor "{}" for remote query', $this.vendor);
+                }
+
             }
 
             var sqlSource = $this._translateSourceQueryExpression(query, asRoot);
@@ -127,12 +157,14 @@
             return sql;
 		},
 
-        _updateVendor: function() {
-		    var store = this.providers[0].getStore();
-		    store.asSQL().connectedJDBC(function(conn){
-		        $this.vendor = JDBC.getDatabaseVendor(conn);
-		    });
-        },
+//        _updateVendor: function() {
+//            var store = this.providers[0].getStore();
+//            $this.vendor = store.getVendor();
+////		    var store = this.providers[0].getStore();
+////		    store.asSQL().connectedJDBC(function(conn){
+////		        $this.vendor = JDBC.getDatabaseVendor(conn);
+////		    });
+//        },
 
         _translateContext: function(context) {
             return context;
@@ -217,6 +249,32 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                 throw new Error("Unknown cube field " + fail[0]);
             }
             return sql;
+        },
+
+        _translateRemoteQuery: function(query) {
+            try {
+                var providers = QueryUtils.extractProviders(query, $this.cube);
+
+                var subQuery = JSB.clone(query);
+                subQuery.$views = subQuery.$views || {};
+                QueryUtils.walkQueries(subQuery, {
+                        getExternalView: function(name) {
+                            var view = QueryUtils.findView(name, this.query, subQuery);
+                            subQuery.$views[name] = view;
+                            return view;
+                        }
+                    },
+                    function _enter(query) {
+                    },
+                    function _leave(query){
+                    }
+                );
+                var subTranslator = new ($this.getJsb().getClass())(providers, $this.cube);
+                var sql = subTranslator.translate(subQuery, $this.params);
+                return sql;
+            } finally {
+                subTranslator && subTranslator.close();
+            }
         },
 
         _translateExpression: function(exp, dcQuery, useAlias) {
@@ -816,11 +874,37 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
             return sql;
         },
 
+        _isRemoteDataProvider: function(providerId) {
+            var dataProvider = QueryUtils.getQueryDataProvider(providerId, $this.cube);
+            return $this.providers[0].getStore().getName() !== dataProvider.getStore().getName();
+        },
+
 		_translateQueryProvider: function(query, asRoot){
-		    var sql = '';
             /// поля датапровайдеров/таблиц без запроса отображаются напрямую
-            sql += $this._printTableName(QueryUtils.getQueryDataProvider(query.$provider, $this.cube).getTableFullName());
-            sql +=  ' AS ' + $this._quotedName($this._translateContext(query.$context));
+//debugger
+            var dataProvider = QueryUtils.getQueryDataProvider(query.$provider, $this.cube);
+            if ($this._isRemoteDataProvider(query.$provider)) {
+                var url = dataProvider.getStore().config.url;
+                switch($this.vendor) {
+                    case 'ClickHouse':
+                        // remote jdbc
+                        var config = dataProvider.getStore().config;
+                        var desc = dataProvider.getDescriptor();
+                        if (config.properties.user) {
+                            url += (url.indexOf("?") == -1 ? '?' : '&') + 'user=' + config.properties.user;
+                        }
+                        if (config.properties.password) {
+                            url += (url.indexOf("?") == -1 ? '?' : '&') + 'password=' + config.properties.password;
+                        }
+                        var sql = "jdbc('" + url + "', '" + desc.schema + "', '" + desc.name + "')";
+                        break;
+                    default:
+                       QueryUtils.throwError(0, 'Unsupported vendor "{}" for remote SQL tables', $this.vendor);
+                }
+            } else {
+                var sql = $this._printTableName(dataProvider.getTableFullName());
+            }
+            sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
             return sql;
 		},
 

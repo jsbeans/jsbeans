@@ -11,7 +11,7 @@
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'DataCube.Model.Slice',
-		           'DataCube.Query.QueryEngine',
+		           'DataCube.Query.Query',
 		           'DataCube.Query.QueryCache'],
 		
 		$bootstrap: function(){
@@ -56,7 +56,6 @@
 				JSB.getLocker().lock(mtxName);
 				try {
 					if(!this.loaded) {
-					    this.queryEngine = new QueryEngine(this);
 					    if(Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled')){
 					    	var cacheInvalidateInterval = Config.has('datacube.queryCache.cubeInvalidateInterval') && Config.get('datacube.queryCache.cubeInvalidateInterval') || 600000;
 					    	this.queryCache = new QueryCache(this, this, {
@@ -203,7 +202,11 @@
 		    if(bUseCache && this.queryCache){
 		    	return this.queryCache.executeQuery(query, params);
 		    } else {
-		    	return this.queryEngine.query(query, params);
+		    	return Query.execute({
+		    	    query: query,
+		    	    params: params,
+		    	    cube: this,
+		    	});
 		    }
 		},
 
