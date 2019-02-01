@@ -7,9 +7,14 @@
 		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
-		    'JSB.Store.Sql.JDBC'
+		    'DataCube.Query.QueryResultSet',
+		    'JSB.Store.Sql.JDBC',
+
+		    'java:org.jsbeans.datacube.RemoteQueryIterator',
+		    'java:java.util.concurrent.Callable',
         ],
 
+        interpreterMode: false,
 		vendor: 'PostgreSQL',
 
         _translatedContexts: {},
@@ -91,25 +96,27 @@
                         ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
             }
 
-            /// is remote query
+            /// is remote query with provider
             if(query.$provider && $this._isRemoteDataProvider(query.$provider)) {
                 var dataProvider = QueryUtils.getQueryDataProvider(query.$provider, $this.cube);
                 var url = dataProvider.getStore().config.url;
                 var desc = JDBC.parseURL(url);
                 switch($this.vendor) {
                     case 'PostgreSQL':
-                            var remoteQuery = $this._translateRemoteQuery(query);
-                            var sql = QueryUtils.sformat(
-                                    "dblink('dbname={} host={} port={} user={} password={}', '{}')",
-                                    desc.dbname, desc.host, desc.port,
-                                    dataProvider.getStore().config.properties.user||'',
-                                    dataProvider.getStore().config.properties.password||'',
-                                    remoteQuery
-                            );
-                            return sql;
-                        break;
-//                    default:
-//                       QueryUtils.throwError(0, 'Unsupported vendor "{}" for remote query', $this.vendor);
+                        var remoteQuery = $this._translateRemoteQuery(query);
+                        var sql = QueryUtils.sformat(
+                                "dblink('dbname={} host={} port={} user={} password={}', '{}')",
+                                desc.dbname, desc.host, desc.port,
+                                dataProvider.getStore().config.properties.user||'',
+                                dataProvider.getStore().config.properties.password||'',
+                                remoteQuery
+                        );
+                        return sql;
+                    case 'H2' :
+                        if ($this.interpreterMode) {
+                            var uid = $this.getId() + '/' + JSB.generateUid();
+                            return $this._translateRemoteIterator(uid, query);
+                        }
                 }
 
             }
@@ -251,24 +258,29 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
             return sql;
         },
 
+        _generateSubQuery: function(query) {
+            var subQuery = JSB.clone(query);
+            subQuery.$views = subQuery.$views || {};
+            QueryUtils.walkQueries(subQuery, {
+                    getExternalView: function(name) {
+                        var view = QueryUtils.findView(name, this.query, subQuery);
+                        subQuery.$views[name] = view;
+                        return view;
+                    }
+                },
+                function _enter(query) {
+                },
+                function _leave(query){
+                }
+            );
+            return subQuery;
+        },
+
         _translateRemoteQuery: function(query) {
             try {
                 var providers = QueryUtils.extractProviders(query, $this.cube);
 
-                var subQuery = JSB.clone(query);
-                subQuery.$views = subQuery.$views || {};
-                QueryUtils.walkQueries(subQuery, {
-                        getExternalView: function(name) {
-                            var view = QueryUtils.findView(name, this.query, subQuery);
-                            subQuery.$views[name] = view;
-                            return view;
-                        }
-                    },
-                    function _enter(query) {
-                    },
-                    function _leave(query){
-                    }
-                );
+                var subQuery = $this._generateSubQuery(query);
                 var subTranslator = new ($this.getJsb().getClass())(providers, $this.cube);
                 var sql = subTranslator.translate(subQuery, $this.params);
                 return sql;
@@ -276,6 +288,23 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                 subTranslator && subTranslator.close();
             }
         },
+
+		_translateRemoteIterator: function(uid, query){
+		    RemoteQueryIterator.RemoteIterators.put(uid, new Callable(){
+		        call: function(){
+		            var subQuery = $this._generateSubQuery(query);
+                    return QueryResultSet.execute({
+                        cube: $this.cube,
+                        query: query,
+                        params: $this.params,
+                        startEngine: $this.interpreterMode.remoteEngine
+                    });
+		        }
+		    });
+
+            return "datacube('"+uid+"')";
+		    // TODO remove callback in it.close() or error ($this or next)
+		},
 
         _translateExpression: function(exp, dcQuery, useAlias) {
 

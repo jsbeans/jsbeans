@@ -15,6 +15,7 @@
         pool: null,
 
 		$constructor: function(queryDescriptor){
+		    $this.queryDescriptor = queryDescriptor;
             $this.cube = queryDescriptor.cube;
 		    $this.query = JSB.clone(queryDescriptor.query);
 		    $this.params = queryDescriptor.params || {};
@@ -23,7 +24,7 @@
 		},
 
 		execute: function(){
-            var startEngine = Config.get('datacube.query.engine.start');
+            var startEngine = $this.queryDescriptor.startEngine || Config.get('datacube.query.engine.start');
 
             $this.executeEngine(startEngine, {
                 cube: $this.cube,
@@ -61,16 +62,12 @@
 		},
 
 		getEngine: function(name){
-		    var engines = Config.get('datacube.query.engines');
-		    for(var i = 0; i < engines.length; i++) {
-		        var e = engines[i];
-		        if (e.alias == name || e.jsb == name) {
-		            var inst = JSB.getInstance(e.jsb);
-		            QueryUtils.throwError(inst, 'Query engine "{}" instance is null', e.jsb);
-		            return inst;
-		        }
-		    }
-		    QueryUtils.throwError(0, 'Unknown query engine configuration "{}"', e.jsb);
+		    var engine = Config.get('datacube.query.engines.' + name);
+		    QueryUtils.throwError(engine, 'Unknown query engine configuration "{}"', name);
+            var inst = JSB.getInstance(engine.jsb);
+            QueryUtils.throwError(inst, 'Query engine "{}" instance is null', name);
+            return inst;
+
 		},
 
         /** Ожидает, пока все движки не закончат свою работу, и возвращает итератор с лучшим оценочным временем выполнения
@@ -79,7 +76,7 @@
 
 		    /// wait all completed
             W: while(true) {
-                Kernel.sleep(20);
+                Kernel.sleep(10);
                 for(var it = $this.pool.entrySet().iterator(); it.hasNext(); ) {
                     var task = it.next().getValue();
                     if(task.status !== 'completed') {
