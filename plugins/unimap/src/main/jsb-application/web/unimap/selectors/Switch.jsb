@@ -72,6 +72,20 @@
 
         return arr;
     },
+    
+    findByType: function(typeName, arr, values){
+        if(!arr){
+            arr = [];
+        }
+
+        if(!values){
+            values = this._values[0];
+        }
+
+        this.getMainSelector().findByType(typeName, arr, values);
+
+        return arr;
+    },
 
     updateValues: function(key, scheme, values, opts){
         var wasUpdated = $base(key, scheme, values, opts);

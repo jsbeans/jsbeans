@@ -162,6 +162,11 @@
 					.attr('d', 'M0,0 L-20,-10 L-15,0 L-20,10 z');
 			});
 			
+			this.registerShape('circle', function(){
+				return this.defs.append('circle')
+					.attr('r', '5');
+			});
+			
 			this.registerShape('diamond', function(){
 				return this.defs.append('path')
 					.attr('d', 'M0,0 L-20,-10 L-40,0 L-20,10 z');
@@ -171,6 +176,12 @@
 				return this.defs.append('path')
 					.attr('d', 'M0,0 L-10,-12 L-24,-8 L-24,8 L-10,12 z');
 			});
+			
+			if(this.options.shapes){
+				for(var shapeKey in this.options.shapes){
+					this.registerShape(shapeKey, this.options.shapes[shapeKey]);
+				}
+			}
 			
 			// add highlight filter
 			this.registerShape('highlightFilter', function(){
