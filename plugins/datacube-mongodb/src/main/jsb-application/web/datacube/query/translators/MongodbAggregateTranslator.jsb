@@ -30,7 +30,7 @@
 		},
 
 		executeQuery: function(translatedQuery){
-            QueryUtils.logDebug('Executing mongodb translated query: {}', JSON.stringify(translatedQuery));
+//            QueryUtils.logDebug('Executing mongodb translated query: {}', JSON.stringify(translatedQuery));
 
 		    var store = this.providers[0].getStore();
 

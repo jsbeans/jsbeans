@@ -37,9 +37,10 @@
                 if (JSB.isArray($this.params[param])) return 'array';
                 return null;
 		    })() || null;
-		},
+        },
 
-		translatedQueryIterator: function(dcQuery, params){
+
+		translate: function(dcQuery, params){
 		    if (this.iterator) {
 		        // close previous iterator
 		        this.iterator.close();
@@ -59,6 +60,7 @@
             // translate query to dataprovider format
             try {
     		    var translatedQuery = this.translateQuery();
+    		    return translatedQuery;
             } catch(e) {
                 if ($this._translatorBreak) {
                     return null;
@@ -66,6 +68,10 @@
                     throw e;
                 }
             }
+        },
+
+		translatedQueryIterator: function(dcQuery, params){
+		    var translatedQuery = $this.translate(dcQuery, params);
 
 		    // create iterator
 		    if (this.dcQuery.$analyze) {
@@ -85,7 +91,13 @@
                         close:function(){
                             $this.iterator && $this.iterator.close();
                         },
-                        translatedQuery: translatedQuery
+                        meta: {
+                            id: $this.getJsb().$name+'#'+JSB.generateUid(),
+                            translator: $this.getJsb().$name,
+                            query: $this.dcQuery,
+                            params: $this.params,
+                            translatedQuery: translatedQuery,
+                        }
                     };
                 } catch (error){
                     var translatedError = $this.translateError(error);

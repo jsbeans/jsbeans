@@ -73,6 +73,16 @@
 		    return DriverManager.getConnection(url, connectionProps);
 		},
 
+		parseURL: function(url){
+		    var patterns = url.match(/.*:\/\/(.*):(\d*)\/(.*)/);
+		    var desc = {
+		        host: patterns[1],
+		        port: patterns[2],
+		        dbname: patterns[3].split(/[\?\&]/)[0],
+		    };
+		    return desc;
+		},
+
 		loadDrivers: function(skipErrors){
 		    for(var name in this.JDBCDrivers) if (this.JDBCDrivers.hasOwnProperty(name)) {
 		        var className = this.JDBCDrivers[name];

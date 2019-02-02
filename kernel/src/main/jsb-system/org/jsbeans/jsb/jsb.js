@@ -1613,7 +1613,7 @@ if(!(function(){return this;}).call(null).JSB){
                     str += ']';
                     return str;
                 } else if(JSB().isString(obj)){
-                    return '"' + obj + '"';
+                    return '' + JSON.stringify(obj) + '';
                 } else {
                     return '' + obj;
                 }
