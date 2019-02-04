@@ -13,6 +13,7 @@
 	        return {
 	            $context: this.getName(),
 	            $provider: this.getFullId(),
+	            $select: this.createQuerySelect(useContext)
 	        };
 	    },
 

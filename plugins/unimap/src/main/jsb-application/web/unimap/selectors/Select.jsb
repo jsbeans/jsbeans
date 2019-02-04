@@ -87,6 +87,26 @@
 
         return arr;
     },
+    
+    findByType: function(typeName, arr, values){
+        if(!arr){
+            arr = [];
+        }
+
+        if(!values){
+            values = this._values;
+        }
+
+        for(var i = 0; i < values.length; i++){
+            if(!values[i].items){
+                continue;
+            }
+
+            this.getMainSelector().findByType(typeName, arr, values[i].items);
+        }
+
+        return arr;
+    },
 
     updateValues: function(key, scheme, values, opts){
         var wasUpdated = $base(key, scheme, values, opts),
