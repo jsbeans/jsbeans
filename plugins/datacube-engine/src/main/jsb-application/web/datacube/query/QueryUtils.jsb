@@ -1353,10 +1353,10 @@
 		    }
         },
 
-        extractProviders: function(query, defaultCube) {
+        extractProviders: function(query, defaultCube, getQuery) {
 //if(MD5.md5(query) == '1441a7909c087dbbe7ce59881b9df8b9') debugger;
             var providers = [];
-            $this.walkQueries(query, {}, null, function(q) {
+            $this.walkQueries(query, { findView: getQuery }, null, function(q) {
                 if (q.$provider) {
 		            var provider = $this.getQueryDataProvider(q.$provider, defaultCube);
                     if (providers.indexOf(provider) == -1) {

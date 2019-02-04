@@ -30,10 +30,6 @@
 		    }
 		},
 
-		translatedQueryIterator: function(dcQuery, params){
-		    return $base(dcQuery, params);
-		},
-
 		executeQuery: function(translatedQuery){
 		    var store = this.providers[0].getStore();
 		    var iterator = store.asSQL().iteratedParametrizedQuery2(
@@ -75,6 +71,11 @@
 		    var it = $base(dcQuery, params);
 		    it.meta.id = $this.getJsb().$name+'/'+$this.vendor+'#'+JSB.generateUid();
 		    it.meta.vendor = $this.vendor;
+		    var oldClose = it.close;
+		    it.close = function(){
+		        $this._closeRemoteIterators();
+		        oldClose.call(this);
+		    };
 		    return it;
 		},
 
@@ -96,9 +97,15 @@
                         ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
             }
 
-            /// is remote query with provider
-            if(query.$provider && $this._isRemoteDataProvider(query.$provider)) {
-                var dataProvider = QueryUtils.getQueryDataProvider(query.$provider, $this.cube);
+            /// is remote query with same providers
+            var providers = QueryUtils.extractProviders(query, $this.cube,
+                function(name){
+                    var view = QueryUtils.findView(name, query, $this.dcQuery);
+                    return view;
+                }
+            );
+            if(providers.length > 0 && $this._isSameRemoteProviders(providers)/*query.$provider && $this._isRemoteDataProvider(query.$provider)*/) {
+                var dataProvider = providers[0];
                 var url = dataProvider.getStore().config.url;
                 var desc = JDBC.parseURL(url);
                 switch($this.vendor) {
@@ -111,15 +118,17 @@
                                 dataProvider.getStore().config.properties.password||'',
                                 remoteQuery
                         );
+                        sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
                         return sql;
                     case 'H2' :
                         if ($this.interpreterMode) {
-                            var uid = $this.getId() + '/' + JSB.generateUid();
-                            return $this._translateRemoteIterator(uid, query);
+                            return $this._translateRemoteIterator(query) + ' AS ' + $this._quotedName($this._translateContext(query.$context));;
                         }
                 }
 
             }
+
+            /// regular query
 
             var sqlSource = $this._translateSourceQueryExpression(query, asRoot);
 
@@ -212,6 +221,24 @@
             return '' + (this.lastId = (this.lastId||0) + 1);
         },
 
+        _isSameRemoteProviders: function(providers) {
+            var mainKey = $this.providers[0].getStore().getJsb().$name + '/' + $this.providers[0].getStore().getName();
+            var singleKey;
+            for(var i = 0; i < providers.length; i++) {
+                var provider = providers[i];
+                var key = provider.getStore().getJsb().$name + '/' + provider.getStore().getName();
+                if (!singleKey) {
+                    singleKey = key;
+                }
+                if (key != singleKey) {
+                    return false;
+                }
+            }
+            // is remote
+            return singleKey != mainKey;
+        },
+
+
         _extractViewKey: function (query, global){
             var key = {
                 $groupBy: query.$groupBy,
@@ -289,7 +316,8 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
             }
         },
 
-		_translateRemoteIterator: function(uid, query){
+		_translateRemoteIterator: function(query){
+            var uid = $this.getId() + '/' + JSB.generateUid();
 		    RemoteQueryIterator.RemoteIterators.put(uid, new Callable(){
 		        call: function(){
 		            var subQuery = $this._generateSubQuery(query);
@@ -305,6 +333,15 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
             return "datacube('"+uid+"')";
 		    // TODO remove callback in it.close() or error ($this or next)
 		},
+
+        _closeRemoteIterators: function(){
+            for(var it = RemoteQueryIterator.RemoteIterators.entrySet().iterator(); it.hasNext();) {
+                var entry = it.next();
+                if (entry.getKey().startsWith($this.getId())) {
+                    it.remove();
+                }
+            }
+        },
 
         _translateExpression: function(exp, dcQuery, useAlias) {
 
@@ -928,7 +965,8 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                         var sql = "jdbc('" + url + "', '" + desc.schema + "', '" + desc.name + "')";
                         break;
                     default:
-                       QueryUtils.throwError(0, 'Unsupported vendor "{}" for remote SQL tables', $this.vendor);
+                       $this._breakTranslator( 'Unsupported vendor "'+$this.vendor+'" for remote SQL tables');
+                       //QueryUtils.throwError(0, 'Unsupported vendor "{}" for remote SQL tables', $this.vendor);
                 }
             } else {
                 var sql = $this._printTableName(dataProvider.getTableFullName());

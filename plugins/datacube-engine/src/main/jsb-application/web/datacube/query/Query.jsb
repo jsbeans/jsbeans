@@ -9,8 +9,8 @@
 
 		execute: function(queryDescriptor){
 		    queryDescriptor.cube && queryDescriptor.cube.load();
-			var executor = new QueryExecutor(queryDescriptor);
             try {
+    			var executor = new QueryExecutor(queryDescriptor);
                 var it = executor.execute(); // new ver
                 var oldClose = it.close;
                 it.close = function(){
@@ -18,8 +18,9 @@
                     executor.destroy();
                 };
                 return it;
-            } finally {
-                executor.destroy();
+            } catch(e) {
+                executor && executor.destroy();
+                throw e;
             }
 		},
 	}

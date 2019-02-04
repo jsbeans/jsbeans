@@ -81,12 +81,16 @@
                     this.iterator = $this.translatorExecuteLazy ? null : this.executeQuery(translatedQuery);
                     return {
                         next: function(){
-
-                            if (!$this.iterator) {
-                                QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] Executing query...');
-                                $this.iterator = $this.executeQuery(translatedQuery);
+                            try {
+                                if (!$this.iterator) {
+                                    QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] Executing query...');
+                                    $this.iterator = $this.executeQuery(translatedQuery);
+                                }
+                                return $this.translateResult($this.iterator.next());
+                            } catch(e) {
+                                this.close();
+                                throw e;
                             }
-                            return $this.translateResult($this.iterator.next());
                         },
                         close:function(){
                             $this.iterator && $this.iterator.close();
