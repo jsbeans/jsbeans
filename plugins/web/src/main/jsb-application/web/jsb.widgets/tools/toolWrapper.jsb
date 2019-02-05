@@ -1134,6 +1134,10 @@
 					}, self.options.hideInterval, '_toolHideInterval_');
 				}
 			}
+		},
+
+		getTool: function(){
+		    return this.embeddedWidget;
 		}
 	}
 }

@@ -36,8 +36,7 @@
 			this.close();	// close tool
 		},
 		
-		onMessage: function(sender, msg, params ){
-		},
+		onMessage: function(sender, msg, params ){},
 		
 		update: function(){
 			var widget = this.data.data;
@@ -45,9 +44,7 @@
 				this.wc.attachWidget(widget);
 			}
 		},
-		
-		
-		setFocus: function(){
-		}
+
+		setFocus: function(){}
 	}
 }

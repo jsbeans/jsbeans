@@ -15,34 +15,35 @@
             this._items = this.$('<div class="items"></div>');
             this.append(this._items);
 
-            if(this.options.categories){
-                this._categories = this.$('<ul class="categories"></ul>');
-                this.prepend(this._categories);
-
-                for(var i = 0; i < this.options.categories.length; i++){
-                    this.addCategory(this.options.categories[i]);
+            if(this.options.items){
+                for(var i = 0; i < this.options.items.length; i++){
+                    this.addItem(this.options.items[i]);
                 }
             }
+
+            this.selectDefaultCategory();
         },
 
         options: {
-            categories: undefined,
+            items: undefined,
+            itemRender: null,
             onSelect: null
         },
 
         addCategory: function(category){
+            if(!this._categories){
+                this._categories = this.$('<ul class="categories"></ul>');
+                this.prepend(this._categories);
+            }
+
             var categoryLabel = this.$('<li>' + category + '</li>');
             this._categories.append(categoryLabel);
             categoryLabel.click(function(){
-                //
+                $this.selectCategory(category);
             });
 
             var categoryItem = this.$('<div class="categoryItem" key=["' + category + '"]></div>');
             this._items.append(categoryItem);
-
-            if(Object.keys(this._categoriesList).length === 0){
-                categoryLabel.addClass('selected');
-            }
 
             this._categoriesList[category] = {
                 categoryLabel: categoryLabel,
@@ -50,48 +51,90 @@
             };
         },
 
-        addItem: function(item, key, category){
+        addItem: function(itemDesc){    // item, key, category
             var el = this.$('<div class="item"></div>');
-            el.append(item);
 
-            this._itemList[key] = {
-                category: category,
-                item: el
+            if(this.options.itemRender){
+                this.options.itemRender.call(this, el, itemDesc)
+            } else {
+                el.append(itemDesc.item);
+            }
+
+            this._itemList[itemDesc.key] = {
+                category: itemDesc.category,
+                item: el,
+                itemDesc: itemDesc
             };
 
-            if(category){
-                if(!this._categoriesList[category]){
-                    this.addCategory(category);
+            if(itemDesc.category){
+                if(!this._categoriesList[itemDesc.category]){
+                    this.addCategory(itemDesc.category);
                 }
 
-                this._categoriesList[category].itemsList.append(el);
+                this._categoriesList[itemDesc.category].itemsList.append(el);
             } else {
                 this._items.append(el);
             }
 
             el.click(function(){
                 if($this.options.onSelect){
-                    $this.options.onSelect.call($this, {
-                        category: category,
-                        item: item,
-                        key: key
-                    });
+                    $this.options.onSelect.call($this, itemDesc);
                 }
             });
         },
 
-        clearCategory: function(category){
-            this._categoriesList[category].itemsList.empty();
+        allowItems: function(items){
+            var allowCategories = {};
+
+            for(var i in this._itemList){
+                var index = items.indexOf(i);
+
+                if(index > -1){
+                    this._itemList[i].item.removeClass('hidden');
+                    allowCategories[this._itemList[i].category] = true;
+                } else {
+                    this._itemList[i].item.addClass('hidden');
+                }
+            }
+
+            for(var i in this._categoriesList){
+                if(allowCategories[i]){
+                    this._categoriesList[i].categoryLabel.removeClass('hidden');
+                } else {
+                    this._categoriesList[i].categoryLabel.addClass('hidden');
+                }
+            }
+
+            this.selectDefaultCategory();
         },
 
-        hideCategories: function(categories){},
-
-        hideItems: function(items){},
+        clearCategory: function(category){
+            if(this._categoriesList[category]){
+                this._categoriesList[category].itemsList.empty();
+            }
+        },
 
         removeItem: function(key){},
 
         selectCategory: function(category){
-            //
+            for(var i in this._categoriesList){
+                this._categoriesList[i].categoryLabel.removeClass('selected');
+                this._categoriesList[i].itemsList.removeClass('selected');
+            }
+
+            if(this._categoriesList[category]){
+                this._categoriesList[category].categoryLabel.addClass('selected');
+                this._categoriesList[category].itemsList.addClass('selected');
+            }
+        },
+
+        selectDefaultCategory: function(){
+            for(var i in this._categoriesList){
+                if(!this._categoriesList[i].categoryLabel.hasClass('hidden')){
+                    this.selectCategory(i);
+                    return;
+                }
+            }
         },
 
         selectItem: function(key){

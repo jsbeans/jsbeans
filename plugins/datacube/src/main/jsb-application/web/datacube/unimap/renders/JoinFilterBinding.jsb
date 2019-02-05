@@ -2,8 +2,7 @@
 	$name: 'Unimap.Render.JoinFilterBinding',
 	$parent: 'Unimap.Render.Item',
 
-	$require: ['JSB.Controls.Button',
-	           'JSB.Controls.Select',
+	$require: ['JSB.Controls.Select',
 	           'JSB.Widgets.RendererRepository',
 	           'css:JoinFilterBinding.css'],
 
