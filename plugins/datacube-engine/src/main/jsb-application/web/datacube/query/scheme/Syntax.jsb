@@ -11,7 +11,7 @@
 	_toolItems: [],
 
 	replacements: [
-	    ['$join', '$from', '$union', '$cube'],
+	    ['$join', '$from', '$union'],   // '$cube'
 	    ['$slice']
 	],
 
@@ -35,6 +35,7 @@
 	        render: '$source',
 	        category: 'Источник запроса',
 	        displayName: 'Срез',
+	        desc: 'Задает в качестве источника запроса другой запрос',
 	        isSource: true,
 	        priority: 1,
 	        removable: false
@@ -61,6 +62,7 @@
 	        render: '$source',
 	        category: 'Источник запроса',
 	        displayName: 'Объединение',
+	        desc: 'Задает в качестве источника запроса объединение результатов двух запросов',
 	        isSource: true,
 	        multiple: true,
 	        removable: false
