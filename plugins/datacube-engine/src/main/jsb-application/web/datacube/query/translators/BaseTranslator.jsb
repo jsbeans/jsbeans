@@ -13,7 +13,7 @@
 		$constructor: function(providerOrProviders, cube){
 		    $base();
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
-		    QueryUtils.assert(cube && cube.getJsb().isSubclassOf('DataCube.Model.Cube'), 'Cube is undefined or failed');
+		    QueryUtils.assert(cube && cube.getJsb().isSubclassOf('DataCube.Model.QueryableContainer'), 'Cube is undefined or failed');
 
 		    this.cube = cube;
             this.queryEngine = cube.queryEngine;
@@ -37,9 +37,10 @@
                 if (JSB.isArray($this.params[param])) return 'array';
                 return null;
 		    })() || null;
-		},
+        },
 
-		translatedQueryIterator: function(dcQuery, params){
+
+		translate: function(dcQuery, params){
 		    if (this.iterator) {
 		        // close previous iterator
 		        this.iterator.close();
@@ -59,6 +60,7 @@
             // translate query to dataprovider format
             try {
     		    var translatedQuery = this.translateQuery();
+    		    return translatedQuery;
             } catch(e) {
                 if ($this._translatorBreak) {
                     return null;
@@ -66,6 +68,10 @@
                     throw e;
                 }
             }
+        },
+
+		translatedQueryIterator: function(dcQuery, params){
+		    var translatedQuery = $this.translate(dcQuery, params);
 
 		    // create iterator
 		    if (this.dcQuery.$analyze) {
@@ -75,17 +81,27 @@
                     this.iterator = $this.translatorExecuteLazy ? null : this.executeQuery(translatedQuery);
                     return {
                         next: function(){
-
-                            if (!$this.iterator) {
-                                QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] Executing query...');
-                                $this.iterator = $this.executeQuery(translatedQuery);
+                            try {
+                                if (!$this.iterator) {
+                                    QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] Executing query...');
+                                    $this.iterator = $this.executeQuery(translatedQuery);
+                                }
+                                return $this.translateResult($this.iterator.next());
+                            } catch(e) {
+                                this.close();
+                                throw e;
                             }
-                            return $this.translateResult($this.iterator.next());
                         },
                         close:function(){
                             $this.iterator && $this.iterator.close();
                         },
-                        translatedQuery: translatedQuery
+                        meta: {
+                            id: $this.getJsb().$name+'#'+JSB.generateUid(),
+                            translator: $this.getJsb().$name,
+                            query: $this.dcQuery,
+                            params: $this.params,
+                            translatedQuery: translatedQuery,
+                        }
                     };
                 } catch (error){
                     var translatedError = $this.translateError(error);

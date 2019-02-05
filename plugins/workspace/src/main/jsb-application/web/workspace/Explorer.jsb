@@ -347,7 +347,8 @@
 				var explorerNodeTypes = wInfo.explorerNodeTypes;
 				$this.currentWorkspace = w;
 				$this.explorerNodeTypes = explorerNodeTypes;
-				$this.browserViewTypes = wInfo.browserViewTypes;
+				$this.browserViewNodeTypes = wInfo.browserViewNodeTypes;
+				$this.browserViewEntryTypes = wInfo.browserViewEntryTypes;
 				$this.publish('JSB.Workspace.changeWorkspace', w);
 
 				// upload all node type beans
@@ -954,7 +955,8 @@
 		    var key = JSB().generateUid();
 			var node = null;
 			var nodeSlice = this.explorerNodeTypes;
-			var viewSlice = this.browserViewTypes;
+			var viewNodeSlice = this.browserViewNodeTypes;
+			var viewEntrySlice = this.browserViewEntryTypes;
 /*			
 			if(this.wTreeMap[itemDesc.entry.getId()]){
 				return this.wTreeMap[itemDesc.entry.getId()].node;
@@ -964,6 +966,8 @@
 			if(targetEntry.isLink()){
 				targetEntry = targetEntry.getTargetEntry();
 			}
+			
+			// resolve nodeInfo
 			var nodeInfo = nodeSlice[targetEntry.getJsb().$name];
 			if(!nodeInfo){
 				// try to search best appropriate type
@@ -988,10 +992,38 @@
 			if(!nodeType || !JSB.get(nodeType)){
 				return null;
 			}
+			
+			// resolve viewInfo
+			var viewInfo = null;
+			if(viewNodeSlice){
+				viewInfo = viewNodeSlice[nodeType];
+			}
+			if((!viewInfo || viewInfo.length == 0) && viewEntrySlice){
+				viewInfo = viewEntrySlice[targetEntry.getJsb().$name];
+				if(!viewInfo || viewInfo.length == 0){
+					// try to search best appropriate type
+					var bestNt = null;
+					var bestDist = null;
+					for(nt in viewEntrySlice){
+						var dist = targetEntry.getJsb().getSubclassOfDistance(nt);
+						if(!JSB.isNull(dist)){
+							if(JSB.isNull(bestDist) || bestDist > dist){
+								bestDist = dist;
+								bestNt = nt;
+							}
+						}
+					}
+					if(bestNt){
+						viewInfo = viewEntrySlice[targetEntry.getJsb().$name] = viewEntrySlice[bestNt];
+					}
+				}
+			}
+			
+			
 			var nodeCls = JSB.get(nodeType).getClass();
 			node = new nodeCls({
 				descriptor: itemDesc,
-				allowOpen: viewSlice && viewSlice[nodeType] && viewSlice[nodeType].length > 0,
+				allowOpen: viewInfo && viewInfo.length > 0,
 				allowEdit: JSB.isDefined(nodeInfo.rename) ? nodeInfo.rename : JSB.isDefined(nodeInfo.create) ? nodeInfo.create: true,
 				allowShare: JSB.isDefined(nodeInfo.share) ? nodeInfo.share: true
 			});
@@ -1279,6 +1311,9 @@
 			var pEntry = this.currentWorkspace;
 			var treeNode = null;
 			if(pKey){
+				if(!this.tree.get(pKey)){
+					return;
+				}
 				treeNode = this.tree.get(pKey).obj;
 				pEntry = treeNode.getTargetEntry();
 				
@@ -1308,6 +1343,9 @@
 				var treeChildren = {};
 				var chArr = $this.tree.getChildNodes(pKey);
 				for(var i = 0; i < chArr.length; i++){
+					if(!$this.tree.get(chArr[i])){
+						continue;
+					}
 					var node = $this.tree.get(chArr[i]).obj;
 					if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 						var e = node.getTargetEntry();
@@ -1530,11 +1568,13 @@
 			}
 			$this.currentWorkspace = WorkspaceController.getWorkspace(wId);
 			$this.explorerNodeTypes = WorkspaceController.constructExplorerNodeTypeSlice($this.currentWorkspace.getWorkspaceType());
-			$this.browserViewTypes = WorkspaceController.constructBrowserViewNodeTypeSlice($this.currentWorkspace.getWorkspaceType());
+			$this.browserViewNodeTypes = WorkspaceController.constructBrowserViewNodeTypeSlice($this.currentWorkspace.getWorkspaceType());
+			$this.browserViewEntryTypes = WorkspaceController.constructBrowserViewEntryTypeSlice($this.currentWorkspace.getWorkspaceType());
 			return {
 				workspace: $this.currentWorkspace, 
 				explorerNodeTypes: $this.explorerNodeTypes,
-				browserViewTypes: $this.browserViewTypes
+				browserViewNodeTypes: $this.browserViewNodeTypes,
+				browserViewEntryTypes: $this.browserViewEntryTypes
 			};
 		},
 		

@@ -67,7 +67,7 @@
         sourcesIds: null,
         values: null,
 
-		$require: ['DataCube.Query.QueryEngine',
+		$require: ['DataCube.Query.Query',
 		           'JSB.Workspace.WorkspaceController',
 		           'Unimap.Selector'],
 		

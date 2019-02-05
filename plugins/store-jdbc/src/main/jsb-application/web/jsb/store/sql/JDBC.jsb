@@ -73,6 +73,16 @@
 		    return DriverManager.getConnection(url, connectionProps);
 		},
 
+		parseURL: function(url){
+		    var patterns = url.match(/.*:\/\/(.*):(\d*)\/(.*)/);
+		    var desc = {
+		        host: patterns[1],
+		        port: patterns[2],
+		        dbname: patterns[3].split(/[\?\&]/)[0],
+		    };
+		    return desc;
+		},
+
 		loadDrivers: function(skipErrors){
 		    for(var name in this.JDBCDrivers) if (this.JDBCDrivers.hasOwnProperty(name)) {
 		        var className = this.JDBCDrivers[name];
@@ -216,8 +226,8 @@
 		    var types = types || [];
 		    var rowExtractor = rowExtractor || this.RowExtractors.Json;
 
-            Log.debug('Native SQL query: \n' + sql);
-            Log.debug('Native SQL parameters: ' + JSON.stringify(values) + ', ' + JSON.stringify(types));
+//            Log.debug('Native SQL query: \n' + sql);
+//            Log.debug('Native SQL parameters: ' + JSON.stringify(values) + ', ' + JSON.stringify(types));
 
 		    var rs;
 		    if(!connection){

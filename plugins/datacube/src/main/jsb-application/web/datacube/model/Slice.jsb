@@ -1,6 +1,6 @@
 {
     $name: 'DataCube.Model.Slice',
-    $parent: 'DataCube.Model.SettingsEntry',
+    $parent: 'DataCube.Model.QueryableEntry',
 
     $require: [
         'DataCube.Query.QuerySyntax',
@@ -98,6 +98,10 @@
 
 	getCube: function(){
 		return this.cube;
+	},
+	
+	getQueryableContainer: function(){
+		return this.getCube();
 	},
 
     getFromType: function(){
@@ -245,72 +249,9 @@
 
 		executeQuery: function(opts){
 			$this.getCube().load();
-			var params = {};
 			var extQuery = (opts && opts.extQuery) || {};
 			var useCache = (opts && opts.useCache) || false;
-			var preparedQuery = JSB.clone(this.query);
-            if(!preparedQuery || Object.keys(preparedQuery).length == 0){
-            	preparedQuery = { $select: {}};
-            }
-            if(extQuery && Object.keys(extQuery).length > 0){
-            	var qDesc = this.cube.parametrizeQuery(extQuery);
-            	params = qDesc.params;
-
-            	// merge queries
-            	if(qDesc.query.$filter && Object.keys(qDesc.query.$filter).length > 0){
-            		if(preparedQuery.$filter){
-            			preparedQuery.$filter = {$and:[preparedQuery.$filter, qDesc.query.$filter]}
-            		} else {
-            			preparedQuery.$filter = qDesc.query.$filter;
-            		}
-            	}
-
-            	if(qDesc.query.$cubeFilter && Object.keys(qDesc.query.$cubeFilter).length > 0){
-            		if(preparedQuery.$cubeFilter){
-            			preparedQuery.$cubeFilter = {$and:[preparedQuery.$cubeFilter, qDesc.query.$cubeFilter]}
-            		} else {
-            			preparedQuery.$cubeFilter = qDesc.query.$cubeFilter;
-            		}
-            	}
-
-            	if(qDesc.query.$postFilter && Object.keys(qDesc.query.$postFilter).length > 0){
-            		if(preparedQuery.$postFilter){
-            			preparedQuery.$postFilter = {$and:[preparedQuery.$postFilter, qDesc.query.$postFilter]}
-            		} else {
-            			preparedQuery.$postFilter = qDesc.query.$postFilter;
-            		}
-            	}
-
-            	if(qDesc.query.$sort){
-            		preparedQuery.$sort = qDesc.query.$sort;
-            	}
-
-            	if(qDesc.query.$select){
-            		JSB.merge(preparedQuery.$select, qDesc.query.$select);
-            	}
-
-            	if(qDesc.query.$groupBy){
-            		if(!preparedQuery.$groupBy){
-            			preparedQuery.$groupBy = qDesc.query.$groupBy;
-            		} else {
-            			JSB.merge(preparedQuery.$groupBy, qDesc.query.$groupBy);
-            		}
-            	}
-
-            }
-            if(opts && opts.wrapQuery && Object.keys(opts.wrapQuery).length > 0){
-            	var q = JSB.clone(opts.wrapQuery);
-            	if(preparedQuery.$cubeFilter){
-            		if(q.$cubeFilter){
-            			q.$cubeFilter = {$and:[q.$cubeFilter, preparedQuery.$cubeFilter]};
-            		} else {
-            			q.$cubeFilter = preparedQuery.$cubeFilter;
-            		}
-            		delete preparedQuery.$cubeFilter;
-            	}
-            	q.$from = preparedQuery;
-            	preparedQuery = q;
-            }
+			var extendedQueryDesc = this.extendQuery(this.getQuery(), opts);
             var isExtQuery = false;
             if(opts && opts.extQuery && Object.keys(opts.extQuery).length > 0){
             	isExtQuery = true;
@@ -320,9 +261,9 @@
             }
             if(useCache && this.cacheEnabled && (!isExtQuery || this.extCacheEnabled)){
             	this.ensureQueryCache();
-				return this.queryCache.executeQuery(preparedQuery, params);
+				return this.queryCache.executeQuery(extendedQueryDesc.query, extendedQueryDesc.params);
             }
-            return this.cube.executeQuery(preparedQuery, params);
+            return this.cube.executeQuery(extendedQueryDesc.query, extendedQueryDesc.params);
 		},
 
         extractFields: function(){

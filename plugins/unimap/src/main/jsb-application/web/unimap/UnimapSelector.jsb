@@ -276,6 +276,39 @@
 
         return arr;
     },
+    
+    findByType: function(typeName, arr, values, schemePath){
+    	if(!arr){
+            arr = [];
+        }
+
+        if(!values){
+            values = this._values;
+        }
+
+        for(var i in values){
+            var r = this.getRenderByName(values[i].render),
+                curPath = schemePath;
+
+            if(JSB.isString(curPath)){
+                if(curPath.length > 0){
+                    curPath += '.' + i;
+                } else {
+                    curPath += i;
+                }
+            } else {
+                curPath = i;
+            }
+            
+            if(JSB.isInstanceOf(r, typeName)){
+            	arr.push(r.getInstance({key: i, schemePath: curPath, selector: values[i]}));
+            }
+
+            r.findByType && r.findByType(typeName, arr, values[i].values, curPath);
+        }
+
+        return arr;
+    },
 
     getContext: function(){
         return this._context;

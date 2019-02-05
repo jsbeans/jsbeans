@@ -24,9 +24,18 @@
                         n = pos ++;
                     }
                 }
-                return args[n+1];
+                var arg = args[n+1];
+                if (JSB.isObject(arg)) {
+                    arg = $this.serializableJson(arg);
+                }
+                return arg;
             });
             return msg;
+        },
+
+        serializableJson: function(obj) {
+            //return JSON.stringify(obj, function (k, v) { return k ? "" + v : v; }, 2);
+            return JSB.stringify(obj);
         },
 
         logDebug: function(msg, a0, a1){
@@ -47,8 +56,11 @@
         throwError: function(isAssert, message, a0, a1) {
             if (!isAssert) {
                 var args = Array.prototype.slice.call(arguments, 1);
-                var msg = 'Error: ' + $this.sformat.apply(this, args);
-                Log.debug(msg);
+                var msg = $this.sformat.apply(this, args);
+                if (!msg.startsWith('Error:')) {
+                    msg = 'Error: ' + msg;
+                }
+                //Log.debug(msg);
                 throw new Error(msg);
             }
 
@@ -1341,10 +1353,10 @@
 		    }
         },
 
-        extractProviders: function(query, defaultCube) {
+        extractProviders: function(query, defaultCube, getQuery) {
 //if(MD5.md5(query) == '1441a7909c087dbbe7ce59881b9df8b9') debugger;
             var providers = [];
-            $this.walkQueries(query, {}, null, function(q) {
+            $this.walkQueries(query, { findView: getQuery }, null, function(q) {
                 if (q.$provider) {
 		            var provider = $this.getQueryDataProvider(q.$provider, defaultCube);
                     if (providers.indexOf(provider) == -1) {
