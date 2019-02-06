@@ -1,4 +1,6 @@
-.queryItemList {}
+.queryItemList {
+    min-width: 300px;
+}
 
 .queryItemList > * {
     display: inline-block;
@@ -6,11 +8,11 @@
 }
 
 .queryItemList > .categories {
-
+    width: 45%;
 }
 
 .queryItemList > .categories > li {
-    margin: 0 0 -1px;
+    margin: 0 -1px 0 0;
     padding: 10px 20px;
     font-weight: 600;
     text-align: center;
@@ -31,12 +33,14 @@
 }
 
 .queryItemList > .items {
+    width: 55%;
     padding-left: 5px;
+    border: 1px solid transparent;
     border-left: 1px solid #abc;
 }
 
-.queryItemList > .items > .categoryItem {
-
+.queryItemList > .items > .categoryItem:not(.selected) {
+    display: none;
 }
 
 .queryItemList > .items .item {

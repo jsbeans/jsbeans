@@ -15,7 +15,6 @@
 		options: {
 			schemeName: null,
 			expanded: false,
-			measurements: {},
 			
 			onChange: function(){}
 		},
@@ -417,6 +416,8 @@
 		},
 
 		getSourceSelectFields: function(callback){
+		    this.options.editorView.getSourceFields(callback);
+		    /*
 		    var sourcesArr = [],
 		        sources = {};
 
@@ -441,6 +442,7 @@
 		    }, function(){
 		        callback.call($this, sources);
 		    });
+		    */
 		},
 
 		getSliceFields: function(callback){
@@ -1529,7 +1531,6 @@ console.log('getCubeSlices');
 						editor: $this,
 						entryType: entryType,
 						entryKey: entryKey,
-						isStruct: $this.options.measurements ? $this.options.measurements[entryKey] : false,
 						actions: {
 							allowEdit: allowEdit,
 							allowRemove: allowRemove,
@@ -1551,8 +1552,6 @@ console.log('getCubeSlices');
 							$this.doEdit(entryType, entryKey);
 						} else if(cmd == 'delete'){
 							$this.doRemove(hoverElt, entryType, entryKey);
-						} else if(cmd == 'setStruct'){
-						    $this.setStructField(hoverElt, entryKey);
 						} else {
 							throw new Error('Unexpected menu command: ' + cmd);
 						}
@@ -1576,20 +1575,6 @@ console.log('getCubeSlices');
 				$this.scopeName = scopeName;
 			}
 			$this.refresh();
-		},
-
-		setStructField: function(elt, entryKey){
-		    var isStruct = this.options.measurements[entryKey];
-
-		    elt.toggleClass('struct');
-
-		    if(isStruct){
-		        if(this.options.measurements[entryKey]){
-		            delete this.options.measurements[entryKey];
-		        }
-		    } else {
-		        this.options.measurements[entryKey] = true;
-		    }
 		},
 
 		refresh: function(){
@@ -1641,10 +1626,6 @@ console.log('getCubeSlices');
 				entryElt = $this.$('<div class="entry"></div>');
 				entryElt.attr('key', valName);
 				container.append(entryElt);
-
-				if(this.scopeName === '$select' && this.options.measurements[valName]){
-				    entryElt.addClass('struct');
-                }
 			}
 
 			// add key
@@ -1786,7 +1767,6 @@ console.log('getCubeSlices');
 				sourceFieldsEditors: this.sourceFieldsEditors,
 				expanded: false
 			}));
-			valueEditor.setOption('measurements', this.options.measurements || {});
 
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());
@@ -1867,7 +1847,6 @@ console.log('getCubeSlices');
 				sourceFieldsEditors: this.sourceFieldsEditors,
 				expanded: false
 			}));
-			valueEditor.setOption('measurements', this.options.measurements || {});
 
 			valueEditor.addClass('value');
 			entryElt.append(valueEditor.getElement());

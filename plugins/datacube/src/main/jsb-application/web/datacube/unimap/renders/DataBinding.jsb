@@ -1,8 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 
-	           'JSB.Controls.Select', 
+	$require: ['JSB.Controls.Select',
 	           'JSB.Controls.ComboEditor', 
 	           'DataCube.Controls.SchemeSelector', 
 	           'Unimap.Render.DataBindingCache',

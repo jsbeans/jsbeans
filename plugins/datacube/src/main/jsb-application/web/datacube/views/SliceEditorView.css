@@ -12,7 +12,7 @@
 	background: transparent;
 	border: none;
     border-radius: 0;
-    /*display: block;*/
+    margin-top: 10px;
 }
 
 .sliceEditorView .schemeEditor.queryEditor[sname = "$query"] > .context {

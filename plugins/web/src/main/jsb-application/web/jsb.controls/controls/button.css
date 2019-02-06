@@ -20,13 +20,13 @@
     text-decoration: none;
 }
 
-.jsb-button > .icon {
-    background-size: 100%;
+.jsb-button.onlyIcon {
+    padding: 5px;
+    background-color: transparent;
 }
 
-.jsb-button > .icon.onlyIcon {
-    width: 100%;
-    height: 100%;
+.jsb-button > .icon {
+    background-size: 100%;
 }
 
 .jsb-button:active,

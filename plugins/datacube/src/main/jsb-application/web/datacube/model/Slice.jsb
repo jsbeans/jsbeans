@@ -167,14 +167,12 @@
 
                 $super.setName(opts.name);
 
-                if(opts.sourceType){
-                    this.query = this.generateQueryFromSource(opts);
-                    this.property('query', this.query);
+                this.query = this.generateQueryFromSource(opts);
+                this.property('query', this.query);
 
-                    if(opts.sourceType === '$provider'){
-                        this.source = opts.sources[0];
-                        this.property('source', this.source.getFullId());
-                    }
+                if(opts.sourceType === '$provider'){
+                    this.source = opts.sources[0];
+                    this.property('source', this.source.getFullId());
                 }
 				this.property('queryParams', this.queryParams);
 			} else {    // load existed slice
@@ -299,7 +297,7 @@
                     case '$provider':
                     case '$from':
                         query[opts.sourceType] = sources[0] ? sources[0].getFullId() : undefined;
-                        query['$select'] = sources[0].createQuerySelect();
+                        query['$select'] = sources[0].createQuerySelect(opts.selectedFields);
                         break;
                     case '$join':
                         var selectLeft = {},
@@ -308,11 +306,11 @@
                         query['$join'] = opts.sourceOpts['$join'];
 
                         if(query['$join'].$left){
-                            selectLeft = WorkspaceController.getEntryByFullId(query['$join'].$left).createQuerySelect(true);
+                            selectLeft = WorkspaceController.getEntryByFullId(query['$join'].$left).createQuerySelect(opts.selectedFields, true);
                         }
 
                         if(query['$join'].$right){
-                            selectRight = WorkspaceController.getEntryByFullId(query['$join'].$right).createQuerySelect(true);
+                            selectRight = WorkspaceController.getEntryByFullId(query['$join'].$right).createQuerySelect(opts.selectedFields, true);
                         }
 
                         JSB.merge(query['$select'], selectLeft, selectRight);
@@ -323,9 +321,20 @@
                         for(var i = 0; i < sources.length; i++){
                             query['$union'].push(sources[i].getFullId());
 
-                            JSB.merge(query['$select'], sources[i].createQuerySelect());
+                            JSB.merge(query['$select'], sources[i].createQuerySelect(opts.selectedFields));
                         }
                         break;
+                    case '$cube':
+                        query['$cube'] = this.getCube().getFullId();
+                        query.$select['Столбец'] = {
+                            $const: 0
+                        };
+                        break;
+                    default:
+                        query['$from'] = {};
+                        query.$select['Столбец'] = {
+                            $const: 0
+                        };
                 }
 		    } catch(ex){
 		        JSB.getLogger().error(ex);

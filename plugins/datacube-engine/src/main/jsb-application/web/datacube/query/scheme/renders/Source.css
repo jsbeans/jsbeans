@@ -1,0 +1,77 @@
+.sourceRender .source,
+.sourceRender .source {
+    display: inline-block;
+    border: 1px solid transparent;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.sourceRender .source:not(.notEditable):hover,
+.sourceRender .source:not(.notEditable):hover {
+    cursor: pointer;
+    border: 1px solid #d8d8d8;
+    background-color: #e3eff5;
+    color: #1091d2;
+}
+
+.sourceRender .removeBtn,
+.sourceRender .addBtn {
+    cursor: pointer;
+}
+
+.sourceRender .removeBtn {
+    border-radius: 100%;
+    border: 1px solid red;
+    padding: 5px;
+    color: white;
+    background: #f96363;
+    margin-left: 5px;
+    text-shadow: 1px 1px 1px black;
+}
+
+.sourceRender .addBtn {
+    color: #88bd69;
+    font-size: 22px;
+    margin: 0 5px 0 auto;
+    display: block;
+    width: 25px;
+}
+
+.sourceRender > .items > .item {
+    position: relative;
+    height: 35px;
+}
+
+.sourceRender > .items > .item > * {
+    vertical-align: middle;
+}
+
+.sourceRender > .items > .item > .sortableHandle {
+     display: inline-block;
+     height: calc(100% - 4px);
+     width: 10px;
+     border: 1px solid #d6d4d4;
+     border-radius: 3px;
+     background-color: #f3f3f3;
+     cursor: move;
+}
+
+.sourceRender > .items > .item > .sortableHandle > div {
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border: 1px solid #a09f9f;
+    border-radius: 4px;
+    background: #cccccc;
+	margin-top: -2px;
+}
+
+.sourceRender > .items > .item > .sortableHandle > div:first-child {
+    top: calc(50% - 6px);
+}
+
+.sourceRender > .items > .item > .sortableHandle > div:last-child {
+    top: calc(50% + 6px);
+}

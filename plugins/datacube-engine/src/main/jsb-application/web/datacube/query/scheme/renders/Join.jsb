@@ -113,6 +113,8 @@
 	                var sel = $this.$(selectors[i]).jsb();
 	                sel.setOptions(options);
 	            }
+
+	            $this.onChange();
 	        }
 
 	        if(!this._values.$joinType){
@@ -134,14 +136,14 @@
 	        this.append(joinType);
 
 	        // source 1
-	        var sourceLeft = this.$('<div class="sourceLeft"></div>');
+	        var sourceLeft = this.$('<div class="source sourceLeft"></div>');
 	        this.append(sourceLeft);
 	        this.createSource(this._values.$left, sourceLeft, function(newSourceType, source){
 	            changeSource('.firstField', source);
 	        });
 
 	        // source 2
-	        var sourceRight = this.$('<div class="sourceRight"></div>');
+	        var sourceRight = this.$('<div class="source sourceRight"></div>');
 	        this.append(sourceRight);
 	        this.createSource(this._values.$right, sourceRight, function(newSourceType, source){
 	            changeSource('.secondField', source);

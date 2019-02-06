@@ -2,15 +2,20 @@
 	$name: 'DataCube.Query.SchemeController',
 	$parent: 'JSB.Controls.Control',
 	$require: ['JSB.Widgets.ToolManager',
-	           //'DataCube.Query.Syntax',
-	           'DataCube.Query.QuerySyntax',
+	           'DataCube.Query.Syntax',
+	           'DataCube.Query.MenuTool',
 	           'DataCube.Query.SchemeTool',
 	           'DataCube.Query.RenderRepository',
 	           'css:Controller.css'],
 
 	$client: {
+	    _eventSubscribers: {
+	        onRenderCreate: {}
+	    },
+	    _menu: null,
+	    _query: null,
 	    _renders: [],
-	    _sliceId: null,
+	    _slice: null,
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -19,8 +24,6 @@
             if(opts && opts.data && opts.values){
                 this.refresh(opts);
             }
-
-            // add + btn
 	    },
 
 	    options: {
@@ -33,58 +36,24 @@
             }
 	    },
 
-        construct: function(values){
-            var descriptions = [],
-                order = 0;
-
-            for(var i in values){
-                descriptions.push({
-                    key: i,
-                    order: order++,
-                    scheme: QuerySyntax.getSchema(i) || {},
-                    values: values[i]
-                });
+        createRender: function(parent, key, values, options){
+            if(!Syntax.getSchema(key)){   // temp
+                return;
             }
 
-            descriptions.sort(function(a, b){
-                var aPriority = JSB.isDefined(a.scheme.priority) ? a.scheme.priority : 0.5,
-                    bPriority = JSB.isDefined(b.scheme.priority) ? b.scheme.priority : 0.5;
-
-                if(aPriority > bPriority){
-                    return -1;
-                }
-
-                if(aPriority < bPriority){
-                    return 1;
-                }
-
-                return a.order - b.order;
-            });
-
-            for(var i = 0; i < descriptions.length; i++){
-                if(!descriptions[i].scheme.render){
-                    continue;
-                }
-
-                var render = this.createRender(null, descriptions[i]);
-
-                if(render){
-                    this.append(render);
-                }
-            }
-
-            this._values = values;
-        },
-
-        createRender: function(parent, desc){
             var render = RenderRepository.createRender({
                 controller: this,
-                desc: desc,
+                key: key,
+                options: options,
                 parent: parent,
+                scheme: Syntax.getSchema(key),
+                values: values
             });
 
             if(render){
                 this._renders.push(render);
+
+                this.noticeSubscribers('onRenderCreate', render);
             }
 
             return render;
@@ -104,8 +73,30 @@
             return this._data;
         },
 
+        getSlice: function(){
+            return this._slice;
+        },
+
         getValues: function(){
             return this._values;
+        },
+
+        // временный метод для взаимодействия со старым редактором
+        getSourceFields: function(callback){
+            this._query.getSourceFields(callback);
+        },
+
+        hideMenu: function(){
+            if(this._menu){
+                this._menu.close();
+                this._menu = null;
+            }
+        },
+
+        noticeSubscribers: function(eventName, desc){
+            for(var i in this._eventSubscribers[eventName]){
+                this._eventSubscribers[eventName][i].call(this, desc);
+            }
         },
 
         onChange: function(){
@@ -116,23 +107,78 @@
 
         refresh: function(opts){
             RenderRepository.ensureReady(function(){
+                if($this._query){
+                    $this._query.destroy();
+                }
+
                 $this._data = opts.data || {};
 
-                $this._sliceId = opts.sliceId;
+                $this._slice = opts.slice;
 
-                $this.construct(opts.values);
+                var query = $this.createRender(null, '$query', opts.values);
+
+                if(query){
+                    $this.append(query);
+                    $this._values = opts.values;
+                    $this._query = query;
+                }
             });
+        },
+
+        showMenu: function(opts){
+            if(this._menu){
+                if(this._menu.getTool().getElementId() === opts.elementId){
+                    return;
+                } else {
+                    this._menu.close();
+                }
+            }
+
+			this._menu = ToolManager.activate({
+				id: 'queryMenuTool',
+				cmd: 'show',
+				data: {
+				    controller: this,
+				    elementId: opts.elementId,
+				    removable: JSB.isDefined(opts.removable) ? opts.removable : true
+				},
+				scope: null,
+				target: {
+					selector: opts.element,
+					dock: 'top',
+					offsetVert: -1
+				},
+				callback: function(act){
+				    if(act === 'edit'){
+				        $this.showTool({
+				            element: opts.element,
+				            key: opts.key,
+				            selectedId: opts.key,
+				            callback: function(desc){
+				                if(opts.caller.changeTo){
+				                    opts.caller.changeTo(desc.key);
+				                } else {
+				                    // todo: standard proc
+				                    debugger;
+				                }
+				            }
+				        });
+				    } else { // delete
+				        opts.caller.remove();
+				        $this.onChange();
+				    }
+				}
+			});
         },
 
         showTool: function(opts){
 			var popupTool = ToolManager.activate({
 				id: 'querySchemeTool',
 				cmd: 'show',
-				data: {
+				data: JSB.merge(opts, {
 				    data: this._data,
-                    selectedId: opts.selectedId,
-                    sliceId: this._sliceId,
-				},
+				    sliceId: this.getSlice().getFullId()
+				}),
 				scope: null,
 				target: {
 					selector: opts.element,
@@ -147,6 +193,18 @@
 				*/
 				callback: opts.callback
 			});
+        },
+
+        subscribeTo: function(id, eventName, callback){
+            this._eventSubscribers[eventName][id] = callback;
+        },
+
+        unsubscribe: function(id){
+            for(var i in this._eventSubscribers){
+                if(this._eventSubscribers[i][id]){
+                    delete this._eventSubscribers[i][id];
+                }
+            }
         }
     }
 }

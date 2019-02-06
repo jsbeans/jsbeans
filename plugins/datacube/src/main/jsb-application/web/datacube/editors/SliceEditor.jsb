@@ -6,6 +6,7 @@
 	               'JSB.Controls.ScrollBox',
                    'DataCube.Query.QueryEditor',
                    'JSB.Widgets.PrimitiveEditor',
+                   'DataCube.Query.SchemeController',
                    'JSB.Widgets.RendererRepository'],
 
 	    $constructor: function(opts){
@@ -32,8 +33,6 @@
 			    caption: 'Сохранить',
 			    cssClass: 'okBtn',
 			    enabled: false,
-				hasIcon: false,
-				hasCaption: true,
 				tooltip: 'Сохранить',
 			    onclick: function(){
 			        $this.apply();
@@ -49,11 +48,15 @@
 			});
 			this.append(scrollBox);
 
-			this.queryEditor = new QueryEditor({
+			this.newEditor = new SchemeController();
+			scrollBox.append(this.newEditor);
+
+			this.oldEditor = new QueryEditor({
 			    cssClass: 'queryEditor',
+			    editorView: this,
 			    mode: 'diagram'
 			});
-			scrollBox.append(this.queryEditor);
+			scrollBox.append(this.oldEditor);
 
 			this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(sender, msg, obj){
 			    $this.addClass('active');
@@ -70,7 +73,7 @@
 	    },
 
 	    apply: function(){
-	        var query = this.query,
+	        var query = this.collectQuery(),
 	            name = this.sliceName.getData().getValue();
 
 	        this.sliceData.entry.server().setSliceParams({
@@ -89,6 +92,15 @@
 	            }
 	        });
 	    },
+
+		// временная функция пока не полностью реализован новый редактор
+		collectQuery: function(){
+		    return JSB.merge({}, this.oldEditor.getValue(), this.newEditor.getValues());
+		},
+
+		getSourceFields: function(callback){
+            this.newEditor.getSourceFields(callback);
+		},
 
 	    update: function(data){
             var sliceId = data.entry.getId(),
@@ -109,16 +121,45 @@
 
             this.sliceName.setData(data.entry.getName());
 
-            this.query = JSB.clone(data.entry.getQuery());
             this.sliceData = data;
 
-            this.queryEditor.setOption('sliceId', sliceId);
-            this.queryEditor.setOption('cubeFields', data.cubeFields);
-            this.queryEditor.setOption('cubeSlices', slices);
-            this.queryEditor.setOption('measurements', this.measurements);
-            this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
+            var slicedQuery = this.sliceQuery(data.entry.getQuery());
 
-            this.queryEditor.set(this.query);
-	    }
+            this.newEditor.refresh({
+                data: {
+                    cubeFields: data.cubeFields,
+                    cubeSlices: data.slices
+                },
+                slice: data.entry,
+                values: slicedQuery.newEditor
+            })
+
+            this.oldEditor.setOption('sliceId', sliceId);
+            this.oldEditor.setOption('cubeFields', data.cubeFields);
+            this.oldEditor.setOption('cubeSlices', slices);
+            this.oldEditor.setOption('sliceSelectOptions', sliceSelectOptions);
+
+            this.oldEditor.set(slicedQuery.oldEditor);
+	    },
+
+		// временная функция пока не полностью реализован новый редактор
+		sliceQuery: function(query){
+		    var slicedQuery = {
+		        newEditor: {},
+		        oldEditor: {}
+		    };
+
+		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];
+
+		    for(var i in query){
+		        if(newKeys.indexOf(i) > -1){
+		            slicedQuery.newEditor[i] = query[i];
+		        } else {
+		            slicedQuery.oldEditor[i] = query[i];
+		        }
+		    }
+
+		    return slicedQuery;
+		}
 	}
 }

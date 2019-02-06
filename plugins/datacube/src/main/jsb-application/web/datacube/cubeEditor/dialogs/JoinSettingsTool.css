@@ -16,7 +16,5 @@
 }
 
 .joinSettingsTool > .okBtn {
-    margin-left: calc(100% - 84px - 106px - 10px);
-    background-color: #88bd69;
-    box-shadow: 0 0 0 1px #709659;
+    margin-left: calc(100% - 126px - 153px - 10px);
 }

@@ -109,15 +109,6 @@
 			});
 			header.append(editBtn.getElement());
 
-			// source link type
-			/*
-			var sourceMessage = this.$('<span class="source">Тип связи: </span>');
-			this.append(sourceMessage);
-
-			this.sourceType = this.$('<b class="sourceType">' + this.entry.getLinkType() + '</b>');
-			sourceMessage.append(this.sourceType);
-			*/
-
 			// select fields
 			this.fieldList = new ScrollBox({
 			    cssClass: 'fields',
@@ -254,36 +245,6 @@
                 var fromType = this.entry.getFromType();
 
                 if(fromType !== '$cube'){
-                	/*
-                    var fromClass = '',
-                        fromName = this.leftConnectorElement.children('.tooltip');
-
-                    if(fromName.length === 0){
-                        fromName = this.$('<div class="tooltip"></div>');
-                        this.leftConnectorElement.append(fromName);
-                    }
-
-                    switch(fromType){
-                        case '$from':
-                            fromClass = 'fromIcon';
-                            fromName.text('From');
-                            break;
-                        case '$join':
-                            fromClass = 'joinIcon';
-                            fromName.text('Join');
-                            break;
-                        case '$union':
-                            fromClass = 'unionIcon';
-                            fromName.text('Union');
-                            break;
-                        case '$recursive':
-                            fromClass = 'recursiveIcon';
-                            fromName.text('Recursive');
-                            break;
-                    }
-
-                    this.leftConnectorElement.removeClass().addClass('connector left hasIcon ' + fromClass);
-                    */
                     // update links
                     var oldLinks = this._sources,
                         newLinks = opts && opts.sources || this.entry.extractSources(opts && opts.query || this.entry.getQuery());
@@ -297,6 +258,10 @@
 
                     for(var i = 0; i < newLinks.length; i++){
                         var id = newLinks[i];
+
+                        if(JSB.isObject(id)){
+                            continue;
+                        }
 
                         if(!oldLinks[id]){
                             oldLinks[id] = this.editor.createLink(fromType, {

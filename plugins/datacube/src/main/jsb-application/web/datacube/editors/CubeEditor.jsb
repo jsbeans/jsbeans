@@ -6,6 +6,7 @@
 	               'JSB.Widgets.Diagram',
 	               'JSB.Widgets.ToolManager',
 	               'DataCube.Dialogs.JoinSettingsTool',
+	               'DataCube.Dialogs.AddProviderTool',
 	               'DataCube.SliceDiagramNode',
 					'css:CubeEditor.css'],
 
@@ -161,7 +162,19 @@
                     var d = ui.draggable;
 
                     for(var i in d.get(0).draggingItems){
-                        $this.addDataSource(d.get(0).draggingItems[i].obj.getTargetEntry(), $this.diagram.pageToSheetCoords({x: ui.offset.left, y: ui.offset.top}));
+                        ToolManager.activate({
+                            id: 'addProviderTool',
+                            cmd: 'show',
+                            data: {
+                                tableEntry: d.get(0).draggingItems[i].obj.getTargetEntry()
+                            },
+                            target: {
+                                selector: $this.getElement()
+                            },
+                            callback: function(selectedFields){
+                                $this.addDataSource(d.get(0).draggingItems[i].obj.getTargetEntry(), selectedFields, $this.diagram.pageToSheetCoords({x: ui.offset.left, y: ui.offset.top}));
+                            }
+                        });
                         break;
                     }
                 }
@@ -234,26 +247,7 @@
             addBtn.click(function(evt){
                 evt.stopPropagation();
 
-                var sources = [],
-                    sourceType = undefined;
-
-                for(var i in $this._selectedItems){
-                    sources.push($this._selectedItems[i].entry);
-                }
-
-                if(sources.length === 1){
-                    sourceType = '$from';
-                } else if (sources.length > 2){
-                    sourceType = '$union';
-                } else if(sources.length === 0) {
-                } else {
-                    return;
-                }
-
-                $this.addSlice(null, {
-                    sources: sourceType ? sources : undefined,
-                    sourceType: sourceType
-                });
+                $this.addSlice();
             });
 
             var removeBtn = this.$('<div class="removeBtn hidden fas fa-trash-alt"></div>');
@@ -337,10 +331,11 @@
             });
 	    },
 
-	    addDataSource: function(entry, position){
+	    addDataSource: function(entry, selectedFields, position){
 	        this._cube.server().addSlice({
 	            diagramOpts: {position: position},
                 name: entry.getName(),
+                selectedFields: selectedFields,
 	            sources: [entry],
 	            sourceType: '$provider'
 	        }, function(slice, fail){

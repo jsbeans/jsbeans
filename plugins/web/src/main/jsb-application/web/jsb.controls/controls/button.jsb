@@ -10,7 +10,7 @@
             this.addClass('jsb-button');
 
             // options caption
-            if(this.options.hasCaption){
+            if(this.options.caption){
                 this.caption = this.$('<div class="caption"></div>');
                 this.append(this.caption);
 
@@ -18,7 +18,7 @@
             }
 
             // options icon
-            if(this.options.hasIcon){
+            if(this.options.icon){
                 this.icon = this.$('<div class="icon"></div>').addClass(this.options.iconPosition);
 
                 if(this.options.iconPosition === 'left' || this.options.iconPosition === 'top'){
@@ -31,18 +31,24 @@
             }
 
             // only icon
-            if(this.options.hasIcon && !this.options.hasCaption){
-                this.icon.addClass('onlyIcon');
+            if(this.options.icon && !this.options.caption){
+                this.addClass('onlyIcon');
             }
 
             // options tooltip
             if(!this.options.tooltip && JSB().isString(this.options.caption)){
                 this.options.tooltip = this.options.caption;
             }
+
             if(this.options.tooltip){
                 this.getElement().attr('title', this.options.tooltip);
             }
 
+            if(this.options.onClick){
+                this.getElement().click(this.options.onClick);
+            }
+
+            // todo: remove in all places
             // options events
             for(var i in this.options){
                 if(i.substr(0, 2) === 'on'){
@@ -55,15 +61,13 @@
 	    },
 
         options: {
+            caption: null,
             enabled: true,
-
-            hasIcon: false,
+            icon: false,
             iconPosition: 'left',
+            tooltip: null,
 
-            hasCaption: true,
-            caption: '',
-
-            tooltip: null
+            onClick: null
         },
 
 		enable: function(b){

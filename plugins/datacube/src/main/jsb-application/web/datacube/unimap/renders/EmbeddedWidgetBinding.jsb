@@ -7,8 +7,7 @@
 	$client: {
 	    _beans: [],
 
-	    $require: ['JSB.Controls.Button', 
-	               'JSB.Controls.Checkbox', 
+	    $require: ['JSB.Controls.Checkbox',
 	               'DataCube.Renderers.EmbededWidgetRenderer',
 	               'css:EmbeddedWidgetBinding.css'],
 

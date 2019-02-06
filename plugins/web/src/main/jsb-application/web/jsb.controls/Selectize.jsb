@@ -89,7 +89,7 @@
 	    },
 
 	    _init: function() {
-	        var options = this._checkOptions(this.options.options);
+	        var options = this._checkOptions(this.options.options || []);
 
 	        this._select.selectize({
 	            labelField: this.options.labelField,

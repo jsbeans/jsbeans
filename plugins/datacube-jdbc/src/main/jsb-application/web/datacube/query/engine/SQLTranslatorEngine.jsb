@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Engine.SQLEngine',
+	$name: 'DataCube.Query.Engine.SQLTranslatorEngine',
 	$parent: 'DataCube.Query.Engine.Engine',
 
 	$singleton: true,

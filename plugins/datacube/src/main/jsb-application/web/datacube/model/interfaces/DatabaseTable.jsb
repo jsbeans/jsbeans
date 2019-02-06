@@ -13,16 +13,20 @@
 	        return {
 	            $context: this.getName(),
 	            $provider: this.getFullId(),
-	            $select: this.createQuerySelect(useContext)
+	            $select: this.createQuerySelect(null, useContext)
 	        };
 	    },
 
-	    createQuerySelect: function(useContext){
+	    createQuerySelect: function(selectedFields, useContext){
             var fields = this.extractFields(),
                 context = this.getFullId(),
                 select = {};
 
             for(var i in fields){
+                if(selectedFields && !selectedFields[i]){
+                    continue;
+                }
+
                 if(useContext){
                     select[i] = {
                         $context: context,
@@ -40,21 +44,6 @@
 
 		extractFields: function(){
 		    throw new Error('Method "extractFields" should be overridden');
-		},
-
-		extractFieldsForDisplay: function(){
-            var fields = this.extractFields(),
-                fieldsArr = [];
-
-            for(var j in fields){
-                fieldsArr.push({
-                    key: j,
-                    name: fields[j].name,
-                    type: fields[j].type
-                });
-            }
-
-            return fieldsArr;
 		},
 
 		getStore: function(){

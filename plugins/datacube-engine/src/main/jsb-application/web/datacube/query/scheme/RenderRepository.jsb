@@ -38,7 +38,7 @@
 				throw new Error('RendererRepository has not been initialized yet');
 			}
 
-			var rName = this._rendersMap[opts.desc.scheme.render];
+			var rName = this._rendersMap[opts.scheme.render];
 
 			if(!rName || !JSB.get(rName)){
 				return null;

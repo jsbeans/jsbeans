@@ -8,7 +8,7 @@
 		    'JSB.Store.Sql.JDBC',
 		    'DataCube.Query.QueryUtils',
 
-            'java:org.h2.tools.SimpleResultSet',
+            'java:org.jsbeans.datacube.SimpleResultSet',
             'java:org.h2.tools.SimpleRowSource',
             'java:java.sql.Types',
             'java:java.sql.JDBCType',
@@ -28,17 +28,22 @@ debugger;
 		    }
 
 		    var columns = [];
+		    var sqlTypes = [];
+		    var rows = 0;
 		    var it = Query.execute(queryDescriptor);
             var resultSet = new SimpleResultSet(new SimpleRowSource() {
                 readRow: function () {
-QueryUtils.logDebug('Next row started');
                     var obj = it.next();
-QueryUtils.logDebug('Next Object:\n{}', JSON.stringify(obj));
+                    if (++rows % 1000 == 0) {
+                        QueryUtils.logDebug('Loaded {} objects, last:{}', rows, JSON.stringify(obj));
+                    }
                     if (obj) {
                         var row = [];
                         for(var i = 0; i < columns.length; i++) {
-                            row.push(obj[columns[i]]);
+                            var value = JDBC.convertToSQLValue(obj[columns[i]], sqlTypes[i]);
+                            row.push(value);
                         }
+                        rows ++;
                         return row;
                     } else {
                         return null;
@@ -66,6 +71,7 @@ QueryUtils.logDebug('Next Object:\n{}', JSON.stringify(obj));
                     resultSet.addColumn(alias, Types.VARCHAR, 0, 0);
                 }
                 columns.push(alias);
+                sqlTypes.push(sqlType||Types.VARCHAR);
 		    }
 
             return resultSet;

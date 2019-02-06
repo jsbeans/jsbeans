@@ -218,6 +218,45 @@
 
 				if(item == '#fieldName' || item == '$fieldName'){ //  || item == '$fieldExpr'
 				    editor.getSourceSelectFields(function(sources){
+				        for(var i = 0; i < sources.length; i++){
+				            var fields = sources[i].fields,
+				                el = $this.$('<div class="sourceName" title="' + sources[i].entry.getName() + '"></div>');
+
+                            el.append(RendererRepository.createRendererFor(sources[i].entry));
+
+                            $this.itemsListBox.addItem({
+                                allowHover: false,
+                                allowSelect: false,
+                                key: i,
+                                value: i,
+                                scheme: item,
+                                desc: null,
+                                element: el
+                            });
+
+                            for(var j in fields){
+                                var element = $this.$('<div class="field" title="' + j + '"> <div class="icon"></div><div class="name">' + j + '</div></div>');
+
+                                if(fields[j].type){
+                                    element.append('<div class="type">' + fields[j].type.toLowerCase() + '</div>');
+                                }
+
+                                var listItem = $this.itemsListBox.addItem({
+                                    context: sources[i].entry.getFullId(),
+                                    key: i + '_' + j,
+                                    value: j,
+                                    scheme: item,
+                                    desc: null,
+                                    element: element
+                                });
+                                if(selected && (selected.scheme == '$fieldName' || selected.scheme == '$fieldExpr' && selected.context) && selected.value == j){
+                                    $this.itemsListBox.selectItem(listItem.key, null, null, null, true);
+                                    $this.itemsListBox.scrollTo(listItem.key);
+                                }
+                            }
+				        }
+
+/*
 				        for(var j in sources){
 				            var fields = sources[j].fields,
 				                el = $this.$('<div class="sourceName" title="' + j + '"></div>');
@@ -255,6 +294,7 @@
                                 }
                             }
 				        }
+*/
 				    });
 				} else if(item == '$fieldExpr'){
 				    editor.getSliceFields(function(result){

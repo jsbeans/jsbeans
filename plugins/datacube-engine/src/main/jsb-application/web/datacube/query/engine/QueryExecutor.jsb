@@ -53,6 +53,9 @@
 		            var task = $this.pool.get(key);
     		        task.status = 'started';
 		            task.iterator = engine.execute(name, $this, queryDescriptor);
+		            if (task.iterator) {
+		                task.iterator.meta.engine = JSB.merge({}, $this.getEngineConfig(name), {alias:name});
+		            }
 		        } catch(e) {
 		            task.error = e;
 		        } finally {
@@ -61,9 +64,14 @@
 		    }, 1, key);
 		},
 
-		getEngine: function(name){
+		getEngineConfig: function(name){
 		    var engine = Config.get('datacube.query.engines.' + name);
 		    QueryUtils.throwError(engine, 'Unknown query engine configuration "{}"', name);
+		    return engine;
+		},
+
+		getEngine: function(name){
+		    var engine = $this.getEngineConfig(name);
             var inst = JSB.getInstance(engine.jsb);
             QueryUtils.throwError(inst, 'Query engine "{}" instance is null', name);
             return inst;
@@ -139,7 +147,6 @@
                 JSB.cancelDefer(key);
                 $this.pool.remove(key);
             }
-            $this.pool = null;
 		    $base();
 		},
 	}
