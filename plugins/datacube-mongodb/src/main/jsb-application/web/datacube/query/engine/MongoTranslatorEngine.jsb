@@ -19,6 +19,9 @@
 
 		    var providers = QueryUtils.extractProviders(query, cube);
 		    // all - mongo
+		    if (providers.length == 0) {
+		        return null;
+		    }
             for(var  i = 0; i < providers.length; i++) {
                 if(!(providers[i].getStore() instanceof MongodbStore)){
                     return null;

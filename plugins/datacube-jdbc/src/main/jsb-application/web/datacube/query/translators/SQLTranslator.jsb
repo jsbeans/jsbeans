@@ -97,6 +97,10 @@
                 return $this._quotedName($this._translateContext(query)) +
                         ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
             }
+            if (JSB.isEqual({}, query)) {
+                return "(SELECT null)";
+            }
+
 
             /// is remote query with same providers
             var providers = QueryUtils.extractProviders(query, $this.cube,

@@ -36,7 +36,7 @@ debugger;
                 url: 'jdbc:h2:' + '~/system.db'
             });;
             store.asSQL().connectedJDBC(function(connection){
-                return JDBC.executeUpdate(connection, 'DROP ALIAS IF EXISTS DATACUBE; CREATE ALIAS DATACUBE FOR "org.jsbeans.datacube.RemoteQueryIterator.datacube"; ');
+                return JDBC.executeUpdate(connection, 'DROP ALIAS IF EXISTS DATACUBE; CREATE ALIAS datacube FOR "org.jsbeans.datacube.RemoteQueryIterator.datacube"; ');
             });
 		    return {
 		        getStore: function() {
