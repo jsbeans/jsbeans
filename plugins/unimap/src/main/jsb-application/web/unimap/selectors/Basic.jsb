@@ -176,6 +176,10 @@
     setName: function(name){
         this._selectorOpts.name = name;
     },
+    
+    getName: function(){
+    	return this._selectorOpts.name || this.scheme().name;
+    },
 
     setFullValue: function(val){
         this._values[0] = val;

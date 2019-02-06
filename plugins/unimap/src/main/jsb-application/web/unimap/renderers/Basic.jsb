@@ -202,6 +202,10 @@
         getCommonGroupValues: function(commonGroup){
             return this._schemeController.getCommonGroupValues(commonGroup);
         },
+        
+        getRenderersByCommonField: function(commonGroup){
+        	return this._schemeController.getRenderersByCommonField(commonGroup);
+        },
 
         getContext: function(isObj){
             return this._schemeController.getContext(isObj);
