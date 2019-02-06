@@ -200,8 +200,8 @@
 	            });
 	        }
 
-	        function createDefault(){
-                var source = this.$('<div>Источник не задан</div>');
+	        function createDefault(text){
+                var source = this.$('<div>' + text + '</div>');
 
                 if(isEditable){
                     appendElement.click(function(){
@@ -225,6 +225,7 @@
 
 	        switch(typeof value){
 	            case 'object':  // query
+	                createDefault('Независимый срез');
 	                break;
                 case 'string':  // slice/provider id
                     this.server().getEntry(value, function(res, fail){
@@ -239,7 +240,7 @@
                     });
                     break;
                 default:
-                    createDefault();
+                    createDefault('Источник не задан');
 	        }
 	    },
 

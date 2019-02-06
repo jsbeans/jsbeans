@@ -72,12 +72,16 @@
 			}
 		},
 
-		createQuerySelect: function(useContext){
+		createQuerySelect: function(selectedFields, useContext){
             var fields = this.extractFields(),
                 context = this.getFullId(),
                 select = {};
 
             for(var i in fields){
+                if(selectedFields && !selectedFields[i]){
+                    continue;
+                }
+
                 var fieldName = i;
 
                 if(this.commentDesc.isUseComment){
@@ -103,16 +107,25 @@
             return select;
 		},
 
-		extractFields: function(opts){
+		extractFields: function(considerComments){
 			var columns = this.getDescriptor().columns,
 			    fields = {};
 
             for(var i in columns){
-                var nativeType = columns[i].datatypeName;
+                var nativeType = columns[i].datatypeName,
+                    fieldName = i;
+
+                if(considerComments && this.commentDesc.isUseComment){
+                    if(this.commentDesc.isObject){
+                        fieldName = columns[i].comment[this.commentDesc.field];
+                    } else { // string
+                        fieldName = columns[i].comment;
+                    }
+                }
 
                 fields[i] = {
                     comment: columns[i].comment,
-                    name: i,
+                    name: fieldName,
                     nativeType: nativeType,
                     type: JDBC.toJsonType(nativeType)
                 }

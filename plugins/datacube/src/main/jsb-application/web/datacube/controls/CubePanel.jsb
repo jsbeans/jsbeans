@@ -4,12 +4,12 @@
     $client: {
         $require: ['JSB.Controls.ScrollBox',
                    'JSB.Controls.Checkbox',
-                   'JSB.Controls.Switch'],
+                   'JSB.Controls.Switch',
+                   'css:CubePanel.css'],
 
         $constructor: function(opts){
             $base(opts);
 
-            $jsb.loadCss('CubePanel.css');
             this.addClass('cubePanel');
 
             var caption = this.$('<header>Поля и измерения куба</header>');

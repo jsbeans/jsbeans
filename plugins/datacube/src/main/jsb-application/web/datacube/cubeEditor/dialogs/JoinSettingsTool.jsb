@@ -28,7 +28,7 @@
 
 			var cancelBtn = new Button({
 			    caption: 'Отмена',
-			    cssClass: 'cancelBtn',
+			    cssClass: 'textButton cancelBtn',
 				tooltip: 'Отмена',
 			    onclick: function(){
 			        $this.close();
@@ -38,7 +38,7 @@
 
 			var okBtn = new Button({
 			    caption: 'Сохранить',
-			    cssClass: 'okBtn',
+			    cssClass: 'textButton okBtn',
 				tooltip: 'Сохранить',
 			    onclick: function(){
                     $this.data.callback.call($this, $this.controller.getValues());

@@ -672,16 +672,18 @@
 			} else {
 				this.sheet.append(node.getElement());
 			}
-			
-			node._setInitialized();
-			
-			if(this.options.onChange){
-				this.options.onChange.call(this);
-			}
-			if(this.options.onCreate){
-				this.options.onCreate.call(this, node);
-			}
-			
+
+			JSB.defer(function(){
+                node._setInitialized();
+
+                if($this.options.onChange){
+                    $this.options.onChange.call($this);
+                }
+                if($this.options.onCreate){
+                    $this.options.onCreate.call($this, node);
+                }
+			}, 0);
+
 			return node;
 		},
 		

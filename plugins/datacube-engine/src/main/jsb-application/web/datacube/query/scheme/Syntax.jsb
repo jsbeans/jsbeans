@@ -52,6 +52,7 @@
 
 	    $provider: {
 	        render: '$source',
+	        category: 'Источник запроса',
 	        displayName: 'Таблица базы данных',
 	        isSource: true,
 	        editable: false,

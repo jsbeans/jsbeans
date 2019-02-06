@@ -171,13 +171,10 @@
 			    opts = {};
 			}
 
-			var slice = new Slice(JSB.generateUid(), this.getWorkspace(), {
+			var slice = new Slice(JSB.generateUid(), this.getWorkspace(), JSB.merge(opts, {
 			    cube: this,
-			    name: this.generateSliceName(opts.name),
-			    sources: opts.sources,
-			    sourceOpts: opts.sourceOpts,
-			    sourceType: opts.sourceType
-			});
+			    name: this.generateSliceName(opts.name)
+			}));
 
 			this.slices[slice.getFullId()] = {
 			    diagramOpts: opts.diagramOpts || {},
