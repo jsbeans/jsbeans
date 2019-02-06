@@ -193,9 +193,13 @@
 
         getData: function(){
             return this._schemeController.getData();
-        },        getInternalId: function(){
+        },
+
+        getInternalId: function(){
             return this._values.id;
-        },        getLinkedRenders: function(){
+        },
+
+        getLinkedRenders: function(){
             return this._schemeController.getLinkedRenders(this.getKey());
         },
 

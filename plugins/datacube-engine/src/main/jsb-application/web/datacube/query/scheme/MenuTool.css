@@ -1,0 +1,24 @@
+.menuToolWrapper {
+	border-radius: 6px 6px 0 0;
+    border: 1px solid #d8d8d8;
+    padding: 0;
+    box-shadow: none;
+}
+
+.queryMenuTool {
+    padding: 2px 2px 0 2px;
+}
+
+.queryMenuTool > .jsb-button > .icon {
+    width: 12px;
+    height: 12px;
+}
+
+.queryMenuTool > .jsb-button.btnEdit {
+    background: #e3eff5;
+}
+
+.queryMenuTool > .jsb-button.btnDelete {
+    background: #f9d7d7;
+    margin-left: 2px;
+}

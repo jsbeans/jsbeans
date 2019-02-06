@@ -6,8 +6,7 @@
 
 	$client: {
 	    $require: ['JSB.Controls.Editor',
-	               'JSB.Widgets.RendererRepository', 
-	               'JSB.Controls.Button', 
+	               'JSB.Widgets.RendererRepository',
 	               'Unimap.Render.DataBindingCache',
 	               'css:SourceBinding.css'],
 

@@ -178,13 +178,14 @@
 
 		            '$context': '$contextName',
 		            '$offset': '$offset',
-
+                    /*
 		            '$from':'$sourceSelect',
 		            '$join':'$join',
 		            '$union':'$union',
 		            '$recursive':'$recursive',
 		            '$cube':'$sourceSelect',
 		            '$provider':'$sourceSelect'
+		            */
 		        },
 		        optional: ['$context', '$filter', '$groupBy', '$distinct',
 		                '$postFilter', '$cubeFilter', '$sort',

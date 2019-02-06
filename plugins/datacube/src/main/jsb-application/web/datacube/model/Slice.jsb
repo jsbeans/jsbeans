@@ -167,14 +167,12 @@
 
                 $super.setName(opts.name);
 
-                if(opts.sourceType){
-                    this.query = this.generateQueryFromSource(opts);
-                    this.property('query', this.query);
+                this.query = this.generateQueryFromSource(opts);
+                this.property('query', this.query);
 
-                    if(opts.sourceType === '$provider'){
-                        this.source = opts.sources[0];
-                        this.property('source', this.source.getFullId());
-                    }
+                if(opts.sourceType === '$provider'){
+                    this.source = opts.sources[0];
+                    this.property('source', this.source.getFullId());
                 }
 				this.property('queryParams', this.queryParams);
 			} else {    // load existed slice
@@ -325,6 +323,13 @@
 
                             JSB.merge(query['$select'], sources[i].createQuerySelect());
                         }
+                        break;
+                    case '$cube':
+                    default:
+                        query['$cube'] = this.getCube().getFullId();
+                        query.$select['Столбец'] = {
+                            $const: 0
+                        };
                         break;
                 }
 		    } catch(ex){

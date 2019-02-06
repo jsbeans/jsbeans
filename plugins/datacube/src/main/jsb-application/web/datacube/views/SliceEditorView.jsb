@@ -13,12 +13,9 @@
 	           'JSB.Widgets.RendererRepository',
 	           'DataCube.Query.SchemeController',
 	           'css:SliceEditorView.css'],
-	$client: {
-		ready: false,
-		ignoreHandlers: false,
-		measurements: {},
 
-		isNew: false,
+	$client: {
+		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -38,8 +35,7 @@
                 	$this.getElement().loader({message:'Сохранение...', onShow: function(){
                 	    $this.slice.server().setSliceParams({
                             name: $this.titleEditor.getData().getValue(),
-                            measurements: $this.measurements,
-                            query: $this.query
+                            query: $this.collectQuery()
                         }, function(){
                             $this.getElement().loader('hide');
                         });
@@ -61,7 +57,7 @@
                 cssClass: "btnUpdate",
                 caption: "Анализировать",
                 onClick: function(){
-                	var q = JSB.clone($this.query);
+                	var q = JSB.clone($collectQuery());
                 	q['$analyze'] = true;
                 	$this.updateGrid(q);
                 }
@@ -120,28 +116,23 @@
 			var scrollBox = new ScrollBox();
 			vSplitBox.addToPane(0, scrollBox);
 
-            // old
-            if(!this.isNew){
-                this.queryEditor = new QueryEditor({
-                    editorView: $this,
-                    measurements: this.measurements,
-                    onChange: function(values){
-                        $this.updateTextQuery();
-                    }
-                });
-                this.queryEditor.addClass('queryEditor');
-                scrollBox.append(this.queryEditor);
-            }
+/***/
+            this.newEditor = new SchemeController({
+                onChange: function(){
+                    $this.updateTextQuery($this.collectQuery());
+                }
+            });
+            scrollBox.append(this.newEditor);
 
-            // new
-            if(this.isNew){
-                this.queryEditor = new SchemeController({
-                    onChange: function(){
-                        $this.updateTextQuery();
-                    }
-                });
-                scrollBox.append(this.queryEditor);
-			}
+            this.oldEditor = new QueryEditor({
+                cssClass: 'queryEditor',
+                editorView: $this,
+                onChange: function(values){
+                    $this.updateTextQuery($this.collectQuery());
+                }
+            });
+            scrollBox.append(this.oldEditor);
+/***/
 			
 			this.textQueryEditor = new MultiEditor({
 				valueType: "org.jsbeans.types.JsonObject",
@@ -151,9 +142,9 @@
 					if($this.ignoreHandlers){
 						return;
 					}
+
 					JSB.defer(function(){
-						$this.query = q;
-						$this.updateQuery();
+						$this.updateQuery($this.sliceQuery(q).oldEditor);
 					}, 600, 'textQueryChanged_' + $this.getId());
 				}
 			});
@@ -164,6 +155,15 @@
 				noDataMessage: 'Сформируйте запрос в конструкторе и нажмите кнопку "Обновить"'
 			});
 			hSplitBox.addToPane(1, this.gridView);
+		},
+
+		// временная функция пока не полностью реализован новый редактор
+		collectQuery: function(){
+		    return JSB.merge({}, this.oldEditor.getValue(), this.newEditor.getValues());
+		},
+
+		getSourceFields: function(callback){
+            this.newEditor.getSourceFields(callback);
 		},
 		
 		refresh: function(){
@@ -177,8 +177,7 @@
 
 			this.query = JSB.clone(this.slice.getQuery());
 
-            this.queryEditor.setOption('cube', this.slice.getCube());
-            this.queryEditor.setOption('measurements', this.measurements);
+            this.oldEditor.setOption('cube', this.slice.getCube());
 
 			this.slice.server().getEditorData(function(data, fail){
 			    if(fail){
@@ -186,61 +185,77 @@
 			        return;
 			    }
 
+			    var slicedQuery = $this.sliceQuery($this.query);
+
+                $this.newEditor.refresh({
+                    data: data,
+                    slice: $this.slice,
+                    values: slicedQuery.newEditor
+                });
+
 			    // old
-			    if(!$this.isNew){
-                    var sliceSelectOptions = [];
+                var sliceSelectOptions = [];
 
-                    for(var i in data.cubeSlices){
-                        if($this.slice.getId() === data.cubeSlices[i].getId()){
-                            continue;
-                        }
-
-                        sliceSelectOptions.push({
-                            entry: data.cubeSlices[i],
-                            key: i,
-                            value: RendererRepository.createRendererFor(data.cubeSlices[i], {showSource: true}).getElement()
-                        });
+                for(var i in data.cubeSlices){
+                    if($this.slice.getId() === data.cubeSlices[i].getId()){
+                        continue;
                     }
 
-                    $this.queryEditor.setOption('cubeFields', data.cubeFields);
-                    $this.queryEditor.setOption('cubeSlices', data.cubeSlices);
-                    $this.queryEditor.setOption('sliceSelectOptions', sliceSelectOptions);
-
-                    $this.updateQuery();
-                    $this.updateTextQuery();
-                    $this.updateGrid();
-                }
-
-                // new
-                if($this.isNew){
-                    $this.queryEditor.refresh({
-                        data: data,
-                        sliceId: $this.slice.getId(),
-                        values: $this.query
+                    sliceSelectOptions.push({
+                        entry: data.cubeSlices[i],
+                        key: i,
+                        value: RendererRepository.createRendererFor(data.cubeSlices[i], {showSource: true}).getElement()
                     });
-
-                    $this.updateTextQuery();
-                    $this.updateGrid();
                 }
+
+                $this.oldEditor.setOption('cubeFields', data.cubeFields);
+                $this.oldEditor.setOption('cubeSlices', data.cubeSlices);
+                $this.oldEditor.setOption('sliceSelectOptions', sliceSelectOptions);
+
+                $this.updateQuery(slicedQuery.oldEditor);
+
+
+                $this.updateTextQuery($this.query);
+                $this.updateGrid();
 			});
+		},
+
+		// временная функция пока не полностью реализован новый редактор
+		sliceQuery: function(query){
+		    var slicedQuery = {
+		        newEditor: {},
+		        oldEditor: {}
+		    };
+
+		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];
+
+		    for(var i in query){
+		        if(newKeys.indexOf(i) > -1){
+		            slicedQuery.newEditor[i] = query[i];
+		        } else {
+		            slicedQuery.oldEditor[i] = query[i];
+		        }
+		    }
+
+		    return slicedQuery;
 		},
 		
 		updateGrid: function(query){
-			query = query || this.query;
+		    query = query || this.collectQuery();
 			$this.gridView.updateData($this.slice, query);
 		},
 		
-		updateTextQuery: function(){
+		updateTextQuery: function(query){
 			$this.ignoreHandlers = true;
-			$this.textQueryEditor.setData($this.query);
+			$this.textQueryEditor.setData(query);
 			$this.ignoreHandlers = false;
 		},
 		
-		updateQuery: function() {
+		updateQuery: function(query) {
 			$this.ignoreHandlers = true;
 
 			try {
-				$this.queryEditor.set($this.query);
+				$this.oldEditor.set(query);
 			} catch(e) {
 			    console.log('queryEditor set error');
             }

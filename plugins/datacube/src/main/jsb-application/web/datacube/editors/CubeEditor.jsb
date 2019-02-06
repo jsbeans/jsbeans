@@ -233,7 +233,7 @@
 
             addBtn.click(function(evt){
                 evt.stopPropagation();
-
+/*
                 var sources = [],
                     sourceType = undefined;
 
@@ -254,6 +254,8 @@
                     sources: sourceType ? sources : undefined,
                     sourceType: sourceType
                 });
+*/
+                $this.addSlice();
             });
 
             var removeBtn = this.$('<div class="removeBtn hidden fas fa-trash-alt"></div>');
