@@ -10,7 +10,11 @@
 			JDBCType:       'java:java.sql.JDBCType',
 			Types:          'java:java.sql.Types',
 			SqlDate:        'java:java.sql.Date',
-			ArrayHelper: 	'java:org.jsbeans.helpers.ArrayHelper'
+			SqlTime:        'java:java.sql.Time',
+			SqlTimestamp:   'java:java.sql.Timestamp',
+			ArrayHelper: 	'java:org.jsbeans.helpers.ArrayHelper',
+
+			NativeDate:     'java:org.mozilla.javascript.NativeDate',
 		},
 
 		$constructor: function(){
@@ -597,6 +601,54 @@
                         break;
                 }
             }
+        },
+
+        convertToSQLValue: function(value, sqlType){
+            switch (sqlType) {
+                case 0+Types.BIT:
+                case 0+Types.BOOLEAN:
+                    return !!value;
+                case 0+Types.TINYINT:
+                case 0+Types.BIGINT:
+                case 0+Types.SMALLINT:
+                case 0+Types.INTEGER:
+                case 0+Types.REAL:
+                case 0+Types.FLOAT:
+                case 0+Types.DOUBLE:
+                case 0+Types.DECIMAL:
+                case 0+Types.NUMERIC:
+                    return 0.0+value;
+                case 0+Types.VARBINARY:
+                case 0+Types.BINARY:
+                case 0+Types.LONGVARBINARY:
+                case 0+Types.LONGVARCHAR:
+                case 0+Types.CHAR:
+                case 0+Types.VARCHAR:
+                case 0+Types.CLOB:
+                case 0+Types.OTHER:
+                    return ''+value;
+                case 0+Types.DATE:
+                    return new SqlDate(value.getTime());
+                case 0+Types.TIME:
+                    return new SqlTime(value.getTime());
+                case 0+Types.TIMESTAMP:
+                    return new SqlTimestamp(value.getTime());
+                case 0+Types.ARRAY:
+                    if(JSB.isArray(value)) {
+                        var array = [];
+                        for(var i = 0; i < value.length; i++) {
+                            array.push(this.convertToSQLValue(value[i]));
+                        }
+                        return array;
+                    }
+                    throw 'Type error: Expected Array';
+                case 0+Types.NULL:
+                    return null;
+                default:
+                    return value;
+            }
+
+            return value;
         },
 
         _getColumnValue: function(resultSet, i){

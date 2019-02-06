@@ -8,6 +8,7 @@
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryResultSet',
+		    'DataCube.Query.Console',
 		    'JSB.Store.Sql.JDBC',
 
 		    'java:org.jsbeans.datacube.RemoteQueryIterator',
@@ -322,6 +323,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
 		        call: function(){
 		            var subQuery = $this._generateSubQuery(query);
                     return QueryResultSet.execute({
+                        remote: {uid:uid, query: query},
                         cube: $this.cube,
                         query: query,
                         params: $this.params,
@@ -329,9 +331,17 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                     });
 		        }
 		    });
-
+            Console.message({
+                message: 'Remote qub-query prepared [{}]: ',
+                params: [uid, query]
+            });
+//if (query.$select['text']) {
+//return "datacube('"+uid+"', \"72701033ba541c20e44c94663c11156c/72b6241711752ca44af6aeb9a1f2033e\".\"id\")";
+////return "datacube('"+uid+"', \"id\")";
+//} else {
+//return "datacube('"+uid+"','')";
+//}
             return "datacube('"+uid+"')";
-		    // TODO remove callback in it.close() or error ($this or next)
 		},
 
         _closeRemoteIterators: function(){
@@ -339,6 +349,10 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                 var entry = it.next();
                 if (entry.getKey().startsWith($this.getId())) {
                     it.remove();
+                    Console.message({
+                        message: 'Remote qub-query destroyed [{}]',
+                        params: [entry.getKey()]
+                    });
                 }
             }
         },
@@ -1017,6 +1031,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
 		    var sql = '';
 
 		    sql += $this.translateQueryExpression(query.$join.$left);
+//sql += ' ("id","g_title","g_court","g_judge","g_region","g_etapd","g_result","g_vidpr","g_category","date","year","month","day","week","day_of_week") '
 		    sql += ' ' + query.$join.$joinType.toUpperCase().replace('INNER','') + ' JOIN ';
 		    sql += $this.translateQueryExpression(query.$join.$right);
             sql += $this._translatePart(' ON ', function(){

@@ -6,6 +6,7 @@
 		$require: [
 		    'DataCube.Query.Views.QueryViewsBuilder',
 		    'DataCube.Query.QueryUtils',
+		    'DataCube.Query.Console',
         ],
 
 		paramTypes: {},
@@ -83,7 +84,10 @@
                         next: function(){
                             try {
                                 if (!$this.iterator) {
-                                    QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] Executing query...');
+                                    Console.message({
+                                        message: 'Query iterator executed [{}]',
+                                        params: [this.meta.id]
+                                    });
                                     $this.iterator = $this.executeQuery(translatedQuery);
                                 }
                                 return $this.translateResult($this.iterator.next());

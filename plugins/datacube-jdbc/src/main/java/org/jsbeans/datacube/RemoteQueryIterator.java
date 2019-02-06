@@ -12,11 +12,11 @@ public class RemoteQueryIterator {
     /** Функция для вызова из H2 для получения результатов выполнения запроса
      * при вызове SQL выражения "... FROM DATACUBE('callback_uuid')"
      * */
-    public static ResultSet datacube(Connection conn, String uid){
+    public static ResultSet datacube(Connection conn, String uid, Object cond){
         Callable<ResultSet> callback = RemoteIterators.get(uid);
-
         try {
-            return callback.call();
+            ResultSet rs = callback.call();
+            return rs;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

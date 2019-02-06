@@ -99,13 +99,15 @@
                     return conn.jdbcConnection;
                 },
                 close: function(){
-                	if(closed) throw new Error('Connection already closed');
-                    closed = true;
-                    conn.deferredCloseKey = JSB.generateUid();
-                    conn.available = true;
-                    JSB.defer(function() {
-                        closeConnection(conn);
-                    }, ($this.closeUselessConnectionTimeoutSec||10)*1000, conn.deferredCloseKey);
+                	//if(closed) throw new Error('Connection already closed');
+                	if(!closed) {
+                        closed = true;
+                        conn.deferredCloseKey = JSB.generateUid();
+                        conn.available = true;
+                        JSB.defer(function() {
+                            closeConnection(conn);
+                        }, ($this.closeUselessConnectionTimeoutSec||10)*1000, conn.deferredCloseKey);
+                    }
                 },
                 closed: function(){
                 	return closed;
