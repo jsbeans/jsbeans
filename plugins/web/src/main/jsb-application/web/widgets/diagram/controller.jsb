@@ -372,7 +372,6 @@
 						if(!selMap[self.nodeMove.getId()]){
 							this.select(this.diagram.nodes, false);
 							this.select(this.diagram.links, false);
-							self.nodeMove.select(true);
 							selMap = {};
 							selMap[self.nodeMove.getId()] = self.nodeMove;
 						}
@@ -381,6 +380,10 @@
 						for(var nodeId in selMap){
 							var node = selMap[nodeId];
 							this.storedPositions[nodeId] = node.getPosition();
+						}
+					} else {
+						if(Object.keys(selMap).length == 0){
+							selMap[self.nodeMove.getId()] = self.nodeMove;
 						}
 					}
 					

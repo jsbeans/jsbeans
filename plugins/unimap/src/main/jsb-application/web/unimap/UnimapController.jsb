@@ -115,16 +115,18 @@
             if(scheme.linkTo){
                 this.createLink(scheme.linkTo, render);
             }
+            
+            var commonField = scheme.commonField || scheme.editableName && scheme.editableName.commonField;
 
-            if(scheme.commonField){
-                if(!this._commonFieldsMap[scheme.commonField]){
-                    this._commonFieldsMap[scheme.commonField] = {
+            if(commonField){
+                if(!this._commonFieldsMap[commonField]){
+                    this._commonFieldsMap[commonField] = {
                         commonRenders: [],
                         commonValues: []
                     };
                 }
 
-                this._commonFieldsMap[scheme.commonField].commonRenders.push(render);
+                this._commonFieldsMap[commonField].commonRenders.push(render);
             }
 
             return render;
@@ -183,6 +185,10 @@
 	        }
 
 	        return commonFields;
+	    },
+	    
+	    getRenderersByCommonField: function(commonGroup){
+	    	return this._commonFieldsMap[commonGroup].commonRenders;
 	    },
 
 	    getCommonGroupValues: function(commonGroup){
