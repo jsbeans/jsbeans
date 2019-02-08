@@ -32,6 +32,10 @@
 	    },
 
 	    changeTo: function(newKey, newValue){
+	        if(JSB.isNull(newKey)){
+	            newKey = this.getKey();
+	        }
+
 	        this.getParent().replaceValue(this.getKey(), newKey, newValue);
 
 	        var render = this.getController().createRender(this.getParent(), newKey, newValue);
@@ -47,19 +51,13 @@
             this._header = this.$('<header>' + this._scheme.displayName + '</header>');
             this.append(this._header);
 
-            this._header.hover(function(){
-                JSB.cancelDefer('DataCube.Query.hideMenu' + $this.getId());
+            var scheme = this.getScheme();
 
-                JSB.defer(function(){
-                    $this.showMenu();
-                }, 300, 'DataCube.Query.showMenu' + $this.getId());
-            }, function(){
-                JSB.cancelDefer('DataCube.Query.showMenu' + $this.getId());
+            if(!scheme.replaceable && !scheme.removable){
+                return this._header;
+            }
 
-                JSB.defer(function(){
-                    $this.hideMenu();
-                }, 300, 'DataCube.Query.hideMenu' + $this.getId());
-            });
+            this.installMenuEvents(this._header);
 
 	        return this._header;
 	    },
@@ -96,8 +94,34 @@
 	        return this.getController().getSlice();
 	    },
 
+	    getValues: function(){
+	        return this._values;
+	    },
+
 	    hideMenu: function(){
 	        return this.getController().hideMenu();
+	    },
+
+	    installMenuEvents: function(element, id, menuOpts){
+	        id = id || this.getId();
+
+            element.hover(function(evt){
+                evt.stopPropagation();
+
+                JSB.cancelDefer('DataCube.Query.hideMenu' + id);
+
+                JSB.defer(function(){
+                    $this.showMenu(element, id, menuOpts);
+                }, 300, 'DataCube.Query.showMenu' + id);
+            }, function(evt){
+                evt.stopPropagation();
+
+                JSB.cancelDefer('DataCube.Query.showMenu' + id);
+
+                JSB.defer(function(){
+                    $this.hideMenu(element, id, menuOpts);
+                }, 300, 'DataCube.Query.hideMenu' + id);
+            });
 	    },
 
 	    onChange: function(){
@@ -114,27 +138,24 @@
 	    },
 
 	    replaceValue: function(oldKey, newKey, newValue){
+	        if(!JSB.isDefined(newValue)){
+	            newValue = this._values[oldKey];
+	        }
+
 	        delete this._values[oldKey];
 
 	        this._values[newKey] = newValue;
 	    },
 
-	    showMenu: function(){
-	        var element;
-
-	        if(this._header){
-	            element = this._header;
-	        } else {
-	            element = this.getElement();
-	        }
-
-	        return this.getController().showMenu({
+	    showMenu: function(element, id, opts){
+	        return this.getController().showMenu(JSB.merge({
 	            caller: this,
 	            element: element,
-	            elementId: this.getId(),
+	            elementId: id || this.getId(),
 	            key: this.getKey(),
-	            removable: this.getScheme().removable
-	        });
+	            removable: this.getScheme().removable,
+	            replaceable: this.getScheme().replaceable
+	        }, opts));
 	    },
 
 	    showTool: function(opts){   //element, selectedId, callback

@@ -2,7 +2,8 @@
 	$name: 'DataCube.Query.ItemList',
 	$parent: 'JSB.Controls.Control',
     $client: {
-    	$require: ['css:ItemList.css'],
+    	$require: ['JSB.Controls.ScrollBox',
+    	           'css:ItemList.css'],
 
     	_categoriesList: {},
     	_itemList: {},
@@ -42,7 +43,10 @@
                 $this.selectCategory(category);
             });
 
-            var categoryItem = this.$('<div class="categoryItem" key=["' + category + '"]></div>');
+            var categoryItem = new ScrollBox({
+                cssClass: 'categoryItem',
+                xAxisScroll: false
+            });
             this._items.append(categoryItem);
 
             this._categoriesList[category] = {
@@ -76,6 +80,11 @@
                 this._items.append(el);
             }
 
+            if(JSB.isDefined(itemDesc.allowSelect) && !itemDesc.allowSelect){
+                el.addClass('noSelect');
+                return;
+            }
+
             el.click(function(){
                 if($this.options.onSelect){
                     $this.options.onSelect.call($this, itemDesc);
@@ -83,17 +92,23 @@
             });
         },
 
-        allowItems: function(items){
+        allowItems: function(items, categories){
             var allowCategories = {};
 
-            for(var i in this._itemList){
-                var index = items.indexOf(i);
+            if(categories){
+                for(var i = 0; i < categories.length; i++){
+                    allowCategories[categories[i]] = true;
+                }
+            }
 
-                if(index > -1){
+            for(var i in this._itemList){
+                if(items.indexOf(i) > -1){
                     this._itemList[i].item.removeClass('hidden');
                     allowCategories[this._itemList[i].category] = true;
                 } else {
-                    this._itemList[i].item.addClass('hidden');
+                    if(categories.indexOf(this._itemList[i].category) === -1){
+                        this._itemList[i].item.addClass('hidden');
+                    }
                 }
             }
 
@@ -110,7 +125,7 @@
 
         clearCategory: function(category){
             if(this._categoriesList[category]){
-                this._categoriesList[category].itemsList.empty();
+                this._categoriesList[category].itemsList.clear();
             }
         },
 

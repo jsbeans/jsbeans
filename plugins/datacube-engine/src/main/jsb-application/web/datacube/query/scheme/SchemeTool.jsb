@@ -27,7 +27,9 @@
 		},
 
 		_sliceId: null,
-		_slices: [],
+
+		_SOURCE_FIELDS_NAME: 'Поля источника',
+		_CURRENT_SLICE_FIELDS_NAME: 'Поля среза',
 
 		$constructor: function(){
 		    $base();
@@ -35,6 +37,12 @@
             function itemRender(itemElement, itemDesc){
                 if(itemDesc.category === 'Срезы'){
                     itemElement.append(RendererRepository.createRendererFor(itemDesc.item));
+                } else if(itemDesc.category === $this._SOURCE_FIELDS_NAME || itemDesc.category === $this._CURRENT_SLICE_FIELDS_NAME){
+                    if(JSB.isInstanceOf(itemDesc.item, 'DataCube.Model.Slice')){
+                        itemElement.append(RendererRepository.createRendererFor(itemDesc.item));
+                    } else {
+                        itemElement.append('<div class="fieldName cubeFieldIcon sliceField">' + itemDesc.item + '</div>')
+                    }
                 } else {
                     itemElement.append('<div class="key">' + itemDesc.key + '</div><div class="desc">' + itemDesc.desc + '</div>');
                 }
@@ -56,12 +64,12 @@
 		        key = this.getData('key'),
 		        sliceId = this.getData('sliceId'),
 		        selected = this.getData('selectedId'),
-		        showSlices = this.getData('showSlices');
+		        showSlices = this.getData('showSlices'),
+		        query = this.getData('query');
 
 		    // fill slices
 		    if(this._sliceId !== sliceId){
 		        this._sliceId = sliceId;
-		        this._slices = [];
 
 		        this.itemList.clearCategory('Срезы');
 
@@ -72,27 +80,74 @@
 		                    key: i,
 		                    category: 'Срезы'
 		                });
-
-		                this._slices.push(i);
                     }
 		        }
             }
 
-            var allowItems = [];
-            switch(key){
-                case '$source':
-                    // todo: query, view
-                    allowItems = this._slices;
-                    break;
-                default:
-                    allowItems = Syntax.getReplacements(this.getData('key'));
+            var allowItems = Syntax.getReplacements(key),
+                allowCategories = [];
+
+            if(key === '$source'){
+                allowCategories.push('Срезы');
             }
 
-            this.itemList.allowItems(allowItems);
+            if(allowItems.indexOf('$field') > -1){
+                allowCategories.push(this._SOURCE_FIELDS_NAME);
+                allowCategories.push(this._CURRENT_SLICE_FIELDS_NAME);
 
+                this.itemList.clearCategory(this._SOURCE_FIELDS_NAME);
+                this.itemList.clearCategory(this._CURRENT_SLICE_FIELDS_NAME);
+
+                var fields = Object.keys(query.getValues().$select),
+                    context = query.getValues().$context;
+
+                fields.sort();
+
+                for(var i = 0; i < fields.length; i++){
+                    if(true){   // i !== selected
+		                this.itemList.addItem({
+		                    context: context,
+		                    item: fields[i],
+		                    key: 'curSlice' + '|' + fields[i],
+		                    category: this._CURRENT_SLICE_FIELDS_NAME
+		                });
+                    }
+                }
+
+                query.getSourceFields(function(slices){
+                    // slice: slices[i].entry
+                    // fields: slices[i].fields
+                    for(var i = 0; i < slices.length; i++){
+		                $this.itemList.addItem({
+		                    allowSelect: false,
+		                    item: slices[i].entry,
+		                    key: i,
+		                    category: $this._SOURCE_FIELDS_NAME
+		                });
+
+		                var sliceId = slices[i].entry.getFullId();
+
+                        var fields = Object.keys(slices[i].fields);
+                        fields.sort();
+
+		                for(var j = 0; j < fields.length; j++){
+                            $this.itemList.addItem({
+                                context: sliceId,
+                                item: fields[j],
+                                key: sliceId + '|' + fields[j],
+                                category: $this._SOURCE_FIELDS_NAME
+                            });
+		                }
+                    }
+                });
+            }
+
+            this.itemList.allowItems(allowItems, allowCategories);
+/*
             if(selected){
                 this.itemList.selectItem(selected);
             }
+*/
 		}
     }
 }

@@ -161,19 +161,7 @@
             this._header = this.$('<header>' + this._scheme.category + ': ' + this._scheme.displayName + '</header>');
             this.append(this._header);
 
-            this._header.hover(function(){
-                JSB.cancelDefer('DataCube.Query.hideMenu' + $this.getId());
-
-                JSB.defer(function(){
-                    $this.showMenu();
-                }, 300, 'DataCube.Query.showMenu' + $this.getId());
-            }, function(){
-                JSB.cancelDefer('DataCube.Query.showMenu' + $this.getId());
-
-                JSB.defer(function(){
-                    $this.hideMenu();
-                }, 300, 'DataCube.Query.hideMenu' + $this.getId());
-            });
+            this.installMenuEvents(this._header);
 
 	        return this._header;
 	    },
