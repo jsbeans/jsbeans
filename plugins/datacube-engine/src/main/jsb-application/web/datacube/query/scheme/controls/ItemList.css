@@ -1,5 +1,5 @@
 .queryItemList {
-    min-width: 300px;
+    width: 450px;
 }
 
 .queryItemList > * {
@@ -8,7 +8,7 @@
 }
 
 .queryItemList > .categories {
-    width: 45%;
+    width: 30%;
 }
 
 .queryItemList > .categories > li {
@@ -33,10 +33,14 @@
 }
 
 .queryItemList > .items {
-    width: 55%;
+    width: 70%;
     padding-left: 5px;
     border: 1px solid transparent;
     border-left: 1px solid #abc;
+}
+
+.queryItemList > .items > .categoryItem {
+    max-height: 300px;
 }
 
 .queryItemList > .items > .categoryItem:not(.selected) {
@@ -45,12 +49,12 @@
 
 .queryItemList > .items .item {
     padding: 5px 2px;
-    cursor: pointer;
 }
 
-.queryItemList > .items .item:hover {
+.queryItemList > .items .item:not(.noSelect):hover {
     background-color: #e3eff5;
     color: #1091d2;
+    cursor: pointer;
 }
 
 .queryItemList > .items .item.selected {

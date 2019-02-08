@@ -227,7 +227,7 @@
 		        oldEditor: {}
 		    };
 
-		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];
+		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];   // , '$select'
 
 		    for(var i in query){
 		        if(newKeys.indexOf(i) > -1){

@@ -11,8 +11,9 @@
 	_toolItems: [],
 
 	replacements: [
-	    ['$join', '$from', '$union'],   // '$cube'
-	    ['$slice']
+	    ['$join', '$from', '$union', '$cube'],
+	    ['$source'],
+	    ['$field']
 	],
 
 	scheme: {
@@ -67,8 +68,20 @@
 	        isSource: true,
 	        multiple: true,
 	        removable: false
-	    }
+	    },
 	    /*******/
+	    $select: {
+	        render: '$select',
+	        category: 'Запрос',
+	        displayName: 'Столбцы',
+	        desc: 'Выражения для формирования выходных полей (значений в столбцах)',
+	        removable: false,
+	        replaceable: false
+	    },
+
+	    $field: {
+	        render: '$field'
+	    }
 	},
 
 	getReplacements: function(name){
@@ -110,9 +123,12 @@
                     }
 
                     for(var k = 0; k < this.replacements[i].length; k++){
+                        /*
                         if(this.replacements[i][j] !== this.replacements[i][k]){
                             this._replacementsMap[this.replacements[i][j]].push(this.replacements[i][k]);
                         }
+                        */
+                        this._replacementsMap[this.replacements[i][j]].push(this.replacements[i][k]);
                     }
                 }
             }
@@ -125,6 +141,10 @@
 
                 if(!JSB.isDefined(this.scheme[i].editable)){
                     this.scheme[i].editable = true;
+                }
+
+                if(!JSB.isDefined(this.scheme[i].replaceable)){
+                    this.scheme[i].replaceable = true;
                 }
 
                 // create tool categories

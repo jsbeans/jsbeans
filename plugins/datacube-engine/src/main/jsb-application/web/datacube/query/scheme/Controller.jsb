@@ -73,17 +73,20 @@
             return this._data;
         },
 
+        getQuery: function(){
+            return this._query;
+        },
+
         getSlice: function(){
             return this._slice;
         },
 
-        getValues: function(){
-            return this._values;
+        getSourceFields: function(callback){
+            this.getQuery().getSourceFields(callback);
         },
 
-        // временный метод для взаимодействия со старым редактором
-        getSourceFields: function(callback){
-            this._query.getSourceFields(callback);
+        getValues: function(){
+            return this._values;
         },
 
         hideMenu: function(){
@@ -140,7 +143,8 @@
 				data: {
 				    controller: this,
 				    elementId: opts.elementId,
-				    removable: JSB.isDefined(opts.removable) ? opts.removable : true
+				    removable: opts.removable,
+				    replaceable: opts.replaceable
 				},
 				scope: null,
 				target: {
@@ -150,20 +154,29 @@
 				},
 				callback: function(act){
 				    if(act === 'edit'){
+				        if(opts.editCallback){
+				            opts.editCallback.call($this);
+				            return;
+				        }
+
 				        $this.showTool({
 				            element: opts.element,
 				            key: opts.key,
 				            selectedId: opts.key,
 				            callback: function(desc){
-				                if(opts.caller.changeTo){
-				                    opts.caller.changeTo(desc.key);
+				                if(opts.editToolCallback){
+				                    opts.editToolCallback.call($this, desc);
 				                } else {
-				                    // todo: standard proc
-				                    debugger;
+				                    opts.caller.changeTo(desc.key);
 				                }
 				            }
 				        });
 				    } else { // delete
+				        if(opts.deleteCallback){
+				            opts.deleteCallback.call($this);
+				            return;
+				        }
+
 				        opts.caller.remove();
 				        $this.onChange();
 				    }
@@ -177,7 +190,8 @@
 				cmd: 'show',
 				data: JSB.merge(opts, {
 				    data: this._data,
-				    sliceId: this.getSlice().getFullId()
+				    sliceId: this.getSlice().getFullId(),
+				    query: this.getQuery()
 				}),
 				scope: null,
 				target: {

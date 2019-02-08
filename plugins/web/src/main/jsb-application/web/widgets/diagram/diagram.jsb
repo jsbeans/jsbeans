@@ -673,16 +673,14 @@
 				this.sheet.append(node.getElement());
 			}
 
-			JSB.defer(function(){
-                node._setInitialized();
+            node._setInitialized();
 
-                if($this.options.onChange){
-                    $this.options.onChange.call($this);
-                }
-                if($this.options.onCreate){
-                    $this.options.onCreate.call($this, node);
-                }
-			}, 0);
+            if(this.options.onChange){
+                this.options.onChange.call(this);
+            }
+            if(this.options.onCreate){
+                this.options.onCreate.call(this, node);
+            }
 
 			return node;
 		},

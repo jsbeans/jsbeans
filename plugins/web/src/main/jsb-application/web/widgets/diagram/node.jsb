@@ -68,7 +68,6 @@
 				$this.updateLinks();
 				$this.diagram.updateLayout($this);
 			}
-			
 		},
 		
 		_setInitialized: function(){
@@ -433,7 +432,6 @@
 			}, 100, '_jsb_notifyUpdateHighlighted');
 		},
 
-		
 		isSelected: function(){
 			if(this.diagram.selected[this.getId()]){
 				return true;
@@ -447,7 +445,5 @@
 			}
 			return false;
 		}
-	},
-	
-	$server: {}
+	}
 }
