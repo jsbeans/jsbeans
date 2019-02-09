@@ -179,17 +179,19 @@
         return arr;
     },
     
-    findByType: function(typeName, arr, values, schemePath){
+    findByType: function(typeName, arr, selOpts, schemePath){
         if(!arr){
             arr = [];
         }
-
-        if(!values){
-            values = this._values;
-
-            if(!schemePath){
-                schemePath = this._schemePath;
-            }
+        
+        if(!schemePath){
+            schemePath = this._schemePath;
+        }
+        
+        var scheme = this.getMainSelector().getScheme(schemePath);
+        
+        if(scheme.optional && selOpts && !selOpts.checked){
+        	return arr;
         }
 
         if(JSB.isString(schemePath)){
@@ -201,6 +203,8 @@
                 schemePath += 'items';
             }
         }
+        
+        var values = (selOpts && selOpts.values) || this._values; 
 
         for(var i = 0; i < values.length; i++){
             this.getMainSelector().findByType(typeName, arr, values[i], schemePath);

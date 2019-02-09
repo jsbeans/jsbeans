@@ -88,14 +88,12 @@
         return arr;
     },
     
-    findByType: function(typeName, arr, values){
+    findByType: function(typeName, arr, selOpts){
         if(!arr){
             arr = [];
         }
 
-        if(!values){
-            values = this._values;
-        }
+        var values = (selOpts && selOpts.values) || this._values;
 
         for(var i = 0; i < values.length; i++){
             if(!values[i].items){

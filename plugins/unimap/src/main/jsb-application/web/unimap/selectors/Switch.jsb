@@ -73,14 +73,12 @@
         return arr;
     },
     
-    findByType: function(typeName, arr, values){
+    findByType: function(typeName, arr, selOpts){
         if(!arr){
             arr = [];
         }
 
-        if(!values){
-            values = this._values[0];
-        }
+        var values = (selOpts && selOpts.values) || this._values[0];
 
         this.getMainSelector().findByType(typeName, arr, values);
 

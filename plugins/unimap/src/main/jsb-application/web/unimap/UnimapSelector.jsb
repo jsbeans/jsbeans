@@ -303,8 +303,7 @@
             if(JSB.isInstanceOf(r, typeName)){
             	arr.push(r.getInstance({key: i, schemePath: curPath, selector: values[i]}));
             }
-
-            r.findByType && r.findByType(typeName, arr, values[i].values, curPath);
+            r.findByType && r.findByType(typeName, arr, values[i], curPath);
         }
 
         return arr;
