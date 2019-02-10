@@ -188,10 +188,12 @@
             schemePath = this._schemePath;
         }
         
-        var scheme = this.getMainSelector().getScheme(schemePath);
-        
-        if(scheme.optional && selOpts && !selOpts.checked){
-        	return arr;
+        if(schemePath){
+	        var scheme = this.getMainSelector().getScheme(schemePath);
+	        
+	        if(scheme && scheme.optional && selOpts && !selOpts.checked){
+	        	return arr;
+	        }
         }
 
         if(JSB.isString(schemePath)){
