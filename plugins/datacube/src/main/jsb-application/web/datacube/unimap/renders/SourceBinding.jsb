@@ -48,7 +48,7 @@
                             }
 
                             var entry = obj.getTargetEntry();
-                            if(JSB.isInstanceOf(entry,'DataCube.Model.Slice')){
+                            if(JSB.isInstanceOf(entry,'DataCube.Model.QueryableEntry')){
                                 return true;
                             }
                         }
@@ -269,7 +269,7 @@
 
 	    setBinding: function(entry, itemIndex){
 			var source = null;
-			if(JSB.isInstanceOf(entry, 'DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(entry, 'DataCube.Model.QueryableEntry')){
 				source = entry;
 			}
 
@@ -417,7 +417,7 @@
 			var recordTypes = {};
 
 			try {
-                if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+                if(JSB.isInstanceOf(source, 'DataCube.Model.QueryableEntry')){
                     iterator = source.executeQuery({useCache: true});
                 }
 
@@ -485,7 +485,7 @@
 				source: source.getId(),
 				arrayType: recordTypes,
 				workspaceId: source.getWorkspace().getId(),
-				cubeFields: source.getCube().getDimensions()
+				cubeFields: source.getQueryableContainer().getDimensions()
 			}
 	    },
 

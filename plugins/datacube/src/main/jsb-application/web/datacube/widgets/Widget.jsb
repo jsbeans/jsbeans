@@ -1124,7 +1124,7 @@
 	
 					if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
 						// figure out data provider
-						if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+						if(JSB.isInstanceOf(source, 'DataCube.Model.QueryableEntry')){
 							var extQuery = opts.layers[layerName],
 							    wrapQuery = opts.wrapQuery;
 
@@ -1340,7 +1340,7 @@
 				}
 				
 				this.needBreak = false;
-				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+				if(JSB.isInstanceOf(source, 'DataCube.Model.QueryableEntry')){
 	            	it = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: useCache});
 				} else {
 					// TODO

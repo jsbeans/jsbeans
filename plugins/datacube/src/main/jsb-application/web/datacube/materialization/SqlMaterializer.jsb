@@ -50,7 +50,7 @@
 					var rs = databaseMetaData.getTables(null, schema, suggestedName, null);
 					var curTabRecord = rs.next();
 					if(curTabRecord){
-						if(opts.useExistingTable){
+						if(opts && opts.useExistingTable){
 							alreadyExisted = true;
 							// extract columns and return current name
 							var columns = databaseMetaData.getColumns(null, schema, suggestedName, null);
@@ -325,7 +325,7 @@
 					}
 					sql += ')';
 					
-					if(opts.skipExistingRows){
+					if(opts && opts.skipExistingRows){
 						var checkIt = null, existedCount = 0;
 						try {
 							checkIt = JDBC.iteratedQuery(connection, checkSql, values);

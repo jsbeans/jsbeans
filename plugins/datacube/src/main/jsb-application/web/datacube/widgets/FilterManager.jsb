@@ -45,7 +45,7 @@
 		},
 		
 		registerSource: function(widget, source, callback){
-			var cube = source.getCube();
+			var cube = source.getQueryableContainer();
 
 			if(this.cubeFieldMap[cube.getId()]){
 				callback.call($this);
@@ -119,7 +119,7 @@
 					}
 				}
 				var q = source.getQuery();
-				var cube = source.getCube();
+				var cube = source.getQueryableContainer();
 				var cubeFields = $this.cubeFieldMap && $this.cubeFieldMap[cube.getId()];
 				if(q.$select && q.$select[field] && (!cubeFields || !cubeFields[field])){
 					cubeField = _extractCubeField(q.$select[field]);
@@ -142,7 +142,7 @@
 					var cubeField = newDesc.cubeField || $this.extractCubeField(source, newDesc.field);
 					if(cubeField){
 						newDesc.cubeField = cubeField;
-						newDesc.cubeId = source.getCube().getId();
+						newDesc.cubeId = source.getQueryableContainer().getId();
 					} else {
 						newDesc.boundTo = source.getId();
 					}
@@ -234,7 +234,7 @@
 		
 		getFiltersBySource: function(source){
 			var sourceId = source.getId();
-			var cube = source.getCube();
+			var cube = source.getQueryableContainer();
 			var cubeFields = $this.cubeFieldMap[cube.getId()];
 			var srcFilters = {};
 			
