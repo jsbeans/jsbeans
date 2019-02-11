@@ -125,7 +125,7 @@
 					cubeField = _extractCubeField(q.$select[field]);
 				}
 			} else {
-				throw new Error('Unknown source type: ' + source.getJsb().$name);
+				// throw new Error('Unknown source type: ' + source.getJsb().$name);
 			}
 
 			return cubeField;

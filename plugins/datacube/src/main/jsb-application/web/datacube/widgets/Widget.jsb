@@ -15,8 +15,27 @@
 			        optional: 'checked',
 			        editor: 'none'
 			    },
+			    icon: {
+					name: 'Иконка',
+					render: 'item',
+					editor: 'JSB.Widgets.ImageLoader',
+					priority: 95,
+				},
+				description: {
+					render: 'item',
+					name: 'Описание',
+					editor: 'JSB.Widgets.PrimitiveEditor',
+					priority: 100,
+					editorOpts: {
+						multiline: true,
+						resizable: true,
+						rows: 3,
+						cols: 50
+					}
+				}
 			}
-		}
+		},
+		
 	},
 	
 	$client: {
