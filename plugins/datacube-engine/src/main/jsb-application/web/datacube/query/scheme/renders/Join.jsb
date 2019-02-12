@@ -142,6 +142,7 @@
 	        var sourceLeft = this.$('<div class="source sourceLeft"></div>');
 	        this.append(sourceLeft);
 	        this.createSource(values.$left, sourceLeft, function(newSourceType, source){
+	            values.$left = source.getFullId();
 	            changeSource('.firstField', source);
 	        });
 
@@ -149,6 +150,7 @@
 	        var sourceRight = this.$('<div class="source sourceRight"></div>');
 	        this.append(sourceRight);
 	        this.createSource(values.$right, sourceRight, function(newSourceType, source){
+	            values.$right = source.getFullId();
 	            changeSource('.secondField', source);
 	        });
 
