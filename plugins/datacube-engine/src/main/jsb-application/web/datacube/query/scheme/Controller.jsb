@@ -12,8 +12,10 @@
 	    _eventSubscribers: {
 	        onRenderCreate: {}
 	    },
+	    _data: {},
 	    _menu: null,
 	    _query: null,
+	    _refreshUid: 0,
 	    _renders: [],
 	    _slice: null,
 
@@ -36,19 +38,25 @@
             }
 	    },
 
-        createRender: function(parent, key, values, options){
-            if(!Syntax.getSchema(key)){   // temp
-                return;
-            }
+	    /**
+	    * Создаёт рендер
+	    *
+	    * @param {object} options
+	    * @param {string} options.key - ключ из запроса ($from, $add).
+	    * @param {string} [options.renderName] - имя рендера. При отсутствии имя рендера берётся из схемы по ключу.
+	    * @param {object} options.scope - скоп значений.
+	    *
+	    * @return {object|undefined} Объект, если существует подходящий рендер
+	    */
+        createRender: function(options, parent){
+            var scheme = Syntax.getSchema(options.key);
 
-            var render = RenderRepository.createRender({
+            var render = RenderRepository.createRender(JSB.merge(options, {
                 controller: this,
-                key: key,
-                options: options,
                 parent: parent,
-                scheme: Syntax.getSchema(key),
-                values: values
-            });
+                renderName: options.renderName || scheme.render,
+                scheme: scheme
+            }));
 
             if(render){
                 this._renders.push(render);
@@ -114,11 +122,16 @@
                     $this._query.destroy();
                 }
 
-                $this._data = opts.data || {};
+                $this._data = opts.data || $this._data;
 
-                $this._slice = opts.slice;
+                $this._slice = opts.slice || $this._slice;
 
-                var query = $this.createRender(null, '$query', opts.values);
+                $this._refreshUid = JSB.generateUid();
+
+                var query = $this.createRender({
+                    renderName: '$query',
+                    scope: opts.values
+                });
 
                 if(query){
                     $this.append(query);
@@ -189,8 +202,8 @@
 				id: 'querySchemeTool',
 				cmd: 'show',
 				data: JSB.merge(opts, {
-				    data: this._data,
-				    sliceId: this.getSlice().getFullId(),
+				    data: this.getData(),
+				    sliceId: this._refreshUid,
 				    query: this.getQuery()
 				}),
 				scope: null,
@@ -199,12 +212,6 @@
 					dock: 'bottom',
 					offsetVert: -1
 				},
-				/*
-				constraints: [{
-					selector: element,
-					weight: 10.0
-				}],
-				*/
 				callback: opts.callback
 			});
         },

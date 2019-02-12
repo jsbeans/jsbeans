@@ -38,14 +38,14 @@
 				throw new Error('RendererRepository has not been initialized yet');
 			}
 
-			var rName = this._rendersMap[opts.scheme.render];
+			var rName = this._rendersMap[opts.renderName];
 
 			if(!rName || !JSB.get(rName)){
 				return null;
 			}
 
-			var RendererClass = JSB.get(rName).getClass();
-			return new RendererClass(opts);
+			var RenderClass = JSB.get(rName).getClass();
+			return new RenderClass(opts);
 		}
 	},
 

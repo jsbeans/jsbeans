@@ -13,6 +13,12 @@
 
             this.addClass('sourceRender');
 
+            // create header
+            var header = this.$('<header>' + this._scheme.category + ': ' + this._scheme.displayName + '</header>');
+            this.append(header);
+
+            this.installMenuEvents(header);
+
             this.construct();
         },
 
@@ -20,12 +26,10 @@
             var item = this.$('<div class="item" idx="' + index + '"></div>');
             this.items.append(item);
 
-	        var value,
-	            isMultiple = this.getScheme().multiple;
+	        var value = this.getValues(index),
+	            isMultiple = this.isMultiple();
 
 	        if(isMultiple){
-	            value = this._values[index];
-
                 item.append(`#dot
                     <div class="sortableHandle">
                         <div></div>
@@ -33,8 +37,6 @@
                         <div></div>
                     </div>
                 `);
-            } else {
-                value = this._values;
             }
 
 	        var source = this.$('<div class="source"></div>');
@@ -56,13 +58,7 @@
                         val = source.getFullId();
                 }
 
-	            if(isMultiple){
-	                var index = Number(item.attr('idx'));
-	                $this._values[index] = val;
-	            } else {
-                    $this._values = val;
-                    $this.getParent().replaceValue($this.getKey(), $this.getKey(), val);
-	            }
+                $this.setValues(val, Number(item.attr('idx')));
 
 	            $this.onChange();
 	        });
@@ -70,6 +66,7 @@
 
 	    changeTo: function(newKey){
 	        var newValue,
+	            values = this.getValues(),
 	            curKey = this.getKey();
 
             if(newKey === '$cube'){
@@ -82,35 +79,35 @@
 
 	        if(curKey === '$join'){
 	            if(newKey === '$from'){
-	                newValue = this._values.$left;
+	                newValue = values.$left;
 	            }
 
 	            if(newKey === '$union'){
-	                newValue = [this._values.$left, this._values.$right];
+	                newValue = [values.$left, values.$right];
 	            }
 	        }
 
 	        if(curKey === '$from'){
 	            if(newKey === '$join'){
 	                newValue = {
-	                    $left: this._values
+	                    $left: values
 	                };
 	            }
 
 	            if(newKey === '$union'){
-	                newValue = [this._values];
+	                newValue = [values];
 	            }
 	        }
 
 	        if(curKey === '$union'){
 	            if(newKey === '$from'){
-	                newValue = this._values[0];
+	                newValue = values[0];
 	            }
 
 	            if(newKey === '$join'){
 	                newValue = {
-	                    $left: this._values[0],
-	                    $right: this._values[1]
+	                    $left: values[0],
+	                    $right: values[1]
 	                }
 	            }
 	        }
@@ -129,18 +126,20 @@
 	    },
 
 	    construct: function(){
+            // create item list
 	        this.items = this.$('<div class="items"></div>');
 	        this.append(this.items);
 
-	        if(this.getScheme().multiple){
-	            for(var i = 0; i < this._values.length; i++){
+	        // fill items
+	        if(this.isMultiple()){
+	            for(var i = 0; i < this.getValues().length; i++){
 	                $this.addItem(i);
 	            }
 
 	            // multiple
                 this.addBtn = this.$('<i class="addBtn fas fa-plus-circle"></i>');
                 this.addBtn.click(function(){
-                    $this.addItem($this._values.length);
+                    $this.addItem($this.getValues().length);
                     $this.onChange();
                 });
                 this.append(this.addBtn);
@@ -155,15 +154,6 @@
 	        } else {
 	            this.addItem(0);
 	        }
-	    },
-
-	    createHeader: function(){
-            this._header = this.$('<header>' + this._scheme.category + ': ' + this._scheme.displayName + '</header>');
-            this.append(this._header);
-
-            this.installMenuEvents(this._header);
-
-	        return this._header;
 	    },
 
 	    createSource: function(value, appendElement, changeCallback){
@@ -233,17 +223,18 @@
 	    },
 
 	    getSourceFields: function(callback){
-	        var sources;
+	        var sources,
+	            values = this.getValues();
 
 	        switch(this.getKey()){
 	            case '$from':
-	                sources = [this._values];
+	                sources = [values];
 	                break;
                 case '$join':
-                    sources = [this._values.$left, this._values.$right];
+                    sources = [values.$left, values.$right];
                     break;
                 case '$union':
-                    sources = this._values;
+                    sources = values;
                     break;
 	        }
 
@@ -256,6 +247,20 @@
 	        });
 	    },
 
+        /**
+        * Возвращает значения из скопа для текущего рендера
+        * @params {number} index - индекс нужного значения
+        *
+        * @return {object} значения
+        */
+	    getValues: function(index){
+	        if(this.isMultiple() && JSB.isDefined(index)){
+	            return $base()[index];
+	        }
+
+	        return $base();
+	    },
+
 	    removeItem: function(item){
 	        var items = this.items.find('>.item'),
 	            itemIndex = Number(item.attr('idx'));
@@ -263,7 +268,7 @@
 	        for(var i = 0; i < items.length; i++){
 	            if(i === itemIndex){
 	                items[i].remove();
-	                this._values.splice(i, 1);
+	                this.getValues().splice(i, 1);
 	                continue;
 	            }
 
@@ -284,14 +289,26 @@
 	                this.$(items[i]).attr('idx', i);
 
 	                if(idx > i){
-	                    var el = this._values.splice(idx, 1);
-	                    this._values.splice(i, 0, el[0]);
+	                    var el = this.getValues().splice(idx, 1);
+	                    this.getValues().splice(i, 0, el[0]);
 	                }
 	            }
 	        }
 
 	        $this.onChange();
-	    }
+	    },
+
+        /**
+        * Устанавливает новое значение для текущего ключа
+        * @param {*} новое значение
+        */
+	    setValues: function(val, index){
+	        if(this.isMultiple() && JSB.isDefined(index)){
+	            this._scope[this.getKey()][index] = val;
+	        } else {
+	            $base(val);
+            }
+	    },
     },
 
     $server: {
@@ -305,13 +322,17 @@
             var sources = [];
 
             for(var i = 0; i < ids.length; i++){
-                var entry = WorkspaceController.getEntryByFullId(ids[i]);
+                try{
+                    var entry = WorkspaceController.getEntryByFullId(ids[i]);
 
-                if(entry){
-                    sources.push({
-                        entry: entry,
-                        fields: entry.extractFields()
-                    });
+                    if(entry){
+                        sources.push({
+                            entry: entry,
+                            fields: entry.extractFields()
+                        });
+                    }
+                } catch(ex){
+                    JSB.getLogger().error('DataCube.Query.Renders.Source: invalid entry full id.');
                 }
             }
 
