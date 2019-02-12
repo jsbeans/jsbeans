@@ -13,7 +13,6 @@
         ],
 
 		execute: function(name, executor, queryDescriptor){
-debugger;
 		    var query = queryDescriptor.query;
 		    var cube = queryDescriptor.cube;
 		    var params = queryDescriptor.params;

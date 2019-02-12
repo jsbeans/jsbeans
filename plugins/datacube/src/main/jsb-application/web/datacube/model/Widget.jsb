@@ -181,14 +181,14 @@
 			this.property('sourcesIds', opts.sourcesIds);
 
 			this.setName(opts.name, true);
-
+/*
 			this.getDashboard().load(); // todo: update only after change source
 			// update interoperation maps in all widgets of current dashboard
 			var widgets = this.getDashboard().getWrappers();
-			
+			this.getDashboard().store();
+*/			
 			this.dataVersion++;
 			
-			this.getDashboard().store();
 			this.updateSources();
 			return {sources: this.sources};
 		},

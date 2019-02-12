@@ -232,7 +232,7 @@
 
             // basic types
             $this.$(td).empty();
-            $this.$(td).text(val);
+            $this.$(td).text('' + val);
             $this.$(td).attr('type', valType);
             
             if(valType == 'boolean'){

@@ -41,7 +41,7 @@
     display: inline-block;
     vertical-align: middle;
     line-height: 20px;
-    width: calc(100% - 25px);
+    /* width: calc(100% - 25px); */
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
