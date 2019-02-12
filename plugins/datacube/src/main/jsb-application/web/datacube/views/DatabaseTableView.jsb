@@ -3,12 +3,45 @@
 	$parent: 'JSB.Workspace.BrowserView',
 
 	$client: {
-		//$require: ['css:WelcomeView.css'],
+		$require: ['Handsontable'],
 		$constructor: function(opts){
 			$base(opts);
+
+            this.handsontable = new Handsontable({
+            	noDataMessage: 'Нет данных',
+                table: {
+                    rowHeaders: false,
+                    readOnly: true,
+                    manualRowMove: false
+                },
+                callbacks: {
+                    createHeader: function(i, header){
+                        return header;
+                    }
+                }
+            });
+            this.append(this.handsontable);
 		},
 
-		refresh: function(){}
+		refresh: function(){
+		    var table = this.getCurrentEntry();
+
+		    table.server().extractFields(function(res, fail){
+		        if(fail){
+		            return;
+		        }
+
+		        var fieldsArray = [];
+
+		        for(var i in res){
+		            fieldsArray.push(res[i]);
+		        }
+
+		        $this.handsontable.clear();
+
+		        $this.handsontable.loadData(fieldsArray);
+		    });
+		}
 	},
 
 	$server: {
