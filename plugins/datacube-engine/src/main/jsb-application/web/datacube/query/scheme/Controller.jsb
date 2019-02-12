@@ -15,6 +15,7 @@
 	    _data: {},
 	    _menu: null,
 	    _query: null,
+	    _refreshUid: 0,
 	    _renders: [],
 	    _slice: null,
 
@@ -125,6 +126,8 @@
 
                 $this._slice = opts.slice || $this._slice;
 
+                $this._refreshUid = JSB.generateUid();
+
                 var query = $this.createRender({
                     renderName: '$query',
                     scope: opts.values
@@ -199,8 +202,8 @@
 				id: 'querySchemeTool',
 				cmd: 'show',
 				data: JSB.merge(opts, {
-				    data: this._data,
-				    sliceId: this.getSlice().getFullId(),
+				    data: this.getData(),
+				    sliceId: this._refreshUid,
 				    query: this.getQuery()
 				}),
 				scope: null,
