@@ -20,23 +20,24 @@
 	            curValue = {
 	                compare: '$eq'
 	            },
-	            value = {};
+	            value = {},
+	            values = this.getValues();
 
             if(!JSB.isDefined(index)){
-                index = this._values.$filter.$and.length;
+                index = values.$filter.$and.length;
             }
 
-            if(this._values.$filter.$and[index]){
-                value = this._values.$filter.$and[index];
+            if(values.$filter.$and[index]){
+                value = values.$filter.$and[index];
 
-                curValue.compare = Object.keys(this._values.$filter.$and[index])[0];
+                curValue.compare = Object.keys(values.$filter.$and[index])[0];
 
                 if(curValue.compare){
-                    curValue.first = this._values.$filter.$and[index][curValue.compare][0];
-                    curValue.second = this._values.$filter.$and[index][curValue.compare][1];
+                    curValue.first = values.$filter.$and[index][curValue.compare][0];
+                    curValue.second = values.$filter.$and[index][curValue.compare][1];
                 }
             } else {
-                this._values.$filter.$and[index] = value;
+                values.$filter.$and[index] = value;
             }
 
 	        function updateCurValue(){
@@ -53,11 +54,11 @@
 
 	        var firstField = new Selectize({
 	            cssClass: 'firstField',
-	            options: this._values.$left && Object.keys(sources[this._values.$left].extractFields()),
+	            options: values.$left && Object.keys(sources[values.$left].extractFields()),
 	            value: curValue.first && curValue.first.$field,
 	            onChange: function(value){
 	                curValue.first = {
-	                    $context: $this._values.$left,
+	                    $context: values.$left,
 	                    $field: value
 	                };
 	                updateCurValue();
@@ -78,11 +79,11 @@
 
 	        var secondField = new Selectize({
 	            cssClass: 'secondField',
-	            options: this._values.$right && Object.keys(sources[this._values.$right].extractFields()),
+	            options: values.$right && Object.keys(sources[values.$right].extractFields()),
 	            value: curValue.second && curValue.second.$field,
 	            onChange: function(value){
 	                curValue.second = {
-	                    $context: $this._values.$right,
+	                    $context: values.$right,
 	                    $field: value
 	                };
 	                updateCurValue();
@@ -93,8 +94,8 @@
 	        var removeBtn = this.$('<div class="removeBtn fas fa-trash-alt"></div>');
 	        item.append(removeBtn);
 	        removeBtn.click(function(){
-	            var index = $this._values.$filter.$and.indexOf(value);
-	            $this._values.$filter.$and.splice(index, 1);
+	            var index = values.$filter.$and.indexOf(value);
+	            values.$filter.$and.splice(index, 1);
 
 	            item.remove();
 
@@ -117,8 +118,10 @@
 	            $this.onChange();
 	        }
 
-	        if(!this._values.$joinType){
-	            this._values.$joinType = 'inner';
+	        var values = this.getValues();
+
+	        if(!values.$joinType){
+	            values.$joinType = 'inner';
 	        }
 
 	        // join type
@@ -127,9 +130,9 @@
 	            label: 'JoinType',
 	            onlySelect: true,
 	            options: ['inner', 'left outer', 'right outer', 'full'],
-	            value: this._values.$joinType,
+	            value: values.$joinType,
 	            onChange: function(value){
-	                $this._values.$joinType = value;
+	                values.$joinType = value;
 	                $this.onChange();
 	            }
 	        });
@@ -138,14 +141,14 @@
 	        // source 1
 	        var sourceLeft = this.$('<div class="source sourceLeft"></div>');
 	        this.append(sourceLeft);
-	        this.createSource(this._values.$left, sourceLeft, function(newSourceType, source){
+	        this.createSource(values.$left, sourceLeft, function(newSourceType, source){
 	            changeSource('.firstField', source);
 	        });
 
 	        // source 2
 	        var sourceRight = this.$('<div class="source sourceRight"></div>');
 	        this.append(sourceRight);
-	        this.createSource(this._values.$right, sourceRight, function(newSourceType, source){
+	        this.createSource(values.$right, sourceRight, function(newSourceType, source){
 	            changeSource('.secondField', source);
 	        });
 
@@ -159,12 +162,12 @@
             });
             this.append(this.addBtn);
 
-	        if(this._values.$filter && this._values.$filter.$and){
-	            for(var i = 0; i < this._values.$filter.$and.length; i++){
+	        if(values.$filter && values.$filter.$and){
+	            for(var i = 0; i < values.$filter.$and.length; i++){
 	                this.addItem(i);
 	            }
 	        } else {
-	            this._values.$filter = {
+	            values.$filter = {
 	                $and: []
 	            };
 

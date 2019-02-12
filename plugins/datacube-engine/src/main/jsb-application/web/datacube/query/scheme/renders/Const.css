@@ -1,0 +1,26 @@
+.constRender > * {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.constRender > .value {
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.constRender > .value:hover {
+    cursor: pointer;
+    border: 1px solid #d8d8d8;
+    background-color: #e3eff5;
+    color: #1091d2;
+}
+
+.constRender > .value > input {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 5px;
+}

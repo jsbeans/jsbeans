@@ -98,8 +98,8 @@
                 this.itemList.clearCategory(this._SOURCE_FIELDS_NAME);
                 this.itemList.clearCategory(this._CURRENT_SLICE_FIELDS_NAME);
 
-                var fields = Object.keys(query.getValues().$select),
-                    context = query.getValues().$context;
+                var fields = Object.keys(query.getScope().$select),
+                    context = query.getScope().$context;
 
                 fields.sort();
 

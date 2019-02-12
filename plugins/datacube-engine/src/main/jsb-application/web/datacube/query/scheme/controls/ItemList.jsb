@@ -123,6 +123,10 @@
             this.selectDefaultCategory();
         },
 
+        clear: function(){
+            //
+        },
+
         clearCategory: function(category){
             if(this._categoriesList[category]){
                 this._categoriesList[category].itemsList.clear();

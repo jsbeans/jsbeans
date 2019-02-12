@@ -27,7 +27,7 @@
             var descriptions = [],
                 order = 0;
 
-            for(var i in this._values){
+            for(var i in this.getScope()){
                 descriptions.push({
                     key: i,
                     order: order++,
@@ -51,7 +51,9 @@
             });
 
             for(var i = 0; i < descriptions.length; i++){
-                var render = this.createRender(descriptions[i].key, this._values[descriptions[i].key], {
+                var render = this.createRender({
+                    key: descriptions[i].key,
+                    scope: this.getScope(),
                     queryBean: this
                 });
 

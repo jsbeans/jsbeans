@@ -10,7 +10,13 @@
 
 	        this.addClass('cubeFieldIcon sliceField');
 
-	        this.append(this._values);
+	        this.append(this.getValues());
+
+	        var context = this.getContext();
+
+	        if(context){
+	            this.getElement().attr('title', context);
+	        }
 
             this.installMenuEvents(this.getElement(), null, {
                 removable: false,
@@ -24,15 +30,9 @@
                             newVal['$context'] = desc.context;
                         }
 
-                        $this.getParent().replaceValue($this.getValues(), $this.getValues(), newVal);
-
-                        var render = $this.getController().createRender($this.getParent(), $this.getKey(), desc.item);
-
-                        if(render){
-                            $this.getElement().replaceWith(render.getElement());
-                            $this.onChange();
-                            $this.destroy();
-                        }
+                        $this.changeTo($this.getRenderName(), newVal);
+                    } else {
+                        //
                     }
                 }
             });
@@ -40,6 +40,10 @@
 
 	    defineContext: function(){
 	        //
+	    },
+
+	    getContext: function(){
+	        return this.getParent().getValues()['$context'];
 	    }
 	}
 }

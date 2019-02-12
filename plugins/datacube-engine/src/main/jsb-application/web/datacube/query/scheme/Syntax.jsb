@@ -13,7 +13,7 @@
 	replacements: [
 	    ['$join', '$from', '$union', '$cube'],
 	    ['$source'],
-	    ['$field']
+	    ['$field', '$add', '$const']
 	],
 
 	scheme: {
@@ -81,6 +81,50 @@
 
 	    $field: {
 	        render: '$field'
+	    },
+
+	    // math operators
+	    $add: {
+	        render: '$math',
+	        category: 'Математические операторы',
+	        displayName: '+',
+	        desc: 'Сложение чисел',
+	        arg: 2
+	    },
+
+	    // another
+	    $const: {
+	        render: '$const',
+	        category: 'Разное',
+	        displayName: 'Константа',
+	        desc: 'Постоянное значение выбранного типа',
+	        values: [
+	        {
+                key: 'number',
+                displayName: 'Число',
+                desc: 'Числовая константа'
+	        },
+	        {
+                key: 'string',
+                displayName: 'Текст',
+                desc: 'Текстовая константа'
+	        },
+	        {
+                key: 'boolTrue',
+                displayName: 'Истина',
+                desc: 'Булева истина'
+	        },
+	        {
+                key: 'boolFalse',
+                displayName: 'Ложь',
+                desc: 'Булева ложь'
+	        },
+	        {
+                key: 'null',
+                displayName: 'Нуль',
+                desc: 'Пустое значение'
+	        }
+	        ]
 	    }
 	},
 
