@@ -38,6 +38,7 @@
 
                             $this.onChange();
                         }
+                        $this.$(window).off('click.renameQueryFieldInput');
                     });
 
                     $this.$(window).on('click.renameQueryFieldInput', function(){
@@ -49,11 +50,6 @@
                     });
 
                     input.focus();
-                },
-                deleteCallback: function(){
-                    $this.remove();
-
-                    $this.onChange();
                 }
             });
 

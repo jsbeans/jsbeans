@@ -32,6 +32,10 @@
 	        this._renderName = opts.renderName;
 	        this._scheme = opts.scheme;
 	        this._scope = opts.scope;
+
+	        if(!this.getValues() && this.getDefaultValues()){
+	            this.setValues(this.getDefaultValues());
+	        }
 	    },
 
         /**
@@ -94,6 +98,14 @@
 
 	    getData: function(key){
 	        return this.getController().getData(key);
+	    },
+
+        /**
+        * Возвращает значение по умолчанию для новых элементов
+        * @return {*} значение по умолчанию
+        */
+	    getDefaultValues: function(){
+	        return this.getScheme().defaultValues;
 	    },
 
         /**
@@ -199,7 +211,7 @@
         * Удаляет текущее значение из скопа и уничтожает рендер
         */
 	    remove: function(){
-	        delete this.getScope(this.getKey());
+	        delete this._scope[this.getKey()];
 
 	        this.destroy();
 	    },

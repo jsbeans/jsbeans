@@ -76,7 +76,8 @@
 	        displayName: 'Столбцы',
 	        desc: 'Выражения для формирования выходных полей (значений в столбцах)',
 	        removable: false,
-	        replaceable: false
+	        replaceable: false,
+	        defaultValues: {$const: 0}
 	    },
 
 	    $field: {
@@ -89,7 +90,8 @@
 	        category: 'Математические операторы',
 	        displayName: '+',
 	        desc: 'Сложение чисел',
-	        arg: 2
+	        multiple: true,
+	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
 	    // another
