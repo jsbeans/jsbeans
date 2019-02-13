@@ -71,9 +71,9 @@
                             }
                             var entry = obj.getTargetEntry();
                             if($this._scheme.accept){
-                            	var acceptArr = [];
-                            	if(!JSB.isArray($this._scheme.accept)){
-                            		acceptArr.push($this._scheme.accept);
+                            	var acceptArr = $this._scheme.accept;
+                            	if(!JSB.isArray(acceptArr)){
+                            		acceptArr = [acceptArr];
                             	}
                             	for(var i = 0; i < acceptArr.length; i++){
                             		if(JSB.isInstanceOf(entry, acceptArr[i])){

@@ -575,20 +575,24 @@
 					priorityList = [posObj.right, posObj.rightCenter, posObj.rightBottom, posObj.left, posObj.leftCenter, posObj.leftBottom, posObj.bottom, posObj.top];
 					break;
 				}
+				var bestR = null;
+				var bestRect = null;
 				for(var i in priorityList){
 					var rect = priorityList[i];
 					var testR = this.test(rect.x, rect.y, rect.w, rect.h);
-					if(testR > 0){
-						continue;
+					if(bestR === null || bestR > testR){
+						bestR = testR;
+						bestRect = rect;
+						if(testR === 0){
+							break;
+						}
 					}
-					this.rect = rect;
-					elt.css({
-						'left': this.rect.x,
-						'top': this.rect.y,
-/*						'min-width': this.rect.w*/
-					});
-					break;
 				}
+				this.rect = bestRect;
+				elt.css({
+					'left': this.rect.x,
+					'top': this.rect.y,
+				});
 				this.affinityPoint = {x:selRect.left + selRect.width / 2, y:selRect.top + selRect.height / 2};
 			} else {
 				// find out affinity point

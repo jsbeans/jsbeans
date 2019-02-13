@@ -12,8 +12,10 @@
 	    _eventSubscribers: {
 	        onRenderCreate: {}
 	    },
+	    _data: {},
 	    _menu: null,
 	    _query: null,
+	    _refreshUid: 0,
 	    _renders: [],
 	    _slice: null,
 
@@ -36,19 +38,25 @@
             }
 	    },
 
-        createRender: function(parent, key, values, options){
-            if(!Syntax.getSchema(key)){   // temp
-                return;
-            }
+	    /**
+	    * Создаёт рендер
+	    *
+	    * @param {object} options
+	    * @param {string} options.key - ключ из запроса ($from, $add).
+	    * @param {string} [options.renderName] - имя рендера. При отсутствии имя рендера берётся из схемы по ключу.
+	    * @param {object} options.scope - скоп значений.
+	    *
+	    * @return {object|undefined} Объект, если существует подходящий рендер
+	    */
+        createRender: function(options, parent){
+            var scheme = Syntax.getSchema(options.key);
 
-            var render = RenderRepository.createRender({
+            var render = RenderRepository.createRender(JSB.merge(options, {
                 controller: this,
-                key: key,
-                options: options,
                 parent: parent,
-                scheme: Syntax.getSchema(key),
-                values: values
-            });
+                renderName: options.renderName || scheme.render,
+                scheme: scheme
+            }));
 
             if(render){
                 this._renders.push(render);
@@ -73,17 +81,20 @@
             return this._data;
         },
 
+        getQuery: function(){
+            return this._query;
+        },
+
         getSlice: function(){
             return this._slice;
         },
 
-        getValues: function(){
-            return this._values;
+        getSourceFields: function(callback){
+            this.getQuery().getSourceFields(callback);
         },
 
-        // временный метод для взаимодействия со старым редактором
-        getSourceFields: function(callback){
-            this._query.getSourceFields(callback);
+        getValues: function(){
+            return this._values;
         },
 
         hideMenu: function(){
@@ -111,11 +122,16 @@
                     $this._query.destroy();
                 }
 
-                $this._data = opts.data || {};
+                $this._data = opts.data || $this._data;
 
-                $this._slice = opts.slice;
+                $this._slice = opts.slice || $this._slice;
 
-                var query = $this.createRender(null, '$query', opts.values);
+                $this._refreshUid = JSB.generateUid();
+
+                var query = $this.createRender({
+                    renderName: '$query',
+                    scope: opts.values
+                });
 
                 if(query){
                     $this.append(query);
@@ -140,7 +156,8 @@
 				data: {
 				    controller: this,
 				    elementId: opts.elementId,
-				    removable: JSB.isDefined(opts.removable) ? opts.removable : true
+				    removable: opts.removable,
+				    replaceable: opts.replaceable
 				},
 				scope: null,
 				target: {
@@ -150,20 +167,29 @@
 				},
 				callback: function(act){
 				    if(act === 'edit'){
+				        if(opts.editCallback){
+				            opts.editCallback.call($this);
+				            return;
+				        }
+
 				        $this.showTool({
 				            element: opts.element,
 				            key: opts.key,
 				            selectedId: opts.key,
 				            callback: function(desc){
-				                if(opts.caller.changeTo){
-				                    opts.caller.changeTo(desc.key);
+				                if(opts.editToolCallback){
+				                    opts.editToolCallback.call($this, desc);
 				                } else {
-				                    // todo: standard proc
-				                    debugger;
+				                    opts.caller.changeTo(desc.key);
 				                }
 				            }
 				        });
 				    } else { // delete
+				        if(opts.deleteCallback){
+				            opts.deleteCallback.call($this);
+				            return;
+				        }
+
 				        opts.caller.remove();
 				        $this.onChange();
 				    }
@@ -176,8 +202,9 @@
 				id: 'querySchemeTool',
 				cmd: 'show',
 				data: JSB.merge(opts, {
-				    data: this._data,
-				    sliceId: this.getSlice().getFullId()
+				    data: this.getData(),
+				    sliceId: this._refreshUid,
+				    query: this.getQuery()
 				}),
 				scope: null,
 				target: {
@@ -185,12 +212,6 @@
 					dock: 'bottom',
 					offsetVert: -1
 				},
-				/*
-				constraints: [{
-					selector: element,
-					weight: 10.0
-				}],
-				*/
 				callback: opts.callback
 			});
         },

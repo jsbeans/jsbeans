@@ -35,7 +35,7 @@
                 	$this.getElement().loader({message:'Сохранение...', onShow: function(){
                 	    $this.slice.server().setSliceParams({
                             name: $this.titleEditor.getData().getValue(),
-                            query: $this.collectQuery()
+                            query: $this.query
                         }, function(){
                             $this.getElement().loader('hide');
                         });
@@ -119,7 +119,8 @@
 /***/
             this.newEditor = new SchemeController({
                 onChange: function(){
-                    $this.updateTextQuery($this.collectQuery());
+                    $this.query = $this.collectQuery();
+                    $this.updateTextQuery($this.query);
                 }
             });
             scrollBox.append(this.newEditor);
@@ -128,7 +129,8 @@
                 cssClass: 'queryEditor',
                 editorView: $this,
                 onChange: function(values){
-                    $this.updateTextQuery($this.collectQuery());
+                    $this.query = $this.collectQuery();
+                    $this.updateTextQuery($this.query);
                 }
             });
             scrollBox.append(this.oldEditor);
@@ -144,7 +146,8 @@
 					}
 
 					JSB.defer(function(){
-						$this.updateQuery($this.sliceQuery(q).oldEditor);
+					    $this.query = q;
+						$this.updateQuery(q);
 					}, 600, 'textQueryChanged_' + $this.getId());
 				}
 			});
@@ -159,7 +162,8 @@
 
 		// временная функция пока не полностью реализован новый редактор
 		collectQuery: function(){
-		    return JSB.merge({}, this.oldEditor.getValue(), this.newEditor.getValues());
+		    this.query = JSB.merge({}, this.oldEditor.getValue(), this.newEditor.getValues());
+		    return this.query;
 		},
 
 		getSourceFields: function(callback){
@@ -185,14 +189,6 @@
 			        return;
 			    }
 
-			    var slicedQuery = $this.sliceQuery($this.query);
-
-                $this.newEditor.refresh({
-                    data: data,
-                    slice: $this.slice,
-                    values: slicedQuery.newEditor
-                });
-
 			    // old
                 var sliceSelectOptions = [];
 
@@ -212,8 +208,7 @@
                 $this.oldEditor.setOption('cubeSlices', data.cubeSlices);
                 $this.oldEditor.setOption('sliceSelectOptions', sliceSelectOptions);
 
-                $this.updateQuery(slicedQuery.oldEditor);
-
+                $this.updateQuery($this.query, data);
 
                 $this.updateTextQuery($this.query);
                 $this.updateGrid();
@@ -227,7 +222,7 @@
 		        oldEditor: {}
 		    };
 
-		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];
+		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];   // , '$select'
 
 		    for(var i in query){
 		        if(newKeys.indexOf(i) > -1){
@@ -251,11 +246,22 @@
 			$this.ignoreHandlers = false;
 		},
 		
-		updateQuery: function(query) {
+		updateQuery: function(query, data) {
 			$this.ignoreHandlers = true;
 
+			query = query || this.query;
+
+            var slicedQuery = $this.sliceQuery(query);
+
+            // new
+            this.newEditor.refresh({
+                data: data,
+                slice: this.slice,
+                values: slicedQuery.newEditor
+            });
+
 			try {
-				$this.oldEditor.set(query);
+				$this.oldEditor.set(slicedQuery.oldEditor);
 			} catch(e) {
 			    console.log('queryEditor set error');
             }

@@ -16,6 +16,7 @@
 			checkSize: true,
 			
 			onPositionChanged: function(){},
+			onSizeChanged: function(){},
 			onCreate: function(){},
 			onSelect: function(){},
 			onHighlight: function(){}
@@ -58,6 +59,9 @@
 				$this.updateConnectors();
 				$this.updateLinks();
 				$this.diagram.updateLayout($this);
+				if($this.options.onSizeChanged){
+					$this.options.onSizeChanged.call($this, $this.getRect());
+				}
 			};
 			
 			if($this.options.checkSize){
@@ -68,7 +72,6 @@
 				$this.updateLinks();
 				$this.diagram.updateLayout($this);
 			}
-			
 		},
 		
 		_setInitialized: function(){
@@ -433,7 +436,6 @@
 			}, 100, '_jsb_notifyUpdateHighlighted');
 		},
 
-		
 		isSelected: function(){
 			if(this.diagram.selected[this.getId()]){
 				return true;
@@ -447,7 +449,5 @@
 			}
 			return false;
 		}
-	},
-	
-	$server: {}
+	}
 }

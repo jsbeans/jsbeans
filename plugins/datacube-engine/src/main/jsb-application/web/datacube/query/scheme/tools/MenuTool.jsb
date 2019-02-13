@@ -32,6 +32,8 @@
 				icon: true,
 				tooltip: 'Редактировать',
 				onClick: function(evt){
+				    evt.stopPropagation();
+
 					$this.close();
 					$this.data.callback.call($this, 'edit');
 				}
@@ -43,6 +45,8 @@
 				icon: true,
 				tooltip: 'Удалить',
 				onClick: function(evt){
+				    evt.stopPropagation();
+
 					$this.close();
 					$this.data.callback.call($this, 'delete');
 				}
@@ -64,6 +68,7 @@
 
 		update: function(){
 		    this.btnDelete.classed('hidden', !this.data.data.removable);
+		    this.btnEdit.classed('hidden', !this.data.data.replaceable);
 		}
 	}
 }

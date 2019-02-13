@@ -157,5 +157,36 @@
     setBindingData: function(data, embeddedBinding){
         this._values[0].binding.data = [data];
         this._values[0].binding.embeddedBinding = embeddedBinding;
+    },
+    
+    $client: {
+    	getBoundSource: function(callback){
+    		if(!this.hasBinding()){
+    			if(callback){
+    				callback.call(this, null);
+    			}
+    			return;
+    		}
+    		this.server().getBoundSource(this._values, function(obj){
+    			if(callback){
+    				callback.call(this, obj);
+    			}
+    		})
+    	}
+    },
+    
+    $server: {
+    	$require: ['JSB.Workspace.WorkspaceController'],
+    	
+    	getBoundSource: function(values){
+    		if(!values){
+    			values = this._values;
+    		}
+    		if(values && values.length > 0 && values[0].binding && values[0].binding.workspaceId && values[0].binding.source){
+    			var wsId = values[0].binding.workspaceId;
+    			var eId = values[0].binding.source;
+    			return WorkspaceController.getEntry(wsId, eId);
+    		}
+    	}
     }
 }

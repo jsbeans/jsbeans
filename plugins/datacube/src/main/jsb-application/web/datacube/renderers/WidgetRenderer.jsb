@@ -20,7 +20,11 @@
 				});
 			}
 			
-			WidgetRegistry.lookupItemAttr(entry.getWidgetType(), 'icon', function(icon){
+			this.refresh();
+		},
+		
+		refresh: function(){
+			$this.server().getIcon($this.getEntry(), function(icon){
 				$this.icon.css('background-image', 'url(' + icon + ')');
 			});
 		}
@@ -33,6 +37,15 @@
 		
 		getDashboard: function(entry){
 			return entry.getWorkspace().entry(entry.getParentId());
+		},
+		
+		getIcon: function(entry){
+			var ctx = entry.getContext();
+			var iconStr = ctx.find('common icon').value();
+			if(iconStr && iconStr.length > 0){
+				return iconStr;
+			}
+			return WidgetRegistry.getItemAttr(entry.getWidgetType(), 'icon');
 		}
 	}
 }

@@ -58,7 +58,6 @@
 
             this.controller = new SchemeController({
                 data: this.data.data,
-                //sliceId: $this.slice.getId(),
                 values: {
                     $join: {
                         $left: sources[0] && sources[0].getFullId(),

@@ -11,8 +11,9 @@
 	_toolItems: [],
 
 	replacements: [
-	    ['$join', '$from', '$union'],   // '$cube'
-	    ['$slice']
+	    ['$join', '$from', '$union', '$cube'],
+	    ['$source'],
+	    ['$field', '$add', '$const']
 	],
 
 	scheme: {
@@ -67,8 +68,64 @@
 	        isSource: true,
 	        multiple: true,
 	        removable: false
-	    }
+	    },
 	    /*******/
+	    $select: {
+	        render: '$select',
+	        category: 'Запрос',
+	        displayName: 'Столбцы',
+	        desc: 'Выражения для формирования выходных полей (значений в столбцах)',
+	        removable: false,
+	        replaceable: false
+	    },
+
+	    $field: {
+	        render: '$field'
+	    },
+
+	    // math operators
+	    $add: {
+	        render: '$math',
+	        category: 'Математические операторы',
+	        displayName: '+',
+	        desc: 'Сложение чисел',
+	        arg: 2
+	    },
+
+	    // another
+	    $const: {
+	        render: '$const',
+	        category: 'Разное',
+	        displayName: 'Константа',
+	        desc: 'Постоянное значение выбранного типа',
+	        values: [
+	        {
+                key: 'number',
+                displayName: 'Число',
+                desc: 'Числовая константа'
+	        },
+	        {
+                key: 'string',
+                displayName: 'Текст',
+                desc: 'Текстовая константа'
+	        },
+	        {
+                key: 'boolTrue',
+                displayName: 'Истина',
+                desc: 'Булева истина'
+	        },
+	        {
+                key: 'boolFalse',
+                displayName: 'Ложь',
+                desc: 'Булева ложь'
+	        },
+	        {
+                key: 'null',
+                displayName: 'Нуль',
+                desc: 'Пустое значение'
+	        }
+	        ]
+	    }
 	},
 
 	getReplacements: function(name){
@@ -110,9 +167,12 @@
                     }
 
                     for(var k = 0; k < this.replacements[i].length; k++){
+                        /*
                         if(this.replacements[i][j] !== this.replacements[i][k]){
                             this._replacementsMap[this.replacements[i][j]].push(this.replacements[i][k]);
                         }
+                        */
+                        this._replacementsMap[this.replacements[i][j]].push(this.replacements[i][k]);
                     }
                 }
             }
@@ -125,6 +185,10 @@
 
                 if(!JSB.isDefined(this.scheme[i].editable)){
                     this.scheme[i].editable = true;
+                }
+
+                if(!JSB.isDefined(this.scheme[i].replaceable)){
+                    this.scheme[i].replaceable = true;
                 }
 
                 // create tool categories

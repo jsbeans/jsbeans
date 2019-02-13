@@ -76,10 +76,35 @@
 		},
 
 		combineRecord: function(record, fields){
+			
+			function detectValueTable(value){
+				var type = null;
+				if(JSB.isNull(value)){
+					type = 'null';
+				} else if(JSB.isBoolean(value)){
+					type = 'boolean';
+				} else if(JSB.isString(value)){
+					type = 'string';
+				} else if(JSB.isFloat(value)){
+					type = 'float';
+				} else if(JSB.isInteger(value)){
+					type = 'integer';
+				} else if(JSB.isArray(value)) {
+					type = 'array';
+				} else if(JSB.isObject(value)) {
+					type = 'object';
+				} else if(JSB.isDate(value)) {
+					type = 'date';
+				} else {
+					throw new Error('Unknown value type: ' + JSON.stringify(value));
+				}
+				return type;
+			}
+			
 			var bChanged = false;
 			for(var f in record){
 				// obtain record type
-				var rType = this.detectValueTable(record[f]);
+				var rType = detectValueTable(record[f]);
 				if(!JSB.isDefined(fields[f])){
 					fields[f] = {
 						name: f,
@@ -100,7 +125,7 @@
 					bChanged = this.combineRecord(record[f], fields[f].fields) || bChanged;
 				} else if(rType == 'array'){
 					for(var i = 0; i < record[f].length; i++){
-						var iType = this.detectValueTable(record[f][i]);
+						var iType = detectValueTable(record[f][i]);
 						if(!JSB.isDefined(fields[f].itemType)){
 							fields[f].itemType = iType;
 						} else {
@@ -121,29 +146,7 @@
 			return bChanged;
 		},
 
-		detectValueTable: function(value){
-			var type = null;
-			if(JSB.isNull(value)){
-				type = 'null';
-			} else if(JSB.isBoolean(value)){
-				type = 'boolean';
-			} else if(JSB.isString(value)){
-				type = 'string';
-			} else if(JSB.isFloat(value)){
-				type = 'float';
-			} else if(JSB.isInteger(value)){
-				type = 'integer';
-			} else if(JSB.isArray(value)) {
-				type = 'array';
-			} else if(JSB.isObject(value)) {
-				type = 'object';
-			} else if(JSB.isDate(value)) {
-				type = 'date';
-			} else {
-				throw new Error('Unknown value type: ' + JSON.stringify(value));
-			}
-			return type;
-		},
+		
 
 		extractFields: function(opts){
 			if(this.fields && (!opts || !opts.refresh)){

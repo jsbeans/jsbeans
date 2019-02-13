@@ -15,8 +15,27 @@
 			        optional: 'checked',
 			        editor: 'none'
 			    },
+			    icon: {
+					name: 'Иконка',
+					render: 'item',
+					editor: 'JSB.Widgets.ImageLoader',
+					priority: 95,
+				},
+				description: {
+					render: 'item',
+					name: 'Описание',
+					editor: 'JSB.Widgets.PrimitiveEditor',
+					priority: 100,
+					editorOpts: {
+						multiline: true,
+						resizable: true,
+						rows: 3,
+						cols: 50
+					}
+				}
 			}
-		}
+		},
+		
 	},
 	
 	$client: {
@@ -1124,7 +1143,7 @@
 	
 					if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
 						// figure out data provider
-						if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+						if(JSB.isInstanceOf(source, 'DataCube.Model.QueryableEntry')){
 							var extQuery = opts.layers[layerName],
 							    wrapQuery = opts.wrapQuery;
 
@@ -1340,7 +1359,7 @@
 				}
 				
 				this.needBreak = false;
-				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+				if(JSB.isInstanceOf(source, 'DataCube.Model.QueryableEntry')){
 	            	it = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: useCache});
 				} else {
 					// TODO

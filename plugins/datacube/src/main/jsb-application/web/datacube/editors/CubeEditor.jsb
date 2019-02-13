@@ -150,6 +150,9 @@
                             if(JSB.isInstanceOf(entry, 'DataCube.Model.DatabaseTable')){
                                 return true;
                             }
+                            if(JSB.isInstanceOf(entry, 'DataCube.Model.QueryableEntry')){
+                                return true;
+                            }
                         }
                     }
                     return false;

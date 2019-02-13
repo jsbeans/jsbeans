@@ -24,12 +24,13 @@
 			this.append(this.table);
 
             //callbacks
-            this.callbacks = opts.callbacks;
+            this.callbacks = opts.callbacks || {};
 
 			this.handsontable_options = JSB().merge(this.handsontable_options, opts.table);
 
-			if(this.callbacks.createHeader) // if undefined will set default header
+			if(this.callbacks.createHeader){ // if undefined will set default header
 			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
+            }
 
             // custom render for all cells
             function customRenderer(hotInstance, td, row, column, prop, value, cellProperties){
@@ -231,7 +232,7 @@
 
             // basic types
             $this.$(td).empty();
-            $this.$(td).text(val);
+            $this.$(td).text('' + val);
             $this.$(td).attr('type', valType);
             
             if(valType == 'boolean'){
