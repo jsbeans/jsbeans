@@ -34,7 +34,9 @@
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'JSB.Store.Sql.JDBC'],
+		           'JSB.Store.Sql.JDBC',
+		           'Datacube.Types.DataTypes',
+       ],
 		
 		commentDesc: {
 		    field: '',
@@ -127,7 +129,7 @@
                     comment: columns[i].comment,
                     name: fieldName,
                     nativeType: nativeType,
-                    type: JDBC.toJsonType(nativeType)
+                    type: DataTypes.fromAnyType(nativeType)
                 }
             }
 

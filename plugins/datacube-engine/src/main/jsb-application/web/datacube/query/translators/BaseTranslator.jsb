@@ -4,7 +4,7 @@
 
 	$server: {
 		$require: [
-		    'DataCube.Query.Views.QueryViewsBuilder',
+//		    'DataCube.Query.Views.QueryViewsBuilder',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Console',
         ],
@@ -85,8 +85,8 @@
                             try {
                                 if (!$this.iterator) {
                                     Console.message({
-                                        message: 'Query iterator executed [{}]',
-                                        params: [this.meta.id]
+                                        message: 'Query iterator executed',
+                                        params: {iteratorId: this.meta.id}
                                     });
                                     $this.iterator = $this.executeQuery(translatedQuery);
                                 }
@@ -98,6 +98,7 @@
                         },
                         close:function(){
                             $this.iterator && $this.iterator.close();
+                            $this.destroy();
                         },
                         meta: {
                             id: $this.getJsb().$name+'#'+JSB.generateUid(),
@@ -196,18 +197,18 @@ debugger;
             };
         },
 
-        buildViews: function(){
-		    // build QueryView
-		    if (!$this.queryView) {
-                try {
-                    var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
-                    $this.queryView = builder.build();
-                    $this.contextQueryViews = builder.getContextQueryViews();
-                } finally {
-                    builder && builder.destroy();
-                }
-            }
-        },
+//        buildViews: function(){
+//		    // build QueryView
+//		    if (!$this.queryView) {
+//                try {
+//                    var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
+//                    $this.queryView = builder.build();
+//                    $this.contextQueryViews = builder.getContextQueryViews();
+//                } finally {
+//                    builder && builder.destroy();
+//                }
+//            }
+//        },
 
 		translateQuery: function(dcQuery, params){
 		    throw new 'Not implemented';
@@ -361,12 +362,12 @@ debugger;
             return providers;
         },
 
-		close: function() {
+		destroy: function() {
 		    this.queryView && this.queryView.destroy();
 		    for (var v in $this.contextQueryViews) {
 		        this.contextQueryViews[v] && this.contextQueryViews[v].destroy();
 		    }
-		    this.destroy();
+		    $base();
 		},
 	}
 }

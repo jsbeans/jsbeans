@@ -30,8 +30,8 @@
 		},
 
 		selectByEnginePriority: function(its){
-		    var enginesPriority = Config.get('datacube.query.engine.selector.enginesPriority');
-		    var defaultEnginePriority = 0+Config.get('datacube.query.engine.selector.defaultEnginePriority');
+		    var enginesPriority = Config.get('datacube.query.engine.iteratorSelector.enginesPriority');
+		    var defaultEnginePriority = 0+Config.get('datacube.query.engine.iteratorSelector.defaultEnginePriority');
 		    its.sort(function(a,b){
 		        var ap = 0+enginesPriority[a.meta.engine.alias]||defaultEnginePriority;
 		        var bp = 0+enginesPriority[b.meta.engine.alias]||defaultEnginePriority;
@@ -116,7 +116,7 @@
 		},
 
 		selectVendorsOrver: function(its){
-		    var vendors = Config.get('datacube.query.engine.selector.vendorsOrder');
+		    var vendors = Config.get('datacube.query.engine.iteratorSelector.vendorsOrder');
 		    for(var v = 0; v < vendors.length; v++) {
                 for(var i = 0; i < its.length; i++) {
                     if(its[i].meta && its[i].meta.vendor == vendors[v]) {

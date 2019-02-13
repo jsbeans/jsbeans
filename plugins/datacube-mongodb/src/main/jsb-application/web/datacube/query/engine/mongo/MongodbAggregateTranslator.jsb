@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Translators.MongodbAggregateTranslator',
+	$name: 'DataCube.Query.Engine.Mongo.MongodbAggregateTranslator',
 	$parent: 'DataCube.Query.Translators.BaseTranslator',
 
 	$server: {

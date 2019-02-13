@@ -15,6 +15,31 @@
 			throw new Error('QueryableEntry.extractFields should be overriden');
 		},
 		
+		createQuerySelect: function(selectedFields, useContext){
+            var fields = this.extractFields(),
+                context = this.getFullId(),
+                select = {};
+
+            for(var i in fields){
+                if(selectedFields && !selectedFields[i]){
+                    continue;
+                }
+
+                if(useContext){
+                    select[i] = {
+                        $context: context,
+                        $field: i
+                    };
+                } else {
+                    select[i] = {
+                        $field: i
+                    };
+                }
+            }
+
+            return select;
+	    },
+		
 		extendQuery: function(query, opts){
 			var preparedQuery = JSB.clone(query);
 			var params = {};

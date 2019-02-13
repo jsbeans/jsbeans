@@ -1,6 +1,8 @@
 {
 	$name: 'DataCube.Model.Widget',
 	$parent: 'JSB.Workspace.Entry',
+	
+	$require: ['Unimap.Selector'],
 
 	dataVersion: 0,
 	dashboard: null,
@@ -41,6 +43,15 @@
 
         return scheme;
     },
+    
+    createContext: function(settings, scheme){
+		return new Selector({
+			values: settings,
+			scheme: scheme,
+			createDefaultValues: true,
+			updateValues: true
+		});
+	},
 
     $client: {
         _clientDataVersion: -1,
@@ -59,17 +70,88 @@
 	        } else {
 	            callback(this._data);
 	        }
-        }
+        },
+        
+		_values: null,
+		_scheme: null,
+		_context: null,
+		
+		loadContext: function(c){
+			if(this._context){
+				if(c){
+					c.call($this, this._context);
+				}
+				return;
+			}
+			this.loadValues(function(values, fail){
+				if(fail){
+					if(c){
+						c.call($this, null, fail);
+					}
+					return;
+				}
+				$this.loadScheme(function(scheme, fail){
+					$this._context = $this.createContext(values, scheme);
+					if(c){
+						$this._context.ensureInitialized(function(){
+							c.call($this, $this._context);	
+						});
+					}
+				});
+			});
+		},
+		
+		loadValues: function(callback){
+			if($this._values){
+				callback.call($this, JSB.clone($this._values));
+			} else {
+				this.server().getValues(function(values, fail){
+					if(fail){
+						callback.call($this, null, fail);
+						return;
+					}
+					$this._values = values;
+					callback.call($this, JSB.clone(values));
+				});
+			}
+		},
+		
+		loadScheme: function(callback){
+			if($this._scheme){
+				callback.call($this, $this._scheme);
+			} else {
+				this.server().getScheme(function(scheme, fail){
+					if(fail){
+						callback.call($this, null, fail);
+						return;
+					}
+					$this._scheme = scheme;
+					callback.call($this, $this._scheme);
+				});
+			}
+		},
+		
+		_updateClient: function(values){
+			if(!$this._values || !JSB.isEqual($this._values, values)){
+				$this._values = values;
+				
+				if($this._context){
+					// renew context
+					$this._context = $this.createContext(values, $this._scheme);
+				}
+				
+			}
+		}
     },
 
 	$server: {
         sources: {},
         sourcesIds: null,
         values: null,
+        _context: null,
 
 		$require: ['DataCube.Query.Query',
-		           'JSB.Workspace.WorkspaceController',
-		           'Unimap.Selector'],
+		           'JSB.Workspace.WorkspaceController'],
 		
         $bootstrap: function(){
         	WorkspaceController.registerExplorerNode(null, this, {
@@ -77,7 +159,7 @@
         		nodeType:'DataCube.WidgetNode',
         		create: false,
 				move: false,
-				remove: false,
+				remove: true,
 				rename: true,
 				share: false
         	});
@@ -95,7 +177,8 @@
 				this.wType = wType;
 				this.property('wType', wType);
 
-				if(!values){
+				this.values = values;
+				if(!this.values){
 				    this.values = valueSelector.createDefaultValues(this.extractWidgetScheme());
 				}
 
@@ -144,6 +227,14 @@
 
 			valueSelector.destroy();
 		},
+		
+		getContext: function(){
+			if(!this._context){
+				this._context = this.createContext(this.getValues(), this.extractWidgetScheme());
+			}
+			
+			return this._context;
+		},
 
 		getDataSchemeSource: function(ds){
 			if(!ds || !ds.source){
@@ -151,7 +242,7 @@
 			}
 			return this.getWorkspace().entry(ds.source);
 		},
-
+		
 		getData: function(){
 		    return {
                 sources: this.sources,
@@ -167,6 +258,10 @@
 		getValues: function(){
 		    return this.values;
 		},
+		
+		getScheme: function(){
+			return this.extractWidgetScheme();
+		},
 
 		setName: function(name, notSave){
 			if($base(name) && !notSave){
@@ -179,8 +274,11 @@
 			this.sourcesIds = opts.sourcesIds;
 			this.property('values', opts.values);
 			this.property('sourcesIds', opts.sourcesIds);
+			this._context = null;
 
-			this.setName(opts.name, true);
+			if(opts && opts.name){
+				this.setName(opts.name, true);
+			}
 /*
 			this.getDashboard().load(); // todo: update only after change source
 			// update interoperation maps in all widgets of current dashboard
@@ -190,6 +288,11 @@
 			this.dataVersion++;
 			
 			this.updateSources();
+			
+			JSB.defer(function(){
+				$this.client()._updateClient($this.property('values'));
+			}, 100, '_updateClient_' + this.getId());
+			
 			return {sources: this.sources};
 		},
 		
@@ -197,7 +300,9 @@
 			this.sources = {};
 			if(this.sourcesIds){
 				for(var i = 0; i < this.sourcesIds.length; i++){
-					this.sources[this.sourcesIds[i]] = this.getWorkspace().entry(this.sourcesIds[i]);
+					try {
+						this.sources[this.sourcesIds[i]] = this.getWorkspace().entry(this.sourcesIds[i]);
+					} catch(e){}
 				}
 			}
 		}

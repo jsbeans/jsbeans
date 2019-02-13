@@ -1,24 +1,50 @@
 {
-	$name: 'DataCube.Query.QueryResultSet',
-	$singleton: true,
+	$name: 'DataCube.Query.Engine.H2Interpreter.H2InterpreterRemoteQuery',
+	$parent: 'DataCube.Query.Engine.RemoteQuery',
 
 	$server: {
 		$require: [
-            'DataCube.Query.Query',
-		    'JSB.Store.Sql.JDBC',
+		    'Datacube.Query.Engine.Clickhouse.ClickHouseRemoteApi',
 		    'DataCube.Query.QueryUtils',
+		    'DataCube.Query.Console',
+		    'DataCube.Query.Query',
+            'JSB.Store.Sql.JDBC',
+		    'Datacube.Types.DataTypes',
 
+
+		    'java:org.jsbeans.datacube.RemoteQueryIterator',
             'java:org.jsbeans.datacube.SimpleResultSet',
+
             'java:org.h2.tools.SimpleRowSource',
+		    'java:java.util.concurrent.Callable',
             'java:java.sql.Types',
             'java:java.sql.JDBCType',
         ],
 
-		execute: function(queryDescriptor){
+        $constructor: function(cube){
+            $this.cube = cube;
+        },
+
+		register: function(queryTask){
+            var uid = $this.getId() + '/' + JSB.generateUid();
+		    RemoteQueryIterator.RemoteIterators.put(uid, new Callable(){
+		        call: function(){
+                    return $this.execute(queryTask);
+		        }
+		    });
+
+            Console.message({
+                message: 'Remote sub-query prepared',
+                params: {type: $this.getJsb().$name, uid: uid, query: queryTask.query}
+            });
+            return uid;
+		},
+
+		execute: function(queryTask){
 debugger;
 
-            var query = queryDescriptor.query;
-            var cube = queryDescriptor.cube;
+            var query = queryTask.query;
+            var cube = queryTask.cube;
 
 		    function getQuery(name) {
 		        if (query.$views && query[name]) {
@@ -30,7 +56,7 @@ debugger;
 		    var columns = [];
 		    var sqlTypes = [];
 		    var rows = 0;
-		    var it = Query.execute(queryDescriptor);
+		    var it = Query.execute(queryTask);
             var resultSet = new SimpleResultSet(new SimpleRowSource() {
                 readRow: function () {
                     var obj = it.next();
@@ -55,7 +81,7 @@ debugger;
                 },
 
                 reset: function() {
-                    it = Query.execute(queryDescriptor);
+                    it = Query.execute(queryTask);
                 }
             });
 
@@ -63,8 +89,7 @@ debugger;
             for(var alias in query.$select){
 		        try {
 		            var type = QueryUtils.extractType(query.$select[alias], query, cube, getQuery);
-		            var jdbcType = JDBCType.valueOf(JDBC.toJdbcType(type));
-		            var sqlType = 0 + jdbcType.getVendorTypeNumber().intValue();
+		            var sqlType = JDBC.getJDBCTypeVendorNumber(type);
 		            resultSet.addColumn(alias, sqlType, 0, 0);
                 } catch(ex){
                     JSB.getLogger().error(ex);
@@ -75,6 +100,20 @@ debugger;
 		    }
 
             return resultSet;
+		},
+
+		destroy: function() {
+            for(var it = RemoteQueryIterator.RemoteIterators.entrySet().iterator(); it.hasNext();) {
+                var entry = it.next();
+                if (entry.getKey().startsWith($this.getId())) {
+                    it.remove();
+                    Console.message({
+                        message: 'Remote sub-query destroyed',
+                        params: {uid:''+entry.getKey()}
+                    });
+                }
+            }
+		    $base();
 		},
 	}
 }
