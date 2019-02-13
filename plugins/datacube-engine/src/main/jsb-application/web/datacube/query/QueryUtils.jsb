@@ -7,6 +7,7 @@
 	        'DataCube.Query.QuerySyntax',
 	        'JSB.Workspace.WorkspaceController',
 		    'JSB.Crypt.MD5',
+		    'Datacube.Types.DataTypes',
 
 		    'java:java.util.HashMap'
         ],
@@ -64,6 +65,15 @@
                 throw new Error(msg);
             }
 
+        },
+
+        mergeErrors: function(a,b,c,d) {
+            var msg = '';
+            for(var i = 0; i < arguments.length; i++) {
+                if (msg.length > 0) msg += '\n\n';
+                msg += JSB.isString(arguments[i]) ? arguments[i] : arguments[i].message;
+            }
+            return new Error(msg);
         },
 
         /** Cube id in $cube:
@@ -1387,12 +1397,26 @@
         },
 
         extractType: function (exp, query, cube, getQuery) {
+            var type = $this.extractNativeType(exp, query, cube, getQuery);
+            return type ? DataTypes.fromAny(type) : null;
+
+        },
+
+        extractNativeType: function (exp, query, cube, getQuery) {
+
+		    var getQuery = getQuery || function(name) {
+		        if (query.$views && query[name]) {
+		            return query[name];
+		        }
+		        return $this.findView(name, null, query);
+		    };
+
             function sliceFieldType(view, field) {
 
                 var slice = $this.getQuerySlice(view, cube, true);
                 if (slice) {
                     var fields = slice.extractFields();
-                    return fields[field] ? fields[field].type : null;
+                    return fields[field] ? (fields[field].nativeType || fields[field].type) : null;
                 } else {
                     return false;
                 }
@@ -1401,7 +1425,7 @@
                 if (field.startsWith('${') && field.endsWith('}')) {
                     var param = field;
                     if(query.$params && query.$params.hasOwnProperty(param)) {
-                        return query.$params[param].$type;
+                        return query.$params[param].$nativeType || query.$params[param].$type;
                     }
                     return null;
                 }
@@ -1420,13 +1444,13 @@
                         $this.throwError(false, 'Undefined source field "{}" in empty source for query "{}"', field, query.$from);
                     }
                     $this.throwError(sourceQuery.$select[field], 'Undefined result field "{}" in query "{}"', field, sourceQuery.$context);
-                    var type = $this.extractType(sourceQuery.$select[field], sourceQuery, cube, getQuery);
+                    var type = $this.extractNativeType(sourceQuery.$select[field], sourceQuery, cube, getQuery);
                     return type;
                 } else if (query.$provider) {
 		            var provider = $this.getQueryDataProvider(query.$provider, cube);
                     var desc = provider.extractFields()[field];
                     $this.throwError(desc, 'Undefined field "{}" in data provider "{}"', field, query.$provider);
-                    return desc.type || desc.nativeType;
+                    return desc.nativeType || desc.type;
                 } else if (query.$join) {
                     if (JSB.isString(query.$join.$left)) {
                         var type = sliceFieldType(query.$join.$left, field);
@@ -1441,17 +1465,17 @@
                         }
                     }
                     if (query.$join.$left.$select[field]) {
-                        return $this.extractType(query.$join.$left.$select[field], query.$join.$left, cube, getQuery);
+                        return $this.extractNativeType(query.$join.$left.$select[field], query.$join.$left, cube, getQuery);
                     }
                     if (query.$join.$right.$select[field]) {
-                        return $this.extractType(query.$join.$right.$select[field], query.$join.$right, cube, getQuery);
+                        return $this.extractNativeType(query.$join.$right.$select[field], query.$join.$right, cube, getQuery);
                     }
                 } else if (query.$recursive) {
                     if (query.$recursive.$start.$select[field]) {
-                        return $this.extractType(query.$recursive.$start.$select[field], query.$recursive.$start, cube, getQuery);
+                        return $this.extractNativeType(query.$recursive.$start.$select[field], query.$recursive.$start, cube, getQuery);
                     }
                     if (query.$recursive.$joinedNext.$select[field]) {
-                        return $this.extractType(query.$recursive.$joinedNext.$select[field], query.$recursive.$joinedNext, cube, getQuery);
+                        return $this.extractNativeType(query.$recursive.$joinedNext.$select[field], query.$recursive.$joinedNext, cube, getQuery);
                     }
                 } else if (query.$union) {
                     for(var i = 0; i < query.$union.length; i++){
@@ -1465,7 +1489,7 @@
                             }
                         }
                         if (JSB.isObject(unionQuery) && unionQuery.$select[field]) {
-                            return $this.extractType(unionQuery.$select[field], unionQuery, cube, getQuery);
+                            return $this.extractNativeType(unionQuery.$select[field], unionQuery, cube, getQuery);
                         }
                     }
                 } else {
@@ -1491,7 +1515,7 @@
                 }
                 if (JSB.isObject(exp)) {
                     if (exp.$toString) return 'string';
-                    if (exp.$toInt) return 'int';
+                    if (exp.$toInt) return 'integer';
                     if (exp.$toDouble) return 'double';
                     if (exp.$toBoolean) return 'boolean';
                     if (exp.$toDate) return 'date';
@@ -1499,11 +1523,11 @@
                     if (exp.$dateYear || exp.$dateYearDay || exp.$dateMonth || exp.$dateMonthDay || exp.$dateWeekDay
                         || exp.$dateTotalSeconds || exp.$dateIntervalOrder
                         || exp.$timeHour || exp.$timeMinute || exp.$timeSecond
-                        ) return 'int';
+                        ) return 'integer';
                     if (exp.hasOwnProperty('$const')) {
-                        if (exp.$type) return exp.$type;
+                        if (exp.$type) return exp.nativeType || exp.$type;
                         if (JSB.isString(exp.$const)) return 'string';
-                        if (JSB.isInteger(exp.$const)) return 'int';
+                        if (JSB.isInteger(exp.$const)) return 'integer';
                         if (JSB.isFloat(exp.$const)) return 'double';
                         if (JSB.isBoolean(exp.$const)) return 'boolean';
                         if (JSB.isDate(exp.$const)) return 'date';

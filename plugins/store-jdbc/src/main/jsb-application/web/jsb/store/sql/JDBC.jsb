@@ -8,11 +8,13 @@
 		    Properties:     'java:java.util.Properties',
 			DriverManager:  'java:java.sql.DriverManager',
 			JDBCType:       'java:java.sql.JDBCType',
+			ResultSet:      'java:java.sql.ResultSet',
 			Types:          'java:java.sql.Types',
 			SqlDate:        'java:java.sql.Date',
 			SqlTime:        'java:java.sql.Time',
 			SqlTimestamp:   'java:java.sql.Timestamp',
 			ArrayHelper: 	'java:org.jsbeans.helpers.ArrayHelper',
+			DataTypes:      'Datacube.Types.DataTypes',
 
 			NativeDate:     'java:org.mozilla.javascript.NativeDate',
 		},
@@ -23,6 +25,45 @@
 			$this.defaults = Config.has('jdbc.connection.defaults')
 			        ? Config.get('jdbc.connection.defaults')
 			        : {};
+
+
+            $this._typeMap['JDBCNumbers'] = {
+                "null":    [0+Types.NULL],
+                string:  [0+Types.VARBINARY, 0+Types.BINARY,
+                          0+Types.LONGVARBINARY, 0+Types.LONGVARCHAR,
+                          0+Types.CHAR, 0+Types.VARCHAR,
+                          0+Types.CLOB, 0+Types.OTHER,
+                          0+Types.NVARCHAR],
+                number:  [0+Types.TINYINT, 0+Types.SMALLINT, 0+Types.INTEGER,
+                          0+Types.BIGINT, 0+Types.REAL, 0+Types.FLOAT,
+                          0+Types.DECIMAL, 0+Types.NUMERIC,
+                          0+Types.DOUBLE],
+                integer: [0+Types.TINYINT, 0+Types.SMALLINT,
+                          0+Types.DECIMAL, 0+Types.NUMERIC,
+                          0+Types.INTEGER],
+                uint:    [0+Types.TINYINT, 0+Types.SMALLINT,
+                          0+Types.DECIMAL, 0+Types.NUMERIC,
+                          0+Types.INTEGER],
+                long:    [0+Types.INTEGER],
+                ulong:    [0+Types.INTEGER],
+                boolean: [0+Types.BIT, 0+Types.BOOLEAN],
+                float:   [0+Types.NUMERIC, 0+Types.DECIMAL, 0+Types.REAL,
+                          0+Types.FLOAT],
+                double:  [0+Types.REAL, 0+Types.FLOAT,
+                          0+Types.NUMERIC, 0+Types.DECIMAL,
+                          0+Types.DOUBLE],
+                datetime: [0+Types.DATE, 0+Types.TIME, 0+Types.TIMESTAMP],
+                date:     [0+Types.DATE],
+                time:     [0+Types.TIME],
+                timestamp:[0+Types.TIMESTAMP],
+                array:    [0+Types.ARRAY],
+                object:   [0+Types.OTHER],
+            };
+
+            /// register JDBC, JDBCNumbers and vendor`s aliases for DataTypes.types
+            for(var vendor in $this._typeMap) {
+                DataTypes.registerAliases(vendor, $this._typeMap[vendor]);
+            }
 		},
 
 		JDBCDrivers: {
@@ -41,6 +82,95 @@
             SQLServer:  "jdbc:sqlserver:",
             Oracle:     "jdbc:oracle:",
             ClickHouse: "jdbc:clickhouse:",
+		},
+
+		_typeMap: {
+            'JDBC': {
+                string:  ['VARCHAR', 'NVARCHAR'],
+                boolean: ['BIT', 'BOOLEAN'],
+                integer: ['TINYINT', 'SMALLINT', 'INTEGER'],
+                uint:    ['TINYINT', 'SMALLINT', 'INTEGER'],
+			    long:    ['BIGINT', 'LONG'],
+			    ulong:   ['BIGINT', 'LONG'],
+                float:   ['REAL', 'FLOAT', 'DOUBLE'],
+                double:  ['DOUBLE'],
+                number:  ['TINYINT', 'SMALLINT', 'INTEGER', 'BIGINT', 'REAL', 'FLOAT', 'DECIMAL', 'NUMERIC', 'LONG', 'DOUBLE'],
+                datetime: ['TIMESTAMP', 'DATETIME'],
+                date:     'DATE',
+                time:     'TIME',
+                timestamp:'TIMESTAMP',
+                array:    'ARRAY',
+                object:   'OTHER',
+            },
+
+			'PostgreSQL': {
+                string: 'text',
+                boolean: 'boolean',
+                integer: 'int8',
+                uint: 'uint8',
+			    long: 'int8',
+			    ulong: 'uint8',
+                float: 'real',
+                double: 'double precision',
+                number: 'numeric',
+                datetime: 'timestamp',
+                date: 'timestamp',
+                time: 'timestamp',
+                timestamp: 'timestamp',
+                array: 'ARRAY',
+                object: 'blob',
+			},
+			'H2': {
+                string: 'text',
+                boolean: 'boolean',
+                integer: 'int8',
+                uint: 'uint8',
+			    long: 'uint',
+			    ulong: 'uint8',
+                float: 'real',
+                double: 'double precision',
+                number: 'numeric',
+                datetime: 'timestamp',
+                date: 'timestamp',
+                time: 'timestamp',
+                timestamp: 'timestamp',
+                array: 'ARRAY',
+                object: 'blob',
+			},
+			'Microsoft SQL Server': {
+                string: 'nvarchar(max)',
+                boolean: 'bit',
+                integer: 'bigint',
+                uint: 'bigint',
+			    long: 'bigint',
+			    ulong: 'bigint',
+                float: 'float',
+                double: 'float',
+                number: 'float',
+                datetime: 'timestamp',
+                date: 'timestamp',
+                time: 'timestamp',
+                timestamp: 'timestamp',
+                array: 'table',
+                object: 'table',
+			},
+			'ClickHouse': {
+                string: 'String',
+                boolean: 'String',
+                integer: 'Int32',
+                uint: 'UInt32',
+			    long: 'Int64',
+			    ulong: 'UInt64',
+                float: 'Float32',
+                double: 'Float64',
+                number: 'Float64',
+                datetime: 'DateTime',
+                date: 'Date',
+                time: 'DateTime',
+                timestamp: 'Timestamp',
+                array: 'Array',
+                object: 'BLOB',
+			},
 		},
 
 		RowExtractors: {
@@ -104,6 +234,18 @@
                 }
             }
 		},
+
+		getJDBCTypeObject: function(datacubeType){
+		    var jdbcType = DataTypes.toVendor('JDBC', datacubeType);
+		    var jdbc = JDBCType.valueOf(jdbcType);
+            if (!jdbc) throw 'Invalid JDBC type ' + jdbcType;
+            return jdbc;
+		},
+
+		getJDBCTypeVendorNumber: function(datacubeType){
+		    var jdbc = $this.getJDBCTypeObject(datacubeType);
+		    return 0 + jdbc.getVendorTypeNumber().intValue();
+		},
 		
 		getDatabaseVendor: function(connection){
 			var databaseMetaData = connection.getMetaData();
@@ -138,7 +280,7 @@
 				    	for (var i = 0; i < values.length; i++) {
 				            var value = values[i];
 				            var type = types.length > i && types[i] || null;
-				            var type = this._getJDBCType(value, type);
+				            var type = this._getJDBCTypeObject(value, type);
 		                    this._setStatementArgument(curStatement, i + 1, value, type, connection);
 				        }
 				    	curStatement.addBatch();
@@ -166,7 +308,7 @@
 						for (var i = 0; i < values.length; i++) {
 				            var value = values[i];
 				            var type = types.length > i && types[i] || null;
-				            var type = this._getJDBCType(value, type);
+				            var type = this._getJDBCTypeObject(value, type);
 		                    this._setStatementArgument(st, i + 1, value, type, connection);
 				        }
 						return st.executeUpdate();
@@ -244,7 +386,7 @@
                     for (var i = 0; i < values.length; i++) {
                         var value = values[i];
                         var type = types.length > i && types[i] || null;
-                        var type = this._getJDBCType(value, type);
+                        var type = this._getJDBCTypeObject(value, type);
                         this._setStatementArgument(st, i + 1, value, type, connection);
                     }
                     st.setFetchSize(10);
@@ -321,191 +463,8 @@
 			
 			return typeMap;
 		},
-		
-		getVendorTypeForSqlType: function(sqlType, typeMap){
-			var arr = typeMap['' + sqlType];
-			if(arr && arr.length > 0){
-				return arr[0].name;
-			}
-			return null;
-		},
 
-		getVendorTypesForSqlType: function(sqlType, typeMap){
-			var arr = typeMap['' + sqlType];
-			var nameMap = {};
-			if(arr && arr.length > 0){
-				for(var i = 0; i < arr.length; i++){
-					nameMap[arr[i].name] = arr[i];
-				}
-			}
-			return nameMap;
-        },
-
-		_typeJdbcMap: {
-            'integer': 'INTEGER',
-            'int': 'INTEGER',
-            'boolean': 'BOOLEAN',
-            'nvarchar': 'NVARCHAR',
-            'varchar': 'VARCHAR',
-            'string': 'NVARCHAR',
-            'float': 'FLOAT',
-            'double': 'DOUBLE',
-            'number': 'DOUBLE',
-            'date': 'DATE',
-            'time': 'TIME',
-            'datetime': 'TIMESTAMP',
-            'timestamp': 'TIMESTAMP',
-            'array': 'ARRAY',
-            'object': 'OTHER'
-		},
-		
-		_typeMap: {
-			'PostgreSQL': {
-				'integer': 'int8',
-				'int': 'int8',
-				'boolean': 'boolean',
-				'nvarchar': 'varchar',
-				'varchar': 'varchar',
-				'string': 'text',
-				'float': 'real',
-				'double': 'double precision',
-				'number': 'numeric',
-				'date': 'timestamp',
-				'time': 'timestamp',
-				'datetime': 'timestamp',
-				'timestamp': 'timestamp',
-				'array': '_text',
-				'object': 'text'
-			},
-			'H2': {
-				'integer': 'int8',
-				'int': 'int8',
-				'boolean': 'boolean',
-				'nvarchar': 'varchar',
-				'varchar': 'varchar',
-				'string': 'nvarchar',
-				'float': 'double precision',
-				'double': 'double precision',
-				'number': 'double precision',
-				'date': 'timestamp',
-				'time': 'timestamp',
-				'datetime': 'timestamp',
-				'timestamp': 'timestamp',
-				'array': 'array',
-				'object': 'nvarchar'
-			},
-			'Microsoft SQL Server': {
-				'integer': 'bigint',
-				'int': 'bigint',
-				'boolean': 'bit',
-				'nvarchar': 'nvarchar(max)',
-				'varchar': 'varchar(max)',
-				'string': 'nvarchar(max)',
-				'float': 'float',
-				'double': 'float',
-				'number': 'float',
-				'date': 'timestamp',
-				'time': 'timestamp',
-				'datetime': 'timestamp',
-				'timestamp': 'timestamp',
-				'array': 'table',
-				'object': 'table'
-			},
-			'ClickHouse': {
-				'integer': 'int64',
-				'int': 'int64',
-				'boolean': 'boolean',
-				'nvarchar': 'string',
-				'varchar': 'string',
-				'string': 'string',
-				'float': 'real',
-				'double': 'double precision',
-				'number': 'numeric',
-				'date': 'date',
-				'time': 'datetime',
-				'datetime': 'datetime',
-				'timestamp': 'datetime',
-				'array': '_text',
-				'object': 'text'
-			},
-		},
-		
-		translateType: function(jsonType, vendor){
-			var vendorTypeMap = this._typeMap[vendor];
-			if(!vendorTypeMap){
-				throw new Error('Unsupported database vendor: ' + vendor);
-			}
-			var sqlType = jsonType.toLowerCase();
-			return vendorTypeMap[sqlType] || sqlType;
-		},
-
-		toJdbcType: function(jsonType){
-			return $this._typeJdbcMap[jsonType];
-		},
-		
-		toJsonType: function(sqlType){
-			var jsonType = null;
-			switch(sqlType.toLowerCase()){
-			case 'int':
-			case 'int8':
-			case 'int16':
-			case 'int32':
-			case 'integer':
-			case 'numeric':
-			case 'tinyint':
-			case 'smallint':
-			case 'bigint':
-				jsonType = 'integer';
-				break;
-			case 'double':
-			case 'float':
-			case 'real':
-			case 'decimal':
-			case 'double precision':
-			case 'numeric':
-				jsonType = 'double';
-				break;
-			case 'boolean':
-			case 'bit':
-			case 'bool':
-				jsonType = 'boolean';
-				break;
-			case 'varbinary':
-            case 'binary':
-            case 'longvarbinary':
-            case 'longvarchar':
-            case 'longnvarchar':
-            case 'char':
-            case 'varchar':
-            case 'nvarchar':
-            case 'nchar':
-            case 'text':
-            case 'string':
-				jsonType = 'string';
-				break;
-            case 'timestamp':
-            case 'date':
-            case 'time':
-				jsonType = 'datetime';
-				break;
-            case 'array':
-				jsonType = 'array';
-				break;
-            case 'object':
-				jsonType = 'object';
-				break;
-            case 'other':
-				jsonType = 'string';
-				break;
-            	
-            default:
-            	throw new Error('Unsupported sql type: ' + sqlType);
-			}
-			
-			return jsonType;
-		},
-
-        _getJDBCType: function (value, typeJDBC) {
+        _getJDBCTypeObject: function (value, typeJDBC) {
             var jdbcType = typeJDBC || null;
             if (JSB.isString(jdbcType)) {
                 jdbcType = JDBCType.valueOf(jdbcType);
@@ -588,7 +547,7 @@
                         	}
                     	}
                     	var vendor = this.getDatabaseVendor(connection);
-                    	st.setArray(idx, connection.createArrayOf(this.translateType('string', vendor), ArrayHelper.toArray(newArr)));
+                    	st.setArray(idx, connection.createArrayOf(DataTypes.toVendor(vendor, 'string'), ArrayHelper.toArray(newArr)));
                     	break;
                     case 0+Types.NULL:
                         st.setNull(idx, 0);
@@ -603,8 +562,8 @@
             }
         },
 
-        convertToSQLValue: function(value, sqlType){
-            switch (sqlType) {
+        convertToSQLValue: function(value, jdbcTypeNumber){
+            switch (jdbcTypeNumber) {
                 case 0+Types.BIT:
                 case 0+Types.BOOLEAN:
                     return !!value;

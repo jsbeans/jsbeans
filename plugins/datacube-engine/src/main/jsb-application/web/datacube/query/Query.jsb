@@ -7,10 +7,10 @@
             'DataCube.Query.Engine.QueryExecutor'
         ],
 
-		execute: function(queryDescriptor){
-		    queryDescriptor.cube && queryDescriptor.cube.load();
+		execute: function(queryTask){
+		    queryTask.cube && queryTask.cube.load();
             try {
-    			var executor = new QueryExecutor(queryDescriptor);
+    			var executor = new QueryExecutor(queryTask);
                 var it = executor.execute(); // new ver
                 var oldClose = it.close;
                 it.close = function(){

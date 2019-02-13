@@ -10,10 +10,10 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
-		execute: function(name, executor, queryDescriptor){
-		    var query = queryDescriptor.query;
-		    var cube = queryDescriptor.cube;
-		    var params = queryDescriptor.params;
+		execute: function(name, executor, queryTask){
+		    var query = queryTask.query;
+		    var cube = queryTask.cube;
+		    var params = queryTask.params;
 
 		    var config = $this.getLocalConfig(name);
 
@@ -22,7 +22,6 @@
 		        : config.transformers;
 
             var preparedQuery = QueryTransformer.transform(transformers||[], query, cube);
-
             for(var i = 0; i < config.next.length; i++) {
                 var next = config.next[i];
                 executor.executeEngine(next, {

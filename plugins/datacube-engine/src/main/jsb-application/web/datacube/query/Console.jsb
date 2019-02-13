@@ -7,14 +7,28 @@
             'DataCube.Query.QueryUtils',
         ],
 
-        message: function(desc){
+
+        message: function(desc/*{message:'', params:{}, error: err}*/){
+            // TODO: send to client UI
+            $this.logMessage(desc);
+        },
+
+        logMessage: function(desc){
             if (desc.error){
-                QueryUtils.logDebug.apply(QueryUtils,
-                    ['Console [ERROR]: ' + desc.message + '\n' + desc.error].concat(desc.params));
+                QueryUtils.logDebug('\nConsole [ERROR]: ' + desc.message + '\n' + JSB.stringifyError(desc.error) + '\n' + $this._stringify(desc.params));
             } else {
-                QueryUtils.logDebug.apply(QueryUtils,
-                    ['Console [INFO]:  ' + desc.message].concat(desc.params));
+                QueryUtils.logDebug('\nConsole [INFO]: ' + desc.message + '\n' + $this._stringify(desc.params));
             }
         },
+
+
+        _stringify: function(params) {
+            var s = '{ \n';
+            for(var p in params) if(params.hasOwnProperty(p)) {
+                if(s.length > 3) s += ', \n';
+                s += '\t' + p + ': ' + (JSB.isString(params[p]) ? params[p] : JSON.stringify(params[p]));
+            }
+            return s + ' \n}';
+        }
 	}
 }

@@ -1,13 +1,12 @@
 {
-	$name: 'DataCube.Query.Translators.SQLTmplTranslator',
-	$parent: 'DataCube.Query.Translators.BaseTranslator',
+	$name: 'DataCube.Query.QueryParser',
 
 	$server: {
 //		$require: [
 //		    'DataCube.Query.Translators.TranslatorRegistry',
 //		    'DataCube.Query.QueryUtils',
 //		    'DataCube.Query.QuerySyntax',
-//		    'DataCube.Query.QueryResultSet',
+//		    'DataCube.Query.Engine.H2Interpreter.QueryResultSet',
 //		    'JSB.Store.Sql.JDBC',
 //
 //		    'java:org.jsbeans.datacube.RemoteQueryIterator',

@@ -139,18 +139,21 @@
 			var filter = {};
 			fieldFilter[$this.filterField] = filter;
 			
-			if(this.filterFieldType == 'integer' 
-				|| this.filterFieldType == 'float' 
+			if(this.filterFieldType == 'integer'
+				|| this.filterFieldType == 'uint'
+				|| this.filterFieldType == 'float'
 				|| this.filterFieldType == 'double'){
 				
 				var val = $this.editor.getData().getValue();
 				// use op
 				if(val && val.length > 0){
 					switch($this.filterFieldType){
+					case 'uint':
 					case 'integer':
 						val = parseInt(val);
 						break;
 					case 'float':
+					case 'number':
 					case 'double':
 						val = parseFloat(val);
 						break;
