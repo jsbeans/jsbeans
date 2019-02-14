@@ -89,6 +89,24 @@
 	    },
 
         /**
+        * Создаёт разделитель
+        * @param {boolean} [isCollapsible] - является ли разделитель элементом для сворачивания
+        */
+	    createSeparator: function(isCollapsible){
+            var separator = this.$('<div class="separator"></div>');
+
+            if(isCollapsible){
+                separator.addClass('collapsible');
+
+                separator.click(function(){
+                    separator.toggleClass('collapsed');
+                });
+            }
+
+            return separator;
+	    },
+
+        /**
         * Возвращает контроллер
         * @return {object} контроллер
         */
@@ -214,6 +232,51 @@
 	        delete this._scope[this.getKey()];
 
 	        this.destroy();
+	    },
+
+        /**
+        *
+        * Удаляет значение (для multiple элементов)
+        * @param {array} items - массив элементов
+        * @param {jQuery} item - удаляемый элемент
+        */
+	    removeItem: function(items, item){
+	        var itemIndex = Number(item.attr('idx'));
+
+	        for(var i = 0; i < items.length; i++){
+	            if(i === itemIndex){
+	                items[i].remove();
+	                this.getValues().splice(i, 1);
+	                continue;
+	            }
+
+	            if(i > itemIndex){
+	                this.$(items[i]).attr('idx', i - 1);
+	            }
+	        }
+
+	        $this.onChange();
+	    },
+
+        /**
+        *
+        * Изменяет порядок значений (для multiple элементов)
+        * @param {array} items - массив элементов
+        */
+	    reorderValues: function(items){
+	        for(var i = 0; i < items.length; i++){
+	            var idx = Number(this.$(items[i]).attr('idx'));
+	            if(idx !== i){
+	                this.$(items[i]).attr('idx', i);
+
+	                if(idx > i){
+	                    var el = this.getValues().splice(idx, 1);
+	                    this.getValues().splice(i, 0, el[0]);
+	                }
+	            }
+	        }
+
+	        this.onChange();
 	    },
 
         /**

@@ -165,10 +165,10 @@
 					dock: 'top',
 					offsetVert: -1
 				},
-				callback: function(act){
+				callback: function(act, clickEvt){
 				    if(act === 'edit'){
 				        if(opts.editCallback){
-				            opts.editCallback.call($this);
+				            opts.editCallback.call($this, clickEvt);
 				            return;
 				        }
 
@@ -186,7 +186,7 @@
 				        });
 				    } else { // delete
 				        if(opts.deleteCallback){
-				            opts.deleteCallback.call($this);
+				            opts.deleteCallback.call($this, clickEvt);
 				            return;
 				        }
 

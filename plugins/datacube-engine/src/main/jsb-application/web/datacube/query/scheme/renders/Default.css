@@ -1,0 +1,31 @@
+.defaultRender > * {
+    vertical-align: middle;
+}
+
+.defaultRender > .operator,
+.defaultRender > .separator {
+    display: inline-block;
+}
+
+.defaultRender > .separator.collapsible.collapsed ~ .variables,
+.defaultRender > .separator.collapsible.collapsed ~ .addBtn {
+    display: none;
+}
+
+.defaultRender > .queryRender {
+    display: inline-block;
+}
+
+.defaultRender > .variables > .variable {
+    position: relative;
+    height: 20px;
+}
+
+.defaultRender > .variables > .variable:not(:last-child) {
+    margin-bottom: 5px;
+}
+
+.defaultRender > .variables > .variable > * {
+    vertical-align: middle;
+    display: inline-block;
+}

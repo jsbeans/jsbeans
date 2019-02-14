@@ -222,7 +222,7 @@
 		        oldEditor: {}
 		    };
 
-		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];   // , '$select'
+		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider', '$select'];   //
 
 		    for(var i in query){
 		        if(newKeys.indexOf(i) > -1){
@@ -259,13 +259,13 @@
                 slice: this.slice,
                 values: slicedQuery.newEditor
             });
-
+/*
 			try {
 				$this.oldEditor.set(slicedQuery.oldEditor);
 			} catch(e) {
 			    console.log('queryEditor set error');
             }
-
+*/
 			$this.ignoreHandlers = false;
 		}
 	},

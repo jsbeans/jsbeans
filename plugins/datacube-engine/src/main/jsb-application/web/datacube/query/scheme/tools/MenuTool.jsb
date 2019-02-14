@@ -31,11 +31,9 @@
 				cssClass: 'btnEdit',
 				icon: true,
 				tooltip: 'Редактировать',
-				onClick: function(evt){
-				    evt.stopPropagation();
-
+				onClick: function(clickEvt){
 					$this.close();
-					$this.data.callback.call($this, 'edit');
+					$this.data.callback.call($this, 'edit', clickEvt);
 				}
 			});
 			this.append(this.btnEdit);
@@ -44,11 +42,9 @@
 				cssClass: 'btnDelete',
 				icon: true,
 				tooltip: 'Удалить',
-				onClick: function(evt){
-				    evt.stopPropagation();
-
+				onClick: function(clickEvt){
 					$this.close();
-					$this.data.callback.call($this, 'delete');
+					$this.data.callback.call($this, 'delete', clickEvt);
 				}
 			});
 			this.append(this.btnDelete);

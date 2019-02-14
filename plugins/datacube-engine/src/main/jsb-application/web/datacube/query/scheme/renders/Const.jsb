@@ -20,12 +20,7 @@
 	        this.append(operator);
 
             this.installMenuEvents(operator, this.getId() + '_operator', {
-                removable: false,
-                /*
-                editToolCallback: function(desc){
-                    debugger;
-                }
-                */
+                removable: false
             });
 
 	        this.append('<div class="separator"></div>');
@@ -91,7 +86,7 @@
 	        });
 	    },
 
-	    createInput: function(value, type){
+	    createInput: function(value, type, clickEvt){
             var input = $this.$('<input value="' + value + '" />'); //  type="' + (type || 'text') + '" todo
             $this.value.append(input);
 
@@ -119,7 +114,12 @@
                 $this.$(window).off('click.changeConstInput');
             });
 
-            $this.$(window).on('click.changeConstInput', function(){
+            $this.$(window).on('click.changeConstInput', function(evt){
+                // пробрасывается событие от клика по меню, чтобы сразу же не закрыть input, но при этом закрыть другие возможные меню
+                if(clickEvt.target === evt.target){
+                    return;
+                }
+
                 $this.setValues(input.val());
                 $this.value.text(input.val());
                 input.remove();
@@ -147,8 +147,8 @@
 
                 this.installMenuEvents(this.value, this.getId() + '_value', {
                     removable: false,
-                    editCallback: function(){
-                        $this.createInput(value, type);
+                    editCallback: function(clickEvt){
+                        $this.createInput(value, type, clickEvt);
                     }
                 });
 	        }

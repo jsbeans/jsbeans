@@ -46,7 +46,7 @@
                 var removeBtn = this.$('<div class="removeBtn fas fa-trash-alt"></div>');
                 item.append(removeBtn);
                 removeBtn.click(function(){
-                    $this.removeItem(item);
+                    $this.removeItem($this.items.find('>.item'), item);
                 });
 	        }
 
@@ -148,7 +148,7 @@
                 this.items.sortable({
                     handle: '.sortableHandle',
                     update: function(){
-                        $this.reorderValues();
+                        $this.reorderValues($this.items.find('>.item'));
                     }
                 });
 	        } else {
@@ -259,43 +259,6 @@
 	        }
 
 	        return $base();
-	    },
-
-	    removeItem: function(item){
-	        var items = this.items.find('>.item'),
-	            itemIndex = Number(item.attr('idx'));
-
-	        for(var i = 0; i < items.length; i++){
-	            if(i === itemIndex){
-	                items[i].remove();
-	                this.getValues().splice(i, 1);
-	                continue;
-	            }
-
-	            if(i > itemIndex){
-	                this.$(items[i]).attr('idx', i - 1);
-	            }
-	        }
-
-	        $this.onChange();
-	    },
-
-	    reorderValues: function(){
-	        var items = this.items.find('>.item');
-
-	        for(var i = 0; i < items.length; i++){
-	            var idx = Number(this.$(items[i]).attr('idx'));
-	            if(idx !== i){
-	                this.$(items[i]).attr('idx', i);
-
-	                if(idx > i){
-	                    var el = this.getValues().splice(idx, 1);
-	                    this.getValues().splice(i, 0, el[0]);
-	                }
-	            }
-	        }
-
-	        $this.onChange();
 	    },
 
         /**
