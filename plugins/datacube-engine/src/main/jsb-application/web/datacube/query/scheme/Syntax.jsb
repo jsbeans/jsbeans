@@ -13,7 +13,11 @@
 	replacements: [
 	    ['$join', '$from', '$union', '$cube'],
 	    ['$source'],
-	    ['$field', '$add', '$const']
+	    ['$field',
+	    // матеметические операции
+	    '$add', '$sub', '$mul', '$div', '$divz', '$mod', '$sqrt', '$pow2',
+	    // разное
+	    '$const']
 	],
 
 	scheme: {
@@ -86,12 +90,73 @@
 
 	    // math operators
 	    $add: {
-	        render: '$math',
+	        render: '$default',
 	        category: 'Математические операторы',
-	        displayName: '+',
+	        displayName: 'Сложение',
 	        desc: 'Сложение чисел',
 	        multiple: true,
 	        defaultValues: [{$const: 0},{$const: 0}]
+	    },
+
+	    $sub: {
+	        render: '$default',
+	        category: 'Математические операторы',
+	        displayName: 'Вычитание',
+	        desc: 'Вычитание чисел',
+	        multiple: true,
+	        defaultValues: [{$const: 0},{$const: 0}]
+	    },
+
+	    $mul: {
+	        render: '$default',
+	        category: 'Математические операторы',
+	        displayName: 'Произведение',
+	        desc: 'Произведение чисел',
+	        multiple: true,
+	        defaultValues: [{$const: 0},{$const: 0}]
+	    },
+
+	    $div: {
+	        render: '$default',
+	        category: 'Математические операторы',
+	        displayName: 'Деление',
+	        desc: 'Деление чисел',
+	        multiple: true,
+	        defaultValues: [{$const: 0},{$const: 1}]
+	    },
+
+	    $divz: {
+	        render: '$default',
+	        category: 'Математические операторы',
+	        displayName: 'Деление (!0)',
+	        desc: 'Деление чисел (ноль в знаменателе игнорируется)',
+	        multiple: true,
+	        defaultValues: [{$const: 0},{$const: 1}]
+	    },
+
+	    $mod: {
+	        render: '$default',
+	        category: 'Математические операторы',
+	        displayName: 'Деление по модулю',
+	        desc: 'Деление по модулю (получение остатка от деления)',
+	        multiple: true,
+	        defaultValues: [{$const: 0},{$const: 1}]
+	    },
+
+	    $sqrt: {
+	        render: '$default',
+	        category: 'Математические операторы',
+	        displayName: 'Корень',
+	        desc: 'Квадратный корень от числа',
+	        defaultValues: {$const: 4}
+	    },
+
+	    $pow2: {
+	        render: '$default',
+	        category: 'Математические операторы',
+	        displayName: 'Степень',
+	        desc: 'Возведение числа в квадрат',
+	        defaultValues: {$const: 2}
 	    },
 
 	    // another
