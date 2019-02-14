@@ -358,7 +358,7 @@
 				var exporter = ExportManager.createExporter(format, stream, {name: name, file: fileName});
 				// write into download stream
 				try {
-					exporter.iterate($this.exportObj.cube.executeQuery($this.exportObj.query, $this.exportObj.queryParams, $this.exportObj.provider));
+					exporter.iterate($this.exportObj.source.executeQuery($this.exportObj.query, $this.exportObj.queryParams, $this.exportObj.provider));
 				} finally {
 					exporter.destroy();
 				}

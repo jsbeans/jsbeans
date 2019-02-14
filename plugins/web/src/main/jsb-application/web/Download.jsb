@@ -42,9 +42,8 @@
 				encoding: 'UTF-8'
 			}, this.opts);
 			
-			var scope = (function(){return this;}).call(null);
-			var request = scope['__request'];
-			var response = scope['__response'];
+			var request = Web.getRequest();
+			var response = Web.getResponse();
 			
 			if(opts.contentType){
 				response.setContentType(opts.contentType);

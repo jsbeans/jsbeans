@@ -83,6 +83,15 @@
 		
 		response: function(data, opts){
 			return new this.Response(data, opts);
+		},
+		
+		getRequest: function(){
+			return (function(){return this;}).call(null)['__request'];
+		},
+		
+		getResponse: function(){
+			return (function(){return this;}).call(null)['__response'];
 		}
+
 	}
 }
