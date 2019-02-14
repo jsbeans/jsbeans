@@ -11,24 +11,31 @@
 	        var scheme = this.getScheme();
 
 	        var operator = this.$('<div class="operator">' + scheme.displayName + '</div>');
-
-	        if(scheme.args === 2){
-	            var leftVar = this.$('<div class="leftVar"></div>');
-	            this.append(leftVar);
-            }
-
             this.append(operator);
 
-            var rightVar = this.$('<div class="rightVar"></div>');
-            this.append(rightVar);
-	    },
+            if(this.isMultiple()){
+                var variables = this.$('<div class="variables"></div>');
+                this.append(variables);
 
-	    defineContext: function(){
-	        //
-	    },
+                var values = this.getValues();
 
-	    getContext: function(){
-	        return this.getParent().getValues()['$context'];
+                for(var i = 0; i < values.length; i++){
+                    for(var j in values[i]){
+                        var render = this.createRender({
+                            key: j,
+                            scope: this.getValues()
+                        });
+
+                        if(render){
+                            variables.append(render);
+                        }
+                    }
+                }
+
+                // add btn
+            } else {
+                //
+            }
 	    }
 	}
 }

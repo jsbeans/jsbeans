@@ -3,7 +3,6 @@
 
 	$server: {
 		$require: [
-		    'DataCube.Query.Views.QueryViewsBuilder',
 		    'DataCube.Query.QueryUtils',
         ],
 

@@ -31,7 +31,32 @@
                 }
             }
 
-            // add field btn
+            var addBtn = this.$('<i class="addBtn"></i>');
+            this.append(addBtn);
+            addBtn.click(function(){
+                var count = 1,
+                    name = 'Столбец',
+                    newName = name;
+
+                while(values[newName]){
+                    newName = name + '_' + count;
+                    count++;
+                }
+
+                values[newName] = $this.getDefaultValues();
+
+                var render = $this.createRender({
+                    key: newName,
+                    renderName: '$selectItem',
+                    scope: $this.getValues()
+                });
+
+                if(render){
+                    addBtn.before(render);
+
+                    $this.onChange();
+                }
+            });
 	    },
 
 	    sort: function(){}

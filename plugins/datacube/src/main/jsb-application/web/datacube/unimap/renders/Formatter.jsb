@@ -271,6 +271,7 @@
                     switch(desc.dataType){
                         case 'number':
                         case 'integer':
+                        case 'uint':
                         case 'float':
                             value += ':';
 

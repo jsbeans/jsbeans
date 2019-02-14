@@ -8,6 +8,7 @@
 		           'DataCube.MaterializationEngine',
 		           'JSB.Store.Sql.JDBC',
 		           'java:java.sql.JDBCType',
+			        'Datacube.Types.DataTypes',
 		           'java:java.sql.Types'],
 		           
 		$bootstrap: function(){
@@ -80,7 +81,7 @@
 									// append missing column
 									var fType = fields[fn].type;
 									var fComment = fields[fn].comment;
-									var sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fn + '" ' + JDBC.translateType(fType, vendor);
+									var sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fn + '" ' + DataTypes.toVendor(vendor, fType);
 									JDBC.executeUpdate(connection, sql);
 									
 									// extract current field
@@ -115,7 +116,7 @@
 					for(var i = 0; i < fNameArr.length; i++){
 						var fName = fNameArr[i];
 						var fType = fields[fName].type;
-						var jdbcType = JDBC.translateType(fType, vendor);
+						var jdbcType = DataTypes.toVendor(vendor, fType);
 						if(i > 0){
 							sql += ', ';
 						}
@@ -144,7 +145,7 @@
 					for(var i = 0; i < fNameArr.length; i++){
 						var fType = fields[fNameArr[i]].type;
 						var fComment = fields[fNameArr[i]].comment;
-						sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + JDBC.translateType(fType, vendor);
+						sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + DataTypes.toVendor($this.vendor, fType);
 						JDBC.executeUpdate(connection, sql);
 						
 						// extract current field

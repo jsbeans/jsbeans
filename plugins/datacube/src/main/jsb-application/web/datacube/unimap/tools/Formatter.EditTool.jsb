@@ -114,6 +114,7 @@
 		        switch(desc.dataType){
                     case 'number':
                     case 'integer':
+                    case 'uint':
                     case 'float':
                         this._separator.setChecked(desc.isThousandSeparate, true);
                         this._decimals.setValue(desc.decimals);

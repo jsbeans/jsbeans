@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Engine.MongoTranslatorEngine',
+	$name: 'DataCube.Query.Engine.Mongo.MongoTranslatorEngine',
 	$parent: 'DataCube.Query.Engine.Engine',
 
 	$singleton: true,
@@ -7,14 +7,14 @@
 	$server: {
 		$require: [
 		    'JSB.Store.Mongodb.MongodbStore',
-		    'DataCube.Query.Translators.MongodbAggregateTranslator',
+		    'DataCube.Query.Engine.Mongo.MongodbAggregateTranslator',
 		    'DataCube.Query.QueryUtils',
         ],
 
-		execute: function(name, executor, queryDescriptor){
-		    var cube = queryDescriptor.cube;
-		    var params = queryDescriptor.params;
-		    var query = queryDescriptor.query;
+		execute: function(name, executor, queryTask){
+		    var cube = queryTask.cube;
+		    var params = queryTask.params;
+		    var query = queryTask.query;
 		    var config = $this.getLocalConfig(name);
 
 		    var providers = QueryUtils.extractProviders(query, cube);

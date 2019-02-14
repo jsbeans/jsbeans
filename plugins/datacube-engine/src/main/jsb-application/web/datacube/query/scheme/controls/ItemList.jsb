@@ -39,7 +39,9 @@
 
             var categoryLabel = this.$('<li>' + category + '</li>');
             this._categories.append(categoryLabel);
-            categoryLabel.click(function(){
+            categoryLabel.click(function(evt){
+                evt.stopPropagation();
+
                 $this.selectCategory(category);
             });
 
@@ -85,11 +87,14 @@
                 return;
             }
 
-            el.click(function(){
-                if($this.options.onSelect){
+
+            if(this.options.onSelect){
+                el.click(function(evt){
+                    evt.stopPropagation();
+
                     $this.options.onSelect.call($this, itemDesc);
-                }
-            });
+                });
+            }
         },
 
         allowItems: function(items, categories){
@@ -108,6 +113,8 @@
                 } else {
                     if(categories.indexOf(this._itemList[i].category) === -1){
                         this._itemList[i].item.addClass('hidden');
+                    } else {
+                        this._itemList[i].item.removeClass('hidden');
                     }
                 }
             }

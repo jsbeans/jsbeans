@@ -3,7 +3,12 @@
 	$server: {
 		$singleton: true,
 		$globalize: 'Kernel',
-		
+		$require: [
+		    'java:org.jsbeans.serialization.JsObjectSerializerHelper',
+		    'java:org.jsbeans.helpers.NetworkHelper',
+		    'java:java.net.InetAddress',
+		],
+
 		$constructor: function(){
 			JSB().setLocker(this);
 
@@ -145,7 +150,7 @@
 		},
 		
 		sessions: function(){
-			return Packages.org.jsbeans.serialization.JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().getChildrenIds();
+			return JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().getChildrenIds();
 		},
 		
 		killSession: function(sessionId){
@@ -159,6 +164,22 @@
 				return ip;
 			}
 			return "";
+		},
+
+		serverAddr: function(withPort){
+            var ip = NetworkHelper.detectSelfAddress();
+            if (withPort) {
+                return ip + ':' + Config.get('web.http.port');
+            }
+            return ip;
+		},
+
+		serverUrl: function(){
+		    var url = ''+Config.get('web.http.url');
+		    if (url && url.length > 0) {
+		        return url;
+		    }
+		    return 'http://' + $this.serverAddr(true);
 		},
 
 		clientRequestId: function(){
@@ -251,7 +272,7 @@
 		},
 
 		hostName: function() {
-		    return ''+Packages.java.net.InetAddress.getLocalHost().getHostName();
+		    return '' + InetAddress.getLocalHost().getHostName();
 		},
 /*		
 		fork: function(proc, param){
