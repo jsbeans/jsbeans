@@ -91,14 +91,16 @@
 			// caption
 			var caption = this.$(`#dot
 				<div class="caption">
-					<div class="icon"></div>
 				</div>
 			`);
 			header.append(caption);
 
+			caption.append(RendererRepository.createRendererFor(this.entry).getElement());
+/*			
 			this.sliceName = this.$('<div class="name">' + this.entry.getName() + '</div>');
+			this.sliceName.attr('title', this.entry.getName());
 			caption.append(this.sliceName);
-
+*/
 			var editBtn = new Button({
 			    cssClass: 'roundButton btnEdit btn10',
 			    tooltip: 'Редактировать срез',
@@ -274,10 +276,11 @@
             }
 
             this.fields = opts && opts.fields || {};
-
+/*
             if(opts && opts.name){
                 this.sliceName.text(opts.name);
             }
+*/            
 		},
 
 		search: function(value){

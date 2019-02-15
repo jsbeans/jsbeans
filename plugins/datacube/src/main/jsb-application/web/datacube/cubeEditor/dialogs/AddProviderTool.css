@@ -1,6 +1,11 @@
+.addProviderToolWrapper {
+	border-radius: 6px;
+}
+
 .addProviderTool {
+	border-radius: 6px;
     min-width: 350px;
-    box-shadow: 2px 2px 5px 1px #5f7588;
+	background: #dae4ea;
 }
 
 .addProviderTool > header {
@@ -16,19 +21,24 @@
     background: -webkit-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
 }
 
+.addProviderTool > .fieldList {
+	max-width: 400px;
+}
+
 .addProviderTool > .fieldList > .fields {
-    padding: 5px;
+    padding: 3px;
     max-height: 350px;
 }
 
-.addProviderTool > .jsb-button {
-    margin-bottom: 5px;
+.addProviderTool > .buttonBar {
+	padding: 10px;
+    text-align: center;
 }
 
-.addProviderTool > .cancelBtn {
-    margin-left: 5px;
+.addProviderTool > .buttonBar > ._dwp_button {
+	margin: 0 8px;
 }
 
-.addProviderTool > .okBtn {
-    margin-left: calc(100% - 142px - 126px - 10px);
-}
+.addProviderTool > .buttonBar > .btnOk {}
+
+.addProviderTool > .buttonBar > .btnCancel {}

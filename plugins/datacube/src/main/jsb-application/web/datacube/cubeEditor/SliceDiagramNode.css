@@ -266,6 +266,7 @@
 
 .sliceDiagramNode.dataSourceSlice > footer > .renderer {
 	font-size: 11px;
+	white-space: nowrap;
 }
 
 .sliceDiagramNode.dataSourceSlice > footer > .renderer .icon {

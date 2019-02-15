@@ -1,11 +1,39 @@
 ({
 	$name: 'Datacube.Types.Type',
+	$fixedId: true,
+	
+	$sync: {
+		updateCheckInterval: 0
+	},
+	
+	name: null,
+	
+	getName: function(){
+		return this.name;
+	},
+	
+	isEqual: function(type1, type2) {
+	    if (type1 instanceof $this.getClass()) {
+	        type1 = type1.name;
+	    }
+	    if (JSB.isString(type1)) {
+	        type1 = type1.toLowerCase();
+	    }
+	    if (type2 instanceof $this.getClass()) {
+	        type2 = type2.name;
+	    }
+	    if (JSB.isString(type2)) {
+	        type2 = type2.toLowerCase();
+	    }
+	    return type1 == type2;
+	},
+
 
 	$server: {
-		$require: [
-		],
+		aliases: {},
 
 		$constructor: function(name){
+			this.id = 'DataTypes.' + name;
 			$base();
 			$this.name = name;
 			$this.aliases = {}; /// {vendor: [aliases]}
@@ -76,21 +104,6 @@
 //		    return converter.from.call($this, value);
 //		},
 
-		isEqual: function(type1, type2) {
-		    if (type1 instanceof $this.getClass()) {
-		        type1 = type1.name;
-		    }
-		    if (JSB.isString(type1)) {
-		        type1 = type1.toLowerCase();
-		    }
-		    if (type2 instanceof $this.getClass()) {
-		        type2 = type2.name;
-		    }
-		    if (JSB.isString(type2)) {
-		        type2 = type2.toLowerCase();
-		    }
-		    return type1 == type2;
-		},
 
 	}
 })

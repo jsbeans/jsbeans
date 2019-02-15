@@ -1,3 +1,7 @@
+.fieldList {
+	padding: 0 3px;
+}
+
 .fieldList > .searchEditor {
     padding: 5px;
 }
@@ -35,8 +39,8 @@
 
 .fieldList > .fields > .field > .jsb-checkbox > .check-elem {
     box-sizing: content-box;
-    border: 1px solid #54848e;
-    border-radius: 6px;
+    border-radius: 4px;
+	box-shadow: inset 0 0 1px #a9a9a9;
 }
 
 .fieldList > .tools {

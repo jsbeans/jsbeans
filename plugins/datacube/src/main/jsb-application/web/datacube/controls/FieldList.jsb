@@ -86,8 +86,18 @@
                         $this._checkedFields[this.options.key] = b;
                     }
                 }));
+                
+                var type = fieldsList[i].type;
+                var typeStr = '';
+                if(JSB.isInstanceOf(type, 'Datacube.Types.Type')){
+                	typeStr = type.getName();
+                } else if(JSB.isString(type)){
+                	typeStr = type;
+                } else {
+                	typeStr = 'неизвестный тип';
+                }
 
-                field.append('<div class="type">' + fieldsList[i].type + '</div>');
+                field.append('<div class="type">' + typeStr + '</div>');
 
                 this.fields.append(field);
             }

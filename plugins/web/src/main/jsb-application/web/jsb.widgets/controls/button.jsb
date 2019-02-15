@@ -25,8 +25,10 @@
 				var caption = this.$('<div class="_dwp_caption"></div>'); 
 				this.append(caption);
 				
+				
 				if(JSB().isString(this.options.caption)){
 					caption.text(this.options.caption);
+					this.attr('caption', this.options.caption);
 				} else if(JSB().isInstanceOf(this.options.caption, 'JSB.Widgets.Control')){
 					caption.append(this.options.caption.getElement());
 				}
