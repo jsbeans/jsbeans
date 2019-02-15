@@ -81,6 +81,52 @@
 	    },
 
         /**
+        * Создаёт поле редактирования для изменения значения
+        * @param {jQuery} valueEl - элемент, к которому привязывается рдактор. Должен содержать значение внутри себя
+        * @param {string} type - тип значения. Может быть text или number
+        * @param {function} callback - функция, которая вызывается при изменении значения
+        */
+	    createInput: function(valueEl, type, callback){
+            var oldValue = valueEl.text().replace(/"/g, ''),
+                input = this.$('<input class="inputEditor" value="' + oldValue + '" />'); //  type="' + (type || 'text') + '" todo
+
+            valueEl.append(input);
+
+            function change(){
+                var newVal = input.val();
+
+                if(type === 'number'){
+                    newVal = Number(newVal);
+                }
+
+                input.remove();
+
+                if(newVal !== oldValue){
+                    callback.call($this, newVal);
+
+                    if(type === 'text'){
+                        valueEl.text('"' + newVal + '"');
+                    } else {
+                        valueEl.text(newVal);
+                    }
+
+                    $this.onChange();
+                }
+
+                $this.$(window).off('click.changeInput');
+            }
+
+            input.change(change);
+
+            $this.$(window).on('click.changeInput', change);
+            input.click(function(evt){
+                evt.stopPropagation();
+            });
+
+            input.focus();
+	    },
+
+        /**
         * Создаёт рендер
         * @see DataCube.Query.SchemeController.createRender
         */

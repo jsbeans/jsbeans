@@ -16,6 +16,10 @@
 	    ['$field',
 	    // матеметические операции
 	    '$add', '$sub', '$mul', '$div', '$divz', '$mod', '$sqrt', '$pow2',
+	    // функции
+	    '$greatest', '$least', '$splitString', '$substring', '$trim', '$concat', '$regexpReplace',
+	    '$dateYear', '$dateMonth', '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$dateTotalSeconds',
+	    '$dateIntervalOrder', '$timeHour', '$timeMinute', '$timeSecond',
 	    // разное
 	    '$const']
 	],
@@ -33,6 +37,7 @@
 	        displayName: 'Куб',
 	        isSource: true,
 	        editable: false,
+	        priority: 1,
 	        removable: false
 	    },
 
@@ -52,6 +57,7 @@
             displayName: 'Пересечение',
             desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
             isSource: true,
+            priority: 1,
             removable: false
 	    },
 
@@ -61,6 +67,7 @@
 	        displayName: 'Таблица базы данных',
 	        isSource: true,
 	        editable: false,
+	        priority: 1,
 	        removable: false
 	    },
 
@@ -71,6 +78,7 @@
 	        desc: 'Задает в качестве источника запроса объединение результатов двух запросов',
 	        isSource: true,
 	        multiple: true,
+	        priority: 1,
 	        removable: false
 	    },
 	    /*******/
@@ -157,6 +165,187 @@
 	        displayName: 'Степень',
 	        desc: 'Возведение числа в квадрат',
 	        defaultValues: {$const: 2}
+	    },
+
+	    // functions
+	    $greatest: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Максимум',
+	        desc: 'Выбор максимального значения из перечня заданных',
+	        defaultValues: [{$const: 0},{$const: 0}]
+	    },
+
+	    $least: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Минимум',
+	        desc: 'Выбор минимального значения из перечня заданных',
+	        defaultValues: [{$const: 0},{$const: 0}]
+	    },
+
+	    $splitString: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Разделить строку',
+	        desc: 'Разделить строку на несколько (получить массив строк)',
+	        defaultValues: {$const: ''},
+	        valueName: 'Строка',
+	        parameters: {
+	            $separator: {
+	                displayName: 'Разделитель',
+	                defaultValue: '',
+	                type: 'text'
+	            }
+	        }
+	    },
+
+	    $substring: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь подстроку',
+	        desc: 'Извлекает подстроку начиная с указанной позиции',
+	        defaultValues: {$const: ''},
+	        valueName: 'Строка',
+	        parameters: {
+	            $separator: {
+	                displayName: 'Индекс',
+	                defaultValue: 0,
+	                type: 'number'
+	            }
+	        }
+	    },
+
+	    $trim: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Удалить пробелы',
+	        desc: 'Удалить пробельные символы в начале и в конце строки',
+	        defaultValues: {$const: ''}
+	    },
+
+	    $concat: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Склеить строки',
+	        desc: 'Упорядоченное соединение строк в одну',
+	        defaultValues: {$const: ''},
+	        multiple: true
+	    },
+
+	    $regexpReplace: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Замена по шаблону',
+	        desc: 'Замена подстроки с использованием регулярного выражения POSIX',
+	        defaultValues: {$const: ''},
+	        valueName: 'Строка',
+	        parameters: {
+	            $pattern: {
+	                displayName: 'Шаблон',
+	                defaultValue: '',
+	                type: 'text'
+	            },
+	            $replacementString: {
+	                displayName: 'Строка замены',
+	                defaultValue: '',
+	                type: 'text'
+	            },
+	            // todo: селектор с флажками
+	            $flags: {
+	                displayName: 'Флажки',
+	                defaultValue: '',
+	                type: 'text'
+	            }
+	        }
+	    },
+
+	    $dateYear: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь год',
+	        desc: 'Извлечь год из даты (date/timestamp)',
+	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $dateMonth: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь месяц',
+	        desc: 'Извлечь номер месяца из даты (date/timestamp)',
+	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $dateMonthDay: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь день',
+	        desc: 'Извлечь день месяца (1-31) из даты (date/timestamp)',
+	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $dateWeekDay: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь день недели',
+	        desc: 'Извлечь день недели (воскресенье 0 - суббота 6) из даты (date/timestamp)',
+	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $dateYearDay: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь день в году',
+	        desc: 'Извлечь день в году (1-365/366) из даты (date/timestamp)',
+	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $dateTotalSeconds: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь секунды',
+	        desc: 'Извлечь секунды из даты (date/timestamp; начиная отсчет с 1970-01-01)',
+	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $dateIntervalOrder: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Разбить дату',
+	        desc: 'Разбить дату (date/timestamp) на равные интервалы в секундах и вернуть порядковый номер',
+	        defaultValues: {$const: 1550252269},
+	        valueName: 'Дата',
+	        parameters: {
+	            $seconds: {
+	                displayName: 'Интервал',
+	                defaultValue: 10,
+	                type: 'number'
+	            }
+	        }
+	    },
+
+	    $timeHour: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь час',
+	        desc: 'Извлечь час в сутках (0-23) из даты/времени (date/timestamp)',
+	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $timeMinute: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь минуты',
+	        desc: 'Извлечь минуты в часе (0-59) из даты/времени (date/timestamp)',
+	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $timeSecond: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Извлечь секунды',
+	        desc: 'Извлечь секунды в в минуте (0-59) из даты/времени (date/timestamp)',
+	        defaultValues: {$const: 1550252269}
 	    },
 
 	    // another

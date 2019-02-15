@@ -51,6 +51,10 @@
         createRender: function(options, parent){
             var scheme = Syntax.getSchema(options.key);
 
+            if(!options.renderName && !scheme){
+                return;
+            }
+
             var render = RenderRepository.createRender(JSB.merge(options, {
                 controller: this,
                 parent: parent,
