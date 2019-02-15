@@ -25,133 +25,79 @@
 
 	        this.append('<div class="separator"></div>');
 
-	        this.value = this.$('<div class="value">' + this.getValues() + '</div>');
-	        this.append(this.value);
+	        var value = this.$('<div class="value">' + this.getValues() + '</div>');
+	        this.append(value);
 
-	        this.installValueMenu();
+	        this.installMenuEvents(value, this.getId() + '_value', {
+	            removable: false,
+	            editCallback: function(){
+                    ToolManager.activate({
+                        id: 'simpleSelectTool',
+                        cmd: 'show',
+                        data: {
+                            key: $this.getKey(),
+                            values: $this.getScheme().values
+                        },
+                        scope: null,
+                        target: {
+                            selector: $this.getElement(),
+                            dock: 'bottom'
+                        },
+                        callback: function(desc){
+                            switch(desc.key){
+                                case 'number':
+                                    var curVal = $this.getValues(),
+                                        newVal = 0;
 
-	        this.value.click(function(){
-                ToolManager.activate({
-                    id: 'simpleSelectTool',
-                    cmd: 'show',
-                    data: {
-                        key: $this.getKey(),
-                        values: $this.getScheme().values
-                    },
-                    scope: null,
-                    target: {
-                        selector: $this.getElement(),
-                        dock: 'bottom'
-                    },
-                    callback: function(desc){
-                        switch(desc.key){
-                            case 'number':
-                                var curVal = $this.getValues(),
-                                    newVal = 0;
+                                    if(typeof curVal === 'number'){
+                                        newVal = curVal;
+                                    }
 
-                                if(typeof curVal === 'number'){
-                                    newVal = curVal;
-                                }
+                                    $this.createInput(newVal, 'number');
+                                    break;
+                                case 'string':
+                                    var curVal = $this.getValues(),
+                                        newVal = '';
 
-                                $this.createInput(newVal, 'number');
-                                break;
-                            case 'string':
-                                var curVal = $this.getValues(),
-                                    newVal = '';
+                                    if(typeof curVal === 'string'){
+                                        newVal = curVal;
+                                    }
 
-                                if(typeof curVal === 'string'){
-                                    newVal = curVal;
-                                }
+                                    $this.createInput(newVal, 'text');
+                                    break;
+                                case 'boolTrue':
+                                    $this.setValues(true);
+                                    value.text('true');
+                                    break;
+                                case 'boolFalse':
+                                    $this.setValues(false);
+                                    value.text('false');
+                                    break;
+                                case 'null':
+                                    $this.setValues(null);
+                                    value.text('null');
+                            }
 
-                                $this.createInput(newVal, 'text');
-                                break;
-                            case 'boolTrue':
-                                $this.setValues(true);
-                                $this.value.text('true');
-                                break;
-                            case 'boolFalse':
-                                $this.setValues(false);
-                                $this.value.text('false');
-                                break;
-                            case 'null':
-                                $this.setValues(null);
-                                $this.value.text('null');
+                            value.attr('valType', desc.key);
+
+                            $this.onChange();
                         }
-
-                        $this.value.attr('valType', desc.key);
-
-                        $this.onChange();
-                    }
-                });
-	        });
-	    },
-
-	    createInput: function(value, type, clickEvt){
-            var input = $this.$('<input value="' + value + '" />'); //  type="' + (type || 'text') + '" todo
-            $this.value.append(input);
-
-            input.change(function(){
-                var newVal = input.val();
-
-                if(type === 'number'){
-                    newVal = Number(newVal);
-                }
-
-                if(newVal !== value){
-                    $this.setValues(newVal);
-
-                    input.remove();
-
-                    if(type === 'text'){
-                        $this.value.text('"' + newVal + '"');
-                    } else {
-                        $this.value.text(newVal);
-                    }
-
-                    $this.onChange();
-                }
-
-                $this.$(window).off('click.changeConstInput');
-            });
-
-            $this.$(window).on('click.changeConstInput', function(evt){
-                // пробрасывается событие от клика по меню, чтобы сразу же не закрыть input, но при этом закрыть другие возможные меню
-                if(clickEvt.target === evt.target){
-                    return;
-                }
-
-                $this.setValues(input.val());
-                $this.value.text(input.val());
-                input.remove();
-                $this.onChange();
-                $this.$(window).off('click.changeConstInput');
-            });
-            input.click(function(evt){
-                evt.stopPropagation();
-            });
-
-            input.focus();
-	    },
-
-	    installValueMenu: function(){
-	        var value = this.getValues();
-
-	        this.value.off('hover');
-
-	        if(typeof value === 'string' || typeof value === 'number'){
-	            var type = 'number';
-
-	            if(typeof value === 'string'){
-	                type = 'text';
+                    });
 	            }
+	        });
 
-                this.installMenuEvents(this.value, this.getId() + '_value', {
-                    removable: false,
-                    editCallback: function(clickEvt){
-                        $this.createInput(value, type, clickEvt);
-                    }
-                });
+	        var valueType = 'text';
+	        if(typeof this.getValues() === 'number'){
+	            valueType = 'number';
 	        }
+
+	        value.click(function(evt){
+	            evt.stopPropagation();
+
+	            $this.createInput(value, valueType, function(newVal){
+	                $this.setValues(newVal);
+	            });
+	        });
 	    }
 	}
 }
