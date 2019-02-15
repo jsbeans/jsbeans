@@ -476,7 +476,7 @@
                     queriesByContext[query.$context] = query;
                 }
 		    });
-            var managedFields = cube.getManagedFields();
+            var managedFields = cube.extractFields();
 
 		    this.walkQueryFields(dcQuery, includeSubQueries, function(field, context, query) {
 		        var fieldQuery = context && queriesByContext[context];
@@ -526,7 +526,7 @@
 		    function checkBindingWithout(excludeId) {
 		        // все общие поля оставшихся join провайдеров должны иметь другие биндинги с оставшимися провайдерами
 
-                var cubeFields = cube.getManagedFields();
+                var cubeFields = cube.extractFields();
                 for (var id in providersFieldsMap) if (id != excludeId && typeof providersFieldsMap[id] !== 'undefined') {
                     if (providersFieldsMap[id].provider.getMode() == 'join') {
                         for(var cubeField in providersFieldsMap[id].cubeFields) {
@@ -659,7 +659,7 @@
 //
 //                // add join on fields
 //                var providers = $this.extractCubeProvidersInQuery(dcQuery, cubeOrDataProvider);
-//                var managedFields = cubeOrDataProvider.getManagedFields();
+//                var managedFields = cubeOrDataProvider.extractFields();
 //                var candidates = {};
 //                for(var field in managedFields) {
 //                    var binding = managedFields[field].binding;
@@ -1022,7 +1022,7 @@
             }
             // return true if cube field selected as is
             var fields = cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.QueryableContainer')
-                        ? cubeOrDataProvider.getManagedFields()
+                        ? cubeOrDataProvider.extractFields()
                         : cubeOrDataProvider.extractFields();
             if (fields[field]) {
                 return true;
@@ -1077,7 +1077,7 @@
             if (Object.keys(dcQuery.$select).length == 0) {
                 if (cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.QueryableContainer')) {
                     // add all cube fields
-                    var managedFields = cubeOrDataProvider.getManagedFields();
+                    var managedFields = cubeOrDataProvider.extractFields();
                     for (var f in managedFields) if (typeof managedFields[f] !== 'undefined') {
                         var binding = managedFields[f].binding;
                         var name = f.replace(new RegExp('"','g'),'');
@@ -1292,7 +1292,7 @@
         */
         patchSimpleFieldAliases: function(dcQuery, cubeOrDataProvider) {
             var fields = cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.QueryableContainer')
-                        ? cubeOrDataProvider.getManagedFields()
+                        ? cubeOrDataProvider.extractFields()
                         : cubeOrDataProvider.extractFields();
 		    var queriesByContext = {};
 		    this.walkAllSubQueries(dcQuery, function(query){
@@ -1683,7 +1683,7 @@
 
         extractType: function (exp, query, cubeOrDataProvider, queryByContext) {
             var fields = cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.QueryableContainer')
-                        ? cubeOrDataProvider.getManagedFields()
+                        ? cubeOrDataProvider.extractFields()
                         : cubeOrDataProvider.extractFields();
 
             function extractFieldType(field){
@@ -1758,7 +1758,7 @@
 
         getFieldJdbcType: function(cubeOrDataProvider, field) {
             if (cubeOrDataProvider.getJsb().isSubclassOf('DataCube.Model.QueryableContainer')) {
-                var cubeFields = cubeOrDataProvider.getManagedFields();
+                var cubeFields = cubeOrDataProvider.extractFields();
 //                for(var cubeField in cubeFields) if(typeof cubeFields[cubeField] !== 'undefined') {
                 var binding = cubeFields[field].binding;
                 for (var i in binding) {

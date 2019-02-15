@@ -254,7 +254,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
 
         _prepareEmbeddedSQL: function(sql, dcQuery){
             if (this.cube) {
-            	var managedFields = this.cube.getManagedFields();
+            	var managedFields = this.cube.extractFields();
                 for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
                     // is in Cube print full name
                     var binding = managedFields[field].binding;

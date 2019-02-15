@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Model.DatabaseTable',
-	$parent: 'DataCube.Model.SettingsEntry',
+	$parent: 'DataCube.Model.QueryableEntry',
 
 	missing: false,
 	
@@ -17,29 +17,10 @@
 	        };
 	    },
 
-	    createQuerySelect: function(selectedFields, useContext){
-            var fields = this.extractFields(),
-                context = this.getFullId(),
-                select = {};
-
-            for(var i in fields){
-                if(selectedFields && !selectedFields[i]){
-                    continue;
-                }
-
-                if(useContext){
-                    select[i] = {
-                        $context: context,
-                        $field: i
-                    };
-                } else {
-                    select[i] = {
-                        $field: i
-                    };
-                }
-            }
-
-            return select;
+	    executeQuery: function(opts){
+	    	var query = this.createQuery();
+	    	var extendedQueryDesc = this.extendQuery(query, opts);
+			return $this.getQueryableContainer().executeQuery(extendedQueryDesc.query, extendedQueryDesc.params);
 	    },
 
 		extractFields: function(){
@@ -48,6 +29,10 @@
 
 		getStore: function(){
 			return this.getWorkspace().entry(this.getParentId()).getStore();
+		},
+		
+		getQueryableContainer: function(){
+			return this.getWorkspace().entry(this.getParentId());
 		},
 
 		setMissing: function(bMissing){

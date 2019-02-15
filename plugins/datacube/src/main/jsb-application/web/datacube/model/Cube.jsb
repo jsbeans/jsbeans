@@ -293,11 +293,6 @@
 		    return dimensions;
 		},
 
-		// Dima use it
-		getManagedFields: function(){
-			return this.extractFields();
-		},
-
 		getSlices: function(){
 			this.load();
 

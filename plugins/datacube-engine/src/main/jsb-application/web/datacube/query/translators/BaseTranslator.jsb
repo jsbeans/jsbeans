@@ -291,7 +291,7 @@ debugger;
             }
             // return providers of cube field or current provider for join fields
             var providers = [];
-            var managedFields = this.cube.getManagedFields();
+            var managedFields = this.cube.extractFields();
             if (!managedFields[field]) {
                 throw new Error('Cube has no field ' + field);
             }
@@ -320,7 +320,7 @@ debugger;
             // input exp - expression with cube fields
             // result - array with providers connected with current expression
             var providers = [];
-            var managedFields = this.cube.getManagedFields();
+            var managedFields = this.cube.extractFields();
             if (JSB.isPlainObject(exp)) {
                 for(var p in exp) if (exp.hasOwnProperty(p)) {
                     if (!p.match(/^\$/) && byKeyField) {
