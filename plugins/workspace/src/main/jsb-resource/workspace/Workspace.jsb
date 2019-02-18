@@ -464,9 +464,35 @@
 		
 		search: function(pat){
 			var foundEntries = [];
+			
+			function resolveEntryDesc(eDesc){
+				if(!eDesc){
+					return;
+				}
+				var eJsb = JSB.get(eDesc.eType);
+				if(!eJsb){
+					return;
+				}
+				if(eJsb.isSubclassOf('JSB.Workspace.EntryLink')){
+					var linkEntry = $this.entry(eDesc.eId);
+					var targetWId = linkEntry.property('_wId');
+					var targetEId = linkEntry.property('_eId');
+					var targetWs = WorkspaceController.getWorkspace(targetWId);
+					var targetEDesc = targetWs._entries[targetEId];
+					return resolveEntryDesc(targetEDesc);
+				}
+				
+				return eDesc;
+			}
+			
 			if(JSB.isFunction(pat)){
 				for(var eId in this._entries){
-					if(pat.call(this, this._entries[eId])){
+					var eDesc = resolveEntryDesc(this._entries[eId]);
+					if(!eDesc){
+						continue;
+					}
+					
+					if(pat.call(this, eDesc)){
 						foundEntries.push(this._entries[eId]);
 					}
 				}
@@ -474,7 +500,8 @@
 				pat = pat.replace(/\./g, '\\.').replace(/\*/g,'.*');
 				var rx = new RegExp(pat, 'i');
 				for(var eId in this._entries){
-					if(rx.test(this._entries[eId].eName) || rx.test(eId)){
+					var eDesc = resolveEntryDesc(this._entries[eId]);
+					if(rx.test(eDesc.eName) || rx.test(eId)){
 						foundEntries.push(this._entries[eId]);
 					}
 				}

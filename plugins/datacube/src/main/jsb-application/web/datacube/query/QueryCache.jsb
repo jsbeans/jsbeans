@@ -573,6 +573,7 @@
 				var connection = connWrap.get();
 				try {
 					JDBC.executeUpdate(connection, batch);
+				} catch(e){
 				} finally {
 					try {connWrap.close();} catch(e){}
 				}
@@ -637,7 +638,12 @@
 						
 						try {
 							desc.lastUsed = Date.now();
-							var el = cacheIt.next();
+							var el = null;
+							try {
+								el = cacheIt.next();
+							} catch(e){
+								el = null;
+							}
 							if(!el){
 								closeCacheIt();
 								if(desc.complete){
@@ -646,7 +652,11 @@
 								$this.lock('cacheFill_' + desc.qId);
 								try {
 									cacheIt = $this.openTableIterator(desc, position);
-									el = cacheIt.next();
+									try {
+										el = cacheIt.next();
+									} catch(e){
+										el = null;
+									}
 									if(!el){
 										closeCacheIt();
 										var written = $this._fillNextBatch(desc, position);
@@ -655,7 +665,11 @@
 											return null;
 										}
 										cacheIt = $this.openTableIterator(desc, position);
-										el = cacheIt.next();
+										try {
+											el = cacheIt.next();
+										} catch(e){
+											el = null;
+										}
 										if(!el){
 											this.close();
 											return null;
