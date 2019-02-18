@@ -54,7 +54,7 @@
                                 ]
                             },
                             valueType: 'string',
-                            defaultValue: '{value}'
+                            defaultValue: '{value:%Y-%m-%d}'
                         },
                         fontColor: {
                             render: 'item',
