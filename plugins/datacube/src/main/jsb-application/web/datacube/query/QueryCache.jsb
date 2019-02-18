@@ -573,7 +573,6 @@
 				var connection = connWrap.get();
 				try {
 					JDBC.executeUpdate(connection, batch);
-				} catch(e){
 				} finally {
 					try {connWrap.close();} catch(e){}
 				}
