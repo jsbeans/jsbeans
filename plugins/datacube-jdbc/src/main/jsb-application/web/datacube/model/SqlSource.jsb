@@ -160,7 +160,7 @@
 							delete existedTables[tId];
 							continue;
 						}
-						var tEntry = new SqlTable(tId, this.getWorkspace(), tDesc);
+						var tEntry = new SqlTable(tId, this.getWorkspace(), tDesc, this);
 						this.addChildEntry(tEntry);
 					}
 				}
