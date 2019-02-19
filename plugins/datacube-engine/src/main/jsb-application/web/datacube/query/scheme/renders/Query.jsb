@@ -5,7 +5,9 @@
 	$alias: '$query',
 
 	$client: {
-	    $require: ['DataCube.Query.Syntax'],
+	    $require: ['DataCube.Query.Syntax',
+	               'JSB.Widgets.ToolManager',
+	               'DataCube.Query.SimpleSelectTool'],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -53,8 +55,51 @@
                     this.append(render);
                 }
             }
+/*
+            var addBtn = this.$('<i class="addBtn"></i>');
+            this.append(addBtn);
+            addBtn.click(function(){
+                var values = Syntax.getQueryElements(),
+                    curValues = Object.keys($this.getScope());
 
-            //
+                for(var i = 0; i < curValues.length; i++){
+                    var index = values.indexOf(curValues[i]);
+
+                    if(index > -1){
+                        values.splice(index, 1);
+                    }
+                }
+
+                ToolManager.activate({
+                    id: 'simpleSelectTool',
+                    cmd: 'show',
+                    data: {
+                        key: JSB.generateUid(),
+                        values: values
+                    },
+                    scope: null,
+                    target: {
+                        selector: $this.getElement(),
+                        dock: 'bottom'
+                    },
+                    callback: function(desc){
+                        var render = $this.createRender({
+                            key: desc.key,
+                            scope: $this.getScope(),
+                            queryBean: $this
+                        });
+
+                        if(render){
+                            addBtn.before(render);
+                        }
+
+                        // todo: hide btn if values not exist
+
+                        $this.onChange();
+                    }
+                });
+            });
+*/
 	    },
 
 	    getSourceFields: function(callback){

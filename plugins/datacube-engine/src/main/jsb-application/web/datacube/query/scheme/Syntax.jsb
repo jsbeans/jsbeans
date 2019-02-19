@@ -6,6 +6,7 @@
 		updateCheckInterval: 0
 	},
 
+	_queryElements: [],
 	_replacementsMap: {},
 	_sourceKeys: {},
 	_toolItems: [],
@@ -90,6 +91,8 @@
 	        removable: false
 	    },
 	    /*******/
+
+	    // query elements
 	    $select: {
 	        render: '$select',
 	        category: 'Запрос',
@@ -100,10 +103,17 @@
 	        defaultValues: {$const: 0}
 	    },
 
-	    // query add fields
-	    /*
-	    $groupBy: {},
-
+	    $groupBy: {
+	        render: '$default',
+	        displayName: 'Группировка',
+	        desc: 'Группировка строк по значениям или выражениям',
+	        multiple: true,
+	        queryElement: true,
+	        replaceable: false,
+	        defaultValues: [],
+	        defaultAddValues: {$const: 0}
+	    },
+        /*
 	    $filter: {},
 
 	    $postFilter: {},
@@ -696,6 +706,10 @@
         return this._toolItems;
     },
 
+    getQueryElements: function(){
+        return JSB.clone(this._queryElements);
+    },
+
 	$client: {
 		$constructor: function(){
 			$base();
@@ -741,12 +755,17 @@
 
                 // create tool categories
                 if(this.scheme[i].category){
-                    this._toolItems.push(JSB.merge({}, this.scheme[i], {key: i}))
+                    this._toolItems.push(JSB.merge({}, this.scheme[i], {key: i}));
                 }
 
                 // collect source keys
                 if(this.scheme[i].isSource){
                     this._sourceKeys[i] = true;
+                }
+
+                // collect query elements
+                if(this.scheme[i].queryElement){
+                    this._queryElements.push(JSB.merge({}, this.scheme[i], {key: i}));
                 }
             }
         }
