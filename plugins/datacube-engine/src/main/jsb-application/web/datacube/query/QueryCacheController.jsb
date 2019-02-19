@@ -3,7 +3,8 @@
 	$singleton: true,
 	
 	$server: {
-		$require: ['JSB.Workspace.WorkspaceController'],
+		$require: ['JSB.Workspace.WorkspaceController',
+		           'DataCube.Model.CacheControllerSettings'],
 		cacheMap: {},
 		enabled: false,
 		tickInterval: 5000,
