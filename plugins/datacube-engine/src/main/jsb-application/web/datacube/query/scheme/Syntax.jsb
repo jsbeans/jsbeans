@@ -20,13 +20,21 @@
 	    '$greatest', '$least', '$splitString', '$substring', '$trim', '$concat', '$regexpReplace',
 	    '$dateYear', '$dateMonth', '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$dateTotalSeconds',
 	    '$dateIntervalOrder', '$timeHour', '$timeMinute', '$timeSecond',
+	    // преобразование типов
+	    '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toTimestamp', '$toString',
+	    // функции агрегации
+	    '$any', '$first', '$last', '$sum', '$count', '$min', '$max', '$avg', '$array', '$flatArray', '$expandArray',
+	    // функции глобальной агрегации
+	    '$gsum', '$gcount', '$gmin', '$gmax', '$gavg', '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 	    // разное
-	    '$const']
+	    '$const', '$distinct',
+	    // test
+	    ]
 	],
 
 	scheme: {
 	    $query: {
-	        render: '$query',
+	        render: '$query'
 	    },
 
         /*******/
@@ -92,6 +100,22 @@
 	        defaultValues: {$const: 0}
 	    },
 
+	    // query add fields
+	    /*
+	    $groupBy: {},
+
+	    $filter: {},
+
+	    $postFilter: {},
+
+	    $cubeFilter: {},
+
+	    $sort: {},
+
+	    $limit: {},
+
+	    $distinct: {},
+	    */
 	    $field: {
 	        render: '$field'
 	    },
@@ -103,6 +127,7 @@
 	        displayName: 'Сложение',
 	        desc: 'Сложение чисел',
 	        multiple: true,
+	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
@@ -112,6 +137,7 @@
 	        displayName: 'Вычитание',
 	        desc: 'Вычитание чисел',
 	        multiple: true,
+	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
@@ -121,6 +147,7 @@
 	        displayName: 'Произведение',
 	        desc: 'Произведение чисел',
 	        multiple: true,
+	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
@@ -130,6 +157,7 @@
 	        displayName: 'Деление',
 	        desc: 'Деление чисел',
 	        multiple: true,
+	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 1}]
 	    },
 
@@ -139,6 +167,7 @@
 	        displayName: 'Деление (!0)',
 	        desc: 'Деление чисел (ноль в знаменателе игнорируется)',
 	        multiple: true,
+	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 1}]
 	    },
 
@@ -148,6 +177,7 @@
 	        displayName: 'Деление по модулю',
 	        desc: 'Деление по модулю (получение остатка от деления)',
 	        multiple: true,
+	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 1}]
 	    },
 
@@ -185,32 +215,37 @@
 	    },
 
 	    $splitString: {
-	        render: '$default',
+	        render: '$multiField',
 	        category: 'Функции',
 	        displayName: 'Разделить строку',
 	        desc: 'Разделить строку на несколько (получить массив строк)',
-	        defaultValues: {$const: ''},
-	        valueName: 'Строка',
-	        parameters: {
+	        values: {
+	            $field: {
+	                displayName: 'Строка',
+	                defaultValues: {$const: ''}
+	            },
 	            $separator: {
 	                displayName: 'Разделитель',
-	                defaultValue: '',
+	                defaultValues: '',
+	                parameter: true,
 	                type: 'text'
 	            }
 	        }
 	    },
 
 	    $substring: {
-	        render: '$default',
+	        render: '$multiField',
 	        category: 'Функции',
 	        displayName: 'Извлечь подстроку',
-	        desc: 'Извлекает подстроку начиная с указанной позиции',
-	        defaultValues: {$const: ''},
-	        valueName: 'Строка',
-	        parameters: {
-	            $separator: {
-	                displayName: 'Индекс',
-	                defaultValue: 0,
+	        values: {
+	            $field: {
+	                displayName: 'Строка',
+	                defaultValues: {$const: ''}
+	            },
+	            $length: {
+	                displayName: 'Длина',
+	                defaultValues: 0,
+	                parameter: true,
 	                type: 'number'
 	            }
 	        }
@@ -229,32 +264,37 @@
 	        category: 'Функции',
 	        displayName: 'Склеить строки',
 	        desc: 'Упорядоченное соединение строк в одну',
+	        defaultAddValues: {$const: ''},
 	        defaultValues: {$const: ''},
 	        multiple: true
 	    },
 
 	    $regexpReplace: {
-	        render: '$default',
+	        render: '$multiField',
 	        category: 'Функции',
 	        displayName: 'Замена по шаблону',
 	        desc: 'Замена подстроки с использованием регулярного выражения POSIX',
-	        defaultValues: {$const: ''},
-	        valueName: 'Строка',
-	        parameters: {
+	        values: {
+	            $field: {
+	                displayName: 'Строка',
+	                defaultValues: {$const: ''}
+	            },
 	            $pattern: {
 	                displayName: 'Шаблон',
-	                defaultValue: '',
+	                defaultValues: '',
+	                parameter: true,
 	                type: 'text'
 	            },
 	            $replacementString: {
 	                displayName: 'Строка замены',
-	                defaultValue: '',
+	                defaultValues: '',
+	                parameter: true,
 	                type: 'text'
 	            },
-	            // todo: селектор с флажками
-	            $flags: {
+	            $flags: {   // todo: селектор с флажками
 	                displayName: 'Флажки',
-	                defaultValue: '',
+	                defaultValues: '',
+	                parameter: true,
 	                type: 'text'
 	            }
 	        }
@@ -309,16 +349,19 @@
 	    },
 
 	    $dateIntervalOrder: {
-	        render: '$default',
+	        render: '$multiField',
 	        category: 'Функции',
 	        displayName: 'Разбить дату',
 	        desc: 'Разбить дату (date/timestamp) на равные интервалы в секундах и вернуть порядковый номер',
-	        defaultValues: {$const: 1550252269},
-	        valueName: 'Дата',
-	        parameters: {
+	        values: {
+	            $field: {
+	                displayName: 'Дата',
+	                defaultValues: {$const: 1550252269}
+	            },
 	            $seconds: {
 	                displayName: 'Интервал',
-	                defaultValue: 10,
+	                defaultValues: 10,
+	                parameter: true,
 	                type: 'number'
 	            }
 	        }
@@ -346,6 +389,225 @@
 	        displayName: 'Извлечь секунды',
 	        desc: 'Извлечь секунды в в минуте (0-59) из даты/времени (date/timestamp)',
 	        defaultValues: {$const: 1550252269}
+	    },
+
+        // type conversion
+	    $toInt: {
+	        render: '$default',
+	        category: 'Преобразование типов',
+	        displayName: 'Целое число',
+	        desc: 'Преобразование к целому числу',
+	        defaultValues: {$const: 1.56}
+	    },
+
+	    $toDouble: {
+	        render: '$default',
+	        category: 'Преобразование типов',
+	        displayName: 'Вещественное число',
+	        desc: 'Преобразование к числу с плавающей точкой',
+	        defaultValues: {$const: 1.56}
+	    },
+
+	    $toBoolean: {
+	        render: '$default',
+	        category: 'Преобразование типов',
+	        displayName: 'Логический тип',
+	        desc: 'Преобразование к логическому типу (boolean)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $toDate: {
+	        render: '$default',
+	        category: 'Преобразование типов',
+	        displayName: 'Дата',
+	        desc: 'Преобразование строки или числа к дате',
+	        defaultValues: {$const: 1.56}
+	    },
+
+	    $toTimestamp: {
+	        render: '$default',
+	        category: 'Преобразование типов',
+	        displayName: 'Timestamp',
+	        desc: 'Преобразование числа к timestamp',
+	        defaultValues: {$const: 156000045}
+	    },
+
+	    $toString: {
+	        render: '$default',
+	        category: 'Преобразование типов',
+	        displayName: 'Строка',
+	        desc: 'Преобразование к строке',
+	        defaultValues: {$const: 1.56}
+	    },
+
+        // aggregation functions
+	    $any: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Любое из',
+	        desc: 'Вернуть любое значение в группе',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $first: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Первое из',
+	        desc: 'Вернуть первое значение в группе (если не важен порядок, используйте $any)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $last: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Последнее из',
+	        desc: 'Вернуть последнее значение в группе (если не важен порядок, используйте $any)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $sum: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Сумма',
+	        desc: 'Суммировать значения в группе',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $count: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Количество',
+	        desc: 'Вычислить количество элементов в группе',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $min: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Минимум',
+	        desc: 'Вернуть минимальное значение в группе',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $max: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Максимум',
+	        desc: 'Вернуть максимальное значение в группе',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $avg: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Среднее',
+	        desc: 'Вычислить среднее значение в группе (NULL в расчетах не участвует)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $array: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Массив',
+	        desc: 'Поместить все элементы группы в массив',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $flatArray: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Склеить массивы',
+	        desc: 'Объединить все массивы группы в один массив',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $expandArray: {
+	        render: '$default',
+	        category: 'Функции агрегации',
+	        displayName: 'Разбить массив',
+	        desc: 'Разложить элементы массива на множество элементов ($array/$flatArray наоборот)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    // global aggregation functions
+	    $gsum: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Сумма (глобальная)',
+	        desc: 'Сумма всех элементов таблицы (сумма всех групп)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $gcount: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Количество (глобальная)',
+	        desc: 'Число всех элементов таблицы (сумма размеров всех групп)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $gmin: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Минимум (глобальная)',
+	        desc: 'Вернуть минимальное значение в таблице (минимальное среди всех групп)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $gmax: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Максимум (глобальная)',
+	        desc: 'Вернуть максимальное значение в таблице (максимальное среди всех групп)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $gavg: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Среднее (глобальная)',
+	        desc: 'Вернуть среднее значение в таблице',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $grmaxsum: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Сумма максимальная (глобальная)',
+	        desc: 'Вернуть значение с максимальной суммой элементов в группе (найти группу с максимальной суммой)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $grmaxcount: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Количество максимальное (глобальная)',
+	        desc: 'Вернуть значение с числом элементов самой крупной группы (найти группу с максимальным числом элементов)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $grmaxavg: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Среднее максимальное (глобальная)',
+	        desc: 'Вернуть значение с максимальным средним в группе (найти группу с максимальным арифметическим средним)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $grmax: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Максимум группы (глобальная)',
+	        desc: 'Вернуть максимальное значение группы (найти группу с максимальным значением агрегированного выражения)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $grmin: {
+	        render: '$default',
+	        category: 'Функции глобальной агрегации',
+	        displayName: 'Минимум группы (глобальная)',
+	        desc: 'Вернуть минимальное значение группы (найти группу с минимальным значением агрегированного выражения)',
+	        defaultValues: {$const: 1}
 	    },
 
 	    // another
@@ -381,13 +643,33 @@
                 desc: 'Пустое значение'
 	        }
 	        ]
+	    },
+
+	    $distinct: {
+	        render: '$default',
+	        category: 'Разное',
+	        displayName: 'Убрать повторения',
+	        desc: 'Пропустить повторения (уменьшает число элелемнтов в группе)',
+	        defaultValues: {$const: 1}
 	    }
 	},
 
+    /**
+    * Возвращает список ключей, на которые можно заменить указанный ключ
+    * @param {string} name - ключ, для которого нудно вернуть список замен
+    *
+    * @return {array} массив ключей для замены
+    */
 	getReplacements: function(name){
 	    return this._replacementsMap[name];
 	},
 
+    /**
+    * Возвращает схему по уазанному ключу. Если ключ не указан, возвращает объект со списком всех ключей
+    * @param {string} key - ключ
+    *
+    * @return {object} схема для указанного ключа или объект со схемами для всех ключей
+    */
     getSchema: function (key){
         if(key){
             return this.scheme[key];
@@ -396,10 +678,20 @@
         return this.scheme;
     },
 
+    /**
+    * Возвращает ключи источников данных
+    *
+    * @return {object} объект, содержащий в качестве свойств ключи источников данных
+    */
     getSourceKeys: function(){
         return this._sourceKeys;
     },
 
+    /**
+    * Возвращает массив элементов для отображения во всплывающем окне (для замены)
+    *
+    * @return {array} массив элементов для отображения во всплывающем окне
+    */
     getToolItems: function(){
         return this._toolItems;
     },

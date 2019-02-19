@@ -21,7 +21,10 @@
             this.append(operator);
 
             this.installMenuEvents(operator, this.getId() + '_operator', {
-                removable: false
+                removable: this.isAllowDelete(),
+                deleteCallback: function(){
+                    $this.getDeleteCallback().call($this);
+                }
             });
 
             this.append(this.createSeparator(this.isMultiple() || scheme.parameters));
@@ -44,7 +47,7 @@
                 var variables = this.$('<div class="variables"></div>');
                 this.append(variables);
 
-                function createItem(index){
+                function createItem(index, hideChangeEvt){
                     var item = this.$('<div class="variable" idx="' + index + '"></div>');
 
                     var sortableHandle = this.$(`
@@ -56,31 +59,28 @@
                     `);
                     item.append(sortableHandle);
 
-                    (function(item){
-                        $this.installMenuEvents(sortableHandle, JSB.generateUid(), {
-                            editable: false,
-                            deleteCallback: function(){
-                                $this.removeItem(variables, item);
-                            }
-                        });
-                    })(item);
-
                     variables.append(item);
 
-                    return item;
-                }
-
-                for(var i = 0; i < values.length; i++){
-                    var item = createItem(i);
-
-                    for(var j in values[i]){
-                        var render = this.createRender({
+                    for(var j in values[index]){
+                        var render = $this.createRender({
+                            allowDelete: true,
+                            deleteCallback: function(){
+                                $this.removeItem(variables, item);
+                            },
                             key: j,
-                            scope: this.getValues()[i]
+                            scope: values[index]
                         });
 
                         appendRender(item, render);
                     }
+
+                    if(!hideChangeEvt){
+                        $this.onChange();
+                    }
+                }
+
+                for(var i = 0; i < values.length; i++){
+                    createItem(i, true);
                 }
 
                 variables.sortable({
@@ -93,19 +93,9 @@
                 var addBtn = this.$('<i class="addBtn"></i>');
                 this.append(addBtn);
                 addBtn.click(function(){
-                    var index = $this.getValues().push({$const: 0}) - 1,
-                        item = createItem(index);
+                    var index = $this.getValues().push($this.getDefaultAddValues()) - 1;
 
-                    var render = $this.createRender({
-                        key: '$const',
-                        scope: $this.getValues()[index]
-                    });
-
-                    if(render){
-                        item.append(render);
-
-                        $this.onChange();
-                    }
+                    createItem(index);
                 });
             } else {
                 for(var j in values){

@@ -14,7 +14,9 @@
 	    * @param {object} opts - опции передаются из функции createRender контроллера
 	    * @see DataCube.Query.SchemeController.createRender
 	    *
+	    * @param {boolean} [opts.allowDelete] - возможность удаления. Если не задана, то false
 	    * @param {object} opts.controller - контроллер схемы
+	    * @param {function} [opts.deleteCallback] - функция обратного вызова, если задана возможность удаления
 	    * @param {string} opts.key - ключ запроса
 	    * @param {object} opts.parent - родительский рендер. При отстутствии текущий рендер является корневым запросом
 	    * @param {string} opts.renderName - имя рендера
@@ -26,7 +28,9 @@
 
 	        this.addClass('queryRender');
 
+	        this._allowDelete = JSB.isDefined(opts.allowDelete) ? opts.allowDelete : false;
 	        this._controller = opts.controller;
+	        this._deleteCallback = opts.deleteCallback;
 	        this._key = opts.key;
 	        this._parent = opts.parent;
 	        this._renderName = opts.renderName;
@@ -36,19 +40,26 @@
 	        if(!this.getValues() && this.getDefaultValues()){
 	            this.setValues(this.getDefaultValues());
 	        }
+
+	        this.getController().registerRender(this);
 	    },
 
         /**
         * Заменяет текущее значение в скопе новым, создаёт новый рендер
         * @param {string} newKey - новый ключ. Если не указан, то берётся текущий ключ
         * @param {*} [newValue] - новое значение. Если не указано, то берётся старое значение
+        * @param {string} [context] - контекст. Не добавляется, если не указан
         */
-	    changeTo: function(newKey, newValue){
+	    changeTo: function(newKey, newValue, context){
 	        if(JSB.isNull(newKey)){
 	            newKey = this.getKey();
 	        }
 
 	        this.replaceValue(newKey, newValue);
+
+	        if(context){
+	            this.setContext(context);
+	        }
 
 	        var render = this.getController().createRender({
 	            key: newKey,
@@ -152,6 +163,20 @@
             return separator;
 	    },
 
+	    destroy: function(){
+	        this.getController().unregisterRender(this);
+
+	        $base();
+	    },
+
+        /**
+        * Возвращает карту дочерних рендеров
+        * @return {object} объект-карта с дочерними рендерами
+        */
+	    getChildren: function(){
+	        return this.getController().getRenderById(this.getId()).children;
+	    },
+
         /**
         * Возвращает контроллер
         * @return {object} контроллер
@@ -160,16 +185,38 @@
 	        return this._controller;
 	    },
 
+        /**
+        * Возвращает данные, переданные контроллеру при обновлении
+        * @param {string} [key] - ключ для объекта данных
+        *
+        * @return {*} данные по ключу или весь объект данных, если ключ не указан
+        */
 	    getData: function(key){
 	        return this.getController().getData(key);
 	    },
 
         /**
-        * Возвращает значение по умолчанию для новых элементов
+        * Возвращает значение по умолчанию
         * @return {*} значение по умолчанию
         */
 	    getDefaultValues: function(){
 	        return this.getScheme().defaultValues;
+	    },
+
+        /**
+        * Возвращает значение по умолчанию для новых элементов (для multiple элементов)
+        * @return {*} значение по умолчанию
+        */
+	    getDefaultAddValues: function(){
+	        return this.getScheme().defaultAddValues || {$const: 0};
+	    },
+
+        /**
+        * Возвращает функцию обратного вызова при удалении элемента. Задаётся родителем
+        * @return {function} функция, которую необходимо вызвать при удалении
+        */
+	    getDeleteCallback: function(){
+	        return this._deleteCallback;
 	    },
 
         /**
@@ -233,6 +280,14 @@
 
 	    hideMenu: function(){
 	        return this.getController().hideMenu();
+	    },
+
+        /**
+        * Возвращает возможность удаления. Флаг задаётся при создании рендера родительским рендером
+        * @return {boolean} флаг возможности удаления
+        */
+	    isAllowDelete: function(){
+	        return this._allowDelete;
 	    },
 
         /**
@@ -341,6 +396,14 @@
 	    },
 
         /**
+        * Устанавливает новый контекст
+        * @param {string} context - новый контекст
+        */
+	    setContext: function(context){
+	        this._scope.$context = context;
+	    },
+
+        /**
         * Устанавливает новый ключ
         * @param {string} key - новый ключ
         */
@@ -384,14 +447,6 @@
 	        return this.getController().showTool(JSB.merge(opts, {
 	            key: opts.key || this.getKey()
 	        }));
-	    },
-
-	    subscribeTo: function(eventName, callback){
-	        this.getController().subscribeTo(this.getId(), eventName, callback);
-	    },
-
-	    unsubscribe: function(){
-	        this.getController().unsubscribe(this.getId());
 	    }
 	}
 }

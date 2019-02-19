@@ -1,0 +1,24 @@
+.multiFieldRender > .operator,
+.multiFieldRender > .separator {
+    display: inline-block;
+}
+
+.multiFieldRender > .fields {
+    margin-left: 5px;
+}
+
+.multiFieldRender .valueName {
+    color: #5f7588;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.multiFieldRender > .fields > .field > * {
+    display: inline-block;
+}
+
+.multiFieldRender > .fields > .field > .paramValue {
+    cursor: pointer;
+    position: relative;
+}

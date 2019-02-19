@@ -7,18 +7,10 @@
 	$client: {
 	    $require: ['DataCube.Query.Syntax'],
 
-	    _source: null,
-
 	    $constructor: function(opts){
 	        $base(opts);
 
 	        var sourceKeys = Syntax.getSourceKeys();
-
-	        this.subscribeTo('onRenderCreate', function(render){
-	            if(render.getParent() === $this && sourceKeys[render.getKey()]){
-	                $this._source = render;
-	            }
-	        });
 
 	        this.construct();
 	    },
@@ -61,16 +53,21 @@
                     this.append(render);
                 }
             }
-	    },
 
-	    destroy: function(){
-	        this.unsubscribe();
-
-	        $base();
+            //
 	    },
 
 	    getSourceFields: function(callback){
-	        this._source.getSourceFields(callback);
+	        var children = this.getChildren(),
+	            sourceKeys = Syntax.getSourceKeys();
+
+	        for(var i in children){
+	            if(sourceKeys[children[i].getKey()]){
+	                children[i].getSourceFields(callback);
+
+	                return;
+	            }
+	        }
 	    }
 	}
 }

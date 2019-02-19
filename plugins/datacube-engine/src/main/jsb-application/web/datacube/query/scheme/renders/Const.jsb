@@ -20,7 +20,8 @@
 	        this.append(operator);
 
             this.installMenuEvents(operator, this.getId() + '_operator', {
-                removable: false
+                removable: this.isAllowDelete(),
+                deleteCallback: this.getDeleteCallback()
             });
 
 	        this.append('<div class="separator"></div>');

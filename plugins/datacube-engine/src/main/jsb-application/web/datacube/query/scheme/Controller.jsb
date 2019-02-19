@@ -9,14 +9,11 @@
 	           'css:Controller.css'],
 
 	$client: {
-	    _eventSubscribers: {
-	        onRenderCreate: {}
-	    },
 	    _data: {},
 	    _menu: null,
 	    _query: null,
 	    _refreshUid: 0,
-	    _renders: [],
+	    _rendersMap: {},
 	    _slice: null,
 
 	    $constructor: function(opts){
@@ -33,8 +30,8 @@
 	    },
 
 	    clear: function(){
-            for(var i = 0; i < this._renders.length; i++){
-                this._renders[i].destroy();
+            for(var i in this._rendersMap){
+                this._rendersMap[i].destroy();
             }
 	    },
 
@@ -62,12 +59,6 @@
                 scheme: scheme
             }));
 
-            if(render){
-                this._renders.push(render);
-
-                this.noticeSubscribers('onRenderCreate', render);
-            }
-
             return render;
         },
 
@@ -89,6 +80,10 @@
             return this._query;
         },
 
+        getRenderById: function(id){
+            return this._rendersMap[id];
+        },
+
         getSlice: function(){
             return this._slice;
         },
@@ -105,12 +100,6 @@
             if(this._menu){
                 this._menu.close();
                 this._menu = null;
-            }
-        },
-
-        noticeSubscribers: function(eventName, desc){
-            for(var i in this._eventSubscribers[eventName]){
-                this._eventSubscribers[eventName][i].call(this, desc);
             }
         },
 
@@ -143,6 +132,19 @@
                     $this._query = query;
                 }
             });
+        },
+
+        registerRender: function(render){
+            var renderId = render.getId();
+
+            this._rendersMap[renderId] = {
+                children: {},
+                render: render
+            };
+
+            if(render.getParent()){
+                this._rendersMap[render.getParent().getId()].children[renderId] = render;
+            }
         },
 
         showMenu: function(opts){
@@ -180,11 +182,12 @@
 				            element: opts.element,
 				            key: opts.key,
 				            selectedId: opts.key,
+				            caller: opts.caller,
 				            callback: function(desc){
 				                if(opts.editToolCallback){
 				                    opts.editToolCallback.call($this, desc);
 				                } else {
-				                    opts.caller.changeTo(desc.key);
+				                    opts.caller.changeTo(desc.key, desc.value, desc.context);
 				                }
 				            }
 				        });
@@ -220,16 +223,21 @@
 			});
         },
 
-        subscribeTo: function(id, eventName, callback){
-            this._eventSubscribers[eventName][id] = callback;
-        },
+        unregisterRender: function(render){
+            var renderId = render.getId(),
+                parent = render.getParent();
 
-        unsubscribe: function(id){
-            for(var i in this._eventSubscribers){
-                if(this._eventSubscribers[i][id]){
-                    delete this._eventSubscribers[i][id];
+            if(parent){
+                var parentId = parent.getId();
+
+                if(this._rendersMap[parentId]){
+                    if(this._rendersMap[parentId].children[renderId]){
+                        delete this._rendersMap[parentId].children[renderId];
+                    }
                 }
             }
-        }
+
+            delete this._rendersMap[renderId];
+        },
     }
 }
