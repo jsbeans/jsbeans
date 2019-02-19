@@ -34,8 +34,8 @@
 		    });
 
             Console.message({
-                message: 'Remote sub-query prepared',
-                params: {type: $this.getJsb().$name, uid: uid, query: queryTask.query}
+                message: 'H2Interpreter remote sub-query prepared',
+                params: {type: $this.getJsb().$name, uid: uid, query: queryTask.query, limit: queryTask.query}
             });
             return uid;
 		},

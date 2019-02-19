@@ -6,10 +6,16 @@
 		$require: [
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Transforms.QueryTransformer',
-		    'java:java.util.HashMap'
+		    'java:java.util.HashMap',
+		    'DataCube.Query.QueryNavigator',
         ],
 
 		transform: function(rootQuery, cubeOrDataProvider){
+//try {
+//var nav = new QueryNavigator(rootQuery, cubeOrDataProvider);
+//nav.visitExpressions({}, function(){}, function(){});
+//} finally{nav && nav.destroy();}
+
             // ensure queries has defined $context
             $this.defineContexts(rootQuery);
 		    return rootQuery;

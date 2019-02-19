@@ -15,14 +15,21 @@
         },
 
 		register: function(queryTask){
+debugger
             var uid = $this.getId() + '/' + JSB.generateUid();
-            ClickHouseRemoteApi.remoteQueries.put(uid, function(){
+            ClickHouseRemoteApi.remoteQueries.put(uid, function(offset, limit){
+                if (offset != null) {
+                    queryTask.query.$offset = offset;
+                }
+                if (limit != null) {
+                    queryTask.query.$limit = limit;
+                }
                 return Query.execute(queryTask);
             });
 
             Console.message({
-                message: 'Remote sub-query prepared',
-                params: {type: $this.getJsb().$name, uid: uid, query: queryTask.query}
+                message: 'ClickHouse remote sub-query prepared',
+                params: {type: $this.getJsb().$name, uid: uid, query: queryTask.query, limit : queryTask.query.limit}
             });
             return uid;
 		},
@@ -39,6 +46,9 @@
                 }
             }
 		    $base();
+		},
+		destroy: function() {
+
 		},
 	}
 }
