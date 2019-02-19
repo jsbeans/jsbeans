@@ -149,7 +149,7 @@
 						delete existedTables[tId];
 						continue;
 					}
-					var tEntry = new MongoCollection(tId, this.getWorkspace(), cDesc);
+					var tEntry = new MongoCollection(tId, this.getWorkspace(), cDesc, this);
 					this.addChildEntry(tEntry);
 				}
 				

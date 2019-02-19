@@ -3,16 +3,16 @@
 	$parent: 'DataCube.Model.SettingsEntry',
 	
 	getQueryableContainer: function(){
-		throw new Error('QueryableEntry.getQueryableContainer should be overriden');
+		throw new Error('QueryableEntry.getQueryableContainer should be overridden');
 	},
 
 	$server: {
 		executeQuery: function(opts){
-			throw new Error('QueryableEntry.executeQuery should be overriden');
+			throw new Error('QueryableEntry.executeQuery should be overridden');
 		},
 		
 		extractFields: function(opts){
-			throw new Error('QueryableEntry.extractFields should be overriden');
+			throw new Error('QueryableEntry.extractFields should be overridden');
 		},
 		
 		createQuerySelect: function(selectedFields, useContext){

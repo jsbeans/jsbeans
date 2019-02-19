@@ -61,8 +61,8 @@
 			JDBC.loadDrivers(true);
 		},
 
-		$constructor: function(id, workspace, opts){
-			$base(id, workspace);
+		$constructor: function(id, workspace, opts, source){
+			$base(id, workspace, source);
 			
 			if(opts){
 			    this.updateDescriptor(opts);
