@@ -560,7 +560,7 @@
         */
 		extractSourceFields: function(query, cube, rootQuery) {
 		    if (query.$cube) {
-		        var sourceFields = $this.getQueryCube(query.$cube, cube).getManagedFields();
+		        var sourceFields = $this.getQueryCube(query.$cube, cube).extractFields();
 		    } else if (query.$provider){
 		        var provider = $this.getQueryDataProvider(query.$provider, cube);
 		        var sourceFields = provider.extractFields();
@@ -583,7 +583,7 @@
             } else if (query.$recursive) {
                 var sourceFields = $this.extractOutputFields(query.$recursive.$start);
             } else {
-                var sourceFields = cube.getManagedFields();
+                var sourceFields = cube.extractFields();
             }
             return sourceFields;
 		},
@@ -1065,7 +1065,7 @@
                 'Query "{}" has not cube source', query.$context);
 
 
-            var cubeFields = cube.getManagedFields();
+            var cubeFields = cube.extractFields();
             var provs = {}; // id: {provider, cubeFields}
             $this.walkInputFieldsCandidates(query, cube, {rootQuery:rootQuery}, function (field, context, q, isExp) {
                 var cubeField = cubeFields[field];
@@ -1319,7 +1319,7 @@
 		    function checkBindingWithout(excludeId) {
 		        // все общие поля оставшихся join провайдеров должны иметь другие биндинги с оставшимися провайдерами
 
-                var cubeFields = cube.getManagedFields();
+                var cubeFields = cube.extractFields();
                 for (var id in providersFieldsMap) if (id != excludeId && typeof providersFieldsMap[id] !== 'undefined') {
                     if (providersFieldsMap[id].provider.getMode() == 'join') {
                         for(var cubeField in providersFieldsMap[id].cubeFields) {

@@ -10,6 +10,7 @@
 		    'DataCube.Query.Console',
 			'Datacube.Types.DataTypes',
 		    'JSB.Store.Sql.JDBC',
+		    'JSB.Crypt.MD5',
         ],
 
         interpreterMode: false,
@@ -19,6 +20,7 @@
 
         _translatedContexts: {},
         _views: {},
+        _queryPath: [],
         
         $bootstrap: function(){
         	TranslatorRegistry.register(this);
@@ -68,7 +70,16 @@
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
-		    var it = $base(dcQuery, params);
+		    try {
+		        var it = $base(dcQuery, params);
+            } catch(e) {
+                Console.message({
+                    message: 'SQLTranslator error ',
+                    params: {queryId:''+dcQuery.$id, preparedQuery:dcQuery},
+                    error: e
+                });
+                throw e;
+            }
 		    it.meta.id = $this.getJsb().$name+'/'+$this.vendor+'#'+JSB.generateUid();
 		    it.meta.vendor = $this.vendor;
 		    var oldClose = it.close;
@@ -88,79 +99,91 @@
 		},
 
 		translateQueryExpression: function(query, asRoot) {
-            /// is view
-            if (JSB.isString(query)) {
-                var sourceQuery = $this._getSourceQuery(query, null);
-                return $this._quotedName($this._translateContext(query)) +
-                        ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
-            }
-            if (JSB.isEqual({}, query)) {
-                return "(SELECT null)";
-            }
-
-
-            /// is remote query with same providers
-            var providers = QueryUtils.extractProviders(query, $this.cube,
-                function(name){
-                    var view = QueryUtils.findView(name, query, $this.dcQuery);
-                    return view;
+		    try {
+                $this._queryPath.push(query);
+                /// is view
+                if (JSB.isString(query)) {
+                    var sourceQuery = $this._getSourceQuery(query, null);
+                    return $this._quotedName($this._translateContext(query)) +
+                            ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
                 }
-            );
-            if(providers.length > 0 && $this._isSameRemoteProviders(providers)/*query.$provider && $this._isRemoteDataProvider(query.$provider)*/) {
-                if (!$this.remoteQuery) {
-                    $this._breakTranslator('Nothing remote query engine');
+                if (JSB.isEqual({}, query)) {
+                    return "(SELECT null)";
                 }
 
-                var sql = $this._translateRemoteQuery(query)
-                if (!asRoot) {
-                    sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
+
+                /// is remote query with same providers
+                var providers = QueryUtils.extractProviders(query, $this.cube,
+                    function(name){
+                        var view = QueryUtils.findView(name, query, $this.dcQuery);
+                        return view;
+                    }
+                );
+                if(providers.length > 0 && $this._isSameRemoteProviders(providers)/*query.$provider && $this._isRemoteDataProvider(query.$provider)*/) {
+                    if (!$this.remoteQuery) {
+                        $this._breakTranslator('Nothing remote query engine');
+                    }
+
+                    var sql = $this._translateRemoteQuery(query)
+                    if (!asRoot) {
+                        sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
+                    }
+                    return sql;
                 }
+
+                /// regular query
+
+                var sqlSource = $this._translateSourceQueryExpression(query, asRoot);
+
+                var sql = '';
+                if (asRoot || QueryUtils.queryHasBody(query)) {
+                    var selectSql = '';
+                    for(var alias in query.$select) {
+                        var exp = query.$select[alias];
+                        if (selectSql.length > 0) selectSql += ', ';
+                        selectSql += $this._translateExpression(exp, query);
+                        selectSql += ' AS ' + $this._quotedName(alias);
+                    }
+                    sql += '('
+                    sql += $this._translatePart('WITH\n', function(){
+                        return $this._translateWith(query);
+                    }, '\n');
+                    sql += 'SELECT ' + (query.$distinct ? 'DISTINCT ' : '') + selectSql + ' FROM ';
+                    sql += sqlSource;
+
+                    sql += $this._translatePart(' WHERE ', function(){
+                        return $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, true));
+                    });
+                    sql += $this._translatePart(' GROUP BY ', function(){
+                        return $this._translateGroup(query);
+                    });
+                    sql += $this._translatePart(' HAVING ', function(){
+                        return query.$groupBy && query.$groupBy.length > 0
+                            ? $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, false))
+                            : null;
+                    });
+                    sql += $this._translatePart(' ORDER BY ', function(){
+                        return $this._translateOrder(query);
+                    });
+                    sql += $this._translatePart(' OFFSET ', function(){
+                        return query.$offset && query.$offset >= 0 ? query.$offset : null;
+                    });
+                    sql += $this._translatePart(' LIMIT ', function(){
+                        return query.$limit && query.$limit >= 0 ? query.$limit: null;
+                    });
+                    sql += ')';
+                    if (!asRoot) {
+                        sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
+                    }
+                } else {
+                    sql += sqlSource;
+                }
+
                 return sql;
+            } finally {
+                var q = $this._queryPath.pop();
+                QueryUtils.throwError(q == query, 'Invalid query path');
             }
-
-            /// regular query
-
-            var sqlSource = $this._translateSourceQueryExpression(query, asRoot);
-
-            var sql = '';
-            if (asRoot || QueryUtils.queryHasBody(query)) {
-                var selectSql = '';
-                for(var alias in query.$select) {
-                    var exp = query.$select[alias];
-                    if (selectSql.length > 0) selectSql += ', ';
-                    selectSql += $this._translateExpression(exp, query);
-                    selectSql += ' AS ' + $this._quotedName(alias);
-                }
-                sql += '('
-                sql += $this._translatePart('WITH\n', function(){
-                    return $this._translateWith(query);
-                }, '\n');
-                sql += 'SELECT ' + (query.$distinct ? 'DISTINCT ' : '') + selectSql + ' FROM ';
-                sql += sqlSource;
-
-                sql += $this._translatePart(' WHERE ', function(){
-                    return $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, true));
-                });
-                sql += $this._translatePart(' GROUP BY ', function(){
-                    return $this._translateGroup(query);
-                });
-                sql += $this._translatePart(' HAVING ', function(){
-                    return query.$groupBy && query.$groupBy.length > 0
-                        ? $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, false))
-                        : null;
-                });
-                sql += $this._translatePart(' ORDER BY ', function(){
-                    return $this._translateOrder(query);
-                });
-                sql += ')';
-                if (!asRoot) {
-                    sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
-                }
-            } else {
-                sql += sqlSource;
-            }
-
-            return sql;
 		},
 
 //        _updateVendor: function() {
@@ -173,6 +196,12 @@
 //        },
 
         _translateContext: function(context) {
+//            var currentQuery = $this._queryPath[$this._queryPath.length-1];
+//            var view = $this._views[context];
+//            if (view) {
+//                return context+'/'+MD5.md5(currentQuery.$context).substring(0,3);
+//            }
+
             return context;
 //            if (!$this._translatedContexts[context]) {
 //                var name = $this._translatedContexts[context] = 'Q'+Object.keys($this._translatedContexts).length;
@@ -251,30 +280,6 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
             return q;
         },
 
-
-        _prepareEmbeddedSQL: function(sql, dcQuery){
-            if (this.cube) {
-            	var managedFields = this.cube.getManagedFields();
-                for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
-                    // is in Cube print full name
-                    var binding = managedFields[field].binding;
-                    for(var b in binding) {
-                        if (this.providers.indexOf(binding[b].provider) != -1) {
-                            var name = this._printTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
-                            while(sql.indexOf('$cube.' + this._quotedName(field)) > 0) {
-                                sql = sql.replace('$cube.' + this._quotedName(field), name);
-                            }
-                        }
-                    }
-                }
-            }
-            var fail = sql.match(/\$cube\.\".*\"/i);
-            if (fail) {
-                throw new Error("Unknown cube field " + fail[0]);
-            }
-            return sql;
-        },
-
         _translateRemoteQuery: function(query) {
             function generateSubQuery(query) {
                 var subQuery = JSB.clone(query);
@@ -291,6 +296,10 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                     function _leave(query){
                     }
                 );
+debugger
+                if (!subQuery.$limit) {
+                    subQuery.$limit = 0+Config.get('datacube.query.engine.remoteQuery.limit');
+                }
                 return subQuery;
             }
             function dropNullsGetColumns(q) {
@@ -298,7 +307,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                 for(var alias in q.$select) {
                     if (fieldsSql.length > 0) fieldsSql += ', ';
                     if (q.$select[alias].$const === null) {
-                        fieldsSql += $this._translateExpression(q.$select[alias], query);
+                        fieldsSql += $this._translateConst(q.$select[alias]);
                         fieldsSql += ' AS ' + $this._quotedName(alias);
                         delete q.$select[alias];
                     } else {
@@ -351,18 +360,74 @@ debugger
                     }
                     /** URL 'Datacube.Query.Engine.Clickhouse.ClickHouseRemoteApi' */
                     var serverUrl = Kernel.serverUrl();
-                    desc.uri = $this.remoteQuery.register(queryTask);
-                    desc.sql = "url('"+serverUrl+"/datacube/query/engine/ClickHouseRemoteApi.jsb?uri=" + desc.uri + "', JSONEachRow, '" + clickhouseColumns + "')";
+                    desc.uid = $this.remoteQuery.register(queryTask);
+                    desc.sql = "url('"+serverUrl+"/datacube/query/engine/Clickhouse/ClickHouseRemoteApi.jsb?uid=" + desc.uid + "', JSONEachRow, '" + clickhouseColumns + "')";
                     return '(SELECT ' + fieldsSql + ' FROM ' + desc.sql + ')';
 
                 case 'H2' :
-                    desc.uri = $this.remoteQuery.register(queryTask);
-                    desc.sql = "datacube('"+desc.uri+"')";
+                    desc.uid = $this.remoteQuery.register(queryTask);
+                    desc.sql = "datacube('"+desc.uid+"')";
                     return desc.sql;
 
                 default:
                     $this._breakTranslator( 'Unsupported vendor "'+$this.vendor+'" for remote SQL tables');
             }
+        },
+
+        _translateConst: function(exp) {
+            var replaceNulls = $this.vendor == 'ClickHouse';
+            var value;
+            if (JSB.isString(exp.$const)) {
+                value = "'" + exp.$const + "'";
+            } else if (JSB.isNumber(exp.$const)) {
+                value = '' + exp.$const;
+            } else if (JSB.isBoolean(exp.$const)) {
+                value =  ('' + exp.$const).toUpperCase();
+            } else if (exp.$const == null) {
+                value = 'NULL';
+            } else if (JSB.isDate(exp.$const)) {
+                value = "'" + exp.$const.toISOString() + "'";
+            } else {
+                throw new Error('Unsupported $const type ' + typeof exp.$const);
+            }
+            if (exp.$nativeType || exp.$type) {
+                if (exp.$const == null && replaceNulls) {
+                    var type = exp.$type ? exp.$type : DataTypes.fromAny(exp.$nativeType);
+                    switch(type) {
+                        case 'null':
+                        case 'array':
+                        case 'object':
+                            return 'NULL';
+                        case 'string':
+                            value = "''";
+                            break;
+                        case 'integer':
+                        case 'long':
+                        case 'uint':
+                        case 'ulong':
+                        case 'number':
+                            value = "0";
+                            break;
+                        case 'boolean':
+                            value = true;
+                            break;
+                        case 'float':
+                        case 'double':
+                            value = "0";
+                            break;
+                        case 'date':
+                        case 'time':
+                        case 'datetime':
+                        case 'timestamp':
+                            value = "0";
+                            break;
+                    }
+                }
+                return 'CAST(' + value + ' AS ' + (exp.$nativeType||DataTypes.toVendor($this.vendor, exp.$type)) + ')';
+            } else {
+                return value;
+            }
+            return !exp.$type ? value  : 'CAST(' + value + ' AS ' + DataTypes.toVendor($this.vendor, exp.$type) + ')';
         },
 
         _translateExpression: function(exp, dcQuery, useAlias) {
@@ -484,32 +549,37 @@ debugger
 
 
             if (exp.$select) {
-                // sub query expression
+//debugger
+//                // sub query expression
+//                var hasForeignFields;
+//                QueryUtils.walkQueryForeignFields(exp, function(field, context, query){
+//                    hasForeignFields = true;
+//                });
+//
+//                if (hasForeignFields) {
+//                    var q = exp;
+//                    exp = {
+//                        $context: 'aaaa'+exp.$context,
+//                        $select: (function(){
+//                            var select = {};
+//                            for(var a in q.$select) {
+//                                select[a] = {$field: a};
+//                            }
+//                            return select;
+//                        })(),
+//                        $from: q,
+//                    };
+//
+//                }
+
                 var subSql = $this.translateQueryExpression(exp, true) ;
                 return subSql.startsWith('(') ?  subSql : '(' + subSql + ')';
             }
 
-		    if (exp.$sql) {
-		        return '(' + this._prepareEmbeddedSQL(exp.$sql, dcQuery) + ')';
-		    }
 
 
             if (exp.hasOwnProperty('$const')) {
-                var value;
-                if (JSB.isString(exp.$const)) {
-                    value = "'" + exp.$const + "'";
-                } else if (JSB.isNumber(exp.$const)) {
-                    value = '' + exp.$const;
-                } else if (JSB.isBoolean(exp.$const)) {
-                    value =  ('' + exp.$const).toUpperCase();
-                } else if (exp.$const == null) {
-                    value = 'NULL';
-                } else if (JSB.isDate(exp.$const)) {
-                    value = "'" + exp.$const.toISOString() + "'";
-                } else {
-                    throw new Error('Unsupported $const type ' + typeof exp.$const);
-                }
-                return !exp.$type ? value  : 'CAST(null AS ' + DataTypes.toVendor($this.vendor, exp.$type) + ')';
+                return $this._translateConst(exp);
             } else if (exp.$field){
                 return this._translateField(
                         exp.$field,
@@ -1095,15 +1165,23 @@ debugger
 		},
 
 		_translateRecursive: function(query) {
-
+		    function wrapWithNewContext(ctx, sql) {
+		        //return '(SELECT * FROM ' + sql + ' AS ' + $this._quotedName($this._translateContext(ctx)) + ')';
+		        return sql;
+		    }
 		    var sql = '';
 		    sql += 'WITH RECURSIVE ' + $this._quotedName($this._translateContext(query.$context)) + ' AS (';
-		    sql += $this.translateQueryExpression(query.$recursive.$start, true);
+		    sql += wrapWithNewContext(query.$recursive.$start.$context, $this.translateQueryExpression(query.$recursive.$start, true));
 		    sql += ' UNION ALL ';
-		    sql += $this.translateQueryExpression(query.$recursive.$joinedNext, true);
+		    sql += wrapWithNewContext(query.$recursive.$joinedNext.$context, $this.translateQueryExpression(query.$recursive.$joinedNext, true));
 		    QueryUtils.throwError(sql.endsWith(')'), 'Internal error: invalid SQL format in recursive query');
 		    sql = sql.substring(0, sql.length-1) + ' JOIN ' + $this._quotedName($this._translateContext(query.$context));
-            sql += ' ON ' + $this._translateWhere(query, query.$recursive.$filter) + ')';
+		    try {
+		        $this._inRecursiveJoin = true;
+                sql += ' ON ' + $this._translateWhere(query, query.$recursive.$filter) + ')';
+            } finally {
+                delete $this._inRecursiveJoin;
+            }
 		    sql += ') ';
 		    sql += 'SELECT * FROM ' + $this._quotedName($this._translateContext(query.$context));
 
@@ -1245,7 +1323,7 @@ debugger
 //                    query.$from ? '$from' : query.$join ? '$join' : query.$union ? '$union' : query.$provider ? '$provider' : '',
 //                    sql
 ////            );
-//if (context == "Q2"//sql =='"Q4"."KPP"'
+//if (sql =='"Q2"."РЗПРЗ"'
 //) {
 //    debugger;
 //    $this._translateFieldInternal(field, context, useAlias, callerContext);
@@ -1293,10 +1371,14 @@ debugger
                 return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);
             }
 
-            if (callerQuery.$join && (query == $this._getSourceQuery(callerQuery.$join.$left, callerQuery) || query == $this._getSourceQuery(callerQuery.$join.$right, callerQuery))) {
+            if (callerQuery.$join && (query == $this._getSourceQuery(callerQuery.$join.$left, callerQuery) || query == $this._getSourceQuery(callerQuery.$join.$right, callerQuery))
+                || callerQuery.$recursive && (query == $this._getSourceQuery(callerQuery.$recursive.$start, callerQuery) || query == $this._getSourceQuery(callerQuery.$recursive.$joinedNext, callerQuery))
+            ) {
                 /// is callerQuery field
                 if (query.$select[field]) {
                     if (!$this._isViewQuery(query) && !QueryUtils.queryHasBody(query)) {
+                        return $this._translateExpression(query.$select[field], query);
+                    } else if($this._inRecursiveJoin) {
                         return $this._translateExpression(query.$select[field], query);
                     }
 
@@ -1341,7 +1423,11 @@ debugger
                 QueryUtils.throwError(false, 'Undefined source of query with context: {}', context);
             }
 
-            /// is export alias
+            if (context != callerContext) {
+                return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
+            }
+
+            /// is alias
             QueryUtils.throwError(context == callerContext, 'Field context not equals query context for field {}.{} (caller {})', context, field, callerContext);
             return $this._quotedName(field);
         },

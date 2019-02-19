@@ -18,14 +18,14 @@
 
 		    // store fields
 		    this.fields = {};
-            var managedFields = this.cube.getManagedFields();
+            var managedFields = this.cube.extractFields();
             for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
                 this.fields[field] = true;
             }
 
 		    // include join condition fields to $select
 		    // TODO 1: заменить алгоритм добавления join полей: 1) нужно умнее проверять наличие поля 2) добавлять, не влияя на целостность группировки
-		    var managedFields = this.cube.getManagedFields();
+		    var managedFields = this.cube.extractFields();
 		    for (var i = 0; i < this.iterators.length; i++) {
                 var fields = [];
                 for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
@@ -60,7 +60,7 @@
                 params: {}
             };
             var leftCFValues = this.getLeftConditionFieldValues(i);
-            var managedFields = this.cube.getManagedFields();
+            var managedFields = this.cube.extractFields();
             for (var f in leftCFValues) if (leftCFValues.hasOwnProperty(f)) {
                 var paramName = 'joinParam_' + f;
                 condition.query[f] = {$eq: '${' + paramName + '}'};
@@ -173,7 +173,7 @@
 		getLeftConditionFieldValues: function(i) {
             var rightIt = this.iterators[i];
             var leftCValues = {};
-            var managedFields = this.cube.getManagedFields();
+            var managedFields = this.cube.extractFields();
             for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
                 for (var ii = i-1; ii >= 0; ii--) {
                     var leftIt = this.iterators[ii];

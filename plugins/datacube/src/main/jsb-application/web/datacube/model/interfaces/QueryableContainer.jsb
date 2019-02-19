@@ -3,6 +3,18 @@
 	$parent: 'DataCube.Model.SettingsEntry',
 	
 	$server: {
+		load: function(){
+			throw new Error('QueryableContainer.load should be overriden');
+		},
+		
+		getDimensions: function(){
+			throw new Error('QueryableContainer.getDimensions should be overriden');
+		},
+		
+		extractFields: function(){
+			return this.getDimensions();
+		},
+		
 		// check necessity
 		parametrizeQuery: function(query){
 			var newQuery = JSB.clone(query);

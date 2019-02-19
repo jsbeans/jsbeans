@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.MongoCollectionNode',
-	$parent: 'JSB.Workspace.EntryNode',
+	$parent: 'DataCube.DatabaseTableNode',
 	$client: {
 		$constructor: function(opts){
 			$base(opts);

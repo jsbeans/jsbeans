@@ -4,7 +4,8 @@
 	
 	$server: {
 		$require: ['JSB.Scheduler.ScheduleController',
-		           'JSB.Workspace.WorkspaceController'],
+		           'JSB.Workspace.WorkspaceController',
+		           'DataCube.Model.ScheduleControllerSettings'],
 		
 		_jobMap: {},
 		_scheduleControllerSettings: null,

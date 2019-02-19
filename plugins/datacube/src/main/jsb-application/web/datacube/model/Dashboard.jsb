@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Model.Dashboard',
-	$parent: 'JSB.Workspace.Entry',
+	$parent: 'DataCube.Model.SettingsEntry',
 	
 	getWidgetCount: function(){
 		return this.widgetCount;

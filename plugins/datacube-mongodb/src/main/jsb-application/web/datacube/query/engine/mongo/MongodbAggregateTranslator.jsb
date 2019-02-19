@@ -21,7 +21,7 @@
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    if ($this.cube) {
-		        $this.cubeFields = $this.cube.getManagedFields();
+		        $this.cubeFields = $this.cube.extractFields();
             }
 		},
 
