@@ -104,7 +104,7 @@
 	    },
 
 	    $groupBy: {
-	        render: '$default',
+	        render: '$queryElements',
 	        displayName: 'Группировка',
 	        desc: 'Группировка строк по значениям или выражениям',
 	        multiple: true,

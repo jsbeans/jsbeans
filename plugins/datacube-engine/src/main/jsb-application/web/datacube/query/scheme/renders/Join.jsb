@@ -54,7 +54,7 @@
 
 	        var firstField = new Selectize({
 	            cssClass: 'firstField',
-	            options: values.$left && Object.keys(sources[values.$left].extractFields()),
+	            //options: values.$left && Object.keys(sources[values.$left].extractFields()),
 	            value: curValue.first && curValue.first.$field,
 	            onChange: function(value){
 	                curValue.first = {
@@ -65,6 +65,10 @@
 	            }
 	        });
 	        item.append(firstField);
+
+	        this.extractFields(values.$left, function(res){
+	            firstField.setOptions(Object.keys(res));
+	        });
 
 	        var compare = new Selectize({
 	            cssClass: 'compare',
@@ -79,7 +83,7 @@
 
 	        var secondField = new Selectize({
 	            cssClass: 'secondField',
-	            options: values.$right && Object.keys(sources[values.$right].extractFields()),
+	            //options: values.$right && Object.keys(sources[values.$right].extractFields()),
 	            value: curValue.second && curValue.second.$field,
 	            onChange: function(value){
 	                curValue.second = {
@@ -90,6 +94,10 @@
 	            }
 	        });
 	        item.append(secondField);
+
+	        this.extractFields(values.$right, function(res){
+	            secondField.setOptions(Object.keys(res));
+	        });
 
 	        var removeBtn = this.$('<div class="removeBtn fas fa-trash-alt"></div>');
 	        item.append(removeBtn);

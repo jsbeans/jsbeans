@@ -13,8 +13,13 @@
 
 	        this.addClass('defaultRender');
 
+	        this.constructHead();
+
+	        this.constructValues();
+	    },
+
+	    constructHead: function(){
 	        var scheme = this.getScheme(),
-	            values = this.getValues(),
 	            desc = this.getKey() + '\n' + scheme.desc;
 
 	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
@@ -28,20 +33,10 @@
             });
 
             this.append(this.createSeparator(this.isMultiple() || scheme.parameters));
+	    },
 
-            function appendRender(appendTo, render){
-                if(render){
-                    if(scheme.valueName){
-                        var valueItem = $this.$('<div class="valueItem"></div>');
-                        valueItem.append('<div class="valueName">' + scheme.valueName + '</div>');
-                        valueItem.append($this.createSeparator());
-                        valueItem.append(render);
-                        appendTo.append(valueItem);
-                    } else {
-                        appendTo.append(render);
-                    }
-                }
-            }
+	    constructValues: function(){
+	        var values = this.getValues();
 
             if(this.isMultiple()){
                 var variables = this.$('<div class="variables"></div>');
@@ -65,13 +60,15 @@
                         var render = $this.createRender({
                             allowDelete: true,
                             deleteCallback: function(){
-                                $this.removeItem(variables, item);
+                                $this.removeItem(variables.find('> .variable'), item);
                             },
                             key: j,
                             scope: values[index]
                         });
 
-                        appendRender(item, render);
+                        if(render){
+                            item.append(render);
+                        }
                     }
 
                     if(!hideChangeEvt){
@@ -104,51 +101,9 @@
                         scope: this.getValues()
                     });
 
-                    appendRender(this, render);
-                }
-            }
-
-            if(scheme.parameters){
-                var isNeedChangeEvt = false;
-
-                for(var i in scheme.parameters){
-                    var parameter = this.$('<div class="param"></div>');
-                    parameter.append('<div class="paramName">' + scheme.parameters[i].displayName + '</div>');
-                    parameter.append(this.createSeparator());
-
-                    var paramValue;
-
-                    if(JSB.isDefined(values[i])){
-                        paramValue = values[i];
-                    } else {
-                        values[i] = scheme.parameters[i].defaultValue;
-                        isNeedChangeEvt = true;
-
-                        if(scheme.parameters[i].type === 'text'){
-                            paramValue = '"' + scheme.parameters[i].defaultValue + '"';
-                        } else {
-                            paramValue = scheme.parameters[i].defaultValue;
-                        }
+                    if(render){
+                        this.append(render);
                     }
-
-                    var value = this.$('<div class="paramValue">' + paramValue + '</div>');
-                    parameter.append(value);
-
-                    (function(value, type, paramName){
-                        value.click(function(evt){
-                            evt.stopPropagation();
-
-                            $this.createInput(value, type, function(newVal){
-                                values[paramName] = newVal;
-                            });
-                        });
-                    })(value, scheme.parameters[i].type, i);
-
-                    this.append(parameter);
-                }
-
-                if(isNeedChangeEvt){
-                    this.onChange();
                 }
             }
 	    },

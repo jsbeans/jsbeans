@@ -222,6 +222,32 @@
 	        }
 	    },
 
+	    extractFields: function(source, callback){
+	        if(JSB.isInstanceOf('DataCube.Model.QueryableEntry', source)){
+	            source.server().extractFields(function(res, fail){
+	                if(fail){
+	                    // todo: error
+	                    return;
+	                }
+
+	                callback.call($this, res);
+	            });
+	        } else if(JSB.isObject(source)){
+	            callback.call(this, source.$select || {});
+	        } else if(JSB.isString(source)){
+                this.server().getSourceFields([sources], function(res, fail){
+                    if(fail){
+                        // todo: error
+                        return;
+                    }
+
+                    callback.call($this, res[0].fields);
+                });
+	        } else {
+	            debugger;
+	        }
+	    },
+
 	    getSourceFields: function(callback){
 	        var sources,
 	            values = this.getValues();

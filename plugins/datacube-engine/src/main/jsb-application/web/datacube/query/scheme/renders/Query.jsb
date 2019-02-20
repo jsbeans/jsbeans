@@ -7,14 +7,25 @@
 	$client: {
 	    $require: ['DataCube.Query.Syntax',
 	               'JSB.Widgets.ToolManager',
-	               'DataCube.Query.SimpleSelectTool'],
+	               'DataCube.Query.SimpleSelectTool',
+	               'css:Query.css'],
+
+        _menuItems: [],
 
 	    $constructor: function(opts){
 	        $base(opts);
 
+	        this.addClass('queryRender');
+
 	        var sourceKeys = Syntax.getSourceKeys();
 
 	        this.construct();
+	    },
+
+	    addMenuItem: function(item){
+	        this._menuItems.push(item);
+
+	        this.addBtn.removeClass('hidden');
 	    },
 
 	    construct: function(){
@@ -56,26 +67,21 @@
                 }
             }
 /*
-            var addBtn = this.$('<i class="addBtn"></i>');
-            this.append(addBtn);
-            addBtn.click(function(){
-                var values = Syntax.getQueryElements(),
-                    curValues = Object.keys($this.getScope());
+            // todo: не всегда успевает синхронизироваться клиент с сервером??
+            // функция не возвращает элементы
+            this._menuItems = Syntax.getQueryElements();
 
-                for(var i = 0; i < curValues.length; i++){
-                    var index = values.indexOf(curValues[i]);
+            this.updateQueryItems();
 
-                    if(index > -1){
-                        values.splice(index, 1);
-                    }
-                }
-
+            this.addBtn = this.$('<i class="addBtn"></i>');
+            this.append(this.addBtn);
+            this.addBtn.click(function(){
                 ToolManager.activate({
                     id: 'simpleSelectTool',
                     cmd: 'show',
                     data: {
                         key: JSB.generateUid(),
-                        values: values
+                        values: $this._menuItems
                     },
                     scope: null,
                     target: {
@@ -90,15 +96,23 @@
                         });
 
                         if(render){
-                            addBtn.before(render);
-                        }
+                            $this.addBtn.before(render);
 
-                        // todo: hide btn if values not exist
+                            $this.updateQueryItems();
+
+                            if($this._menuItems.length === 0){
+                                $this.addBtn.addClass('hidden');
+                            }
+                        }
 
                         $this.onChange();
                     }
                 });
             });
+
+            if(this._menuItems.length === 0){
+                this.addBtn.addClass('hidden');
+            }
 */
 	    },
 
@@ -113,6 +127,18 @@
 	                return;
 	            }
 	        }
+	    },
+
+	    updateQueryItems: function(){
+            for(var i in this.getScope()){
+                for(var j = 0; j < this._menuItems.length; j++){
+                    if(this._menuItems[j].key === i){
+                        this._menuItems.splice(j, 1);
+
+                        break;
+                    }
+                }
+            }
 	    }
 	}
 }

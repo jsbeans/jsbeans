@@ -26,7 +26,7 @@
 	    $constructor: function(opts){
 	        $base(opts);
 
-	        this.addClass('queryRender');
+	        this.addClass('basicQueryRender');
 
 	        this._allowDelete = JSB.isDefined(opts.allowDelete) ? opts.allowDelete : false;
 	        this._controller = opts.controller;
@@ -75,18 +75,19 @@
 
         /**
         * Создаёт заголовок
+        * @param {boolean} [hasMenu] - создавать меню при наведении
+        * @param {string} [id] - идентификатор для всплывающего меню
+        * @param {object} [menuOpts] - опции для всплывающего меню
         */
-	    createHeader: function(){
+	    createHeader: function(hasMenu, id, menuOpts){
             var header = this.$('<header>' + this._scheme.displayName + '</header>');
             this.append(header);
 
             var scheme = this.getScheme();
 
-            if(!scheme.replaceable && !scheme.removable){
-                return header;
+            if(hasMenu){
+                this.installMenuEvents(header, id, menuOpts);
             }
-
-            this.installMenuEvents(header);
 
 	        return header;
 	    },
