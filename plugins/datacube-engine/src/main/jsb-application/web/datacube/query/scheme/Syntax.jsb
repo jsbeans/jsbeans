@@ -113,8 +113,17 @@
 	        defaultValues: [],
 	        defaultAddValues: {$const: 0}
 	    },
-        /*
-	    $filter: {},
+/*
+	    $filter: {
+	        render: '$queryElements',
+	        displayName: 'Фильтрация полей источника',
+	        desc: 'Фильтрация строк таблицы источника по условию (по умолчанию, если не задан источник, условия накладываются на поля куба)',
+	        multiple: true,
+	        queryElement: true,
+	        replaceable: false,
+	        defaultValues: [],
+	        defaultAddValues: {$const: 0}
+	    },
 
 	    $postFilter: {},
 
@@ -125,7 +134,7 @@
 	    $limit: {},
 
 	    $distinct: {},
-	    */
+*/
 	    $field: {
 	        render: '$field'
 	    },

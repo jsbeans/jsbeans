@@ -19,7 +19,7 @@
 	    $constructor: function(opts){
 	        $base(opts);
             this.addClass('queryController');
-
+console.log('Constructor');
             if(opts && opts.data && opts.values){
                 this.refresh(opts);
             }
@@ -110,7 +110,9 @@
         },
 
         refresh: function(opts){
+console.log('Refresh');
             RenderRepository.ensureReady(function(){
+console.log('Ensure ready');
                 if($this._query){
                     $this._query.destroy();
                 }
@@ -127,6 +129,7 @@
                 });
 
                 if(query){
+console.log('Query created');
                     $this.append(query);
                     $this._values = opts.values;
                     $this._query = query;
