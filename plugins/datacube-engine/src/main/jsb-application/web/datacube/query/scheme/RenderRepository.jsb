@@ -14,18 +14,16 @@
 
 			this.ensureSynchronized(function(){
 				var jsbArr = [];
-console.log($this._rendersMap);
+
 				for(var eType in $this._rendersMap){
 					jsbArr.push($this._rendersMap[eType]);
 				}
 
 				JSB.chain(jsbArr, function(jsbName, c){
 					JSB.lookup(jsbName, function(){
-console.log('Lookup ' + jsbName);
 						c.call($this);
 					});
 				}, function(){
-console.log('Ready');
 					$this.setTrigger('ready');
 				});
 			});
@@ -52,12 +50,13 @@ console.log('Ready');
 	},
 
 	$server: {
+	    $require: [],
+
 	    $constructor: function(opts){
 	        $base();
 
 			JSB.onLoad(function(){
 				if(this.isSubclassOf('DataCube.Query.Renders.Basic') && JSB.isDefined(this.$alias)){
-JSB.getLogger().info('Bean ' + this.$name + ' registered');
 				    $this._rendersMap[this.$alias] = this.$name;
 				}
 			});

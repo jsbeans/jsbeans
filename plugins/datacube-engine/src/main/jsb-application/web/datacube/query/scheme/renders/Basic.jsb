@@ -5,8 +5,7 @@
 	$alias: '$basic',
 
 	$client: {
-		$require: ['DataCube.Query.RenderRepository',
-    	           'css:Basic.css'],
+		$require: ['css:Basic.css'],
 
 	    /**
 	    * @constructor
@@ -449,5 +448,9 @@
 	            key: opts.key || this.getKey()
 	        }));
 	    }
+	},
+
+	$server: {
+	    $require: ['DataCube.Query.RenderRepository']
 	}
 }
