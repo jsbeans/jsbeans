@@ -21,9 +21,11 @@
 
 				JSB.chain(jsbArr, function(jsbName, c){
 					JSB.lookup(jsbName, function(){
+console.log('Lookup ' + jsbName);
 						c.call($this);
 					});
 				}, function(){
+console.log('Ready');
 					$this.setTrigger('ready');
 				});
 			});
