@@ -57,6 +57,7 @@ console.log('Ready');
 
 			JSB.onLoad(function(){
 				if(this.isSubclassOf('DataCube.Query.Renders.Basic') && JSB.isDefined(this.$alias)){
+JSB.getLogger().info('Bean ' + this.$name + ' registered');
 				    $this._rendersMap[this.$alias] = this.$name;
 				}
 			});
