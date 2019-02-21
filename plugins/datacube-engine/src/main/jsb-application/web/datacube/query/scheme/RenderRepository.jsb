@@ -14,7 +14,7 @@
 
 			this.ensureSynchronized(function(){
 				var jsbArr = [];
-
+console.log($this._rendersMap);
 				for(var eType in $this._rendersMap){
 					jsbArr.push($this._rendersMap[eType]);
 				}
