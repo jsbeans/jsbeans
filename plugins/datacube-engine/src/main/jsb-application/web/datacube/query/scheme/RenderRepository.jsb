@@ -50,8 +50,6 @@
 	},
 
 	$server: {
-	    $require: [],
-
 	    $constructor: function(opts){
 	        $base();
 

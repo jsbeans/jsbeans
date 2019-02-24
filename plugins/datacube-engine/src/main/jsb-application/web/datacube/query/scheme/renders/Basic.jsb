@@ -291,6 +291,22 @@
 	    },
 
         /**
+        * Рендер с фиксированным количеством значений?
+        * @return {boolean}
+        */
+	    isFixedFieldCount: function(){
+	        return this.getScheme().fixedFieldCount;
+	    },
+
+        /**
+        * Рендер с множеством значений?
+        * @return {boolean} множество значений/одно значение
+        */
+	    isMultiple: function(){
+	        return this.getScheme().multiple;
+	    },
+
+        /**
         * Прикрепляет к элементу всплывающее меню
         * @param {jQuery} element - элемент, над которым появится меню
         * @param {string} [id] - уникальный идентификатор меню. Если не указан, то берётся id текущего бина
@@ -316,10 +332,6 @@
                     $this.hideMenu(element, id, menuOpts);
                 }, 300, 'DataCube.Query.hideMenu' + id);
             });
-	    },
-
-	    isMultiple: function(){
-	        return this.getScheme().multiple;
 	    },
 
 	    onChange: function(){

@@ -38,46 +38,56 @@
 	    constructValues: function(){
 	        var values = this.getValues();
 
+            function createItem(index, hideChangeEvt){
+                var item = this.$('<div class="variable" idx="' + index + '"></div>');
+
+                var sortableHandle = this.$(`
+                    <div class="sortableHandle">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                `);
+                item.append(sortableHandle);
+
+                variables.append(item);
+
+                for(var j in values[index]){
+                    var render = $this.createRender({
+                        allowDelete: true,
+                        deleteCallback: function(){
+                            $this.removeItem(variables.find('> .variable'), item);
+                        },
+                        key: j,
+                        scope: values[index]
+                    });
+
+                    if(render){
+                        item.append(render);
+                    }
+                }
+
+                if(!hideChangeEvt){
+                    $this.onChange();
+                }
+            }
+
             if(this.isMultiple()){
                 var variables = this.$('<div class="variables"></div>');
                 this.append(variables);
 
-                function createItem(index, hideChangeEvt){
-                    var item = this.$('<div class="variable" idx="' + index + '"></div>');
-
-                    var sortableHandle = this.$(`
-                        <div class="sortableHandle">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                        </div>
-                    `);
-                    item.append(sortableHandle);
-
-                    variables.append(item);
-
-                    for(var j in values[index]){
-                        var render = $this.createRender({
-                            allowDelete: true,
-                            deleteCallback: function(){
-                                $this.removeItem(variables.find('> .variable'), item);
-                            },
-                            key: j,
-                            scope: values[index]
-                        });
-
-                        if(render){
-                            item.append(render);
+                if(this.isFixedFieldCount()){
+                    for(var i = 0; i < this.isFixedFieldCount(); i++){
+                        if(!JSB.isDefined(values[i])){
+                            values[i] = this.getDefaultAddValues();
                         }
-                    }
 
-                    if(!hideChangeEvt){
-                        $this.onChange();
+                        createItem(i, true);
                     }
-                }
-
-                for(var i = 0; i < values.length; i++){
-                    createItem(i, true);
+                } else {
+                    for(var i = 0; i < values.length; i++){
+                        createItem(i, true);
+                    }
                 }
 
                 variables.sortable({
