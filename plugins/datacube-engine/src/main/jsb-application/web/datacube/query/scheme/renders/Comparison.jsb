@@ -1,11 +1,13 @@
 {
 	$name: 'DataCube.Query.Renders.Comparison',
-	$parent: 'DataCube.Query.Renders.Basic',
+	$parent: 'DataCube.Query.Renders.Default',
 
 	$alias: '$comparison',
 
 	$client: {
-	    $require: ['css:Comparison.css'],
+	    $require: ['DataCube.Query.Syntax',
+	               'JSB.Widgets.ToolManager',
+	               'css:Comparison.css'],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -47,7 +49,7 @@
                     cmd: 'show',
                     data: {
                         key: JSB.generateUid(),
-                        values: Syntax.getReplacements($this.getParent().getKey())
+                        values: Syntax.getLogicReplacements($this.getParent().getKey())
                     },
                     scope: null,
                     target: {
@@ -55,15 +57,11 @@
                         dock: 'bottom'
                     },
                     callback: function(desc){
-console.log(desc);
-debugger;
-                        /*
-                        $this.getParent().replaceValue(desc.key);
+                        $this.getParent().changeLogicType(desc.key);
 
                         setKey(desc.key);
 
                         $this.onChange();
-                        */
                     }
                 });
             });
@@ -78,7 +76,7 @@ debugger;
                 }
             });
 
-            this.append(this.createSeparator(this.isMultiple() || scheme.parameters));
+            header.append(this.createSeparator(this.isMultiple() || scheme.parameters));
 	    }
     }
 }

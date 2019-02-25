@@ -6,6 +6,7 @@
 		updateCheckInterval: 0
 	},
 
+	_logicReplacements: {},
 	_queryElements: [],
 	_replacementsMap: {},
 	_sourceKeys: {},
@@ -31,8 +32,7 @@
 	    '$const', '$distinct',
 	    // test
 	    ],
-	    ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike'],
-	    ['$and', '$or', '$not']
+	    ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike']
 	],
 
 	scheme: {
@@ -797,6 +797,10 @@
 	    }
 	},
 
+	getLogicReplacements: function(key){
+	    return this._logicReplacements[key];
+	},
+
     /**
     * Возвращает список ключей, на которые можно заменить указанный ключ
     * @param {string} name - ключ, для которого нудно вернуть список замен
@@ -853,6 +857,36 @@
 	$server: {
         $constructor: function(){
             $base();
+
+            var logic = [
+            {
+                 key: '$and',
+                 displayName: 'И',
+                 desc: 'Логическое И'
+            },
+            {
+                 key: '$or',
+                 displayName: 'ИЛИ',
+                 desc: 'Логическое ИЛИ'
+            },
+            {
+                 key: '$not',
+                 displayName: 'НЕ',
+                 desc: 'Логическое НЕ'
+            }];
+
+            // create logic replacements
+            for(var i = 0; i < logic.length; i++){
+                if(!this._logicReplacements[logic[i].key]){
+                    this._logicReplacements[logic[i].key] = [];
+                }
+
+                for(var j = 0; j < logic.length; j++){
+                    if(logic[i].key !== logic[j].key){
+                        this._logicReplacements[logic[i].key].push(logic[j]);
+                    }
+                }
+            }
 
             // create replacement map
             for(var i = 0; i < this.replacements.length; i++){

@@ -14,6 +14,7 @@
 
             for(var i in values){
                 var render = this.createRender({
+                    allowDelete: true,
                     key: i,
                     scope: values
                 });
@@ -22,6 +23,13 @@
                     this.append(render);
                 }
             }
+	    },
+
+	    changeLogicType: function(newKey){
+            var newIndex = this.getParent().changeLogicType(this.getKey(), newKey, this.getOption('index'));
+
+            this.setOption('index', newIndex);
+            this.setKey(newKey);
 	    }
 	}
 }

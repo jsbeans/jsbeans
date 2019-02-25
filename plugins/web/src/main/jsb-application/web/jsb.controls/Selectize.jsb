@@ -57,14 +57,14 @@
 
                 if(options.length !== 0){
                     $this._select[0].selectize.addOption($this._checkOptions(options));
-                    $this._select[0].selectize.refreshOptions();
+                    $this._select[0].selectize.refreshOptions(false);
                 }
 	        });
 	    },
 
 	    setValue: function(value, hEvt) {
 	        this.ensureTrigger('_initialized', function(){
-	            $this._select[0].selectize.setValue($this.options.value, hEvt);
+	            $this._select[0].selectize.setValue(value, hEvt);
 	        });
 	    },
 

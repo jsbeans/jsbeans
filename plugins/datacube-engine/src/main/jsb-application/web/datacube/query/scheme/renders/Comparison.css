@@ -1,1 +1,22 @@
 .comparisonRender {}
+
+.comparisonRender > header {
+    height: initial;
+    padding: 0;
+    border: none;
+    background: none;
+    margin-bottom: 10px;
+}
+
+.comparisonRender > header > .logicType {
+    padding: 3px;
+    border: 2px solid #d8d8d8;
+    margin-right: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: -webkit-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
+}
+
+.comparisonRender > header > .logicType:hover {
+    background: -webkit-linear-gradient(top, #efecec 0%, #d4d3d3 100%);
+}

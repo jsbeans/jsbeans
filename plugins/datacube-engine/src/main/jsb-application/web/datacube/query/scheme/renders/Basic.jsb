@@ -200,7 +200,7 @@
         * @return {*} значение по умолчанию
         */
 	    getDefaultValues: function(){
-	        return this.getScheme().defaultValues;
+	        return JSB.clone(this.getScheme().defaultValues);
 	    },
 
         /**
@@ -208,7 +208,7 @@
         * @return {*} значение по умолчанию
         */
 	    getDefaultAddValues: function(){
-	        return this.getScheme().defaultAddValues || {$const: 0};
+	        return JSB.clone(this.getScheme().defaultAddValues) || {$const: 0};
 	    },
 
         /**

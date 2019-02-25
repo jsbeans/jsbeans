@@ -235,7 +235,7 @@
 	        } else if(JSB.isObject(source)){
 	            callback.call(this, source.$select || {});
 	        } else if(JSB.isString(source)){
-                this.server().getSourceFields([sources], function(res, fail){
+                this.server().getSourceFields([source], function(res, fail){
                     if(fail){
                         // todo: error
                         return;

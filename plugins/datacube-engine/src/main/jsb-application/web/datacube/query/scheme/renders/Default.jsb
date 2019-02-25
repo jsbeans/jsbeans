@@ -97,13 +97,15 @@
                     }
                 });
 
-                var addBtn = this.$('<i class="addBtn"></i>');
-                this.append(addBtn);
-                addBtn.click(function(){
-                    var index = $this.getValues().push($this.getDefaultAddValues()) - 1;
+                if(!this.isFixedFieldCount()){
+                    var addBtn = this.$('<i class="addBtn"></i>');
+                    this.append(addBtn);
+                    addBtn.click(function(){
+                        var index = $this.getValues().push($this.getDefaultAddValues()) - 1;
 
-                    createItem(index);
-                });
+                        createItem(index);
+                    });
+                }
             } else {
                 for(var j in values){
                     var render = this.createRender({
