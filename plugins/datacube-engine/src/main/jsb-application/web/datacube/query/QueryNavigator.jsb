@@ -392,7 +392,7 @@ debugger
         },
 
 
-        _installListedCache: function(opts, methods) {
+        _installListedCache: function(methods) {
             var cache = [];
             function cache(m, args, result) {
                 cache.push({
@@ -422,7 +422,7 @@ debugger;
                     $this[m] = function (){
                         return getCached(m, arguments) ||
                                cache(m, arguments,
-                                     $this[m].apply(this, arguments));
+                                     func.apply(this, arguments));
                     };
                 })(methods[i]);
             }
