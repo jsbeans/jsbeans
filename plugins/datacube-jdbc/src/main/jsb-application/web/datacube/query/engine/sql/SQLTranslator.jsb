@@ -1138,6 +1138,14 @@ debugger
 		    function getQuery(ctx){
 		        return $this.contextQueries[ctx];
 		    }
+		    function findType(field) {
+                for(var i = 0; i < query.$union.length; i++) {
+                    var subQuery = query.$union[i];
+                    var type = QueryUtils.extractType(subQuery.$select[field], subQuery, $this.cube, getQuery);
+                    if(type) return type;
+                }
+                return null;
+		    }
             var usedFields = QueryUtils.extractInputFields(query);
 		    var sql = '';
 
@@ -1151,7 +1159,7 @@ debugger
 		            if (!fixedSubQuery.$select[field]) {
                         fixedSubQuery.$select[field] = {
                             $const: null,
-                            $type: QueryUtils.extractType(query.$select[field], query, $this.cube, getQuery),
+                            $type: findType(field),
                         };
                     }
                     fields.push(field);
@@ -1174,7 +1182,6 @@ debugger
 		},
 
 		_translateRecursive: function(query) {
-debugger
 		    function wrapWithNewContext(ctx, sql) {
 		        //return '(SELECT * FROM ' + sql + ' AS ' + $this._quotedName($this._translateContext(ctx)) + ')';
 		        return sql;
