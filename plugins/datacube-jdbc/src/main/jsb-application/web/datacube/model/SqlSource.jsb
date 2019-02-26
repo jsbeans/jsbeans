@@ -32,10 +32,17 @@
 			});
 		},
 
-		$constructor: function(id, workspace){
+		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
 			this.settings = this.property('settings');
 			this.details = this.property('details');
+			
+			if(opts && opts.name){
+				this.setName(opts.name);
+			}
+			if(opts && opts.url){
+				this.updateSettings({url: opts.url});
+			}
 		},
 		
 		getSettings: function(){
@@ -67,13 +74,17 @@
 			this.updateSettings(settings);
 			
 			// test connection
-			var store = StoreManager.getStore(this.settings);
+			var store = StoreManager.getStore(this.resolveSettings(this.settings));
 			store.getConnection(true).close();
 			return true;
 		},
 		
 		getStore: function(){
-			return StoreManager.getStore(this.settings);
+			return StoreManager.getStore(this.resolveSettings(this.settings));
+		},
+		
+		resolveSettings: function(settings){
+			return JSB.merge({}, settings, {url: this.resolveEntryTemplate(settings.url)});
 		},
 		
 		loadAffectedCubes: function(){

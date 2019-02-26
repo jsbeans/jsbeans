@@ -999,7 +999,8 @@
 		           'JSB.Workspace.WorkspaceController', 
 		           'Unimap.Selector',
 		           'JSB.Web.Download',
-		           'DataCube.Export.ExportManager'],
+		           'DataCube.Export.ExportManager',
+		           'DataCube.Stats.StatsController'],
 
 		iterators: {},
 		needBreak: false,
@@ -1009,6 +1010,7 @@
 		dataMap: {},
 		cursor: {},
 		sourceIds: {},
+		firstCall: true,
 		
 		$constructor: function(){
 			$base();
@@ -1017,6 +1019,7 @@
 					$this.client().refresh();
 				}
 			});
+			
 		},
 
 		destroy: function(){
@@ -1042,6 +1045,11 @@
 		},
 
 		fetch: function(sourceId, widgetEntry, opts){
+			if(this.firstCall){
+				$this.publish('DataCube.Widgets.Widget.fetch', widgetEntry);
+				this.firstCall = false;
+			}
+			
 			var mtx = 'fetch_' + $this.getId();
 			JSB.getLocker().lock(mtx);
 			try {
