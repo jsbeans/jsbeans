@@ -67,10 +67,9 @@
                 }
             }
 /*
-            // todo: не всегда успевает синхронизироваться клиент с сервером??
             // функция не возвращает элементы
             this._menuItems = Syntax.getQueryElements();
-console.log(this._menuItems);
+
             this.updateQueryItems();
 
             this.addBtn = this.$('<i class="addBtn"></i>');

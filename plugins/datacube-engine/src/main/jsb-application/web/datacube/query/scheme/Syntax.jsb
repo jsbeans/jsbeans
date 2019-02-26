@@ -126,17 +126,35 @@
 	        defaultValues: {$and: []},
 	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]}
 	    },
+
+	    $postFilter: {
+	        render: '$filter',
+	        displayName: 'Фильтрация результата',
+	        desc: 'Фильтрация результатов запроса по условию (условия накладываются на выходные столбцы результата запроса)',
+	        multiple: true,
+	        queryElement: true,
+	        replaceable: false,
+	        defaultValues: {$and: []},
+	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]}
+	    },
 /*
-	    $postFilter: {},
+	    $cubeFilter: {
+	        render: '$filter',
+	        displayName: 'Глобальная фильтрация',
+	        desc: 'Дополнительная фильтрация строк куба для всех подзапросов в данном и вложенных срезах',
+	        multiple: true,
+	        queryElement: true,
+	        replaceable: false,
+	        defaultValues: {$and: []},
+	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]}
+	    },
+*/
+	    //$sort: {},
 
-	    $cubeFilter: {},
-
-	    $sort: {},
-
-	    $limit: {},
+	    //$limit: {},
 
 	    //$distinct: {},
-*/
+
 	    $field: {
 	        render: '$field'
 	    },
@@ -797,6 +815,10 @@
 	    }
 	},
 
+    ensureReady: function(callback){
+        this.ensureTrigger('ready', callback);
+    },
+
 	getLogicReplacements: function(key){
 	    return this._logicReplacements[key];
 	},
@@ -851,6 +873,10 @@
 		$constructor: function(){
 			$base();
 			this.doSync();
+
+			this.ensureSynchronized(function(){
+			    $this.setTrigger('ready');
+			});
 		}
 	},
 
@@ -935,8 +961,6 @@
                     this._queryElements.push(JSB.merge({}, this.scheme[i], {key: i}));
                 }
             }
-
-            this.doSync();
         }
     }
 }

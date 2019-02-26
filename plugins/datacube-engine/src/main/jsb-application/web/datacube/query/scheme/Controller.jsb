@@ -20,6 +20,14 @@
 	        $base(opts);
             this.addClass('queryController');
 
+            Syntax.ensureReady(function(){
+                $this.setTrigger('Syntax_initialized');
+            });
+
+            RenderRepository.ensureReady(function(){
+                $this.setTrigger('RenderRepository_initialized');
+            });
+
             if(opts && opts.data && opts.values){
                 this.refresh(opts);
             }
@@ -68,6 +76,10 @@
             $base();
         },
 
+        ensureComponentsInitialized: function(callback){
+            this.ensureTrigger(['Syntax_initialized', 'RenderRepository_initialized'], callback);
+        },
+
         getData: function(key){
             if(key){
                 return this._data[key];
@@ -110,7 +122,7 @@
         },
 
         refresh: function(opts){
-            RenderRepository.ensureReady(function(){
+            this.ensureComponentsInitialized(function(){
                 if($this._query){
                     $this._query.destroy();
                 }
