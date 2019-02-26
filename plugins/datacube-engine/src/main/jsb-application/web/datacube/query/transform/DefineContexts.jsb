@@ -6,10 +6,11 @@
 		$require: [
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Transforms.QueryTransformer',
-		    'java:java.util.HashMap'
+		    'java:java.util.HashMap',
         ],
 
 		transform: function(rootQuery, cubeOrDataProvider){
+
             // ensure queries has defined $context
             $this.defineContexts(rootQuery);
 		    return rootQuery;

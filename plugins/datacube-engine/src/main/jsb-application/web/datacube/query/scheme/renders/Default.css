@@ -9,8 +9,7 @@
 
 .defaultRender > .separator.collapsible.collapsed ~ .variables,
 .defaultRender > .separator.collapsible.collapsed ~ .addBtn,
-.defaultRender > .separator.collapsible.collapsed ~ .queryRender,
-.defaultRender > .separator.collapsible.collapsed ~ .param {
+.defaultRender > .separator.collapsible.collapsed ~ .queryRender {
     display: none;
 }
 
@@ -22,8 +21,7 @@
     display: inline-block;
 }
 
-.defaultRender > .valueItem > .valueName,
-.defaultRender > .param > .paramName {
+.defaultRender > .valueItem > .valueName {
     color: #3e505f;
     font-family: monospace;
     font-weight: bold;
@@ -35,8 +33,7 @@
 }
 
 .defaultRender > .separator.collapsible + .queryRender,
-.defaultRender > .separator.collapsible + .valueItem,
-.defaultRender > .separator.collapsible ~ .param {
+.defaultRender > .separator.collapsible + .valueItem {
     margin-left: 10px;
 }
 
@@ -49,13 +46,7 @@
     margin-bottom: 5px;
 }
 
-.defaultRender > .variables > .variable > *,
-.defaultRender > .param > * {
+.defaultRender > .variables > .variable > * {
     vertical-align: middle;
     display: inline-block;
-}
-
-.defaultRender > .param > .paramValue {
-    cursor: pointer;
-    position: relative;
 }

@@ -35,7 +35,7 @@
                 	$this.getElement().loader({message:'Сохранение...', onShow: function(){
                 	    $this.slice.server().setSliceParams({
                             name: $this.titleEditor.getData().getValue(),
-                            query: $this.query
+                            query: $this.textQueryEditor.getData().getValue()
                         }, function(){
                             $this.getElement().loader('hide');
                         });
@@ -222,7 +222,7 @@
 		        oldEditor: {}
 		    };
 
-		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];   //
+		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];   // , '$select'
 
 		    for(var i in query){
 		        if(newKeys.indexOf(i) > -1){

@@ -52,6 +52,11 @@
 		        items: Syntax.getToolItems(),
 		        itemRender: itemRender,
 		        onSelect: function(desc){
+		            if(desc.category === $this._SOURCE_FIELDS_NAME || desc.category === $this._CURRENT_SLICE_FIELDS_NAME){
+		                desc.value = desc.item;
+		                desc.key = '$field';
+		            }
+
 		            $this.data.callback.call($this, desc);
 		            $this.close();
 		        }

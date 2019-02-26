@@ -19,7 +19,7 @@
 		unwrapMacros: function(dcQuery) {
             QueryUtils.walkQueries(dcQuery, {}, null, function(subQuery){
                 // unwrap macros and $grmax* to complex expressions
-                QuerySyntax.unwrapMacrosCurrentQuery(subQuery);
+                QuerySyntax.unwrapMacrosCurrentQuery(subQuery, dcQuery);
             });
 		},
 

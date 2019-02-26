@@ -131,7 +131,18 @@
         },
 
         clear: function(){
-            //
+            for(var i in this._itemList){
+                this._itemList[i].item.remove();
+            }
+
+            this._itemList = {};
+
+            for(var i in this._categoriesList){
+                this._categoriesList[i].categoryLabel.remove();
+                this._categoriesList[i].categoryItem.destroy();
+            }
+
+            this._categoriesList = {};
         },
 
         clearCategory: function(category){

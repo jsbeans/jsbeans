@@ -12,7 +12,7 @@
 
 	        this.addClass('selectRender');
 
-	        this.createHeader();
+	        this.createHeader(false);
 
             var values = this.getValues(),
                 fieldsArr = Object.keys(values).sort();

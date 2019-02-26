@@ -23,6 +23,7 @@
                 removable: true,
                 replaceable: true,
                 editCallback: function(){
+// todo: change to createInput()
                     var curName = $this.getKey(),
                         input = $this.$('<input type="text" value="' + curName + '" />');
                     fieldName.append(input);

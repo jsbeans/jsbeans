@@ -35,6 +35,8 @@
     margin: 0 5px 0 auto;
     display: block;
     width: 25px;
+    height: 25px;
+    margin-bottom: 5px;
 }
 
 .sourceRender > .items > .item {

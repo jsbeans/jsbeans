@@ -1531,7 +1531,7 @@
 //		    JSB.getLogger().debug('Registered DataCube query macro ' + name);
 		},
 		
-		unwrapMacrosCurrentQuery: function(dcQuery) {
+		unwrapMacrosCurrentQuery: function(dcQuery, rootQuery) {
 		    function validateMacro(exp, macro){
 		        var structure = macro.structure;
 		        for (var f in structure) if(structure.hasOwnProperty(f)) {
@@ -1551,7 +1551,7 @@
 		                if (name == key) {
 		                    validateMacro(exp[key], $this.macros[name].structure);
 		                    //dcQuery.$select[alias] = $this.macros[name].objectGenerator.call(null, exp[key], dcQuery);
-		                    setFunc($this.macros[name].objectGenerator.call(null, exp[key], dcQuery));
+		                    setFunc($this.macros[name].objectGenerator.call(null, exp[key], dcQuery, rootQuery));
 		                    return;
 		                }
 		            }

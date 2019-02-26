@@ -13,30 +13,62 @@
 
 	        this.addClass('defaultRender');
 
+	        this.constructHead();
+
+	        this.constructValues();
+	    },
+
+	    constructHead: function(){
 	        var scheme = this.getScheme(),
-	            values = this.getValues(),
 	            desc = this.getKey() + '\n' + scheme.desc;
 
 	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
             this.append(operator);
 
             this.installMenuEvents(operator, this.getId() + '_operator', {
-                removable: false
+                removable: this.isAllowDelete(),
+                deleteCallback: function(){
+                    $this.getDeleteCallback().call($this);
+                }
             });
 
             this.append(this.createSeparator(this.isMultiple() || scheme.parameters));
+	    },
 
-            function appendRender(appendTo, render){
-                if(render){
-                    if(scheme.valueName){
-                        var valueItem = $this.$('<div class="valueItem"></div>');
-                        valueItem.append('<div class="valueName">' + scheme.valueName + '</div>');
-                        valueItem.append($this.createSeparator());
-                        valueItem.append(render);
-                        appendTo.append(valueItem);
-                    } else {
-                        appendTo.append(render);
+	    constructValues: function(){
+	        var values = this.getValues();
+
+            function createItem(index, hideChangeEvt){
+                var item = this.$('<div class="variable" idx="' + index + '"></div>');
+
+                var sortableHandle = this.$(`
+                    <div class="sortableHandle">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                `);
+                item.append(sortableHandle);
+
+                variables.append(item);
+
+                for(var j in values[index]){
+                    var render = $this.createRender({
+                        allowDelete: true,
+                        deleteCallback: function(){
+                            $this.removeItem(variables.find('> .variable'), item);
+                        },
+                        key: j,
+                        scope: values[index]
+                    });
+
+                    if(render){
+                        item.append(render);
                     }
+                }
+
+                if(!hideChangeEvt){
+                    $this.onChange();
                 }
             }
 
@@ -44,42 +76,17 @@
                 var variables = this.$('<div class="variables"></div>');
                 this.append(variables);
 
-                function createItem(index){
-                    var item = this.$('<div class="variable" idx="' + index + '"></div>');
+                if(this.isFixedFieldCount()){
+                    for(var i = 0; i < this.isFixedFieldCount(); i++){
+                        if(!JSB.isDefined(values[i])){
+                            values[i] = this.getDefaultAddValues();
+                        }
 
-                    var sortableHandle = this.$(`
-                        <div class="sortableHandle">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                        </div>
-                    `);
-                    item.append(sortableHandle);
-
-                    (function(item){
-                        $this.installMenuEvents(sortableHandle, JSB.generateUid(), {
-                            editable: false,
-                            deleteCallback: function(){
-                                $this.removeItem(variables, item);
-                            }
-                        });
-                    })(item);
-
-                    variables.append(item);
-
-                    return item;
-                }
-
-                for(var i = 0; i < values.length; i++){
-                    var item = createItem(i);
-
-                    for(var j in values[i]){
-                        var render = this.createRender({
-                            key: j,
-                            scope: this.getValues()[i]
-                        });
-
-                        appendRender(item, render);
+                        createItem(i, true);
+                    }
+                } else {
+                    for(var i = 0; i < values.length; i++){
+                        createItem(i, true);
                     }
                 }
 
@@ -90,23 +97,15 @@
                     }
                 });
 
-                var addBtn = this.$('<i class="addBtn"></i>');
-                this.append(addBtn);
-                addBtn.click(function(){
-                    var index = $this.getValues().push({$const: 0}) - 1,
-                        item = createItem(index);
+                if(!this.isFixedFieldCount()){
+                    var addBtn = this.$('<i class="addBtn"></i>');
+                    this.append(addBtn);
+                    addBtn.click(function(){
+                        var index = $this.getValues().push($this.getDefaultAddValues()) - 1;
 
-                    var render = $this.createRender({
-                        key: '$const',
-                        scope: $this.getValues()[index]
+                        createItem(index);
                     });
-
-                    if(render){
-                        item.append(render);
-
-                        $this.onChange();
-                    }
-                });
+                }
             } else {
                 for(var j in values){
                     var render = this.createRender({
@@ -114,51 +113,9 @@
                         scope: this.getValues()
                     });
 
-                    appendRender(this, render);
-                }
-            }
-
-            if(scheme.parameters){
-                var isNeedChangeEvt = false;
-
-                for(var i in scheme.parameters){
-                    var parameter = this.$('<div class="param"></div>');
-                    parameter.append('<div class="paramName">' + scheme.parameters[i].displayName + '</div>');
-                    parameter.append(this.createSeparator());
-
-                    var paramValue;
-
-                    if(JSB.isDefined(values[i])){
-                        paramValue = values[i];
-                    } else {
-                        values[i] = scheme.parameters[i].defaultValue;
-                        isNeedChangeEvt = true;
-
-                        if(scheme.parameters[i].type === 'text'){
-                            paramValue = '"' + scheme.parameters[i].defaultValue + '"';
-                        } else {
-                            paramValue = scheme.parameters[i].defaultValue;
-                        }
+                    if(render){
+                        this.append(render);
                     }
-
-                    var value = this.$('<div class="paramValue">' + paramValue + '</div>');
-                    parameter.append(value);
-
-                    (function(value, type, paramName){
-                        value.click(function(evt){
-                            evt.stopPropagation();
-
-                            $this.createInput(value, type, function(newVal){
-                                values[paramName] = newVal;
-                            });
-                        });
-                    })(value, scheme.parameters[i].type, i);
-
-                    this.append(parameter);
-                }
-
-                if(isNeedChangeEvt){
-                    this.onChange();
                 }
             }
 	    },

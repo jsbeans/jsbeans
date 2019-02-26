@@ -20,5 +20,8 @@
 
 .queryMenuTool > .jsb-button.btnDelete {
     background: #f9d7d7;
+}
+
+.queryMenuTool > .btnEdit:not(.hidden) + .btnDelete {
     margin-left: 2px;
 }

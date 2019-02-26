@@ -50,15 +50,22 @@
 	    },
 
 	    setOptions: function(options){
-	        // todo: recreate selectize when options is array of strings or change labelField/searchField/valueField
-	        this._select[0].selectize.clear();
-	        this._select[0].selectize.clearOptions();
-	        this._select[0].selectize.addOption(this._checkOptions(options));
-	        this._select[0].selectize.refreshOptions();
+	        this.ensureTrigger('_initialized', function(){
+                // todo: recreate selectize when options is array of strings or change labelField/searchField/valueField
+                $this._select[0].selectize.clear();
+                $this._select[0].selectize.clearOptions();
+
+                if(options.length !== 0){
+                    $this._select[0].selectize.addOption($this._checkOptions(options));
+                    $this._select[0].selectize.refreshOptions(false);
+                }
+	        });
 	    },
 
 	    setValue: function(value, hEvt) {
-	        this._select[0].selectize.setValue(this.options.value, hEvt);
+	        this.ensureTrigger('_initialized', function(){
+	            $this._select[0].selectize.setValue(value, hEvt);
+	        });
 	    },
 
 	    _checkOptions: function(options){
@@ -109,6 +116,8 @@
 	        if(this.options.label){
 	            this.setLabel(this.options.label);
 	        }
+
+	        this.setTrigger('_initialized');
 	    }
     }
 }
