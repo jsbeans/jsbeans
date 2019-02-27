@@ -39,7 +39,7 @@
 
 .defaultRender > .variables > .variable {
     position: relative;
-    height: 20px;
+    min-height: 20px;
 }
 
 .defaultRender > .variables > .variable:not(:last-child) {
