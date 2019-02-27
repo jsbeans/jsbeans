@@ -13,10 +13,13 @@
 
 		transform: function(transformers, dcQuery, defaultCube){
 		    for(var i = 0; i < transformers.length; i++) {
-                var transformerName = transformers[i];
+                var conf = transformers[i];
+                var names = conf.split('@');
+                var transformerName = names[0];
+
                 var transformer = $this.ensureTransformer(transformerName);
 
-                dcQuery = transformer.transform(dcQuery, defaultCube);
+                dcQuery = transformer.transform(dcQuery, defaultCube, names.length > 1 ? names[1]:null);
                 if (!dcQuery) throw new Error('Failed transform ' + transformer.getJsb().$name);
             }
             return dcQuery;

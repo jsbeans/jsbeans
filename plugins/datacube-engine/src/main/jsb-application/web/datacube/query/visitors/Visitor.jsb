@@ -19,6 +19,13 @@
         queryPath: [],
 
 
+        reset: function(){
+            $this.flags = null;
+            $this.path = [];
+            $this.flagsPath = [];
+            $this.queryPath = [];
+        },
+
         visit: function(exp, flags) {
             try {
                 if (JSB.isObject(exp)) {
@@ -46,7 +53,12 @@
                 }
 
                 if (exp.$select) {
-                    return $this.visitQuery(exp);
+                    try {
+                        $this.queryPath.push(exp);
+                        return $this.visitQuery(exp);
+                    }finally{
+                        $this.queryPath.pop();
+                    }
                 }
 
                 if (JSB.isArray(exp)) {
@@ -158,60 +170,53 @@ debugger;
 
         visitQuery: function(exp) {
             QueryUtils.throwError(exp.$select, 'Invalid query expression, $select is undefined');
-            try {
-                $this.queryPath.push(exp);
+            /// visit sources: $from, $join, $union, $recursive, $cube, $provider
+            if (exp.$from && JSB.isString(exp.$from)) {
+                $this.visitWithPath('$from', function(){
+                    $this.visit(exp.$from, {asQuery: true});
+                });
+            } else if (exp.$from && JSB.isObject(exp.$from)) {
+                $this.visitWithPath('$from', function(){
+                    $this.visit(exp.$from, {});
+                });
+            } else if (exp.$provider) {
+                $this.visitProvider(exp.$provider);
+            } else if (exp.$join) {
+                $this.visitJoin(exp.$join);
+            } else if (exp.$union) {
+                $this.visitUnion(exp.$union);
+            } else if (exp.$recursive) {
+                $this.visitRecursive(exp.$recursive);
+            } else {
+                $this.visitCube(exp.$cube||null);
+            }
 
-                /// visit sources: $from, $join, $union, $recursive, $cube, $provider
-                if (exp.$from && JSB.isString(exp.$from)) {
-                    $this.visitWithPath('$from', function(){
-                        $this.visit(exp.$from, {asQuery: true});
-                    });
-                } else if (exp.$from && JSB.isObject(exp.$from)) {
-                    $this.visitWithPath('$from', function(){
-                        $this.visit(exp.$from, {});
-                    });
-                } else if (exp.$provider) {
-                    $this.visitProvider(exp.$provider);
-                } else if (exp.$join) {
-                    $this.visitJoin(exp.$join);
-                } else if (exp.$union) {
-                    $this.visitUnion(exp.$union);
-                } else if (exp.$recursive) {
-                    $this.visitRecursive(exp.$recursive);
-                } else {
-                    $this.visitCube(exp.$cube||null);
-                }
+            if (exp.$filter && Object.keys(exp.$filter).length > 0) {
+                $this.visitWithPath('$filter', function(){
+                    $this.visit(exp.$filter, {asCondition:true});
+                });
+            }
 
-                if (exp.$filter && Object.keys(exp.$filter).length > 0) {
-                    $this.visitWithPath('$filter', function(){
-                        $this.visit(exp.$filter, {asCondition:true});
-                    });
-                }
+            if (exp.$globalFilter && Object.keys(exp.$globalFilter).length > 0) {
+                $this.visitWithPath('$globalFilter', function(){
+                    $this.visit(exp.$globalFilter, {asCondition:true});
+                });
+            }
 
-                if (exp.$globalFilter && Object.keys(exp.$globalFilter).length > 0) {
-                    $this.visitWithPath('$globalFilter', function(){
-                        $this.visit(exp.$globalFilter, {asCondition:true});
-                    });
-                }
+            if (exp.$groupBy && exp.$groupBy.length > 0) {
+                $this.visitGroupBy(exp.$groupBy);
+            }
 
-                if (exp.$groupBy && exp.$groupBy.length > 0) {
-                    $this.visitGroupBy(exp.$groupBy);
-                }
+            $this.visitSelect(exp.$select);
 
-                $this.visitSelect(exp.$select);
+            if (exp.$sort && exp.$sort.length > 0) {
+                $this.visitSort(exp.$sort);
+            }
 
-                if (exp.$sort && exp.$sort.length > 0) {
-                    $this.visitSort(exp.$sort);
-                }
-
-                if (exp.$postFilter && Object.keys(exp.$postFilter).length > 0) {
-                    $this.visitWithPath('$postFilter', function(){
-                        $this.visit(exp.$postFilter, {asCondition:true});
-                    });
-                }
-
-            }finally{
-                $this.queryPath.pop();
+            if (exp.$postFilter && Object.keys(exp.$postFilter).length > 0) {
+                $this.visitWithPath('$postFilter', function(){
+                    $this.visit(exp.$postFilter, {asCondition:true});
+                });
             }
         },
 
