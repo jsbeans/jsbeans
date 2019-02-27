@@ -193,8 +193,8 @@
                 findView: null,
                 rootQuery: null,
                 getExternalView: function(name){
-                    debugger
-                    findView.call(this, name);
+//                    debugger
+//                    findView.call(this, name);
                     $this.throwError(0, 'View "{}" is not defined', name);
                     return null;
                 }

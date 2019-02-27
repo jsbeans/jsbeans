@@ -16,7 +16,7 @@
 		    var contexts = {};
             QueryUtils.walkQueries(dcQuery, {}, null, function(query){
                 if (!contexts[query.$context]) {
-                    contexts[query.$context] = 'Q'+Object.keys(contexts).length;
+                    contexts[query.$context] = '#'+Object.keys(contexts).length;
                 }
             });
 
