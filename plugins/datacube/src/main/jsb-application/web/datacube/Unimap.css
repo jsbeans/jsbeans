@@ -27,6 +27,7 @@
     background-image: url(/datacube/images/datacube-checkbox.png);
     width: 16px;
     height: 16px;
+    margin-top: -8px;
     background-size: auto 16px;
 }
 

@@ -26,6 +26,10 @@
                                 $field: desc.item
                             };
 
+                        if(desc.sourceContext){
+                            newVal.$sourceContext = sourceContext;
+                        }
+
                         if(desc.category === 'Поля источника'){
                             newVal['$context'] = desc.context;
                         }

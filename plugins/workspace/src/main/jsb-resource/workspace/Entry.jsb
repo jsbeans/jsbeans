@@ -103,7 +103,35 @@
 			return this._eDoc;
 		},
 		
-		
+		resolveEntryTemplate: function(str){
+			if(!str || str.length == 0){
+				return str;
+			}
+			var newStr = str;
+			while(true){
+				var m = newStr.match(/\$\{([^\}]+)\}/i);
+				if(!m || m.length < 2){
+					break;
+				}
+				var alias = m[1];
+				var val = alias;
+				switch(alias){
+				case 'path':
+					val = this.getArtifactDir();
+					break;
+				case 'name':
+					val = this.getName();
+					break;
+				default:
+					val = '';
+//					throw new Error('Invalid template alias: ' + alias);
+					break;
+				}
+				newStr = newStr.replace(m[0], val);
+			}
+			return newStr;
+		},
+
 		_markStored: function(bStored){
 			if(this._stored == bStored){
 				return;
@@ -189,6 +217,8 @@
 				JSB.getLocker().unlock(mtx);
 				
 				this._stored = true;
+			} else {
+				$this.publish('JSB.Workspace.Entry.created');
 			}
 		},
 		
@@ -228,6 +258,8 @@
 			JSB.defer(function(){
 				$this.doSync();	
 			}, 0);
+			
+			$this.publish('JSB.Workspace.Entry.updated');
 		},
 
 		remove: function(){
@@ -259,6 +291,8 @@
 			// detach from workspace
 			this.getWorkspace()._detachEntry(this);
 			this.getWorkspace().store();
+			
+			$this.publish('JSB.Workspace.Entry.removed');
 			
 			this.destroy();
 		},
@@ -390,6 +424,9 @@
 			
 			entry._markStored(false);
 			this._markStored(false);
+			
+			$this.publish('JSB.Workspace.Entry.removeChild', entry);
+			entry.publish('JSB.Workspace.Entry.setParent', null);
 
 			return entry;
 		},
@@ -427,6 +464,9 @@
 			JSB.getLocker().unlock(mtx);
 			entry._markStored(false);
 			this._markStored(false);
+			
+			$this.publish('JSB.Workspace.Entry.addChild', entry);
+			entry.publish('JSB.Workspace.Entry.setParent', $this);
 			
 			return entry;
 		},
@@ -512,6 +552,10 @@
 			}
 			return this._artifactStore.size(this, name, opts);
 		},
+		
+		getArtifactDir: function(){
+			return this._artifactStore.getArtifactDir(this);
+		},
 
 		existsArtifact: function(name) {
 			if(!JSB.isString(name)){
@@ -564,6 +608,7 @@
 		    	this._markStored(false);
 		    }
 		    this._artifactStore.write(this, name, a, opts);
+		    $this.publish('JSB.Workspace.Entry.storeArtifact', name);
 		},
 
 		removeArtifact: function(name, opts) {
@@ -581,6 +626,7 @@
 				this._artifactCount = Object.keys(this._artifacts).length;
 			    this._artifactStore.remove(this, name, opts);
 				this._markStored(false);
+				$this.publish('JSB.Workspace.Entry.removeArtifact', name);
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}

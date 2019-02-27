@@ -29,7 +29,7 @@
 	    // функции глобальной агрегации
 	    '$gsum', '$gcount', '$gmin', '$gmax', '$gavg', '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 	    // разное
-	    '$const', '$distinct',
+	    '$const', '$distinct'//, '$query'
 	    // test
 	    ],
 	    ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike']
@@ -102,7 +102,9 @@
 	        desc: 'Выражения для формирования выходных полей (значений в столбцах)',
 	        removable: false,
 	        replaceable: false,
-	        defaultValues: {$const: 0}
+	        defaultValues: {$const: 0},
+
+	        allowOutputFields: false
 	    },
 
 	    $groupBy: {
@@ -113,7 +115,9 @@
 	        queryElement: true,
 	        replaceable: false,
 	        defaultValues: [],
-	        defaultAddValues: {$const: 0}
+	        defaultAddValues: {$const: 0},
+
+	        allowSourceFields: false
 	    },
 
 	    $filter: {
@@ -124,7 +128,9 @@
 	        queryElement: true,
 	        replaceable: false,
 	        defaultValues: {$and: []},
-	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]}
+	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
+
+	        allowOutputFields: false
 	    },
 
 	    $postFilter: {
@@ -135,7 +141,9 @@
 	        queryElement: true,
 	        replaceable: false,
 	        defaultValues: {$and: []},
-	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]}
+	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
+
+	        allowSourceFields: false
 	    },
 /*
 	    $cubeFilter: {
@@ -149,9 +157,26 @@
 	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]}
 	    },
 */
-	    //$sort: {},
+	    $sort: {
+	        render: '$sort',
+	        displayName: 'Сортировка',
+	        desc: 'Сортировка элементов (строк)',
+	        queryElement: true,
+	        replaceable: false,
+	        defaultValues: [],
+	        defaultAddValues: {$expr: {$const: 0}, $type: 1},
 
-	    //$limit: {},
+	        allowSourceFields: false
+	    },
+
+	    $limit: {
+	        render: '$singleValue',
+	        displayName: 'Лимит элементов',
+	        desc: 'Ограничение количества элементов',
+	        queryElement: true,
+	        replaceable: false,
+	        defaultValues: 10
+	    },
 
 	    //$distinct: {},
 

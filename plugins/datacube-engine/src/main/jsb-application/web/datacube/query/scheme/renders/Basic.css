@@ -44,14 +44,15 @@
 }
 
 .basicQueryRender .sortableHandle {
-     display: inline-block;
-     height: 22px;
-     width: 10px;
-     border: 1px solid #d6d4d4;
-     border-radius: 3px;
-     background-color: #f3f3f3;
-     cursor: move;
-     margin-right: 3px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    border: 1px solid #d6d4d4;
+    border-radius: 3px;
+    background-color: #f3f3f3;
+    cursor: move;
+    margin-right: 3px;
 }
 
 .basicQueryRender .sortableHandle > div {
@@ -72,6 +73,10 @@
 
 .basicQueryRender .sortableHandle > div:last-child {
     top: calc(50% + 6px);
+}
+
+.basicQueryRender .sortableHandle + .basicQueryRender {
+    margin-left: 15px;
 }
 
 .basicQueryRender .addBtn {
@@ -105,4 +110,16 @@
     height: 20px;
     min-width: 35px;
     border-radius: 5px;
+}
+
+.basicQueryRender .queryEditor-selectInput {
+    width: 130px;
+}
+
+.basicQueryRender .queryEditor-selectInput > .selectize-control > .selectize-input {
+    padding: 2px 6px;
+}
+
+.basicQueryRender .queryEditor-selectInput > .selectize-control > .selectize-input:after {
+    right: 8px;
 }

@@ -69,12 +69,12 @@
 									}
 								}
 							}
-							
+/*							
 							// check fieldMap
 							if(Object.keys(fieldMap).length == 0 && Object.keys(fields).length > 0){
 								throw new Error('Existed table "' + schema + '"."' + suggestedName + '" completely differs with current field set');
 							}
-							
+*/							
 							// perform missing columns
 							for(var fn in fields){
 								if(!fieldMap[fn]){
@@ -145,7 +145,7 @@
 					for(var i = 0; i < fNameArr.length; i++){
 						var fType = fields[fNameArr[i]].type;
 						var fComment = fields[fNameArr[i]].comment;
-						sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + DataTypes.toVendor($this.vendor, fType);
+						sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + DataTypes.toVendor(vendor, fType);
 						JDBC.executeUpdate(connection, sql);
 						
 						// extract current field
@@ -225,14 +225,18 @@
 			var store = this.source.getStore();
 			var connWrap = store.getConnection(true);
 			var connection = connWrap.get();
+			var schema = opts && opts.schema || 'public';
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
 				if(rs.next()){
+					if(opts && opts.useExistingIndex){
+						return;
+					}
 					JDBC.executeUpdate(connection, 'drop index "' + idxName + '"');
 				}
 				
-				var sql = 'create index "' + idxName + '" on "' + tName + '" (';
+				var sql = 'create index if not exists "' + idxName + '" on "' + schema + '"."' + tName + '" (';
 				var fArr = Object.keys(idxFields);
 				for(var i = 0; i < fArr.length; i++){
 					sql += '"' + fArr[i] + '"';

@@ -1,13 +1,12 @@
 {
 	$name: 'DataCube.SliceEditorView',
 	$parent: 'JSB.Workspace.BrowserView',
-	$require: ['JSB.Widgets.SplitBox', 
+	$require: ['JSB.Widgets.SplitBox',
 	           'DataCube.GridView', 
 	           'JSB.Controls.ScrollBox',
 	           'JSB.Widgets.PrimitiveEditor', 
 	           'JSB.Widgets.Button',
-	           'JSB.Widgets.MultiEditor', 
-	           'DataCube.Query.QueryEditor',
+	           'JSB.Widgets.MultiEditor',
 	           'JSB.Widgets.ToolManager',
 	           'DataCube.Export.ExportManager',
 	           'JSB.Widgets.RendererRepository',
@@ -48,11 +47,13 @@
                 cssClass: "btnUpdate",
                 caption: "Обновить",
                 onClick: function(){
-                	$this.updateGrid();
+                    $this.gridView.updateData($this.slice, $this.textQueryEditor.getData().getValue());
                 }
             });
             this.titleBlock.append(this.updateBtn.getElement());
 
+// todo
+/*
             this.analyzeBtn = new Button({
                 cssClass: "btnUpdate",
                 caption: "Анализировать",
@@ -63,7 +64,7 @@
                 }
             });
             this.titleBlock.append(this.analyzeBtn.getElement());
-
+*/
             var exportBtn = new Button({
                 cssClass: 'btnUpdate',
                 caption: "Экспорт",
@@ -116,25 +117,12 @@
 			var scrollBox = new ScrollBox();
 			vSplitBox.addToPane(0, scrollBox);
 
-/***/
-            this.newEditor = new SchemeController({
+            this.editor = new SchemeController({
                 onChange: function(){
-                    $this.query = $this.collectQuery();
-                    $this.updateTextQuery($this.query);
+                    $this.updateTextQuery(this.getValues());
                 }
             });
-            scrollBox.append(this.newEditor);
-
-            this.oldEditor = new QueryEditor({
-                cssClass: 'queryEditor',
-                editorView: $this,
-                onChange: function(values){
-                    $this.query = $this.collectQuery();
-                    $this.updateTextQuery($this.query);
-                }
-            });
-            scrollBox.append(this.oldEditor);
-/***/
+            scrollBox.append(this.editor);
 			
 			this.textQueryEditor = new MultiEditor({
 				valueType: "org.jsbeans.types.JsonObject",
@@ -146,8 +134,9 @@
 					}
 
 					JSB.defer(function(){
-					    $this.query = q;
-						$this.updateQuery(q);
+                        $this.editor.refresh({
+                            values: q
+                        });
 					}, 600, 'textQueryChanged_' + $this.getId());
 				}
 			});
@@ -159,29 +148,17 @@
 			});
 			hSplitBox.addToPane(1, this.gridView);
 		},
-
-		// временная функция пока не полностью реализован новый редактор
-		collectQuery: function(){
-		    this.query = JSB.merge({}, this.oldEditor.getValue(), this.newEditor.getValues());
-		    return this.query;
-		},
-
-		getSourceFields: function(callback){
-            this.newEditor.getSourceFields(callback);
-		},
 		
 		refresh: function(){
 			this.slice = this.getCurrentEntry();
-			this.titleEditor.setData(this.slice.getName());
+
 			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
 				return;
 			}
 
 			this.titleEditor.setData(this.slice.getName());
 
-			this.query = JSB.clone(this.slice.getQuery());
-
-            this.oldEditor.setOption('cube', this.slice.getCube());
+			var query = JSB.clone(this.slice.getQuery());
 
 			this.slice.server().getEditorData(function(data, fail){
 			    if(fail){
@@ -189,84 +166,22 @@
 			        return;
 			    }
 
-			    // old
-                var sliceSelectOptions = [];
+                $this.editor.refresh({
+                    data: data,
+                    slice: $this.slice,
+                    values: query
+                });
 
-                for(var i in data.cubeSlices){
-                    if($this.slice.getId() === data.cubeSlices[i].getId()){
-                        continue;
-                    }
+                $this.updateTextQuery(query);
 
-                    sliceSelectOptions.push({
-                        entry: data.cubeSlices[i],
-                        key: i,
-                        value: RendererRepository.createRendererFor(data.cubeSlices[i], {showSource: true}).getElement()
-                    });
-                }
-
-                $this.oldEditor.setOption('cubeFields', data.cubeFields);
-                $this.oldEditor.setOption('cubeSlices', data.cubeSlices);
-                $this.oldEditor.setOption('sliceSelectOptions', sliceSelectOptions);
-
-                $this.updateQuery($this.query, data);
-
-                $this.updateTextQuery($this.query);
-                $this.updateGrid();
+                $this.gridView.updateData($this.slice, query);
 			});
-		},
-
-		// временная функция пока не полностью реализован новый редактор
-		sliceQuery: function(query){
-		    var slicedQuery = {
-		        newEditor: {},
-		        oldEditor: {}
-		    };
-
-		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];   // , '$select'
-
-		    for(var i in query){
-		        if(newKeys.indexOf(i) > -1){
-		            slicedQuery.newEditor[i] = query[i];
-		        } else {
-		            slicedQuery.oldEditor[i] = query[i];
-		        }
-		    }
-
-		    return slicedQuery;
-		},
-		
-		updateGrid: function(query){
-		    query = query || this.collectQuery();
-			$this.gridView.updateData($this.slice, query);
 		},
 		
 		updateTextQuery: function(query){
-			$this.ignoreHandlers = true;
-			$this.textQueryEditor.setData(query);
-			$this.ignoreHandlers = false;
-		},
-		
-		updateQuery: function(query, data) {
-			$this.ignoreHandlers = true;
-
-			query = query || this.query;
-
-            var slicedQuery = $this.sliceQuery(query);
-
-            // new
-            this.newEditor.refresh({
-                data: data,
-                slice: this.slice,
-                values: slicedQuery.newEditor
-            });
-
-			try {
-				$this.oldEditor.set(slicedQuery.oldEditor);
-			} catch(e) {
-			    console.log('queryEditor set error');
-            }
-
-			$this.ignoreHandlers = false;
+			this.ignoreHandlers = true;
+			this.textQueryEditor.setData(query);
+			this.ignoreHandlers = false;
 		}
 	},
 	

@@ -39,9 +39,9 @@
 	        var values = this.getValues();
 
             function createItem(index, hideChangeEvt){
-                var item = this.$('<div class="variable" idx="' + index + '"></div>');
+                var item = $this.$('<div class="variable" idx="' + index + '"></div>');
 
-                var sortableHandle = this.$(`
+                var sortableHandle = $this.$(`
                     <div class="sortableHandle">
                         <div></div>
                         <div></div>

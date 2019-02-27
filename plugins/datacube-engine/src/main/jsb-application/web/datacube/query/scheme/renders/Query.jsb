@@ -66,8 +66,7 @@
                     this.append(render);
                 }
             }
-/*
-            // функция не возвращает элементы
+
             this._menuItems = Syntax.getQueryElements();
 
             this.updateQueryItems();
@@ -112,7 +111,6 @@
             if(this._menuItems.length === 0){
                 this.addBtn.addClass('hidden');
             }
-*/
 	    },
 
 	    getSourceFields: function(callback){

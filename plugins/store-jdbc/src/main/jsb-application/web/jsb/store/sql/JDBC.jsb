@@ -121,7 +121,7 @@
                 object: 'blob',
 			},
 			'H2': {
-                string: 'text',
+                string: 'nvarchar',
                 boolean: 'boolean',
                 integer: 'int8',
                 uint: 'uint8',

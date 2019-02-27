@@ -1,0 +1,24 @@
+.sortRender > .items {
+    margin-left: 5px;
+}
+
+.sortRender > .items > .item {
+    position: relative
+}
+
+.sortItemRender {
+    display: inline-block;
+}
+
+.sortItemRender > .expr > *,
+.sortItemRender > .dir > * {
+    display: inline-block;
+}
+
+.sortItemRender > .expr > .exprName,
+.sortItemRender > .dir > .dirName {
+    color: #5f7588;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 14px;
+}

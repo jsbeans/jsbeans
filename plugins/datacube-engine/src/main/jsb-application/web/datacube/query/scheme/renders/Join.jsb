@@ -46,7 +46,15 @@
 	                    delete value[i];
 	                }
 
-	                value[curValue.compare] = [curValue.first, curValue.second];
+	                value[curValue.compare] = [];
+
+	                if(curValue.first){
+	                    value[curValue.compare][0] = curValue.first;
+	                }
+
+	                if(curValue.second){
+	                    value[curValue.compare][1] = curValue.second;
+	                }
 
 	                $this.onChange();
 	            }
@@ -56,8 +64,9 @@
 	            cssClass: 'firstField',
 	            onChange: function(value){
 	                curValue.first = {
-	                    $context: values.$left,
-	                    $field: value
+	                    //$context: values.$left,
+	                    $field: value,
+	                    $sourceContext: '$left'
 	                };
 	                updateCurValue();
 	            }
@@ -84,8 +93,9 @@
 	            cssClass: 'secondField',
 	            onChange: function(value){
 	                curValue.second = {
-	                    $context: values.$right,
-	                    $field: value
+	                    //$context: values.$right,
+	                    $field: value,
+	                    $sourceContext: '$right'
 	                };
 	                updateCurValue();
 	            }

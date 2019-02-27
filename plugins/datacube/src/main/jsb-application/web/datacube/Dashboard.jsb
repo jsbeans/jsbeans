@@ -149,6 +149,8 @@
 				throw new Error('Unable to find dashboard with id: ' + params.did);
 			}
 			
+			$this.publish('DataCube.Dashboard.get', this.dashboardEntry);
+			
 			var htmlSection = this.getJsb()['$html'];
 			return `#dot
 			<!DOCTYPE html>
@@ -190,6 +192,7 @@
 		
 		getEntry: function(){
 			JSB.getLogger().debug('Requested dashboard: ' + this.dashboardEntry.getName());
+			
 			return this.dashboardEntry;
 		}
 

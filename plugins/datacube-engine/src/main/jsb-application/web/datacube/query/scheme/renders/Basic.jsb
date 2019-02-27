@@ -14,6 +14,8 @@
 	    * @see DataCube.Query.SchemeController.createRender
 	    *
 	    * @param {boolean} [opts.allowDelete] - возможность удаления. Если не задана, то false
+        * @param {boolean} [opts._allowOutputFields] - можно ли дочерним элементам использовать поля текущего запроса. Если не задана, то true
+	    * @param {boolean} [opts._allowSourceFields] - можно ли дочерним элементам использовать поля источника. Если не задана, то true
 	    * @param {object} opts.controller - контроллер схемы
 	    * @param {function} [opts.deleteCallback] - функция обратного вызова, если задана возможность удаления
 	    * @param {string} opts.key - ключ запроса
@@ -26,6 +28,18 @@
 	        $base(opts);
 
 	        this.addClass('basicQueryRender');
+
+            if(opts.scheme && JSB.isDefined(opts.scheme.allowOutputFields)){
+                this._allowOutputFields = opts.scheme.allowOutputFields;
+            } else {
+                this._allowOutputFields = JSB.isDefined(opts.allowOutputFields) ? opts.allowOutputFields : true;
+            }
+
+            if(opts.scheme && JSB.isDefined(opts.scheme.allowSourceFields)){
+                this._allowSourceFields = opts.scheme.allowSourceFields;
+            } else {
+                this._allowSourceFields = JSB.isDefined(opts.allowSourceFields) ? opts.allowSourceFields : true;
+            }
 
 	        this._allowDelete = JSB.isDefined(opts.allowDelete) ? opts.allowDelete : false;
 	        this._controller = opts.controller;
@@ -60,7 +74,7 @@
 	            this.setContext(context);
 	        }
 
-	        var render = this.getController().createRender({
+	        var render = this.createRender({
 	            key: newKey,
 	            scope: this.getScope()
 	        }, this.getParent());
@@ -142,6 +156,13 @@
         * @see DataCube.Query.SchemeController.createRender
         */
 	    createRender: function(options, parent){
+	        if(!options){
+	            options = {};
+	        }
+
+	        options.allowOutputFields = this.isAllowOutputFields();
+	        options.allowSourceFields = this.isAllowSourceFields();
+
 	        return this.getController().createRender(options, parent || this);
 	    },
 
@@ -288,6 +309,22 @@
         */
 	    isAllowDelete: function(){
 	        return this._allowDelete;
+	    },
+
+        /**
+        * Можно ли дочерним рендерам использовать выходные поля текущего запроса. Разрешено, если родителем не указано иное
+        * @return {boolean}
+        */
+	    isAllowOutputFields: function(){
+	        return this._allowOutputFields;
+	    },
+
+        /**
+        * Можно ли дочерним рендерам использовать выходные поля текущего запроса. Разрешено, если родителем не указано иное
+        * @return {boolean}
+        */
+	    isAllowSourceFields: function(){
+	        return this._allowSourceFields;
 	    },
 
         /**
@@ -446,6 +483,8 @@
 	        opts = opts || {};
 
 	        return this.getController().showMenu(JSB.merge({
+	            allowOutputFields:  this.isAllowOutputFields(),
+	            allowSourceFields: this.isAllowSourceFields(),
 	            caller: this,
 	            element: element,
 	            elementId: id || this.getId(),
