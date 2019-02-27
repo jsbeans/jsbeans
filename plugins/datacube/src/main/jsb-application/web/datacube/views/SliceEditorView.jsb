@@ -158,7 +158,7 @@
 
 			this.titleEditor.setData(this.slice.getName());
 
-			var query = JSB.clone(this.slice.getQuery());
+			var query = this.slice.getQuery();
 
 			this.slice.server().getEditorData(function(data, fail){
 			    if(fail){

@@ -117,7 +117,7 @@
 	        defaultValues: [],
 	        defaultAddValues: {$const: 0},
 
-	        allowSourceFields: false
+	        allowOutputFields: false
 	    },
 
 	    $filter: {

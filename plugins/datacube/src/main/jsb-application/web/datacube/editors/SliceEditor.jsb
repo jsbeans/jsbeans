@@ -64,7 +64,7 @@
 	    },
 
 	    apply: function(){
-	        var query = this.collectQuery(),
+	        var query = this.editor.getValues(),
 	            name = this.sliceName.getData().getValue();
 
 	        this.sliceData.entry.server().setSliceParams({

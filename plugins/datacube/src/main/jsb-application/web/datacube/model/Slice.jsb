@@ -121,7 +121,7 @@
     },
 
 	getQuery: function(){
-		return this.query;
+		return JSB.clone(this.query);
 	},
 
 	$client: {
