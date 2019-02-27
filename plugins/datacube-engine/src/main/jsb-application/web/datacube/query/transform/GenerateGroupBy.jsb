@@ -14,7 +14,6 @@
 
         /** Generate/append $groupBy for expressions with $group */
 		transform: function(rootQuery, cubeOrDataProvider){
-debugger;
             try {
                 var queryVisitor = new ProxyVisitor({
                     expression: {
