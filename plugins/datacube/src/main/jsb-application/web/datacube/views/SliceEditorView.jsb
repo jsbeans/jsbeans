@@ -165,7 +165,7 @@
 			        // todo: error
 			        return;
 			    }
-console.log(query);
+
                 $this.editor.refresh({
                     data: data,
                     slice: $this.slice,
