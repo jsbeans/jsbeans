@@ -4,7 +4,6 @@
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'DataCube.Model.SqlSource',
 		           'DataCube.SqlMaterializer',
 		           'JSB.System.Kernel',
 		           'DataCube.Model.StatsControllerSettings',

@@ -999,8 +999,7 @@
 		           'JSB.Workspace.WorkspaceController', 
 		           'Unimap.Selector',
 		           'JSB.Web.Download',
-		           'DataCube.Export.ExportManager',
-		           'DataCube.Stats.StatsController'],
+		           'DataCube.Export.ExportManager'],
 
 		iterators: {},
 		needBreak: false,

@@ -63,9 +63,9 @@
             $base(id, this);
             
             // auto create entries
-            var autoCreateEntries = this.config.autoCreate;
+            var autoCreateEntries = $this.config.autoCreate;
             for(var eId in autoCreateEntries){
-            	if(this.existsEntry(eId)){
+            	if($this.existsEntry(eId)){
             		continue;
             	}
             	var eDesc = autoCreateEntries[eId];
@@ -79,15 +79,15 @@
     				var eClass = eJsb.getClass();
     				var args = eDesc.args;
     				if(!args || args.length == 0){
-    					new eClass(eId, this);	
+    					new eClass(eId, $this);	
     				} else if(args.length == 1){
-    					new eClass(eId, this, args[0]);	
+    					new eClass(eId, $this, args[0]);	
     				} else if(args.length == 2){
-    					new eClass(eId, this, args[0], args[1]);	
+    					new eClass(eId, $this, args[0], args[1]);	
     				} else if(args.length == 3){
-    					new eClass(eId, this, args[0], args[1], args[2]);	
+    					new eClass(eId, $this, args[0], args[1], args[2]);	
     				} else if(args.length == 4){
-    					new eClass(eId, this, args[0], args[1], args[2], args[3]);	
+    					new eClass(eId, $this, args[0], args[1], args[2], args[3]);	
     				}
     				
     			} finally {
