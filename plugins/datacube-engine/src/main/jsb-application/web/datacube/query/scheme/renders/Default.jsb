@@ -17,6 +17,27 @@
 	        this.constructValues();
 	    },
 
+	    // совместимость с некоторыми видами синтаксиса
+	    checkValues: function(){
+	        var curValues = this.getValues();
+
+	        if(this.isMultiple()){
+	            for(var i = 0; i < curValues.length; i++){
+	                if(JSB.isString(curValues[i])){
+	                    curValues[i] = {
+	                        $field: curValues[i]
+	                    }
+	                }
+	            }
+	        } else {
+                if(JSB.isString(curValues)){
+                    this.setValues({
+                        $field: curValues
+                    });
+                }
+	        }
+	    },
+
 	    constructHead: function(){
 	        var scheme = this.getScheme(),
 	            desc = this.getKey() + '\n' + scheme.desc;

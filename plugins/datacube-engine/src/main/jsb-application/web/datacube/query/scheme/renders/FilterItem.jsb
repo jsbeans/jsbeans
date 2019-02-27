@@ -5,7 +5,7 @@
 	$alias: '$filterItem',
 
 	$client: {
-		$require: [],
+		$require: ['DataCube.Query.Syntax'],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -30,6 +30,25 @@
 
             this.setOption('index', newIndex);
             this.setKey(newKey);
+	    },
+
+	    checkValues: function(){
+	        var index = this.getOption('index'),
+	            values = this.getValues()[index];
+
+	        for(var i in values){
+                var scheme = Syntax.getSchema(i);
+
+	            if(!scheme){
+	                var newVal = {};
+
+	                newVal[Object.keys(values[i])[0]] = [{
+	                    $field: i
+	                }, values[i][Object.keys(values[i])[0]]];
+
+	                this.getValues()[index] = newVal;
+	            }
+	        }
 	    }
 	}
 }

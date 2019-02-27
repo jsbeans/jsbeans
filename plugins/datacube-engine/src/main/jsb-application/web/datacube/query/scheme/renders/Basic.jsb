@@ -233,7 +233,15 @@
         * @return {*} значение по умолчанию
         */
 	    getDefaultValues: function(){
-	        return JSB.clone(this.getScheme().defaultValues);
+	        if(!this.getScheme()){
+	            return;
+	        }
+
+	        var defaultValues = this.getScheme().defaultValues;
+
+	        if(JSB.isDefined(defaultValues)){
+	            return JSB.clone(defaultValues);
+	        }
 	    },
 
         /**
@@ -241,7 +249,17 @@
         * @return {*} значение по умолчанию
         */
 	    getDefaultAddValues: function(){
-	        return JSB.clone(this.getScheme().defaultAddValues) || {$const: 0};
+	        if(!this.getScheme()){
+	            return {$const: 0};
+	        }
+
+	        var defaultValues = this.getScheme().defaultAddValues;
+
+	        if(JSB.isDefined(defaultValues)){
+	            return JSB.clone(defaultValues)
+	        } else {
+	            return {$const: 0};
+            }
 	    },
 
         /**

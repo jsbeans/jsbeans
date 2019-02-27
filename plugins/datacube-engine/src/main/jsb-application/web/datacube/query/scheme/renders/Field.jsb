@@ -19,7 +19,7 @@
 	        }
 
             this.installMenuEvents(this.getElement(), null, {
-                removable: false,
+                removable: this.isAllowDelete(),
                 editToolCallback: function(desc){
                     if(desc.category === 'Поля источника' || desc.category === 'Поля среза'){
                         var newVal = {

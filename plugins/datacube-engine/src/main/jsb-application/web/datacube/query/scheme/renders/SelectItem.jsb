@@ -40,8 +40,7 @@
                         var newVal = input.val();
 
                         if(newVal !== curName){
-                            $this.replaceValue(newVal);
-                            $this.setKey(newVal);
+                            $this.rename(newVal);
                             input.remove();
                             fieldName.text(newVal);
 
@@ -72,6 +71,15 @@
                     this.append(render);
                 }
             }
+	    },
+
+	    rename: function(newName){
+	        var value = this.getValues();
+
+	        this._scope[newName] = value;
+	        delete this._scope[this.getKey()];
+
+	        this.setKey(newName);
 	    }
 	}
 }
