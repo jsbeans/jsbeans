@@ -22,12 +22,16 @@
             this.installMenuEvents(fieldName, JSB.generateUid(), {
                 removable: true,
                 replaceable: true,
-                editCallback: function(){
+                editCallback: function(evt){
+                    evt.stopPropagation();
+
+                    /*
                     $this.createInput(fieldName, 'text', function(newVal){
                         $this.replaceValue(newVal);
                         $this.setKey(newVal);
                     });
-/*
+                    */
+
                     var curName = $this.getKey(),
                         input = $this.$('<input type="text" value="' + curName + '" />');
                     fieldName.append(input);
@@ -55,7 +59,6 @@
                     });
 
                     input.focus();
-                    */
                 }
             });
 

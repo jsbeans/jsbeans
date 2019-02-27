@@ -5,8 +5,7 @@
 	$alias: '$default',
 
 	$client: {
-	    $require: ['DataCube.Query.Syntax',
-	               'css:Default.css'],
+	    $require: ['css:Default.css'],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -118,27 +117,6 @@
                     }
                 }
             }
-	    },
-
-	    replaceValue: function(newKey, newValue){
-	        if(!JSB.isDefined(newValue)){
-	            newValue = this.getScope()[this.getKey()];
-	        }
-
-            var isNewValMultiple = Syntax.getSchema(newKey).multiple,
-                isCurrentValMultiple = this.isMultiple();
-
-            if(isNewValMultiple && !isCurrentValMultiple){
-                newValue = [newValue];
-            }
-
-            if(isCurrentValMultiple && !isNewValMultiple){
-                newValue = newValue[0];
-            }
-
-	        delete this.getScope()[this.getKey()];
-
-	        this._scope[newKey] = newValue;
 	    }
 	}
 }

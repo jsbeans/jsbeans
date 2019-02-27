@@ -802,6 +802,7 @@
 	        category: 'Разное',
 	        displayName: 'Константа',
 	        desc: 'Постоянное значение выбранного типа',
+	        defaultValues: 0,
 	        values: [
 	        {
                 key: 'number',

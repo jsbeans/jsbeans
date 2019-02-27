@@ -5,7 +5,8 @@
 	$alias: '$basic',
 
 	$client: {
-		$require: ['css:Basic.css'],
+		$require: ['DataCube.Query.Syntax',
+		           'css:Basic.css'],
 
 	    /**
 	    * @constructor
@@ -50,8 +51,12 @@
 	        this._scheme = opts.scheme;
 	        this._scope = opts.scope;
 
-	        if(!this.getValues() && this.getDefaultValues()){
-	            this.setValues(this.getDefaultValues());
+	        if(JSB.isDefined(this.getValues())){
+	            this.checkValues();
+	        } else {
+	            if(this.getDefaultValues()){
+	                this.setValues(this.getDefaultValues());
+	            }
 	        }
 
 	        this.getController().registerRender(this);
@@ -71,7 +76,7 @@
 	        this.replaceValue(newKey, newValue);
 
 	        if(context){
-	            this.setContext(context);
+	            //this.setContext(context);
 	        }
 
 	        var render = this.createRender({
@@ -84,6 +89,13 @@
 	            this.onChange();
 	            this.destroy();
 	        }
+	    },
+
+        /**
+        * Вызывается в конструкторе для проверки соответствия типа значения данному рендеру
+        */
+	    checkValues: function(){
+	        // todo
 	    },
 
         /**
@@ -435,15 +447,42 @@
         * @param {*} [newValue] - новое значение. Если не указано, то берётся старое значение
         */
 	    replaceValue: function(newKey, newValue){
-	        if(!JSB.isDefined(newValue)){
+            var isNewValMultiple = Syntax.getSchema(newKey).multiple,
+                isCurrentValMultiple = this.isMultiple();
+
+	        if(JSB.isDefined(newValue)){
+	            if(isNewValMultiple){
+	                newValue = [newValue];
+	            }
+	        } else {
 	            newValue = this.getScope()[this.getKey()];
+
+                if(isNewValMultiple && !isCurrentValMultiple){
+                    newValue = [newValue];
+                }
+
+                if(isCurrentValMultiple && !isNewValMultiple){
+                    newValue = newValue[0];
+                }
+	        }
+
+            if(this.getScope().hasOwnProperty(this.getKey())){
+	            delete this.getScope()[this.getKey()];
+            }
+
+	        this._scope[newKey] = newValue;
+	    },
+        /*
+	    replaceValue: function(newKey, newValue){
+	        if(!JSB.isDefined(newValue)){
+	            newValue = this.getValues();
 	        }
 
 	        delete this.getScope()[this.getKey()];
 
 	        this._scope[newKey] = newValue;
 	    },
-
+	    */
         /**
         * Устанавливает новый контекст
         * @param {string} context - новый контекст

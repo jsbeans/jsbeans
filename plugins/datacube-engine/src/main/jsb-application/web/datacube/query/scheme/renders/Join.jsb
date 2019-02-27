@@ -64,7 +64,6 @@
 	            cssClass: 'firstField',
 	            onChange: function(value){
 	                curValue.first = {
-	                    //$context: values.$left,
 	                    $field: value,
 	                    $sourceContext: '$left'
 	                };
@@ -93,7 +92,6 @@
 	            cssClass: 'secondField',
 	            onChange: function(value){
 	                curValue.second = {
-	                    //$context: values.$right,
 	                    $field: value,
 	                    $sourceContext: '$right'
 	                };
