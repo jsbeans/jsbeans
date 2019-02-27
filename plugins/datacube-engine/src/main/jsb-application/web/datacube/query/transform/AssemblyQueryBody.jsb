@@ -132,6 +132,9 @@
 
 		selectBestSlice: function(slices, context, usedSliceFields, usedDimensions, cube){
 		    var matchedSlices = $this._filterMatchedSlices(slices, context, usedSliceFields, usedDimensions);
+		    if(Object.keys(slices).length == 1 && Object.keys(matchedSlices).length == 0) {
+		        matchedSlices = slices;
+		    }
 		    var bestSlice = $this._selectTheEasiestSlice(matchedSlices, cube);
 		    return bestSlice;
 		},
@@ -243,22 +246,22 @@
 		        }
             }
 
-		    QueryUtils.throwError(
-		        Object.keys(resultSlices).length > 0,
-		        "Не найдено подходящего среза cо всеми используемыми выходными полями: {}",
-		        (function(){
-		            var s = '';
-		            var a = {};
-                    for(var i = 0; i < usedSliceFields.length; i++) {
-                        var field = usedSliceFields[i];
-                        if(!a[field.$field]) {
-                            a[field.$field]=1;
-                            s += (i>0?', ':'') + field.$field;
-                        }
-                    }
-                    return s;
-		        })()
-            );
+//		    QueryUtils.throwError(
+//		        Object.keys(resultSlices).length > 0,
+//		        "Не найдено подходящего среза cо всеми используемыми выходными полями: {}",
+//		        (function(){
+//		            var s = '';
+//		            var a = {};
+//                    for(var i = 0; i < usedSliceFields.length; i++) {
+//                        var field = usedSliceFields[i];
+//                        if(!a[field.$field]) {
+//                            a[field.$field]=1;
+//                            s += (i>0?', ':'') + field.$field;
+//                        }
+//                    }
+//                    return s;
+//		        })()
+//            );
 		    return resultSlices;
 		},
 
