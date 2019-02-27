@@ -191,6 +191,8 @@
 				        }
 
 				        $this.showTool({
+                            allowOutputFields:  opts.allowOutputFields,
+                            allowSourceFields: opts.allowSourceFields,
 				            element: opts.element,
 				            key: opts.key,
 				            selectedId: opts.key,

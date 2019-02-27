@@ -235,7 +235,7 @@
 	        } else if(JSB.isObject(source)){
 	            callback.call(this, source.$select || {});
 	        } else if(JSB.isString(source)){
-                this.server().getSourceFields([source], function(res, fail){
+                this.server().getSourceFields([{id: source}], function(res, fail){
                     if(fail){
                         // todo: error
                         return;
@@ -254,13 +254,32 @@
 
 	        switch(this.getKey()){
 	            case '$from':
-	                sources = [values];
+	                sources = [{
+	                    id: values,
+	                    context: values
+	                }];
 	                break;
                 case '$join':
-                    sources = [values.$left, values.$right];
+                    sources = [
+                    {
+                        id: values.$left,
+                        context: values.$left,
+                        sourceContext: '$left'
+                    },
+                    {
+                        id: values.$right,
+                        context: values.$right,
+                        sourceContext: '$right'
+                    }
+                    ];
                     break;
                 case '$union':
-                    sources = values;
+                    for(var i = 0; i < values.length; i++){
+                        sources.push({
+                            id: values[i],
+                            context: values[i]
+                        });
+                    }
                     break;
 	        }
 
@@ -307,25 +326,24 @@
 	        return WorkspaceController.getEntryByFullId(id);
         },
 
-        getSourceFields: function(ids){
-            var sources = [];
+        getSourceFields: function(sources){
+            var result = [];
 
-            for(var i = 0; i < ids.length; i++){
+            for(var i = 0; i < sources.length; i++){
                 try{
-                    var entry = WorkspaceController.getEntryByFullId(ids[i]);
+                    var entry = WorkspaceController.getEntryByFullId(sources[i].id);
 
                     if(entry){
-                        sources.push({
-                            entry: entry,
-                            fields: entry.extractFields()
-                        });
+                        result.push(sources[i]);
+                        result[i].entry = entry;
+                        result[i].fields = entry.extractFields();
                     }
                 } catch(ex){
                     JSB.getLogger().error('DataCube.Query.Renders.Source: invalid entry full id.');
                 }
             }
 
-            return sources;
+            return result;
         }
     }
 }

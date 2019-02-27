@@ -31,6 +31,7 @@
 
 .queryItemList > .categories + .items {
     width: 70%;
+    max-height: inherit;
 }
 
 .queryItemList > .items {
@@ -40,7 +41,7 @@
 }
 
 .queryItemList > .items > .categoryItem {
-    max-height: 300px;
+    max-height: inherit;
 }
 
 .queryItemList > .items > .categoryItem:not(.selected) {
