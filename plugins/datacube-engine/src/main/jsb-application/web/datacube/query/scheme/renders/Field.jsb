@@ -19,7 +19,7 @@
 	        }
 
             this.installMenuEvents(this.getElement(), null, {
-                removable: false,
+                removable: this.isAllowDelete(),
                 editToolCallback: function(desc){
                     if(desc.category === 'Поля источника' || desc.category === 'Поля среза'){
                         var newVal = {
@@ -29,25 +29,45 @@
                         if(desc.sourceContext){
                             newVal.$sourceContext = sourceContext;
                         }
-
+/*
                         if(desc.category === 'Поля источника'){
                             newVal['$context'] = desc.context;
                         }
-
-                        $this.changeTo($this.getRenderName(), newVal);
+*/
+                        $this.changeTo(null, newVal);
                     } else {
-                        //
+                        $this.changeTo(desc.key);
                     }
                 }
             });
 	    },
 
-	    defineContext: function(){
-	        //
+	    getContext: function(){
+	        return this.getScope().$context;
 	    },
 
-	    getContext: function(){
-	        return this.getParent().getValues()['$context'];
+	    getSourceContext: function(){
+	        return this.getScope().$sourceContext;
+	    },
+
+	    replaceValue: function(newKey, newValue){
+	        if(!JSB.isDefined(newValue)){
+	            newValue = {
+	                $context: this.getContext(),
+	                $field: this.getValues(),
+	                $sourceContext: this.getSourceContext()
+	            };
+	        }
+
+	        delete this.getScope()[this.getKey()];
+	        delete this.getScope()['$context'];
+	        delete this.getScope()['$sourceContext'];
+
+            if(newKey === this.getKey()){
+                JSB.merge(this._scope, newValue);
+            } else {
+                $base(newKey, newValue);
+            }
 	    }
 	}
 }

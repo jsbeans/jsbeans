@@ -5,8 +5,7 @@
 	$alias: '$default',
 
 	$client: {
-	    $require: ['DataCube.Query.Syntax',
-	               'css:Default.css'],
+	    $require: ['css:Default.css'],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -16,6 +15,27 @@
 	        this.constructHead();
 
 	        this.constructValues();
+	    },
+
+	    // совместимость с некоторыми видами синтаксиса
+	    checkValues: function(){
+	        var curValues = this.getValues();
+
+	        if(this.isMultiple()){
+	            for(var i = 0; i < curValues.length; i++){
+	                if(JSB.isString(curValues[i])){
+	                    curValues[i] = {
+	                        $field: curValues[i]
+	                    }
+	                }
+	            }
+	        } else {
+                if(JSB.isString(curValues)){
+                    this.setValues({
+                        $field: curValues
+                    });
+                }
+	        }
 	    },
 
 	    constructHead: function(){
@@ -118,27 +138,6 @@
                     }
                 }
             }
-	    },
-
-	    replaceValue: function(newKey, newValue){
-	        if(!JSB.isDefined(newValue)){
-	            newValue = this.getScope()[this.getKey()];
-	        }
-
-            var isNewValMultiple = Syntax.getSchema(newKey).multiple,
-                isCurrentValMultiple = this.isMultiple();
-
-            if(isNewValMultiple && !isCurrentValMultiple){
-                newValue = [newValue];
-            }
-
-            if(isCurrentValMultiple && !isNewValMultiple){
-                newValue = newValue[0];
-            }
-
-	        delete this.getScope()[this.getKey()];
-
-	        this._scope[newKey] = newValue;
 	    }
 	}
 }

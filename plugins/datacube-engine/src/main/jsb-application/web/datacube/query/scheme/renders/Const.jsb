@@ -99,6 +99,24 @@
 	                $this.setValues(newVal);
 	            });
 	        });
+	    },
+
+	    checkValues: function(){
+	        var values = this.getValues();
+
+	        if(!(JSB.isString(values) || JSB.isNumber(values) || JSB.isBoolean(values) || JSB.isNull(values))){
+	            this.setValues(this.getDefaultValues());
+	        }
+	    },
+
+	    replaceValue: function(newKey, newValue){
+	        if(!JSB.isDefined(newValue)){
+	            newValue = {
+	                $const: this.getValues()
+	            }
+	        }
+
+	        $base(newKey, newValue);
 	    }
 	}
 }

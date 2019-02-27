@@ -51,7 +51,7 @@
                 for(var j = 0; j < values[i].length; j++){
                     var render = this.createRender({
                         index: j,
-                        key: values[i],
+                        key: i,
                         renderName: '$filterItem',
                         scope: this.getValues()
                     });

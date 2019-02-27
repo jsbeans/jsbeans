@@ -4,10 +4,8 @@
 	$client: {
 	    $require: ['JSB.Controls.Button',
 	               'JSB.Controls.ScrollBox',
-                   'DataCube.Query.QueryEditor',
                    'JSB.Widgets.PrimitiveEditor',
-                   'DataCube.Query.SchemeController',
-                   'JSB.Widgets.RendererRepository'],
+                   'DataCube.Query.SchemeController'],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -48,15 +46,8 @@
 			});
 			this.append(scrollBox);
 
-			this.newEditor = new SchemeController();
-			scrollBox.append(this.newEditor);
-
-			this.oldEditor = new QueryEditor({
-			    cssClass: 'queryEditor',
-			    editorView: this,
-			    mode: 'diagram'
-			});
-			scrollBox.append(this.oldEditor);
+			this.editor = new SchemeController();
+			scrollBox.append(this.editor);
 
 			this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(sender, msg, obj){
 			    $this.addClass('active');
@@ -93,73 +84,19 @@
 	        });
 	    },
 
-		// временная функция пока не полностью реализован новый редактор
-		collectQuery: function(){
-		    return JSB.merge({}, this.oldEditor.getValue(), this.newEditor.getValues());
-		},
-
-		getSourceFields: function(callback){
-            this.newEditor.getSourceFields(callback);
-		},
-
 	    update: function(data){
-            var sliceId = data.entry.getId(),
-                slices = data.slices,
-                sliceSelectOptions = [];
-
-            for(var i in slices){
-                if(sliceId === slices[i].getId()){
-                    continue;
-                }
-
-                sliceSelectOptions.push({
-                    entry: slices[i],
-                    key: i,
-                    value: RendererRepository.createRendererFor(slices[i], {showSource: true}).getElement()
-                });
-            }
-
             this.sliceName.setData(data.entry.getName());
 
             this.sliceData = data;
 
-            var slicedQuery = this.sliceQuery(data.entry.getQuery());
-
-            this.newEditor.refresh({
+            this.editor.refresh({
                 data: {
                     cubeFields: data.cubeFields,
                     cubeSlices: data.slices
                 },
                 slice: data.entry,
-                values: slicedQuery.newEditor
-            })
-
-            this.oldEditor.setOption('sliceId', sliceId);
-            this.oldEditor.setOption('cubeFields', data.cubeFields);
-            this.oldEditor.setOption('cubeSlices', slices);
-            this.oldEditor.setOption('sliceSelectOptions', sliceSelectOptions);
-
-            this.oldEditor.set(slicedQuery.oldEditor);
-	    },
-
-		// временная функция пока не полностью реализован новый редактор
-		sliceQuery: function(query){
-		    var slicedQuery = {
-		        newEditor: {},
-		        oldEditor: {}
-		    };
-
-		    var newKeys = ['$join', '$from', '$union', '$cube', '$provider'];
-
-		    for(var i in query){
-		        if(newKeys.indexOf(i) > -1){
-		            slicedQuery.newEditor[i] = query[i];
-		        } else {
-		            slicedQuery.oldEditor[i] = query[i];
-		        }
-		    }
-
-		    return slicedQuery;
-		}
+                values: data.entry.getQuery()
+            });
+	    }
 	}
 }

@@ -23,6 +23,8 @@
 
 	        this.addClass('sortItemRender');
 
+	        this.checkValues();
+
 	        var values = this.getScope()[this.getOption('index')];
 
             // выражение
@@ -62,13 +64,27 @@
 	            searchField: 'name',
 	            value: values.$type,
 	            onChange: function(val){
-	                values.$type = val;
+	                values.$type = Number(val);
 
 	                $this.onChange();
 	            }
 	        });
 
 	        dir.append(selectize);
+	    },
+
+	    checkValues: function(){
+	        var values = this.getScope()[this.getOption('index')],
+	            keys = Object.keys(values);
+
+	        if(keys.length === 1){
+	            this.getScope()[this.getOption('index')] = {
+	                $expr: {
+	                    $field: keys[0]
+	                },
+	                $type: values[keys[0]]
+	            }
+	        }
 	    }
 	}
 }
