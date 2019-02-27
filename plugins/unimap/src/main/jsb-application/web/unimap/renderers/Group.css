@@ -5,6 +5,8 @@
 
 .groupRender > .jsb-panel > .jsb-checkbox {
 	margin-right: 3px;
+	min-width: 16px;
+    min-height: 16px;
 }
 
 .groupRender.optional > .jsb-panel > .header {

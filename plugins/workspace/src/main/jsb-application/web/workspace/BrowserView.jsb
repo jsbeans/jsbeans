@@ -29,6 +29,7 @@
 			} else {
 				this.workspace = null;
 			}
+			this.server().setCurrentEntry(entry);
 			this.refresh();
 		},
 		
@@ -42,5 +43,8 @@
 	},
 	
 	$server: {
+		setCurrentEntry: function(entry){
+			this.publish('JSB.Workspace.BrowserView.setCurrentEntry', entry);
+		}
 	}
 }

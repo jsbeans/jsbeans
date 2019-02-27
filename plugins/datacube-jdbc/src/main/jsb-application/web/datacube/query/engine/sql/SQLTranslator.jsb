@@ -150,6 +150,10 @@
                     }, '\n');
                     sql += 'SELECT ' + (query.$distinct ? 'DISTINCT ' : '') + selectSql + ' FROM ';
                     sql += sqlSource;
+                    if ($this._markAfterSource) {
+                        sql += $this._markAfterSource;
+                        $this._markAfterSource = null;
+                    }
 
                     sql += $this._translatePart(' WHERE ', function(){
                         return $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, true));
@@ -177,6 +181,10 @@
                     }
                 } else {
                     sql += sqlSource;
+                    if ($this._markAfterSource) {
+                        sql += $this._markAfterSource;
+                        $this._markAfterSource = null;
+                    }
                 }
 
                 return sql;
@@ -527,7 +535,7 @@ debugger
                     return !ty ? exp : 'CAST(' + exp + ' AS ' + DataTypes.toVendor($this.vendor, dcQuery.$params[exp].$type) + ')';
                 } else {
                     // is field
-                    return this._translateField(exp, dcQuery.$context, useAlias, dcQuery.$context);
+                    return this._translateField(exp, dcQuery.$context, null, useAlias, dcQuery.$context);
                 }
             }
 
@@ -585,6 +593,7 @@ debugger
                         exp.$field,
                         // if context is not defined then use current
                         exp.$context || dcQuery.$context,
+                        exp.$sourceContext,
                         // if foreign context force use table field not alias
                         useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context,
                         dcQuery.$context
@@ -944,7 +953,7 @@ debugger
                     if (i > 0) sql += ', ';
                     var val = sort[i];
                     if (val.$expr && val.$type) {
-                    var key = val.$type < 0 ? ' DESC' : ' ASC';
+                        var key = val.$type < 0 ? ' DESC' : ' ASC';
                         sql += $this._translateExpression(val.$expr, query, true) + key;
                     } else {
                         var field = Object.keys(val)[0];
@@ -1129,6 +1138,14 @@ debugger
 		    function getQuery(ctx){
 		        return $this.contextQueries[ctx];
 		    }
+		    function findType(field) {
+                for(var i = 0; i < query.$union.length; i++) {
+                    var subQuery = query.$union[i];
+                    var type = QueryUtils.extractType(subQuery.$select[field], subQuery, $this.cube, getQuery);
+                    if(type) return type;
+                }
+                return null;
+		    }
             var usedFields = QueryUtils.extractInputFields(query);
 		    var sql = '';
 
@@ -1142,7 +1159,7 @@ debugger
 		            if (!fixedSubQuery.$select[field]) {
                         fixedSubQuery.$select[field] = {
                             $const: null,
-                            $type: QueryUtils.extractType(query.$select[field], query, $this.cube, getQuery),
+                            $type: findType(field),
                         };
                     }
                     fields.push(field);
@@ -1173,14 +1190,19 @@ debugger
 		    sql += 'WITH RECURSIVE ' + $this._quotedName($this._translateContext(query.$context)) + ' AS (';
 		    sql += wrapWithNewContext(query.$recursive.$start.$context, $this.translateQueryExpression(query.$recursive.$start, true));
 		    sql += ' UNION ALL ';
-		    sql += wrapWithNewContext(query.$recursive.$joinedNext.$context, $this.translateQueryExpression(query.$recursive.$joinedNext, true));
-		    QueryUtils.throwError(sql.endsWith(')'), 'Internal error: invalid SQL format in recursive query');
-		    sql = sql.substring(0, sql.length-1) + ' JOIN ' + $this._quotedName($this._translateContext(query.$context));
 		    try {
-		        $this._inRecursiveJoin = true;
-                sql += ' ON ' + $this._translateWhere(query, query.$recursive.$filter) + ')';
-            } finally {
-                delete $this._inRecursiveJoin;
+		        var xx = $this._markAfterSource = JSB.generateUid();
+		        sql += wrapWithNewContext(query.$recursive.$joinedNext.$context, $this.translateQueryExpression(query.$recursive.$joinedNext, true));
+            }finally{
+                var join = ' JOIN ' + $this._quotedName($this._translateContext(query.$context));
+                try {
+                    $this._inRecursiveJoin = true;
+                    join += ' ON ' + $this._translateWhere(query, query.$recursive.$filter);
+                } finally {
+                    delete $this._inRecursiveJoin;
+                }
+                sql = sql.replace(new RegExp(xx,'g'), join);
+                $this._markAfterSource = null;
             }
 		    sql += ') ';
 		    sql += 'SELECT * FROM ' + $this._quotedName($this._translateContext(query.$context));
@@ -1314,8 +1336,8 @@ debugger
 //            return '(' + sql + ')';
 //        },
 
-        _translateField: function(field, context, useAlias, callerContext) {
-            var sql = $this._translateFieldInternal(field, context, useAlias, callerContext);
+        _translateField: function(field, context, sourceContext, useAlias, callerContext) {
+            var sql = $this._translateFieldInternal(field, context, sourceContext, useAlias, callerContext);
             var query = $this.contextQueries[context];
 //            QueryUtils.logDebug(
 //                    '\t field={}\tcontext={}\tcaller={}\talias={}\tsource={}\tsql={}',
@@ -1323,46 +1345,25 @@ debugger
 //                    query.$from ? '$from' : query.$join ? '$join' : query.$union ? '$union' : query.$provider ? '$provider' : '',
 //                    sql
 ////            );
-//if (sql =='"Q2"."РЗПРЗ"'
-//) {
-//    debugger;
-//    $this._translateFieldInternal(field, context, useAlias, callerContext);
-//}
+if (sql== undefined
+) {
+    debugger;
+    $this._translateFieldInternal(field, context, sourceContext, useAlias, callerContext);
+}
             return sql;
         },
 
-        _translateFieldInternal: function(field, context, useAlias, callerContext) {
-            var query = $this.contextQueries[context];
-            QueryUtils.throwError(query, 'Query context is undefined: {}', context);
-
-            var callerQuery = $this.contextQueries[callerContext];
-            QueryUtils.throwError(callerQuery, 'Caller query context is undefined: {}', callerContext);
+        _translateFieldInternal: function(field, context, sourceContext, useAlias, callerContext) {
+            var targetQuery = $this.contextQueries[context];
+            QueryUtils.throwError(targetQuery, 'Query field context is undefined: {}', context);
 
             if (useAlias) {
-                for(var alias in query.$select) {
+                for(var alias in targetQuery.$select) {
                     if (alias == field) {
                         return $this._quotedName(field);
                     }
                 }
             }
-            /**
-            Тип источника:
-                1) $from
-                2) $join
-                3) $union
-                4) $recursive
-                5) $provider
-
-            Тип запроса:
-                1) обычный
-                2) сквозной
-
-            Контекст вызова:
-                1) текущий
-                2) внешний
-                    а) из подзапроса
-                    б) из join
-            */
 
             function translateSourceField(sourceQuery) {
                 if (!$this._isViewQuery(sourceQuery) && /*sourceQuery.$provider && */!QueryUtils.queryHasBody(sourceQuery)) {
@@ -1371,66 +1372,172 @@ debugger
                 return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);
             }
 
-            if (callerQuery.$join && (query == $this._getSourceQuery(callerQuery.$join.$left, callerQuery) || query == $this._getSourceQuery(callerQuery.$join.$right, callerQuery))
-                || callerQuery.$recursive && (query == $this._getSourceQuery(callerQuery.$recursive.$start, callerQuery) || query == $this._getSourceQuery(callerQuery.$recursive.$joinedNext, callerQuery))
-            ) {
-                /// is callerQuery field
-                if (query.$select[field]) {
-                    if (!$this._isViewQuery(query) && !QueryUtils.queryHasBody(query)) {
-                        return $this._translateExpression(query.$select[field], query);
-                    } else if($this._inRecursiveJoin) {
-                        return $this._translateExpression(query.$select[field], query);
-                    }
-
-                    return $this._quotedName($this._translateContext(query.$context)) + '.' + $this._quotedName(field);
-                }
-            }
-
-
-            if (query.$from) {
-                var sourceQuery = $this._getSourceQuery(query.$from, query);
-                /// is source field
+            if (targetQuery.$from) {
+                var sourceQuery = $this._getSourceQuery(targetQuery.$from, targetQuery);
                 if (sourceQuery.$select[field]) {
                     return translateSourceField(sourceQuery);
                 }
-
-            } else if (query.$join) {
-                /// is source field
-                var leftQuery = $this._getSourceQuery(query.$join.$left, query);
-                if (leftQuery.$select[field]) {
-                    return translateSourceField(leftQuery);
+                if($this._inRecursiveJoin) {
+                    return $this._translateExpression(targetQuery.$select[field], targetQuery);
                 }
-                var rightQuery = $this._getSourceQuery(query.$join.$right, query);
+                QueryUtils.throwError(0, 'Undefined field "{}" in "{}"', field, context);
+            } else if (targetQuery.$join) {
+
+                if (sourceContext) {
+                    if (targetQuery.$join.$left == sourceContext
+                        ||  JSB.isObject(targetQuery.$join.$left) && targetQuery.$join.$left.$context == sourceContext
+                    ) {
+                        var leftQuery = $this._getSourceQuery(targetQuery.$join.$left, targetQuery);
+                        if (leftQuery.$select[field]) {
+                            return translateSourceField(leftQuery);
+                        }
+                    }
+                    if (targetQuery.$join.$right == sourceContext
+                        ||  JSB.isObject(targetQuery.$join.$right) && targetQuery.$join.$right.$context == sourceContext
+                    ) {
+                        var rightQuery = $this._getSourceQuery(targetQuery.$join.$right, targetQuery);
+                        if (rightQuery.$select[field]) {
+                            return translateSourceField(rightQuery);
+                        }
+                    }
+                }
+                /// auto select field side
+                var leftQuery = $this._getSourceQuery(targetQuery.$join.$left, targetQuery);
+                if (targetQuery.$join.$joinType.indexOf('left') !== -1) {
+                    if (leftQuery.$select[field]) {
+                        return translateSourceField(leftQuery);
+                    }
+                }
+                var rightQuery = $this._getSourceQuery(targetQuery.$join.$right, targetQuery);
                 if (rightQuery.$select[field]) {
                     return translateSourceField(rightQuery);
                 }
+                if (targetQuery.$join.$joinType.indexOf('left') === -1) {
+                    if (leftQuery.$select[field]) {
+                        return translateSourceField(leftQuery);
+                    }
+                }
 
-            } else if (query.$union) {
+                QueryUtils.throwError(0, 'Undefined field "{}" in "{}"', field, context);
+
+            } else if (targetQuery.$union) {
                 return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
-            } else if (query.$provider) {
-
-                var provider = QueryUtils.getQueryDataProvider(query.$provider, $this.cube);
-
+            } else if (targetQuery.$provider) {
+                var provider = QueryUtils.getQueryDataProvider(targetQuery.$provider, $this.cube);
                 /// is source field (of provider)
                 var providerField = provider.extractFields()[field];
                 if (providerField) {
                     return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
                 }
-
-            } else if (query.$recursive) {
+                QueryUtils.throwError(0, 'Provider field "{}" is undefined in context', field, context);
+            } else if (targetQuery.$recursive) {
                 return $this._quotedName($this._translateContext(context)) + "." + $this._quotedName(field);
-            } else {
-                QueryUtils.throwError(false, 'Undefined source of query with context: {}', context);
             }
 
-            if (context != callerContext) {
-                return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
-            }
-
-            /// is alias
-            QueryUtils.throwError(context == callerContext, 'Field context not equals query context for field {}.{} (caller {})', context, field, callerContext);
-            return $this._quotedName(field);
+            //QueryUtils.throwError(0, 'Undefined source of query with context: {}', context);
+            return $this._quotedName(field); // try as is
         },
+
+//        _translateFieldInternal: function(field, context, sourceContext, useAlias, callerContext) {
+//            var query = $this.contextQueries[context];
+//            QueryUtils.throwError(query, 'Query context is undefined: {}', context);
+//
+//            var callerQuery = $this.contextQueries[callerContext];
+//            QueryUtils.throwError(callerQuery, 'Caller query context is undefined: {}', callerContext);
+//
+//            if (useAlias) {
+//                for(var alias in query.$select) {
+//                    if (alias == field) {
+//                        return $this._quotedName(field);
+//                    }
+//                }
+//            }
+//            /**
+//            Тип источника:
+//                1) $from
+//                2) $join
+//                3) $union
+//                4) $recursive
+//                5) $provider
+//
+//            Тип запроса:
+//                1) обычный
+//                2) сквозной
+//
+//            Контекст вызова:
+//                1) текущий
+//                2) внешний
+//                    а) из подзапроса
+//                    б) из join
+//            */
+//
+//            function translateSourceField(sourceQuery) {
+//                if (!$this._isViewQuery(sourceQuery) && /*sourceQuery.$provider && */!QueryUtils.queryHasBody(sourceQuery)) {
+//                    return $this._translateExpression(sourceQuery.$select[field], sourceQuery);
+//                }
+//                return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);
+//            }
+//
+//            if (callerQuery.$join && (query == $this._getSourceQuery(callerQuery.$join.$left, callerQuery) || query == $this._getSourceQuery(callerQuery.$join.$right, callerQuery))
+//                || callerQuery.$recursive && (query == $this._getSourceQuery(callerQuery.$recursive.$start, callerQuery) || query == $this._getSourceQuery(callerQuery.$recursive.$joinedNext, callerQuery))
+//            ) {
+//                /// is callerQuery field
+//                if (query.$select[field]) {
+//                    if (!$this._isViewQuery(query) && !QueryUtils.queryHasBody(query)) {
+//                        return $this._translateExpression(query.$select[field], query);
+//                    } else if($this._inRecursiveJoin) {
+//                        return $this._translateExpression(query.$select[field], query);
+//                    }
+//
+//                    return $this._quotedName($this._translateContext(query.$context)) + '.' + $this._quotedName(field);
+//                }
+//            }
+//
+//
+//            if (query.$from) {
+//                var sourceQuery = $this._getSourceQuery(query.$from, query);
+//                /// is source field
+//                if (sourceQuery.$select[field]) {
+//                    return translateSourceField(sourceQuery);
+//                }
+//
+//            } else if (query.$join) {
+//                /// is source field
+//                var leftQuery = $this._getSourceQuery(query.$join.$left, query);
+//                if (leftQuery.$select[field]) {
+//                    return translateSourceField(leftQuery);
+//                }
+//                var rightQuery = $this._getSourceQuery(query.$join.$right, query);
+//                if (rightQuery.$select[field]) {
+//                    return translateSourceField(rightQuery);
+//                }
+//
+//            } else if (query.$union) {
+//                return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
+//            } else if (query.$provider) {
+//
+//                var provider = QueryUtils.getQueryDataProvider(query.$provider, $this.cube);
+//
+//                /// is source field (of provider)
+//                var providerField = provider.extractFields()[field];
+//                if (providerField) {
+//                    return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
+//                }
+//
+//            } else if (query.$recursive) {
+//                return $this._quotedName($this._translateContext(context)) + "." + $this._quotedName(field);
+//            } else {
+//                QueryUtils.throwError(false, 'Undefined source of query with context: {}', context);
+//            }
+//
+//            if (context != callerContext) {
+//                return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
+//            }
+//
+//            /// is alias
+//            QueryUtils.throwError(context == callerContext, 'Field context not equals query context for field {}.{} (caller {})', context, field, callerContext);
+//            return $this._quotedName(field);
+//        },
 
 //        _translateFieldInternal: function(field, context, useAlias, callerContext) {
 //            var query = $this.contextQueries[context];

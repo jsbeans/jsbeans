@@ -23,6 +23,8 @@
 	    	    params: params,
 	    	    cube: this,
 	    	});
-		},
+		}
+		
+		
 	}
 }

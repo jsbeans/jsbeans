@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.10 | jsbeans.org | (c) 2011-2019 Special Information Systems, LLC */
+/*! jsBeans v2.6.11 | jsbeans.org | (c) 2011-2019 Special Information Systems, LLC */
 if(!(function(){return this;}).call(null).JSB){
 (function(){
 	
@@ -5050,9 +5050,13 @@ JSB({
 	items: {},
 	loadList: {},
 	pathMapIndex: {},
+	stages: [],
 	
 	$constructor: function(){
 		JSB().setRepository(this);
+		JSB().onLoad(function(){
+			$this.checkCompleteStage(this);
+		});
 	},
 	
 	ensureLoaded: function(callback){
@@ -5126,9 +5130,17 @@ JSB({
 	load: function(stage){
 		var locker = JSB().getLocker();
 		var loadArr = Object.keys(this.loadList);
+		if(locker)locker.lock('_jsb_repo_stages');
+		this.stages[stage] = {};
+		for(var i = 0; i < loadArr.length; i++){
+			this.stages[stage][loadArr[i]] = true;
+		}
+		if(locker)locker.unlock('_jsb_repo_stages');
+		
 		for(var i = 0; i < loadArr.length; i++){
 			var name = loadArr[i];
 			var entry = this.items[name];
+			entry.stage = stage;
 			var cfg = entry.cfg;
 			// do load
 			JSB(cfg);
@@ -5137,7 +5149,25 @@ JSB({
 			delete this.loadList[name];
 			if(locker)locker.unlock('_jsb_repo');
 		}
-		this.setTrigger('loaded', stage);
+		
+	},
+	
+	checkCompleteStage: function(jsbObj){
+		var name = jsbObj.getDescriptor().$name;
+		var entry = this.items[name];
+		if(!entry){
+			return;
+		}
+		var stage = entry.stage;
+		if(this.stages[stage] && this.stages[stage][name]){
+			var locker = JSB().getLocker();
+			if(locker)locker.lock('_jsb_repo_stages');
+			delete this.stages[stage][name];
+			if(locker)locker.unlock('_jsb_repo_stages');
+			if(Object.keys(this.stages[stage]).length == 0){
+				this.setTrigger('loaded', stage);
+			}
+		}
 	},
 	
 	get: function(name){
