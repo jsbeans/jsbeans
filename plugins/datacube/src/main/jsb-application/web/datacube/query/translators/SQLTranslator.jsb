@@ -1133,6 +1133,8 @@
                         switch($this.vendor) {
                             case 'PostgreSQL':
                                 sqlOp = ' ~~* '; break;
+                            case 'ClickHouse':
+                                return 'lowerUTF8(' + $this._translateExpression(operands[0], query)+ ' LIKE lowerUTF8(' + $this._translateExpression(operands[1], query) + ') ';
                             default:
                                 sqlOp = ' LIKE ';
                         }
