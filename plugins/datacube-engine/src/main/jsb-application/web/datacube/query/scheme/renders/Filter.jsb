@@ -5,81 +5,94 @@
 	$alias: '$filter',
 
 	$client: {
+	    $require: ['DataCube.Query.Syntax',
+	               'JSB.Widgets.ToolManager',
+                   'DataCube.Query.SimpleSelectTool'],
+
 	    $constructor: function(opts){
+	        var syntax = Syntax.getSchema();
+
+	        for(var i in syntax){
+	            if(syntax[i].category === 'Логические операторы'){
+	                this._menuItems.push(JSB.merge({}, syntax[i], {key: i}));
+	            }
+	        }
+
 	        $base(opts);
 
 	        this.addClass('filterRender');
 	    },
 
-        /**
-        *
-        * Добавляет новое значение
-        * @param {string} key - логический ключ нового элемента: $and, $or, $not
-        * @param {object} value - значение, подходящее под логический рендер
-        *
-        * @return {number} индекс нового элемента
-        */
-	    addValue: function(key, value){
-	        var values = this.getValues();
+	    _menuItems: [],
 
-	        if(!values[key]){
-	            values[key] = [];
-	        }
+	    createAddButton: function(){
+            this.addBtn = this.$('<i class="addBtn"></i>');
+            this.append(this.addBtn);
+            this.addBtn.click(function(){
+                ToolManager.activate({
+                    id: 'simpleSelectTool',
+                    cmd: 'show',
+                    data: {
+                        key: JSB.generateUid(),
+                        values: $this._menuItems
+                    },
+                    scope: null,
+                    target: {
+                        selector: $this.getElement(),
+                        dock: 'bottom'
+                    },
+                    callback: function(desc){
+                        var render = $this.createRender({
+                            key: desc.key,
+                            scope: $this.getValues()
+                        });
 
-	        return values[key].push(value) - 1;
+                        if(render){
+                            $this.addBtn.before(render);
+
+                            $this.updateMenuItems();
+
+                            $this.onChange();
+                        }
+                    }
+                });
+            });
 	    },
 
-        /**
-        *
-        * Меняет логический тип значения
-        * @param {string} oldKey - старый логический ключ
-        * @param {string} newKey - новый логический ключ
-        * @param {number} index - индекс старого логического элемента
-        *
-        * @return {number} новый индекс логического элемента
-        */
-	    changeLogicType: function(oldKey, newKey, index){
-            var value = this.getValues()[oldKey].splice(index, 1)[0];
+	    createRender: function(options, parent){
+	        JSB.merge(options, {
+	            // todo: change only to logic
+	            allowDelete: true,
+	            deleteCallback: function(){
+	                $this._menuItems.push(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
 
-            return this.addValue(newKey, value);
+	                this.remove();
+
+	                $this.updateMenuItems();
+
+	                $this.onChange();
+	            }
+	        });
+
+	        return $base(options, parent);
 	    },
 
-	    constructValues: function(){
-            var values = this.getValues();
+	    updateMenuItems: function(){
+	        for(var i in this.getValues()){
+                for(var j = 0; j < this._menuItems.length; j++){
+                    if(this._menuItems[j].key === i){
+                        this._menuItems.splice(j, 1);
 
-            for(var i in values){
-                for(var j = 0; j < values[i].length; j++){
-                    var render = this.createRender({
-                        index: j,
-                        key: i,
-                        renderName: '$filterItem',
-                        scope: this.getValues()
-                    });
-
-                    if(render){
-                        this.append(render);
+                        break;
                     }
                 }
+	        }
+
+            if($this._menuItems.length === 0){
+                this.addBtn.addClass('hidden');
+            } else {
+                this.addBtn.removeClass('hidden');
             }
-
-            var addBtn = this.$('<i class="addBtn"></i>');
-            this.append(addBtn);
-            addBtn.click(function(){
-                var index = $this.addValue('$and', $this.getDefaultAddValues());    // {$eq: [{$const: 0}, {$const: 0}]}
-
-                var render = $this.createRender({
-                    index: index,
-                    key: '$and',
-                    renderName: '$filterItem',
-                    scope: $this.getValues()
-                });
-
-                if(render){
-                    addBtn.before(render);
-
-                    $this.onChange();
-                }
-            });
 	    }
 	}
 }

@@ -68,7 +68,7 @@
         * @param {*} [newValue] - новое значение. Если не указано, то берётся старое значение
         * @param {string} [context] - контекст. Не добавляется, если не указан
         */
-	    changeTo: function(newKey, newValue, context){
+	    changeTo: function(newKey, newValue, context, menuOpts){
 	        if(JSB.isNull(newKey)){
 	            newKey = this.getKey();
 	        }
@@ -81,6 +81,9 @@
 
 	        var render = this.createRender({
 	            key: newKey,
+                allowDelete: menuOpts && menuOpts.removable,
+                deleteCallback: this.getDeleteCallback(),
+                replaceable: menuOpts && menuOpts.replaceable,
 	            scope: this.getScope()
 	        }, this.getParent());
 
@@ -371,6 +374,10 @@
         */
 	    isMultiple: function(){
 	        return this.getScheme().multiple;
+	    },
+
+	    isSortable: function(){
+	        return JSB.isDefined(this.getScheme().sortable) ? this.getScheme().sortable : true;
 	    },
 
         /**

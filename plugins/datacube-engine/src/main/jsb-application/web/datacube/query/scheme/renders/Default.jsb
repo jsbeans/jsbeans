@@ -15,6 +15,10 @@
 	        this.constructHead();
 
 	        this.constructValues();
+
+	        if(this.isMultiple() && !this.isFixedFieldCount()){
+	            this.createAddButton();
+            }
 	    },
 
 	    // совместимость с некоторыми видами синтаксиса
@@ -58,43 +62,9 @@
 	    constructValues: function(){
 	        var values = this.getValues();
 
-            function createItem(index, hideChangeEvt){
-                var item = $this.$('<div class="variable" idx="' + index + '"></div>');
-
-                var sortableHandle = $this.$(`
-                    <div class="sortableHandle">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                `);
-                item.append(sortableHandle);
-
-                variables.append(item);
-
-                for(var j in values[index]){
-                    var render = $this.createRender({
-                        allowDelete: true,
-                        deleteCallback: function(){
-                            $this.removeItem(variables.find('> .variable'), item);
-                        },
-                        key: j,
-                        scope: values[index]
-                    });
-
-                    if(render){
-                        item.append(render);
-                    }
-                }
-
-                if(!hideChangeEvt){
-                    $this.onChange();
-                }
-            }
-
             if(this.isMultiple()){
-                var variables = this.$('<div class="variables"></div>');
-                this.append(variables);
+                this.variables = this.$('<div class="variables"></div>');
+                this.append(this.variables);
 
                 if(this.isFixedFieldCount()){
                     for(var i = 0; i < this.isFixedFieldCount(); i++){
@@ -102,28 +72,20 @@
                             values[i] = this.getDefaultAddValues();
                         }
 
-                        createItem(i, true);
+                        this.createItem(i, true);
                     }
                 } else {
                     for(var i = 0; i < values.length; i++){
-                        createItem(i, true);
+                        this.createItem(i, true);
                     }
                 }
 
-                variables.sortable({
-                    handle: '.sortableHandle',
-                    update: function(){
-                        $this.reorderValues(variables.find('> .variable'));
-                    }
-                });
-
-                if(!this.isFixedFieldCount()){
-                    var addBtn = this.$('<i class="addBtn"></i>');
-                    this.append(addBtn);
-                    addBtn.click(function(){
-                        var index = $this.getValues().push($this.getDefaultAddValues()) - 1;
-
-                        createItem(index);
+                if(this.isSortable()){
+                    this.variables.sortable({
+                        handle: '.sortableHandle',
+                        update: function(){
+                            $this.reorderValues($this.variables.find('> .variable'));
+                        }
                     });
                 }
             } else {
@@ -137,6 +99,53 @@
                         this.append(render);
                     }
                 }
+            }
+	    },
+
+	    createAddButton: function(){
+            var addBtn = this.$('<i class="addBtn"></i>');
+            this.append(addBtn);
+            addBtn.click(function(){
+                var index = $this.getValues().push($this.getDefaultAddValues()) - 1;
+
+                $this.createItem(index);
+            });
+	    },
+
+	    createItem: function(index, hideChangeEvt){
+	        var values = this.getValues(),
+	            item = this.$('<div class="variable" idx="' + index + '"></div>');
+
+            if(this.isSortable()){
+                var sortableHandle = $this.$(`
+                    <div class="sortableHandle">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                `);
+                item.append(sortableHandle);
+            }
+
+            this.variables.append(item);
+
+            for(var j in values[index]){
+                var render = $this.createRender({
+                    allowDelete: !this.isFixedFieldCount(),
+                    deleteCallback: function(){
+                        $this.removeItem($this.variables.find('> .variable'), item);
+                    },
+                    key: j,
+                    scope: values[index]
+                });
+
+                if(render){
+                    item.append(render);
+                }
+            }
+
+            if(!hideChangeEvt){
+                this.onChange();
             }
 	    }
 	}

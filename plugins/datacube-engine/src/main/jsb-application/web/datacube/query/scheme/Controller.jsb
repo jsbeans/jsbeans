@@ -201,7 +201,7 @@
 				                if(opts.editToolCallback){
 				                    opts.editToolCallback.call($this, desc);
 				                } else {
-				                    opts.caller.changeTo(desc.key, desc.value, desc.context);
+				                    opts.caller.changeTo(desc.key, desc.value, desc.context, opts);
 				                }
 				            }
 				        });

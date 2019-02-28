@@ -54,17 +54,25 @@
                                         newVal = curVal;
                                     }
 
-                                    $this.createInput(newVal, 'number');
+                                    value.text(newVal);
+
+                                    $this.createInput(value, 'number', function(val){
+                                        $this.setValues(val);
+                                    });
                                     break;
                                 case 'string':
                                     var curVal = $this.getValues(),
-                                        newVal = '';
+                                        newVal = '""';
 
                                     if(typeof curVal === 'string'){
-                                        newVal = curVal;
+                                        newVal = '"' + curVal + '"';
                                     }
 
-                                    $this.createInput(newVal, 'text');
+                                    value.text(newVal);
+
+                                    $this.createInput(value, 'text', function(val){
+                                        $this.setValues(val);
+                                    });
                                     break;
                                 case 'boolTrue':
                                     $this.setValues(true);

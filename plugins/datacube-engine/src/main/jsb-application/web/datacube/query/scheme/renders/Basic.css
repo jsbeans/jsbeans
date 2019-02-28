@@ -47,6 +47,10 @@
     font-size: 14px;
 }
 
+.basicQueryRender .operator:hover {
+    text-shadow: 0px 0px 1px #a0b9ce;
+}
+
 .basicQueryRender .sortableHandle {
     position: absolute;
     top: 0;

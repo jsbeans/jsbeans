@@ -32,7 +32,7 @@
 	    '$const', '$distinct'//, '$query'
 	    // test
 	    ],
-	    ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike']
+	    ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike', '$and', '$or', '$not']
 	],
 
 	scheme: {
@@ -675,15 +675,14 @@
 	    },
 
 	    // logic
-	    /*
 	    $and: {
 	        render: '$default',
 	        category: 'Логические операторы',
 	        displayName: 'И',
 	        desc: 'Логический оператор "И"',
 	        multiple: true,
-	        defaultAddValues: {$const: 0},
-	        defaultValues: [{$const: 0},{$const: 0}]
+	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
 	    },
 
 	    $or: {
@@ -692,8 +691,8 @@
 	        displayName: 'ИЛИ',
 	        desc: 'Логический оператор "ИЛИ"',
 	        multiple: true,
-	        defaultAddValues: {$const: 0},
-	        defaultValues: [{$const: 0},{$const: 0}]
+	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
 	    },
 
 	    $not: {
@@ -702,96 +701,103 @@
 	        displayName: 'НЕ',
 	        desc: 'Логический оператор "НЕ"',
 	        multiple: true,
-	        defaultAddValues: {$const: 0},
-	        defaultValues: [{$const: 0},{$const: 0}]
+	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
 	    },
-	    */
 
 	    // comparison operators
 	    $eq: {
-	        render: '$comparison',
+	        render: '$default',
 	        category: 'Операторы сравнения',
 	        displayName: '=',
 	        desc: 'Равно',
 	        multiple: true,
 	        fixedFieldCount: 2,
+	        sortable: false,
 	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
 	    $ne: {
-	        render: '$comparison',
+	        render: '$default',
 	        category: 'Операторы сравнения',
 	        displayName: '&ne;',
 	        desc: 'Не равно',
 	        multiple: true,
 	        fixedFieldCount: 2,
+	        sortable: false,
 	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
 	    $gt: {
-	        render: '$comparison',
+	        render: '$default',
 	        category: 'Операторы сравнения',
 	        displayName: '&gt;',
 	        desc: 'Больше',
 	        multiple: true,
 	        fixedFieldCount: 2,
+	        sortable: false,
 	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
 	    $gte: {
-	        render: '$comparison',
+	        render: '$default',
 	        category: 'Операторы сравнения',
 	        displayName: '&ge;',
 	        desc: 'Больше либо равно',
 	        multiple: true,
 	        fixedFieldCount: 2,
+	        sortable: false,
 	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
 	    $lt: {
-	        render: '$comparison',
+	        render: '$default',
 	        category: 'Операторы сравнения',
 	        displayName: '&lt;',
 	        desc: 'Меньше',
 	        multiple: true,
 	        fixedFieldCount: 2,
+	        sortable: false,
 	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
 	    $lte: {
-	        render: '$comparison',
+	        render: '$default',
 	        category: 'Операторы сравнения',
 	        displayName: '&le;',
 	        desc: 'Меньше либо равно',
 	        multiple: true,
 	        fixedFieldCount: 2,
+	        sortable: false,
 	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
 	    $like: {
-	        render: '$comparison',
+	        render: '$default',
 	        category: 'Операторы сравнения',
 	        displayName: '&asymp;',
 	        desc: 'Поиск по выражению LIKE (используйте % для задания любой подстроки и ? любого символа)',
 	        multiple: true,
 	        fixedFieldCount: 2,
+	        sortable: false,
 	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
 
 	    $ilike: {
-	        render: '$comparison',
+	        render: '$default',
 	        category: 'Операторы сравнения',
 	        displayName: '&sim;',
 	        desc: 'Поиск по выражению LIKE без учета регистра (используйте % для задания любой подстроки и ? любого символа)',
 	        multiple: true,
 	        fixedFieldCount: 2,
+	        sortable: false,
 	        defaultAddValues: {$const: 0},
 	        defaultValues: [{$const: 0},{$const: 0}]
 	    },
@@ -844,10 +850,6 @@
     ensureReady: function(callback){
         this.ensureTrigger('ready', callback);
     },
-
-	getLogicReplacements: function(key){
-	    return this._logicReplacements[key];
-	},
 
     /**
     * Возвращает список ключей, на которые можно заменить указанный ключ
@@ -909,36 +911,6 @@
 	$server: {
         $constructor: function(){
             $base();
-
-            var logic = [
-            {
-                 key: '$and',
-                 displayName: 'И',
-                 desc: 'Логическое И'
-            },
-            {
-                 key: '$or',
-                 displayName: 'ИЛИ',
-                 desc: 'Логическое ИЛИ'
-            },
-            {
-                 key: '$not',
-                 displayName: 'НЕ',
-                 desc: 'Логическое НЕ'
-            }];
-
-            // create logic replacements
-            for(var i = 0; i < logic.length; i++){
-                if(!this._logicReplacements[logic[i].key]){
-                    this._logicReplacements[logic[i].key] = [];
-                }
-
-                for(var j = 0; j < logic.length; j++){
-                    if(logic[i].key !== logic[j].key){
-                        this._logicReplacements[logic[i].key].push(logic[j]);
-                    }
-                }
-            }
 
             // create replacement map
             for(var i = 0; i < this.replacements.length; i++){
