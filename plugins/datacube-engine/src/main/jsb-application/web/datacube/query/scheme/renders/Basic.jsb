@@ -15,8 +15,8 @@
 	    * @see DataCube.Query.SchemeController.createRender
 	    *
 	    * @param {boolean} [opts.allowDelete] - возможность удаления. Если не задана, то false
-        * @param {boolean} [opts._allowOutputFields] - можно ли дочерним элементам использовать поля текущего запроса. Если не задана, то true
-	    * @param {boolean} [opts._allowSourceFields] - можно ли дочерним элементам использовать поля источника. Если не задана, то true
+        * @param {boolean} [opts.allowOutputFields] - можно ли дочерним элементам использовать поля текущего запроса. Если не задана, то true
+	    * @param {boolean} [opts.allowSourceFields] - можно ли дочерним элементам использовать поля источника. Если не задана, то true
 	    * @param {object} opts.controller - контроллер схемы
 	    * @param {function} [opts.deleteCallback] - функция обратного вызова, если задана возможность удаления
 	    * @param {string} opts.key - ключ запроса
@@ -68,7 +68,7 @@
         * @param {*} [newValue] - новое значение. Если не указано, то берётся старое значение
         * @param {string} [context] - контекст. Не добавляется, если не указан
         */
-	    changeTo: function(newKey, newValue, context, menuOpts){
+	    changeTo: function(newKey, newValue, context){
 	        if(JSB.isNull(newKey)){
 	            newKey = this.getKey();
 	        }
@@ -80,10 +80,13 @@
 	        }
 
 	        var render = this.createRender({
-	            key: newKey,
-                allowDelete: menuOpts && menuOpts.removable,
+	            // поля, заданные родителем
+                allowOutputFields: this.isAllowOutputFields(),
+                allowSourceFields: this.isAllowSourceFields(),
+                allowDelete: this.isAllowDelete(),
                 deleteCallback: this.getDeleteCallback(),
-                replaceable: menuOpts && menuOpts.replaceable,
+
+	            key: newKey,
 	            scope: this.getScope()
 	        }, this.getParent());
 
@@ -104,17 +107,17 @@
         /**
         * Создаёт заголовок
         * @param {boolean} [hasMenu] - создавать меню при наведении
-        * @param {string} [id] - идентификатор для всплывающего меню
-        * @param {object} [menuOpts] - опции для всплывающего меню
         */
-	    createHeader: function(hasMenu, id, menuOpts){
+	    createHeader: function(hasMenu){
             var header = this.$('<header>' + this._scheme.displayName + '</header>');
             this.append(header);
 
             var scheme = this.getScheme();
 
             if(hasMenu){
-                this.installMenuEvents(header, id, menuOpts);
+                this.installMenuEvents({
+                    element: header
+                });
             }
 
 	        return header;
@@ -127,7 +130,7 @@
         * @param {function} callback - функция, которая вызывается при изменении значения
         */
 	    createInput: function(valueEl, type, callback){
-            var oldValue = valueEl.text().replace(/"/g, ''),
+            var oldValue = valueEl.text().replace(new RegExp('^"|"$', 'g'), ''),
                 input = this.$('<input class="inputEditor" value="' + oldValue + '" />'); //  type="' + (type || 'text') + '" todo
 
             valueEl.append(input);
@@ -303,7 +306,7 @@
         * @return {object} объект схемы
         */
 	    getScheme: function(){
-	        return this._scheme;
+	        return this._scheme || {};
 	    },
 
         /**
@@ -341,7 +344,7 @@
         * @return {boolean} флаг возможности удаления
         */
 	    isAllowDelete: function(){
-	        return this._allowDelete;
+	        return JSB.isDefined(this._allowDelete) ? this._allowDelete : this.getScheme().removable;
 	    },
 
         /**
@@ -382,20 +385,18 @@
 
         /**
         * Прикрепляет к элементу всплывающее меню
-        * @param {jQuery} element - элемент, над которым появится меню
-        * @param {string} [id] - уникальный идентификатор меню. Если не указан, то берётся id текущего бина
-        * @param {object} [menuOpts] - список опций @see showMenu
+        * @param {jQuery} menuOpts - опции для меню @see showMenu
         */
-	    installMenuEvents: function(element, id, menuOpts){
-	        id = id || this.getId();
+	    installMenuEvents: function(menuOpts){
+	        var id = menuOpts.id || this.getId();
 
-            element.hover(function(evt){
+            menuOpts.element.hover(function(evt){
                 evt.stopPropagation();
 
                 JSB.cancelDefer('DataCube.Query.hideMenu' + id);
 
                 JSB.defer(function(){
-                    $this.showMenu(element, id, menuOpts);
+                    $this.showMenu(menuOpts);
                 }, 300, 'DataCube.Query.showMenu' + id);
             }, function(evt){
                 evt.stopPropagation();
@@ -403,7 +404,7 @@
                 JSB.cancelDefer('DataCube.Query.showMenu' + id);
 
                 JSB.defer(function(){
-                    $this.hideMenu(element, id, menuOpts);
+                    $this.hideMenu(menuOpts);
                 }, 300, 'DataCube.Query.hideMenu' + id);
             });
 	    },
@@ -497,17 +498,7 @@
 
 	        this._scope[newKey] = newValue;
 	    },
-        /*
-	    replaceValue: function(newKey, newValue){
-	        if(!JSB.isDefined(newValue)){
-	            newValue = this.getValues();
-	        }
 
-	        delete this.getScope()[this.getKey()];
-
-	        this._scope[newKey] = newValue;
-	    },
-	    */
         /**
         * Устанавливает новый контекст
         * @param {string} context - новый контекст
@@ -534,34 +525,44 @@
 
         /**
         * Отображает меню с кнопками редактирования и удаления
-        * @param {jQuery} element - элемент, над которым появится меню
-        * @param {string} [id] - уникальный идентификатор меню. Если не указан, то берётся id текущего бина
-        * @param {object} [opts] - список опций
-        * @param {boolean} [opts.removable] - отображение кнопки удаления
-        * @param {boolean} [opts.replaceable] - отображение кнопки редактирования
+        * @param {object} options - объект с опциями для показа меню
+        * @param {jQuery} options.element - элемент jQuery, к которому будут привязаны меню и тултип
+        * @param {string} [options.id] - уникальный идентификатор меню. Если не указан, то берётся id текущего бина
+        *
+        * @param {boolean} [opts.remove] - отображение кнопки удаления
+        * @param {boolean} [opts.edit] - отображение кнопки редактирования
+        *
         * @param {function} [opts.editCallback] - функция обратного вызова при нажатии кнопки редактирования
         * @param {function} [opts.deleteCallback] - функция обратного вызова при нажатии кнопки удаления
         * @param {function} [opts.editToolCallback] - функция обратного вызова при выборе нового элемента в окне редактирования
         */
-	    showMenu: function(element, id, opts){
-	        opts = opts || {};
+	    showMenu: function(options){
+	        options = options || {};
 
 	        return this.getController().showMenu(JSB.merge({
-	            allowOutputFields:  this.isAllowOutputFields(),
-	            allowSourceFields: this.isAllowSourceFields(),
 	            caller: this,
-	            element: element,
-	            elementId: id || this.getId(),
+	            id: this.getId(),
 	            key: this.getKey(),
-	            removable: JSB.isDefined(opts.removable) ? opts.removable : this.getScheme().removable,
-	            replaceable: JSB.isDefined(opts.replaceable) ? opts.replaceable : this.getScheme().replaceable
-	        }, opts));
+
+	            // buttons
+	            edit: this.getScheme().replaceable,
+	            remove: this.isAllowDelete(),
+
+	            // callbacks
+	            deleteCallback: this.getDeleteCallback()
+	        }, options));
 	    },
 
-	    showTool: function(opts){   //element, selectedId, callback
-	        return this.getController().showTool(JSB.merge(opts, {
-	            key: opts.key || this.getKey()
-	        }));
+        /**
+        * Отображает тултип в заменами для элемента
+        * @param {object} options - объект с опциями для показа тултипа
+        * @param {jQuery} options.element - элемент jQuery, к которому будут привязан тултип
+        * @param {function} options.callback - функция обратного вызова при выборе нового элемента
+        */
+	    showTool: function(options){
+	        return this.getController().showTool(JSB.merge({
+	            key: this.getKey()
+	        }, options));
 	    }
 	},
 

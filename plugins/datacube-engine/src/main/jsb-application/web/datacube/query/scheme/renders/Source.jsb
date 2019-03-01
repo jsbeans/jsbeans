@@ -17,7 +17,7 @@
             var header = this.$('<header>' + this._scheme.category + ': ' + this._scheme.displayName + '</header>');
             this.append(header);
 
-            this.installMenuEvents(header);
+            this.installMenuEvents({ element: header });
 
             this.construct();
         },

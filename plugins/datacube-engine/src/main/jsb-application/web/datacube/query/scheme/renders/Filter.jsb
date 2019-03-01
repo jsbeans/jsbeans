@@ -10,12 +10,10 @@
                    'DataCube.Query.SimpleSelectTool'],
 
 	    $constructor: function(opts){
-	        var syntax = Syntax.getSchema();
+	        var replacements = Syntax.getReplacementGroup('$filter');
 
-	        for(var i in syntax){
-	            if(syntax[i].category === 'Логические операторы'){
-	                this._menuItems.push(JSB.merge({}, syntax[i], {key: i}));
-	            }
+	        for(var i = 0; i < replacements.length; i++){
+	            this._menuItems.push(JSB.merge({}, Syntax.getSchema(replacements[i]), {key: replacements[i]}));
 	        }
 
 	        $base(opts);

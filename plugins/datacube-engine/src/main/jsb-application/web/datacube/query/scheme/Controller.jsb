@@ -161,8 +161,10 @@
 
         showMenu: function(opts){
             if(this._menu){
-                if(this._menu.getTool().getElementId() === opts.elementId){
-                    return;
+                if(this._menu.getTool().getElementId() === opts.id){
+                    if(this._menu.isVisible()){
+                        return;
+                    }
                 } else {
                     this._menu.close();
                 }
@@ -171,12 +173,7 @@
 			this._menu = ToolManager.activate({
 				id: 'queryMenuTool',
 				cmd: 'show',
-				data: {
-				    controller: this,
-				    elementId: opts.elementId,
-				    removable: opts.removable,
-				    replaceable: opts.replaceable
-				},
+				data: opts,
 				scope: null,
 				target: {
 					selector: opts.element,
@@ -190,13 +187,7 @@
 				            return;
 				        }
 
-				        $this.showTool({
-                            allowOutputFields:  opts.allowOutputFields,
-                            allowSourceFields: opts.allowSourceFields,
-				            element: opts.element,
-				            key: opts.key,
-				            selectedId: opts.key,
-				            caller: opts.caller,
+				        $this.showTool(JSB.merge(opts, {
 				            callback: function(desc){
 				                if(opts.editToolCallback){
 				                    opts.editToolCallback.call($this, desc);
@@ -204,7 +195,7 @@
 				                    opts.caller.changeTo(desc.key, desc.value, desc.context, opts);
 				                }
 				            }
-				        });
+				        }));
 				    } else { // delete
 				        if(opts.deleteCallback){
 				            opts.deleteCallback.call($this, clickEvt);
@@ -219,7 +210,7 @@
         },
 
         showTool: function(opts){
-			var popupTool = ToolManager.activate({
+			ToolManager.activate({
 				id: 'querySchemeTool',
 				cmd: 'show',
 				data: JSB.merge(opts, {

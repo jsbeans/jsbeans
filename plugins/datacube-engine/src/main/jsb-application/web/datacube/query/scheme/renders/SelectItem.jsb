@@ -19,18 +19,13 @@
 
             this.append('<div class="separator"></div>');
 
-            this.installMenuEvents(fieldName, JSB.generateUid(), {
-                removable: true,
-                replaceable: true,
+            this.installMenuEvents({
+                element: fieldName,
+                id: JSB.generateUid(),
+                edit: true,
+                remove: true,
                 editCallback: function(evt){
                     evt.stopPropagation();
-
-                    /*
-                    $this.createInput(fieldName, 'text', function(newVal){
-                        $this.replaceValue(newVal);
-                        $this.setKey(newVal);
-                    });
-                    */
 
                     var curName = $this.getKey(),
                         input = $this.$('<input type="text" value="' + curName + '" />');

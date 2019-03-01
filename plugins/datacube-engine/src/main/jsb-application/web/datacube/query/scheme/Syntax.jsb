@@ -12,10 +12,10 @@
 	_sourceKeys: {},
 	_toolItems: [],
 
-	replacements: [
-	    ['$join', '$from', '$union', '$cube'],
-	    ['$source'],
-	    ['$field',
+	_replacements: {
+	    $sources: ['$join', '$from', '$union', '$cube'],
+	    $source: ['$source'],
+	    $default: ['$field',
 	    // матеметические операции
 	    '$add', '$sub', '$mul', '$div', '$divz', '$mod', '$sqrt', '$pow2',
 	    // функции
@@ -29,11 +29,14 @@
 	    // функции глобальной агрегации
 	    '$gsum', '$gcount', '$gmin', '$gmax', '$gavg', '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 	    // разное
-	    '$const', '$distinct'//, '$query'
-	    // test
+	    '$const', '$distinct',// '$query',
+	    // логика
+	    '$and', '$or', '$not',
+	    // сравнения
+	    '$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike'
 	    ],
-	    ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike', '$and', '$or', '$not']
-	],
+	    $filter: ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike', '$and', '$or', '$not']
+	},
 
 	scheme: {
 	    $query: {
@@ -49,7 +52,9 @@
 	        isSource: true,
 	        editable: false,
 	        priority: 1,
-	        removable: false
+	        removable: false,
+
+	        replacements: '$sources'
 	    },
 
 	    $from: {
@@ -59,7 +64,9 @@
 	        desc: 'Задает в качестве источника запроса другой запрос',
 	        isSource: true,
 	        priority: 1,
-	        removable: false
+	        removable: false,
+
+	        replacements: '$sources'
 	    },
 
 	    $join: {
@@ -69,7 +76,9 @@
             desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
             isSource: true,
             priority: 1,
-            removable: false
+            removable: false,
+
+            replacements: '$sources'
 	    },
 
 	    $provider: {
@@ -79,7 +88,9 @@
 	        isSource: true,
 	        editable: false,
 	        priority: 1,
-	        removable: false
+	        removable: false,
+
+	        replacements: '$sources'
 	    },
 
 	    $union: {
@@ -90,7 +101,9 @@
 	        isSource: true,
 	        multiple: true,
 	        priority: 1,
-	        removable: false
+	        removable: false,
+
+	        replacements: '$sources'
 	    },
 	    /*******/
 
@@ -124,13 +137,17 @@
 	        render: '$filter',
 	        displayName: 'Фильтрация полей источника',
 	        desc: 'Фильтрация строк таблицы источника по условию (по умолчанию, если не задан источник, условия накладываются на поля куба)',
+
 	        multiple: true,
 	        queryElement: true,
 	        replaceable: false,
+
 	        defaultValues: {$and: []},
 	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
 
-	        allowOutputFields: false
+	        allowOutputFields: false,
+
+	        children: '$filter'
 	    },
 
 	    $postFilter: {
@@ -143,7 +160,9 @@
 	        defaultValues: {$and: []},
 	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
 
-	        allowSourceFields: false
+	        allowSourceFields: false,
+
+	        children: '$filter'
 	    },
 /*
 	    $cubeFilter: {
@@ -164,9 +183,7 @@
 	        queryElement: true,
 	        replaceable: false,
 	        defaultValues: [],
-	        defaultAddValues: {$expr: {$const: 0}, $type: 1},
-
-	        allowSourceFields: false
+	        defaultAddValues: {$expr: {$const: 0}, $type: 1}
 	    },
 
 	    $limit: {
@@ -857,8 +874,38 @@
     *
     * @return {array} массив ключей для замены
     */
-	getReplacements: function(name){
-	    return this._replacementsMap[name];
+	getReplacements: function(key, parentKey){
+	    if(this.getSchema(key).replacements){
+	        key = this.getSchema(key).replacements;
+	    } else {
+	        key = '$default';
+	    }
+
+	    if(parentKey){
+	        var children = this.getSchema(parentKey).children;
+
+            if(children && children.length > 0){
+                var replacements = [];
+
+                children = this._replacements[children];
+
+                for(var i = 0; i < this._replacements[key].length; i++){
+                    if(children.indexOf(this._replacements[key][i]) > -1){
+                        replacements.push(this._replacements[key][i]);
+                    }
+                }
+
+                return replacements;
+            } else {
+                return this._replacements[key];
+            }
+	    } else {
+	        return this._replacements[key];
+	    }
+	},
+
+	getReplacementGroup: function(key){
+	    return this._replacements[key];
 	},
 
     /**
@@ -913,6 +960,7 @@
             $base();
 
             // create replacement map
+            /*
             for(var i = 0; i < this.replacements.length; i++){
                 for(var j = 0; j < this.replacements[i].length; j++){
                     if(!this._replacementsMap[this.replacements[i][j]]){
@@ -920,15 +968,11 @@
                     }
 
                     for(var k = 0; k < this.replacements[i].length; k++){
-                        /*
-                        if(this.replacements[i][j] !== this.replacements[i][k]){
-                            this._replacementsMap[this.replacements[i][j]].push(this.replacements[i][k]);
-                        }
-                        */
                         this._replacementsMap[this.replacements[i][j]].push(this.replacements[i][k]);
                     }
                 }
             }
+            */
 
             for(var i in this.scheme){
                 // set defaults

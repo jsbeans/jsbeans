@@ -26,6 +26,10 @@
     color: #73604c;
 }
 
+.simpleSelectTool {
+    max-width: 350px;
+}
+
 .simpleSelectTool .queryItemList > .items {
     padding-left: 0;
 }

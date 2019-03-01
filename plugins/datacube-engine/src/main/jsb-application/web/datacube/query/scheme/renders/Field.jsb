@@ -18,8 +18,8 @@
 	            this.getElement().attr('title', context);
 	        }
 
-            this.installMenuEvents(this.getElement(), null, {
-                removable: this.isAllowDelete(),
+            this.installMenuEvents({
+                element: this.getElement(),
                 editToolCallback: function(desc){
                     if(desc.category === 'Поля источника' || desc.category === 'Поля среза'){
                         var newVal = {

@@ -53,18 +53,18 @@
                 JSB.cancelDefer('DataCube.Query.hideMenu' + $this.getElementId());
             }, function(){
                 JSB.defer(function(){
-                    $this.data.data.controller.hideMenu();
+                    $this.close();
                 }, 300, 'DataCube.Query.hideMenu' + $this.getElementId());
             });
 		},
 
 		getElementId: function(){
-		    return this.data.data.elementId;
+		    return this.getData('id');
 		},
 
 		update: function(){
-		    this.btnDelete.classed('hidden', !this.data.data.removable);
-		    this.btnEdit.classed('hidden', !this.data.data.replaceable);
+		    this.btnDelete.classed('hidden', !this.getData('remove'));
+		    this.btnEdit.classed('hidden', !this.getData('edit'));
 		}
 	}
 }

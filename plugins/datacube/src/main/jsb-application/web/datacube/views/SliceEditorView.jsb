@@ -52,19 +52,17 @@
             });
             this.titleBlock.append(this.updateBtn.getElement());
 
-// todo
-/*
             this.analyzeBtn = new Button({
                 cssClass: "btnUpdate",
                 caption: "Анализировать",
                 onClick: function(){
-                	var q = JSB.clone($collectQuery());
+                	var q = JSB.clone($this.textQueryEditor.getData().getValue());
                 	q['$analyze'] = true;
                 	$this.updateGrid(q);
                 }
             });
             this.titleBlock.append(this.analyzeBtn.getElement());
-*/
+
             var exportBtn = new Button({
                 cssClass: 'btnUpdate',
                 caption: "Экспорт",

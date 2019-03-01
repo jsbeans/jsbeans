@@ -65,12 +65,10 @@
 		},
 
 		update: function(){
-		    var allowOutputFields = this.getData('allowOutputFields'),
-		        allowSourceFields = this.getData('allowSourceFields'),
+		    var caller = this.getData('caller'),
 		        data = this.getData('data'),
 		        key = this.getData('key'),
 		        sliceId = this.getData('sliceId'),
-		        selected = this.getData('selectedId'),
 		        showSlices = this.getData('showSlices'),
 		        query = this.getData('query');
 
@@ -91,14 +89,19 @@
 		        }
             }
 
-            var allowItems = Syntax.getReplacements(key),
+            var allowItems = [],
                 allowCategories = [];
 
             if(key === '$source'){
                 allowCategories.push('Срезы');
+            } else {
+                allowItems = Syntax.getReplacements(key, caller && caller.getParent().getKey());
             }
 
             if(allowItems.indexOf('$field') > -1){
+                var allowOutputFields = caller.isAllowOutputFields(),
+                    allowSourceFields = caller.isAllowSourceFields();
+
                 if(allowOutputFields){
                     allowCategories.push(this._OUTPUT_FIELDS_NAME);
 
@@ -110,7 +113,7 @@
                     fields.sort();
 
                     for(var i = 0; i < fields.length; i++){
-                        if(true){   // i !== selected
+                        if(true){   // i !== key
                             this.itemList.addItem({
                                 context: context,
                                 item: fields[i],
@@ -158,8 +161,8 @@
 
             this.itemList.allowItems(allowItems, allowCategories);
 /*
-            if(selected){
-                this.itemList.selectItem(selected);
+            if(key){
+                this.itemList.selectItem(key);
             }
 */
 		}

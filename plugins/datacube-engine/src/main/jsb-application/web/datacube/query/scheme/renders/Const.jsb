@@ -19,9 +19,9 @@
 	        var operator = this.$('<div class="operator">' + scheme.displayName + '</div>');
 	        this.append(operator);
 
-            this.installMenuEvents(operator, this.getId() + '_operator', {
-                removable: this.isAllowDelete(),
-                deleteCallback: this.getDeleteCallback()
+            this.installMenuEvents({
+                element: operator,
+                id: this.getId() + '_operator'
             });
 
 	        this.append('<div class="separator"></div>');
@@ -29,8 +29,10 @@
 	        var value = this.$('<div class="value">' + this.getValues() + '</div>');
 	        this.append(value);
 
-	        this.installMenuEvents(value, this.getId() + '_value', {
-	            removable: false,
+	        this.installMenuEvents({
+	            element: value,
+	            id: this.getId() + '_value',
+	            remove: false,
 	            editCallback: function(){
                     ToolManager.activate({
                         id: 'simpleSelectTool',

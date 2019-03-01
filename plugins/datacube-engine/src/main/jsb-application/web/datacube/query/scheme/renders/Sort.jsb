@@ -31,9 +31,11 @@
                 `);
                 item.append(sortableHandle);
 
-                $this.installMenuEvents(sortableHandle, $this.getId() + '_index_' + index, {
-                    editable: false,
-                    removable: true,
+                $this.installMenuEvents({
+                    element: sortableHandle,
+                    id: $this.getId() + '_index_' + index,
+                    edit: false,
+                    remove: true,
                     deleteCallback: function(){
                         $this.removeItem(items.find('> .item'), item);
                     }

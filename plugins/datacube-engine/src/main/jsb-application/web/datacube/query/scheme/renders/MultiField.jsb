@@ -35,9 +35,9 @@
 	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
             this.append(operator);
 
-            this.installMenuEvents(operator, this.getId() + '_operator', {
-                removable: this.isAllowDelete(),
-                deleteCallback: this.getDeleteCallback()
+            this.installMenuEvents({
+                element: operator,
+                id: this.getId() + '_operator'
             });
 
             this.append(this.createSeparator(true));
