@@ -93,7 +93,7 @@
                                 }
                             }
                         } else if (query.$cube) {
-                            var cube = $this.getQueryCube(query.$cube);
+                            var cube = QueryUtils.getQueryCube(query.$cube);
                             var fields = cube.extractFields();
                             this.type = {
                                 type: typeName(fields[field].type),
