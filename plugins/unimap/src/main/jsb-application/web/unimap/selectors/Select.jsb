@@ -9,6 +9,7 @@
         if(!scheme.items || Object.keys(scheme.items).length == 0){
         	return;
         }
+
         var val = Object.keys(scheme.items)[0];
 
         values.values[0] = {
@@ -16,11 +17,13 @@
             value: val
         };
 
-        if(scheme.items[val].items){
-            for(var i in scheme.items[val].items){
-                values.values[0].items[i] = {};
+        for(var i in scheme.items){
+            if(scheme.items[i].items){
+                for(var j in scheme.items[i].items){
+                    values.values[0].items[j] = {};
 
-                this.getMainSelector().getRenderByName(scheme.items[val].items[i].render).createDefaultValues(i, scheme.items[val].items[i], values.values[0].items[i], opts);
+                    this.getMainSelector().getRenderByName(scheme.items[i].items[j].render).createDefaultValues(j, scheme.items[i].items[j], values.values[0].items[j], opts);
+                }
             }
         }
     },
