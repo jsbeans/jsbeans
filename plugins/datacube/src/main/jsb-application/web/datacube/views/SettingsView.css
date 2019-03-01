@@ -58,7 +58,7 @@
 
 .settingsView .schemeBlock {
 	width: 100%;
-    height: 100%;
+    height: calc(100% - 35px);
     padding: 2px;
 }
 
@@ -72,6 +72,8 @@
 	display: inline-block;
 	vertical-align: top;
 	margin: 6px;
+	min-width: 450px;
+    max-width: 50%;
 }
 
 .settingsView .savedMessage {

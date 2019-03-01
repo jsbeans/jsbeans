@@ -56,6 +56,12 @@
 
 	        var name = this.group.find('.header h1');
 	        this.createDescription(name);
+	        
+	        if(this._scheme.icon && this._scheme.icon.length > 0){
+	        	var img = $this.$('<img />');
+	        	img.attr('src', this._scheme.icon);
+	        	this.group.find('.header').prepend(img);
+	        }
 
 	        if(this._scheme.optional){
 	            var content = this.group.find('.content');

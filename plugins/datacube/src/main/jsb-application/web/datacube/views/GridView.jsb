@@ -209,7 +209,7 @@
             if(source.type == 'queryable'){
             	qObj.source = source.source;
             }
-
+            
             $this.server().loadData( qObj, function(res){
                 if(storedLoadId !== $this.curLoadId) return;
 
@@ -283,9 +283,10 @@
                     		useCache: false,
                     	};
                     	if(Object.keys(obj.query).length > 0){
-                    		qDesc.extQuery = obj.query;
+                    		this.it = obj.source.getQueryableContainer().executeQuery(obj.query, {}, false);
+                    	} else {
+                    		this.it = obj.source.executeQuery(qDesc);
                     	}
-                    	this.it = obj.source.executeQuery(qDesc);
                     	break;
 /*                    case 'slice':
                     	if(JSB.isEqual(obj.query, obj.slice.getQuery())){

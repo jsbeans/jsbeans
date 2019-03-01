@@ -32,6 +32,10 @@
 	background-size: 100%;
 }
 
+.registryExplorer > ._dwp_treeview > .jsb-scrollBox > ._dwp_treeViewContainer ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_itemContainer > .renderer {
+	padding: 4px 2px;
+}
+
 .dragHelper {
 	opacity: 0.7;
 	border: 1px solid #B9955E;
