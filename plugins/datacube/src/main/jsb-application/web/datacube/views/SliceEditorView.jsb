@@ -172,7 +172,7 @@
 
                 $this.updateTextQuery(query);
 
-                $this.gridView.updateData($this.slice, query);
+                //$this.gridView.updateData($this.slice, query);
 			});
 		},
 		
