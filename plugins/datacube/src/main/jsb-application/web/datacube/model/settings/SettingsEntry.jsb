@@ -129,15 +129,15 @@
 				var settings = {};
 				if(opts.settings && JSB.isObject(opts.settings)){
 					settings = opts.settings;
-				} 
-				this._settingsContext = this.createContext(settings, this.getSettingsScheme());
+				}
+				$this.getSettingsContext(settings);
 				this.storeSettings();
 			}
 		},
 		
-		getSettingsContext: function(){
+		getSettingsContext: function(settings){
 			if(!this._settingsContext){
-				this._settingsContext = this.createContext(this.getSettings(), this.getSettingsScheme());
+				this._settingsContext = this.createContext(settings || this.getSettings(), this.getSettingsScheme());
 			}
 			
 			return this._settingsContext;

@@ -79,7 +79,8 @@
 
         if(JSB.isString(schemePath)){
             if(schemePath.length > 0){
-        		if(schemePath.length - schemePath.lastIndexOf('items') !== 5){
+            	var itemsIdx = schemePath.lastIndexOf('items');
+        		if(itemsIdx < 0 || schemePath.length - itemsIdx !== 5){
         			schemePath += '.items';
         		}
             } else {
@@ -122,7 +123,8 @@
 
         if(JSB.isString(schemePath)){
             if(schemePath.length > 0){
-        		if(schemePath.length - schemePath.lastIndexOf('items') !== 5){
+            	var itemsIdx = schemePath.lastIndexOf('items');
+        		if(itemsIdx < 0 || schemePath.length - itemsIdx !== 5){
         			schemePath += '.items';
         		}
             } else {
@@ -164,7 +166,8 @@
 
         if(JSB.isString(schemePath)){
             if(schemePath.length > 0){
-        		if(schemePath.lastIndexOf('items') == -1 || schemePath.length - schemePath.lastIndexOf('items') !== 5){
+            	var itemsIdx = schemePath.lastIndexOf('items');
+        		if(itemsIdx < 0 || schemePath.length - itemsIdx !== 5){
         			schemePath += '.items';
         		}
             } else {
@@ -198,7 +201,8 @@
 
         if(JSB.isString(schemePath)){
             if(schemePath.length > 0){
-        		if(schemePath.lastIndexOf('items') == -1 || schemePath.length - schemePath.lastIndexOf('items') !== 5){
+            	var itemsIdx = schemePath.lastIndexOf('items');
+        		if(itemsIdx < 0 || schemePath.length - itemsIdx !== 5){
         			schemePath += '.items';
         		}
             } else {

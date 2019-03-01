@@ -1,0 +1,16 @@
+.browserViewBindingRender {
+}
+
+.browserViewBindingRender.system {
+	
+}
+
+.browserViewBindingRender.system > .type {
+	display: inline-block;
+    background: #d2d2d2;
+    padding: 4px 4px;
+    border-radius: 4px;
+    color: #797979;
+    font-family: monospace;
+    border: 1px solid #9c9a9a;
+}

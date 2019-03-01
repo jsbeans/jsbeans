@@ -6,6 +6,10 @@
 	           'css:../../fonts/fa/fontawesome-all.min.css'],
     $client: {
         $constructor: function(opts){
+        	this.elements = {
+                buttons: {}
+            };
+            
             $base(opts);
 
             this.addClass('jsb-panel');
@@ -49,7 +53,7 @@
                 var cl = 'fas fa-chevron-up';
                 if(this.options.collapsed){
                 	this.addClass('collapsed');
-                    cl = 'fas fa-chevron-down'
+                    cl = 'fas fa-chevron-down';
                     this.elements.content.css('display', 'none');
                 }
                 this.elements.buttons.collapseBtn = this.$('<li key="collapseBtn" class="collapse-link"><i class="' + cl + '"></i></li>');
@@ -97,9 +101,7 @@
             }
         },
 
-        elements: {
-            buttons: {}
-        },
+        
 
         options: {
             // options
@@ -205,7 +207,7 @@
         togglePanel: function(){
             var $BOX_PANEL = $this.getElement(),
                 $ICON = $this.elements.buttons.collapseBtn.find('i'),
-                $BOX_CONTENT = $BOX_PANEL.find('.content');
+                $BOX_CONTENT = $BOX_PANEL.find('> .content');
 
             // fix for some div with hardcoded fix class
             if ($BOX_PANEL.attr('style')) {

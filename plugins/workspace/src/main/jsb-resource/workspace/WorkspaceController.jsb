@@ -46,7 +46,16 @@
 			// create system workspaces
 			for(var wType in this.workspaceDescriptors){
 				if(this.workspaceDescriptors[wType].system){
-					this.createWorkspace(wType);
+					var wInst = this.createWorkspace(wType);
+					// warm-up entries
+					var eIt = wInst.entries();
+					while(eIt.hasNext()){
+						try {
+							eIt.next();
+						} catch(e){
+							JSB.getLogger().error(e);
+						}
+					}
 				}
 			}
 			
@@ -565,7 +574,7 @@
 			}
 		},
 		
-		queryBrowserViews: function(wType, nodeJsb){
+		queryBrowserViews: function(wType, nodeJsb, bSilent){
 			var viewArr = [];
 			if(JSB.isNull(nodeJsb)){
 				// do nothing
@@ -600,7 +609,11 @@
 				return b.priority - a.priority;
 			});
 			
-			return viewArr;
+			if(!bSilent){
+				$this.publish('JSB.Workspace.WorkspaceController.queryBrowserViews', {wType: wType, nodeJsb: nodeJsb, views: viewArr});
+			}
+			
+			return viewArr;	
 		},
 		
 		_constructBrowserViewTypeSlice: function(wType, registry){
