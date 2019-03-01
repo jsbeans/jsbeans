@@ -6,7 +6,6 @@
 		$require: [
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
-		    'DataCube.Model.Slice',
         ],
         _example: function(){
             var ProxyVisitor = JSB.get('DataCube.Query.Visitors.ProxyVisitor').getClass();
@@ -53,7 +52,11 @@
         },
 
         getUndefinedView: function(name) {
-            $base(name);
+            if ($this.options.getUndefinedView) {
+                return $this.options.getUndefinedView.call(this, name);
+            } else {
+                return $base(name);
+            }
         },
 
         visitQuery: function(exp) {
@@ -141,7 +144,11 @@
                         if ($this.options[option] && $this.options[option].before) {
                             $this.options[option].before.apply($this, arguments);
                         }
-                        func.apply($this, arguments);
+                        if ($this.skip) {
+                            delete $this.skip;
+                        } else {
+                            func.apply($this, arguments);
+                        }
                         if ($this.options[option] && $this.options[option].after) {
                             $this.options[option].after.apply($this, arguments);
                         }

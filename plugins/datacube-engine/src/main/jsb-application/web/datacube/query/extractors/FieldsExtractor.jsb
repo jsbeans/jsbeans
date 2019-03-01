@@ -1,12 +1,11 @@
 {
-	$name: 'DataCube.Query.Visitors.FieldsExtractor',
+	$name: 'DataCube.Query.Extractors.FieldsExtractor',
 	$parent: 'DataCube.Query.Visitors.ProxyVisitor',
 
 	$server: {
 		$require: [
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
-		    'DataCube.Model.Slice',
 		    'java:java.util.HashMap',
         ],
 
@@ -50,37 +49,39 @@
 
                         /// used fields
                         putInputField($this.queryUsedFields, this.getQuery());
+
                         /// used input fields
                         putInputField($this.queryUsedInputFields, targetQuery);
 
-                        var fields = $this.queryUsedInputFields.get(targetQuery);
-                        if (!fields) {
-                            var fields = {};
-                            $this.queryUsedInputFields.put(targetQuery, fields);
-                        }
-                        if(!fields[context + '/' + field]) {
-                            fields[context + '/' + field] = {$field: field, $context: context, $sourceContext: sourceContext};
-                        }
                         /// used output fields
-                        if (JSB.isObject(targetQuery.$from)) {
+                        if (targetQuery.$from && JSB.isObject(targetQuery.$from)) {
                             putOutputField(targetQuery.$from);
-                        } else if (JSB.isString(targetQuery.$from)) {
-                            var sourceQuery = this.getQuery(targetQuery.$from);
+                        } else if (targetQuery.$from && JSB.isString(targetQuery.$from)) {
+                            var sourceQuery = this.getView(targetQuery.$from);
                             putOutputField(sourceQuery);
                         } else if (targetQuery.$join) {
-                            // TODO !!! ведь в $join указывается контекст источника  !!!
-                            var leftQuery = JSB.isString(targetQuery.$join.$left)   ? this.getQuery(targetQuery.$join.$left) : targetQuery.$join.$left;
-                            var rightQuery = JSB.isString(targetQuery.$join.$right) ? this.getQuery(targetQuery.$join.$right) : targetQuery.$join.$right;
+                            var leftQuery = JSB.isString(targetQuery.$join.$left)   ? this.getView(targetQuery.$join.$left) : targetQuery.$join.$left;
+                            var rightQuery = JSB.isString(targetQuery.$join.$right) ? this.getView(targetQuery.$join.$right) : targetQuery.$join.$right;
                             putOutputField(leftQuery);
                             putOutputField(rightQuery);
+                        } else if (targetQuery.$recursive) {
+                            if(targetQuery.$context == context) {
+                                putOutputField(targetQuery);
+                            }
+                            putOutputField(targetQuery.$recursive.$start);
+                            putOutputField(targetQuery.$recursive.$joinedNext);
+                        } else if (targetQuery.$union) {
+                            for(var i = 0; i < targetQuery.$union.length; i++) {
+                                var q = JSB.isString(targetQuery.$union[i]) ? this.getView(targetQuery.$union[i]) : targetQuery.$union[i];
+                                putOutputField(q);
+                            }
                         }
-                        // TODO ...
                     },
                 }
             });
         },
 
-        parse: function(){
+        extract: function(){
             $this.visit($this.rootQuery);
         },
 
