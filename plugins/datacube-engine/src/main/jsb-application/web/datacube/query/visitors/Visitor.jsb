@@ -4,7 +4,6 @@
 	$server: {
 		$require: [
 		    'DataCube.Query.QuerySyntax',
-		    'DataCube.Query.QueryUtils',
         ],
 
         $constructor: function(options){
@@ -17,7 +16,6 @@
         path: [],
         flagsPath: [],
         queryPath: [],
-
 
         reset: function(){
             $this.flags = null;
@@ -44,7 +42,7 @@
                     if (exp.match(/^\$\{.*\}/g)) {
                         return $this.visitParam(exp);
                     }
-                    QueryUtils.throwError(flags, 'Visitor flags is undefined for string expression');
+                    if(!flags) throw new Error('Visitor flags is undefined for string expression');
                     if (flags.asField || flags.asExpression) {
                         return $this.visitExpression(exp);
                     } else if (flags.asQuery) {
@@ -69,7 +67,7 @@
                     return $this.visitCondition(exp);
                 }
 
-                QueryUtils.throwError(JSB.isObject(exp), 'Invalid expression type, object expected');
+                if(!JSB.isObject(exp)) throw new Error('Invalid expression type, object expected');
 
                 return $this.visitExpression(exp);
             }finally{
@@ -122,6 +120,13 @@ debugger;
             return $this.path[$this.path.length-1];
         },
 
+        /***/
+        getExpressionKey: function(offset){
+            var offset = offset || -1;
+            return JSB.isObject($this.path[$this.path.length-1]) && JSB.isString($this.path[$this.path.length+offset-1])
+                ? $this.path[$this.path.length+offset-1] : null;
+        },
+
 
         getView: function(name) {
             for (var i = $this.queryPath.length - 1; i >= 0; i--) {
@@ -132,6 +137,15 @@ debugger;
             }
 
             return $this.getUndefinedView(name);
+        },
+
+        getParam: function(name) {
+            for(var i = this.queryPath.length - 1; i > 0 ; i--) {
+                var query = this.queryPath[i];
+                if(query.$params && query.$params.hasOwnProperty(name)) {
+                    return query.$params[name];
+                }
+            }
         },
 
         getUndefinedView: function(name) {
@@ -169,7 +183,7 @@ debugger;
         },
 
         visitQuery: function(exp) {
-            QueryUtils.throwError(exp.$select, 'Invalid query expression, $select is undefined');
+            if(!exp.$select) throw new Error('Invalid query expression, $select is undefined');
             /// visit sources: $from, $join, $union, $recursive, $cube, $provider
             if (exp.$from && JSB.isString(exp.$from)) {
                 $this.visitWithPath('$from', function(){
@@ -233,6 +247,12 @@ debugger;
         },
 
         visitAnyExpression: function(exp) {
+//            var key = this.getExpressionKey();
+//            if ($this.scheme[key]) {
+//                $this.scheme[key].visitor.call(this, exp);
+//                return;
+//            }
+            // default visitor
             for(var op in exp) {
                 if (!QuerySyntax.constValueOperators[op]) {
                     $this.visitWithPath(op, function(){
@@ -243,7 +263,9 @@ debugger;
         },
 
         visitFieldExpression: function(exp) {
-            QueryUtils.throwError(exp.$field || JSB.isString(exp), 'Invalid field expression');
+            if (!(exp.$field || JSB.isString(exp))) {
+                throw new Error('Invalid field expression');
+            }
 
             var name = JSB.isString(exp) ? exp : exp.$field;
             var context = exp.$context || $this.queryPath[$this.queryPath.length-1].$context;

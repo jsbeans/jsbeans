@@ -6,7 +6,6 @@
 		$require: [
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
-		    'DataCube.Model.Slice',
         ],
 
         $constructor: function(options){

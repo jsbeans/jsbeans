@@ -4,7 +4,8 @@
 
     $require: [
         'DataCube.Query.QuerySyntax',
-        'DataCube.Query.QueryUtils'
+        'DataCube.Query.QueryUtils',
+        'DataCube.Query.Extractors.TypeExtractor',
     ],
 
     $scheme: {
@@ -467,22 +468,32 @@
 		},
 
 		updateFieldsTypes: function(){
-		    function getQuery(name) {
-		        if ($this.query.$views && $this.query[name]) {
-		            return $this.query[name];
-		        }
-		        return QueryUtils.findView(name, null, $this.query);
-		    }
-
-		    for(var i in this.query.$select){
-		        try{
-		            this.fieldsTypes[i] = QueryUtils.extractType(this.query.$select[i], this.query, this.getCube(), getQuery);
-                } catch(ex){
-                    JSB.getLogger().error(ex);
-
-                    this.fieldsTypes[i] = '';
+		    try {
+                var fieldsTypes = TypeExtractor.extractQueryOutputFieldsTypes($this.query);
+                this.fieldsTypes = {};
+                for(var i in this.query.$select){
+                    this.fieldsTypes[i] = fieldsTypes[i].type || fieldsTypes[i].nativeType || '';
                 }
-		    }
+		    } catch(ex){
+                JSB.getLogger().error(ex);
+            }
+
+//		    function getQuery(name) {
+//		        if ($this.query.$views && $this.query[name]) {
+//		            return $this.query[name];
+//		        }
+//		        return QueryUtils.findView(name, null, $this.query);
+//		    }
+//
+//		    for(var i in this.query.$select){
+//		        try{
+//		            this.fieldsTypes[i] = QueryUtils.extractType(this.query.$select[i], this.query, this.getCube(), getQuery);
+//                } catch(ex){
+//                    JSB.getLogger().error(ex);
+//
+//                    this.fieldsTypes[i] = '';
+//                }
+//		    }
 
 		    this.property('fieldsTypes', this.fieldsTypes);
 		},
