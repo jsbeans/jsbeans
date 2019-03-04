@@ -882,7 +882,7 @@
 	    }
 
 	    if(parentKey){
-	        var children = this.getSchema(parentKey).children;
+	        var children = this.getSchema(parentKey) && this.getSchema(parentKey).children;
 
             if(children && children.length > 0){
                 var replacements = [];
