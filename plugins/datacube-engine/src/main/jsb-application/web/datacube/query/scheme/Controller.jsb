@@ -187,15 +187,7 @@
 				            return;
 				        }
 
-				        $this.showTool(JSB.merge(opts, {
-				            callback: function(desc){
-				                if(opts.editToolCallback){
-				                    opts.editToolCallback.call($this, desc);
-				                } else {
-				                    opts.caller.changeTo(desc.key, desc.value, desc.context, opts);
-				                }
-				            }
-				        }));
+				        $this.showTool(opts);
 				    } else { // delete
 				        if(opts.deleteCallback){
 				            opts.deleteCallback.call($this, clickEvt);
@@ -224,7 +216,13 @@
 					dock: 'bottom',
 					offsetVert: -1
 				},
-				callback: opts.callback
+				callback: opts.callback || function(desc){
+                    if(opts.editToolCallback){
+                        opts.editToolCallback.call($this, desc);
+                    } else {
+                        opts.caller.changeTo(desc.key, desc.value, desc.context, opts);
+                    }
+				}
 			});
         },
 

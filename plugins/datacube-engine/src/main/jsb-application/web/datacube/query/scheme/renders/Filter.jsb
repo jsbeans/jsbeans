@@ -59,7 +59,6 @@
 
 	    createRender: function(options, parent){
 	        JSB.merge(options, {
-	            // todo: change only to logic
 	            allowDelete: true,
 	            deleteCallback: function(){
 	                $this._menuItems.push(JSB.merge({}, this.getScheme(), {key: this.getKey()}));

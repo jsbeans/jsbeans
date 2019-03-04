@@ -5,10 +5,12 @@
 	$alias: '$field',
 
 	$client: {
+	    $require: ['css:Field.css'],
+
 	    $constructor: function(opts){
 	        $base(opts);
 
-	        this.addClass('cubeFieldIcon sliceField');
+	        this.addClass('fieldQueryRender cubeFieldIcon sliceField');
 
 	        this.append(this.getValues());
 

@@ -387,26 +387,38 @@
         * Прикрепляет к элементу всплывающее меню
         * @param {jQuery} menuOpts - опции для меню @see showMenu
         */
-	    installMenuEvents: function(menuOpts){
-	        var id = menuOpts.id || this.getId();
+	    installMenuEvents: function(menuOpts, hoverElement){
+	        menuOpts = this._expandOptions(menuOpts);
+
+	        hoverElement = hoverElement || this.getElement();
 
             menuOpts.element.hover(function(evt){
                 evt.stopPropagation();
 
-                JSB.cancelDefer('DataCube.Query.hideMenu' + id);
+                hoverElement.addClass('hover');
+
+                JSB.cancelDefer('DataCube.Query.hideMenu' + menuOpts.id);
 
                 JSB.defer(function(){
                     $this.showMenu(menuOpts);
-                }, 300, 'DataCube.Query.showMenu' + id);
+                }, 300, 'DataCube.Query.showMenu' + menuOpts.id);
             }, function(evt){
                 evt.stopPropagation();
 
-                JSB.cancelDefer('DataCube.Query.showMenu' + id);
+                hoverElement.removeClass('hover');
+
+                JSB.cancelDefer('DataCube.Query.showMenu' + menuOpts.id);
 
                 JSB.defer(function(){
                     $this.hideMenu(menuOpts);
-                }, 300, 'DataCube.Query.hideMenu' + id);
+                }, 300, 'DataCube.Query.hideMenu' + menuOpts.id);
             });
+
+            if(menuOpts.edit){
+                menuOpts.element.click(function(){
+                    $this.showTool(menuOpts);
+                });
+            }
 	    },
 
 	    onChange: function(){
@@ -539,18 +551,7 @@
 	    showMenu: function(options){
 	        options = options || {};
 
-	        return this.getController().showMenu(JSB.merge({
-	            caller: this,
-	            id: this.getId(),
-	            key: this.getKey(),
-
-	            // buttons
-	            edit: this.getScheme().replaceable,
-	            remove: this.isAllowDelete(),
-
-	            // callbacks
-	            deleteCallback: this.getDeleteCallback()
-	        }, options));
+	        return this.getController().showMenu(options);
 	    },
 
         /**
@@ -563,6 +564,21 @@
 	        return this.getController().showTool(JSB.merge({
 	            key: this.getKey()
 	        }, options));
+	    },
+
+	    _expandOptions: function(options){
+	        return JSB.merge({
+	            caller: this,
+	            id: this.getId(),
+	            key: this.getKey(),
+
+	            // buttons
+	            edit: this.getScheme().replaceable,
+	            remove: this.isAllowDelete(),
+
+	            // callbacks
+	            deleteCallback: this.getDeleteCallback()
+	        }, options);
 	    }
 	},
 
