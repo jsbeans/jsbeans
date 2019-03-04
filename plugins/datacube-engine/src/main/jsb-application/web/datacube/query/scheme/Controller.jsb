@@ -181,21 +181,31 @@
 					offsetVert: -1
 				},
 				callback: function(act, clickEvt){
-				    if(act === 'edit'){
-				        if(opts.editCallback){
-				            opts.editCallback.call($this, clickEvt);
-				            return;
-				        }
+				    switch(act){
+				        case 'edit':
+                            if(opts.editCallback){
+                                opts.editCallback.call($this, clickEvt);
+                                return;
+                            }
 
-				        $this.showTool(opts);
-				    } else { // delete
-				        if(opts.deleteCallback){
-				            opts.deleteCallback.call($this, clickEvt);
-				            return;
-				        }
+                            $this.showTool(opts);
+                            break;
+                        case 'delete':
+                            if(opts.deleteCallback){
+                                opts.deleteCallback.call($this, clickEvt);
+                                return;
+                            }
 
-				        opts.caller.remove();
-				        $this.onChange();
+                            opts.caller.remove();
+                            $this.onChange();
+                            break;
+                        case 'wrap':
+                            $this.showTool(JSB.merge(opts, {
+                                callback: function(desc){
+                                    opts.caller.wrap(desc, opts);
+                                }
+                            }));
+                            break;
 				    }
 				}
 			});

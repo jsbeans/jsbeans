@@ -21,17 +21,28 @@
 
             this.installMenuEvents({
                 element: operator,
-                id: this.getId() + '_operator'
+                id: this.getId() + '_operator',
+                wrap: true
             });
 
 	        this.append('<div class="separator"></div>');
 
-	        var value = this.$('<div class="value">' + this.getValues() + '</div>');
+	        var value = this.$('<div class="value"></div>');
 	        this.append(value);
+
+	        var valueType = 'text';
+	        if(typeof this.getValues() === 'number'){
+	            valueType = 'number';
+
+	            value.text(this.getValues());
+	        } else {
+	            value.text('"' + this.getValues() + '"');
+	        }
 
 	        this.installMenuEvents({
 	            element: value,
 	            id: this.getId() + '_value',
+	            noClick: true,
 	            remove: false,
 	            editCallback: function(){
                     ToolManager.activate({
@@ -95,12 +106,7 @@
                         }
                     });
 	            }
-	        });
-
-	        var valueType = 'text';
-	        if(typeof this.getValues() === 'number'){
-	            valueType = 'number';
-	        }
+	        }, true, true);
 
 	        value.click(function(evt){
 	            evt.stopPropagation();

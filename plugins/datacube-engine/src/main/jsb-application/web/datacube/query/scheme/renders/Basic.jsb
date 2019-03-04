@@ -387,15 +387,15 @@
         * Прикрепляет к элементу всплывающее меню
         * @param {jQuery} menuOpts - опции для меню @see showMenu
         */
-	    installMenuEvents: function(menuOpts, hoverElement){
+	    installMenuEvents: function(menuOpts, noHover, noClick){
 	        menuOpts = this._expandOptions(menuOpts);
-
-	        hoverElement = hoverElement || this.getElement();
 
             menuOpts.element.hover(function(evt){
                 evt.stopPropagation();
 
-                hoverElement.addClass('hover');
+                if(!noHover){
+                    $this.getElement().addClass('hover');
+                }
 
                 JSB.cancelDefer('DataCube.Query.hideMenu' + menuOpts.id);
 
@@ -405,7 +405,9 @@
             }, function(evt){
                 evt.stopPropagation();
 
-                hoverElement.removeClass('hover');
+                if(!noHover){
+                    $this.getElement().removeClass('hover');
+                }
 
                 JSB.cancelDefer('DataCube.Query.showMenu' + menuOpts.id);
 
@@ -414,7 +416,7 @@
                 }, 300, 'DataCube.Query.hideMenu' + menuOpts.id);
             });
 
-            if(menuOpts.edit){
+            if(!noClick && menuOpts.edit){
                 menuOpts.element.click(function(){
                     $this.showTool(menuOpts);
                 });
@@ -564,6 +566,40 @@
 	        return this.getController().showTool(JSB.merge({
 	            key: this.getKey()
 	        }, options));
+	    },
+
+	    wrap: function(desc, options){
+	        var oldVal = {},
+                isCurrentValMultiple = this.isMultiple();
+
+            oldVal[this.getKey()] = this.getValues();
+
+            if(desc.multiple){
+	            this._scope[desc.key] = [oldVal];
+            } else {
+                this._scope[desc.key] = oldVal;
+            }
+
+            if(this.getScope().hasOwnProperty(this.getKey())){
+	            delete this.getScope()[this.getKey()];
+            }
+
+	        var render = this.createRender({
+	            // поля, заданные родителем
+                allowOutputFields: this.isAllowOutputFields(),
+                allowSourceFields: this.isAllowSourceFields(),
+                allowDelete: this.isAllowDelete(),
+                deleteCallback: this.getDeleteCallback(),
+
+	            key: desc.key,
+	            scope: this.getScope()
+	        }, this.getParent());
+
+	        if(render){
+	            this.getElement().replaceWith(render.getElement());
+	            this.destroy();
+	            this.onChange();
+	        }
 	    },
 
 	    _expandOptions: function(options){

@@ -37,7 +37,8 @@
 
             this.installMenuEvents({
                 element: operator,
-                id: this.getId() + '_operator'
+                id: this.getId() + '_operator',
+                wrap: true
             });
 
             this.append(this.createSeparator(true));
@@ -62,11 +63,11 @@
                         values[i] = scheme.values[i].defaultValues;
                         isNeedChangeEvt = true;
 
-                        if(scheme.values[i].type === 'text'){
-                            paramValue = '"' + scheme.values[i].defaultValues + '"';
-                        } else {
-                            paramValue = scheme.values[i].defaultValues;
-                        }
+                        paramValue = values[i];
+                    }
+
+                    if(scheme.values[i].type === 'text'){
+                        paramValue = '"' + paramValue + '"';
                     }
 
                     var paramValueElement = this.$('<div class="paramValue">' + paramValue + '</div>');

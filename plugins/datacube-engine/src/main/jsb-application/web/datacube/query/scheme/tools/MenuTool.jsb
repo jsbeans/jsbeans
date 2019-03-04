@@ -27,6 +27,17 @@
 			$base(opts);
 			this.addClass('queryMenuTool');
 
+			this.btnWrap = new Button({
+				cssClass: 'btnWrap',
+				icon: true,
+				tooltip: 'Обернуть',
+				onClick: function(clickEvt){
+					$this.close();
+					$this.data.callback.call($this, 'wrap', clickEvt);
+				}
+			});
+			this.append(this.btnWrap);
+
 			this.btnEdit = new Button({
 				cssClass: 'btnEdit',
 				icon: true,
@@ -63,6 +74,7 @@
 		},
 
 		update: function(){
+		    this.btnWrap.classed('hidden', !this.getData('wrap'));
 		    this.btnDelete.classed('hidden', !this.getData('remove'));
 		    this.btnEdit.classed('hidden', !this.getData('edit'));
 		}

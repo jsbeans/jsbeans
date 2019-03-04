@@ -22,6 +22,7 @@
 
             this.installMenuEvents({
                 element: this.getElement(),
+                wrap: true,
                 editToolCallback: function(desc){
                     if(desc.category === 'Поля источника' || desc.category === 'Поля среза'){
                         var newVal = {
@@ -70,6 +71,41 @@
             } else {
                 $base(newKey, newValue);
             }
+	    },
+
+	    wrap: function(desc, options){
+	        var oldVal = {
+	                $context: this.getContext(),
+	                $field: this.getValues(),
+	                $sourceContext: this.getSourceContext()
+	            };
+
+            delete this.getScope()[this.getKey()];
+            delete this.getScope()['$context'];
+            delete this.getScope()['$sourceContext'];
+
+            if(desc.multiple){
+	            this._scope[desc.key] = [oldVal];
+            } else {
+                this._scope[desc.key] = oldVal;
+            }
+
+	        var render = this.createRender({
+	            // поля, заданные родителем
+                allowOutputFields: this.isAllowOutputFields(),
+                allowSourceFields: this.isAllowSourceFields(),
+                allowDelete: this.isAllowDelete(),
+                deleteCallback: this.getDeleteCallback(),
+
+	            key: desc.key,
+	            scope: this.getScope()
+	        }, this.getParent());
+
+	        if(render){
+	            this.getElement().replaceWith(render.getElement());
+	            this.destroy();
+	            this.onChange();
+	        }
 	    }
 	}
 }
