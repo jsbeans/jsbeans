@@ -18,7 +18,6 @@
         * Вставляет в запрос тела вьюх, удаляя $views - только простые запросы
         */
 		transform: function(rootQuery, cube, arg){
-//debugger
 		    var config = JSB.merge({
                     embedDirectProviders:true,
                     embedDirectQueries:true,
@@ -36,14 +35,14 @@
                 QueryUtils.throwError(view, 'EmbedProviderViewQueries: View not found: ' + name);
                 if (config.embedAll
                     || view.$provider && config.embedDirectProviders
-                    || isSingleUsed(view) && config.embedSingleUsedViews
                     || !QueryUtils.queryHasBody(view) && config.embedDirectQueries
+                    || config.embedSingleUsedViews && isSingleUsed(view)
                 ) {
-                    if (updateContext === false) {
-                        return JSB.clone(view);
-                    }
-                    return QueryUtils.copyQuery(view, name);
+                    return updateContext === false
+                        ? JSB.clone(view)
+                        : QueryUtils.copyQuery(view, name);
                 }
+                usedViews.push(view);
                 return null;
 		    }
 
@@ -80,6 +79,7 @@
             }
 
             /// embed views
+            var usedViews = [];
             Visitors.visitProxy(rootQuery, {
                 query: {
                     before: function(query) {
@@ -111,7 +111,16 @@
                                 }
                             }
                         }
-                    }
+                    },
+                    after: function(query) {
+                        if (query.$views) {
+                            for(var name in query.$views) {
+                                if (usedViews.indexOf(query.$views[name]) == -1) {
+                                    delete query.$views[name];
+                                }
+                            }
+                        }
+                    },
                 }
             });
             return rootQuery;

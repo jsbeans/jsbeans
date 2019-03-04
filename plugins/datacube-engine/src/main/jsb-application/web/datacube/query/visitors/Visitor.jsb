@@ -82,6 +82,19 @@
                 if (JSB.isObject(context)) {
                     return context;
                 }
+                var current = this.getQuery();
+                if (current.$recursive && current.$recursive.$start.$context == context) {
+                    return current.$recursive.$start;
+                }
+                if (current.$recursive && current.$recursive.$joinedNext.$context == context) {
+                    return current.$recursive.$joinedNext;
+                }
+                if (current.$join && current.$join.$left.$context == context) {
+                    return current.$join.$left;
+                }
+                if (current.$join && current.$join.$right.$context == context) {
+                    return current.$join.$right;
+                }
                 for(var i = $this.queryPath.length - 1; i >= 0; i--) {
                     if ($this.queryPath[i].$context == context) {
                         return $this.queryPath[i];
@@ -278,7 +291,11 @@ debugger;
         },
 
         visitArray: function(array) {
-
+            for (var i = 0; i < array.length; i++) {
+                $this.visitWithPath(i, function(){
+                    $this.visit(array[i], {asExpression: true});
+                });
+            }
         },
 
         visitConst: function(value, type, nativeType) {
@@ -291,26 +308,42 @@ debugger;
 
 
         visitNamedQuery: function($from) {
-            var view = $this.getView($from);
-            $this.visit(view, {asQuery: true});
+//            $this.visitWithPath($from, function(){
+                var view = $this.getView($from);
+                $this.visit(view, {asQuery: true});
+//            });
         },
 
         visitUnion: function($union) {
             for (var i = 0; i < $union.length; i++) {
-                $this.visit($union[i], {asQuery: true});
+                $this.visitWithPath('$union', i, function(){
+                    $this.visit($union[i], {asQuery: true});
+                });
             }
         },
 
         visitJoin: function($join) {
-             $this.visit($join.$left, {asQuery: true});
-             $this.visit($join.$right, {asQuery: true});
-             $this.visit($join.$filter);
+            $this.visitWithPath('$join', '$left', function(){
+                $this.visit($join.$left, {asQuery: true});
+            });
+            $this.visitWithPath('$join', '$right', function(){
+                $this.visit($join.$right, {asQuery: true});
+            });
+            $this.visitWithPath('$join', '$filter', function(){
+                $this.visit($join.$filter);
+            });
         },
 
         visitRecursive: function($recursive) {
-             $this.visit($recursive.$start, {asQuery: true});
-             $this.visit($recursive.$joinedNext, {asQuery: true});
-             $this.visit($recursive.$filter);
+            $this.visitWithPath('$recursive', '$start', function(){
+                 $this.visit($recursive.$start, {asQuery: true});
+            });
+            $this.visitWithPath('$recursive', '$joinedNext', function(){
+                 $this.visit($recursive.$joinedNext, {asQuery: true});
+            });
+            $this.visitWithPath('$recursive', '$filter', function(){
+                 $this.visit($recursive.$filter);
+            });
         },
 
         visitProvider: function($provider) {
@@ -342,7 +375,7 @@ debugger;
         visitSort: function($sort) {
             for (var i = 0; i < $sort.length; i++) {
                 var val = $sort[i];
-                $this.visitWithPath(i, function(){
+                $this.visitWithPath('$sort', i, function(){
                     if (val.$expr && val.$type) {
                         $this.visitSortExpression(val.$expr, val.$type);
                     } else {

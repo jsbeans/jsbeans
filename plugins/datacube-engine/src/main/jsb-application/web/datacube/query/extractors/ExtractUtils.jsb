@@ -25,7 +25,13 @@
 //        },
 
         /** Выводит перечень полей, доступных в текущем контексте для использования
-            (поля источника подзапроса и поля источника родителя подзапроса) */
+            (поля источника подзапроса и поля источника родителя подзапроса).
+            Возыращает массив полей:
+            - ($field:name} - обычное поле источника
+            - {$field:name, $sourceContext:sc} - если источник $join
+            - {$field:name, $context:parent} - если простое поле родительского запроса
+            - {$field:name, $context:parent, $sourceContext:sc} - если поле родительского запроса с  источником $join
+            */
         extractAllowedFields: function(rootQuery, current/**query/context*/){
             var allowedFields = [];
             var sliceQueries = [];
