@@ -102,6 +102,12 @@
             return $this.queryUsedInputFields.get(query);
         },
 
+        /* Возвращает используемые выходные поля запроса
+        */
+        getUsedOutputFields: function(query) {
+            return $this.queryUsedOutputFields.get(query);
+        },
+
         /* Возвращает поля, вообще используемых в указанном запросе
            (все поля, используемые в запросе - поля источника и поля внешних родительских запросов)
         */

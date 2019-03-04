@@ -14,6 +14,9 @@
             Visitors.visitProxy(rootQuery, {
                 field: {
                     before: function(field, context, sourceContext) {
+//if (field == "Код ВМО" && (context == "a1f2f44103d7d846942093298e288643/8af3e43759ee6568935d7cd00e250540"
+//|| context == "a1f2f44103d7d846942093298e288643/cb6598541b32e127c637ca3867612735"))
+//debugger;
                         if (!sourceContext) {
                             var exp = this.getCurrent();
                             if (!JSB.isObject(exp)) {
@@ -24,10 +27,10 @@
                             var callerQuery = this.getQuery();
                             var targetQuery = this.getQuery(context);
 
-                            function patch(q){
+                            function patch(q, isForeign){
                                 if (exp.$context) {
                                     exp.$sourceContext = exp.$context;
-                                    if (!q.$join) {
+                                    if (!isForeign) {
                                         delete exp.$context;
                                     }
                                 } else {
@@ -63,7 +66,7 @@
                                         || parent.$join.$right == context
                                         || parent.$join.$right == targetQuery)
                                     {
-                                        patch.call(this, parent);
+                                        patch.call(this, parent, true);
                                     }
                                 }
                             }
