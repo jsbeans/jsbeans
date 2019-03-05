@@ -7,6 +7,7 @@
 	},
 
 	_logicReplacements: {},
+	_macros: {},
 	_queryElements: [],
 	_replacementsMap: {},
 	_sourceKeys: {},
@@ -372,7 +373,7 @@
 	                parameter: true,
 	                type: 'text'
 	            },
-	            $flags: {   // todo: селектор с флажками
+	            $flags: {   // todo: теги с флажками
 	                displayName: 'Флажки',
 	                defaultValues: '',
 	                parameter: true,
@@ -875,14 +876,14 @@
     * @return {array} массив ключей для замены
     */
 	getReplacements: function(key, parentKey){
-	    if(this.getSchema(key).replacements){
-	        key = this.getSchema(key).replacements;
+	    if(this.getScheme(key).replacements){
+	        key = this.getScheme(key).replacements;
 	    } else {
 	        key = '$default';
 	    }
 
 	    if(parentKey){
-	        var children = this.getSchema(parentKey) && this.getSchema(parentKey).children;
+	        var children = this.getScheme(parentKey) && this.getScheme(parentKey).children;
 
             if(children && children.length > 0){
                 var replacements = [];
@@ -914,7 +915,7 @@
     *
     * @return {object} схема для указанного ключа или объект со схемами для всех ключей
     */
-    getSchema: function (key){
+    getScheme: function (key){
         if(key){
             return this.scheme[key];
         }
@@ -959,21 +960,6 @@
         $constructor: function(){
             $base();
 
-            // create replacement map
-            /*
-            for(var i = 0; i < this.replacements.length; i++){
-                for(var j = 0; j < this.replacements[i].length; j++){
-                    if(!this._replacementsMap[this.replacements[i][j]]){
-                        this._replacementsMap[this.replacements[i][j]] = [];
-                    }
-
-                    for(var k = 0; k < this.replacements[i].length; k++){
-                        this._replacementsMap[this.replacements[i][j]].push(this.replacements[i][k]);
-                    }
-                }
-            }
-            */
-
             for(var i in this.scheme){
                 // set defaults
                 if(!JSB.isDefined(this.scheme[i].removable)){
@@ -1003,6 +989,67 @@
                     this._queryElements.push(JSB.merge({}, this.scheme[i], {key: i}));
                 }
             }
-        }
+        },
+
+        registerMacro: function(definition, values, objectGenerator){
+            this.scheme[definition.name] = {
+                render: '$multiField',
+                category: 'Макросы',
+                displayName: definition.displayName || definition.name,
+                desc: definition.desc,
+                values: values
+            };
+
+		    this._macros[definition.name] = {
+		        name: definition.name,
+		        def: definition,
+		        structure: values,
+		        objectGenerator: objectGenerator
+		    };
+
+            this._toolItems.push(JSB.merge({}, this.scheme[definition.name], {key: definition.name}));
+            this._replacements.$default.push(definition.name);
+        },
+
+		unwrapMacrosCurrentQuery: function(dcQuery, rootQuery){
+		    function validateMacro(exp, macro){
+		        var structure = macro.structure;
+		        for (var f in structure) if(structure.hasOwnProperty(f)) {
+		            if (typeof exp[f] === 'undefined') {
+		                throw new Error('Field ' + f + ' is not defined in ' + macro.name);
+		            }
+		        }
+		    }
+
+		    function unwrapExpression(exp, setFunc) {
+		        if (JSB.isPlainObject(exp)) {
+		            var key = Object.keys(exp)[0];
+		            for (var name in $this._macros) {
+		                if (name == key) {
+		                    validateMacro(exp[key], $this._macros[name].structure);
+		                    setFunc($this._macros[name].objectGenerator.call(null, exp[key], dcQuery, rootQuery));
+		                    return;
+		                }
+		            }
+		            for (var f in exp) if(exp.hasOwnProperty(f)) {
+		                unwrapExpression(exp[f], function(newExp){
+		                   exp[f] = newExp;
+		               });
+		            }
+		        } else if (JSB.isArray(exp)) {
+		            for (var i in exp) {
+		                unwrapExpression(exp[i], function(newExp){
+		                    exp[i] = newExp;
+		                });
+		            }
+		        }
+		    }
+
+		    for (var alias in dcQuery.$select) if(dcQuery.$select.hasOwnProperty(alias)) {
+		        unwrapExpression(dcQuery.$select[alias], function(newExp){
+		            dcQuery.$select[alias] = newExp;
+		        });
+		    }
+		}
     }
 }

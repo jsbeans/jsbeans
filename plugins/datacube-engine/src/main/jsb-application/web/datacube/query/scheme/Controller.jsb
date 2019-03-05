@@ -54,7 +54,7 @@
 	    * @return {object|undefined} Объект, если существует подходящий рендер
 	    */
         createRender: function(options, parent){
-            var scheme = Syntax.getSchema(options.key);
+            var scheme = Syntax.getScheme(options.key);
 
             if(!options.renderName && !scheme){
                 return;
@@ -230,7 +230,7 @@
                     if(opts.editToolCallback){
                         opts.editToolCallback.call($this, desc);
                     } else {
-                        opts.caller.changeTo(desc.key, desc.value, desc.context, opts);
+                        opts.caller.changeTo(desc.key, desc.value, desc, opts);
                     }
 				}
 			});

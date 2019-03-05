@@ -37,7 +37,7 @@
 	            values = this.getValues()[index];
 
 	        for(var i in values){
-                var scheme = Syntax.getSchema(i);
+                var scheme = Syntax.getScheme(i);
 
 	            if(!scheme){
 	                var newVal = {};
