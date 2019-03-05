@@ -8,6 +8,7 @@
 		
 		fileUploadCallbackRegistry: {},
 		explorerNodeRegistry: {},
+		browserViews: {},
 		browserViewRegistryNode: {},
 		browserViewRegistryEntry: {},
 		workspaceDescriptors: {},
@@ -19,6 +20,12 @@
 		
 		$constructor: function(){
 			$base();
+			
+			JSB.onLoad(function(){
+				if(this.isSubclassOf('JSB.Workspace.BrowserView') && this.getDescriptor().$name != 'JSB.Workspace.BrowserView'){
+					$this._registerBrowserView(this);
+				}
+			});
 			
 			JSB.getRepository().ensureLoaded(function(){
 				$this._init();
@@ -509,10 +516,19 @@
 			return null;
 		},
 		
-		registerBrowserView: function(wTypes, viewType, viewOpts){
-			var locker = JSB.getLocker();
-			locker.lock('registerBrowserView_' + this.getId());
+		_registerBrowserView: function(viewType){
+			this.lock('registerBrowserView');
+			var wTypes = null;
 			try {
+				var viewOpts = viewType.getDescriptor().$expose;
+				if(!viewOpts){
+					return;
+				}
+				this.browserViews[viewType.getDescriptor().$name] = {
+					jsb: viewType,
+					opts: viewOpts
+				};
+				
 				if(!JSB.isArray(wTypes)){
 					wTypes = [wTypes||null];
 				}
@@ -523,13 +539,16 @@
 				} else if(!JSB.isString(viewType)){
 					throw new Error('Invalid viewType');
 				}
-				var acceptNodes = viewOpts.acceptNode;
-				if(!acceptNodes){
-					acceptNodes = null;
+				
+				var acceptNodes = [];
+				if(viewOpts.acceptNode){
+					if(JSB.isArray(viewOpts.acceptNode)){
+						acceptNodes = viewOpts.acceptNode;
+					} else {
+						acceptNodes.push(viewOpts.acceptNode);
+					}
 				}
-				if(!JSB.isArray(acceptNodes)){
-					acceptNodes = [acceptNodes];
-				}
+				
 				var acceptEntries = [];
 				if(viewOpts.acceptEntry){
 					if(JSB.isArray(viewOpts.acceptEntry)){
@@ -569,9 +588,14 @@
 						this.browserViewRegistryEntry[wType][aEntry].push(vDesc);
 					}
 				}
+				
 			} finally {
-				locker.unlock('registerBrowserView_' + this.getId());
+				this.unlock('registerBrowserView');
 			}
+		},
+		
+		getBrowserViews: function(){
+			return this.browserViews;
 		},
 		
 		queryBrowserViews: function(wType, nodeJsb, bSilent){
