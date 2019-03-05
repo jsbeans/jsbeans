@@ -43,9 +43,11 @@
 				$this.dashboard.getElement().css('height', 'calc(100% - '+($this.headerElt.outerHeight() + 4)+'px)');
 			});
 			
-			this.server().getEntry(function(e){
-				$this.setCurrentEntry(e);
-			});
+			if(!opts.embedded){
+				this.server().getEntry(function(e){
+					$this.setCurrentEntry(e);
+				});
+			}
 		},
 		
 		setCurrentEntry: function(entry){

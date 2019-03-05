@@ -78,11 +78,11 @@
 				} else if(JSB().isNull(itemObj.key) && JSB().isString(itemObj.element)){
 					itemObj.key = itemObj.element;
 				}
-			} else if(JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
-				itemObj.element = obj.getElement();
 			} else if(JSB().isString(obj)){
 				itemObj.element = obj;
 				itemObj.key = obj;
+			} else if(JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
+				itemObj.element = obj.getElement();
 			} else {
 				itemObj.element = this.$(obj);
 				itemObj.key = itemObj.element.text();
@@ -185,7 +185,9 @@
 				if(JSB().isNull(this.selectedObject) || this.selectedObject.key != valObj.key) {
 					if(this.itemMap[valObj.key]){
 						valObj = this.itemMap[valObj.key];
-						var dt = valObj.element;
+					}
+					var dt = valObj.element;
+					if(dt){
 						if(!JSB.isString(dt)){
 							dt = $this.$(valObj.element).clone();
 						}

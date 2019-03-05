@@ -8,7 +8,7 @@ import org.jsbeans.web.WebPluginActivator;
 import org.jsbeans.workspace.WorkspacePluginActivator;
 import org.jsbeans.unimap.UnimapPluginActivator;
 
-@DependsOn({KernelPluginActivator.class, WebPluginActivator.class, WorkspacePluginActivator.class, UnimapPluginActivator.class})
+@DependsOn({KernelPluginActivator.class, WebPluginActivator.class, WorkspacePluginActivator.class, UnimapPluginActivator.class, DataCubePluginActivator.class})
 public class DataCubeEnginePluginActivator implements PluginActivator {
     public void init() {
         String folder = ConfigHelper.getConfigString("datacube.folder");

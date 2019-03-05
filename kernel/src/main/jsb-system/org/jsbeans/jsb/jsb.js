@@ -1335,12 +1335,14 @@ if(!(function(){return this;}).call(null).JSB){
 			if(obj.jsb && obj.jsb.getClass && obj instanceof obj.jsb.getClass()){
 				return obj.jsb.isSubclassOf(cls);
 			}
+/*			
 			if(JSB().isString(obj)){
 				var jso = this.get(obj);
 				if(jso){
 					return jso.isSubclassOf(cls);
 				}
 			}
+*/			
 			return false;
 		},
 		

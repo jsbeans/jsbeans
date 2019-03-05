@@ -120,5 +120,65 @@
             }
             return sourceFields;
         },
+
+        /** Возвращает срезы (внешние именованные запросы), используемые в запросе
+        */
+        extractInternalSlices: function(rootQuery, includeSubSlices){
+            var slices = {};
+            Visitors.visitProxy(rootQuery, {
+                getUndefinedView: function(name) {
+                    var slice = QueryUtils.getQuerySlice(name);
+                    slices[name] = {
+                        sliceId: slice ? slice.getId() : null,
+                        operator: (function(){
+                            for(var i = this.path.length - 1; i >= 0; i--) {
+                                switch(this.path[i]) {
+                                    case '$union':
+                                    case '$join':
+                                    case '$recursive':
+                                    case '$from':
+                                        return this.path[i];
+                                }
+                            }
+                        }).call(this),
+                    }
+                    return includeSubSlices ? slice.getQuery() : {};
+                },
+            });
+            return slices;
+        },
+
+        /** Извлекает из запроса среза измерения, которые он публекует, и идентификаторы срезов, в которых они определены.
+            includeImplicit - включает неявно публикуемые измерения от встроенных срезов
+        */
+        extractDimensions: function(sliceOrQuery, defaultCube, includeImplicit){
+            var sliceDimensions = {};
+            var query = sliceOrQuery.getQuery ? sliceOrQuery.getQuery() : sliceOrQuery;
+            var dimensions = defaultCube.getDimensions();
+            for(var field in query.$select) {
+                if(dimensions[field]) {
+                    if (!sliceDimensions[field]) {
+                        sliceDimensions[field] = {};
+                    }
+                    var id = sliceOrQuery.getQuery ? sliceOrQuery.getId() : null;
+                    sliceDimensions[field][id] = {
+                        sliceId: id,
+                        cubeId: sliceOrQuery.getQuery ? sliceOrQuery.getCube().getId() : null,
+                    };
+                }
+            }
+
+            if (includeImplicit) {
+                Visitors.visitProxy(query, {
+                    getUndefinedView: function(name) {
+                        var slice = QueryUtils.getQuerySlice(name);
+                        var subDimensions = $this.extractDimensions(slice, slice.getCube(), includeImplicit);
+                        JSB.merge(true, sliceDimensions, subDimensions);
+                        return {};
+                    },
+                });
+            }
+            return sliceDimensions;
+        },
     }
 }

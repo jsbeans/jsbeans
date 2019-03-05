@@ -2,6 +2,13 @@
 	$name: 'DataCube.WelcomeView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
+	$expose: {
+		priority: 1,
+		acceptNode: [null],
+		acceptEntry: [null],
+		caption: 'Главная'
+	},
+	
 	$client: {
 		$require: ['css:WelcomeView.css'],
 		$constructor: function(opts){
@@ -13,15 +20,6 @@
 		
 		refresh: function(){}
 		
-	},
-	
-	$server: {
-		$require: 'JSB.Workspace.WorkspaceController',
-		$bootstrap: function(){
-			WorkspaceController.registerBrowserView(null, this, {
-				priority: 1,
-				caption: 'Главная'
-			});
-		},
 	}
+	
 }

@@ -31,7 +31,15 @@
 				allowNewTab: false,
 				onSwitchTab: function(id){
 					if($this.views[id]){
-						$this.views[id].ctrl.setCurrentEntry($this.currentNode ? $this.currentNode.getTargetEntry() : null);
+						var viewArr = $this.getAvailableViews();
+						var viewOpts = null;
+						for(var i = 0; i < viewArr.length; i++){
+							if(viewArr[i].viewEntry.id == id){
+								viewOpts = viewArr[i];
+								break;
+							}
+						}
+						$this.views[id].ctrl.setCurrentEntry($this.currentNode ? $this.currentNode.getTargetEntry() : null, viewOpts);
 					}
 				}
 			});
@@ -65,12 +73,9 @@
 			this.manager = w.workspaceManager;
 		},
 		
-		addView: function(id, title, icon, viewCls){
+		addView: function(id, title, viewCls){
 			if(!this.views[id]){
 				this.views[id] = this.tabView.addTab(title, viewCls, {id: id, dontSwitchOnCreate: true });
-				if(icon){
-					this.views[id].tab.find('> .icon').css('background-image', 'url(' + icon + ')');
-				}
 				this.views[id].tab.resize(function(){
 					JSB.defer(function(){
 						$this.updateNavigator();
@@ -81,12 +86,12 @@
 			return this.views[id];
 		},
 		
-		activateView: function(id){
+		activateView: function(id, opts){
 			if(!this.views[id]){
 				return;
 			}
 			this.tabView.switchTab(id);
-			$this.views[id].ctrl.setCurrentEntry($this.currentNode ? $this.currentNode.getTargetEntry() : null);
+			$this.views[id].ctrl.setCurrentEntry($this.currentNode ? $this.currentNode.getTargetEntry() : null, opts);
 		},
 		
 		getActiveView: function(){
@@ -130,7 +135,7 @@
 							c.call($this);
 						} else {
 							$jsb.lookup(viewDesc.viewType, function(cls){
-								viewDesc.viewEntry = $this.addView(viewDesc.viewType, viewDesc.caption, viewDesc.icon, cls);
+								viewDesc.viewEntry = $this.addView(viewDesc.viewType, viewDesc.caption, cls);
 								c.call($this);
 							});
 						}
@@ -141,9 +146,13 @@
 			}
 		},
 		
-		updateViewsForNode: function(ignorePrevView){
+		getAvailableViews: function(){
 			var nodeType = this.currentNode ? this.currentNode.getJsb().$name : null;
-			var viewArr = this.nodeViewRegistry[nodeType];
+			return this.nodeViewRegistry[nodeType];
+		},
+		
+		updateViewsForNode: function(ignorePrevView){
+			var viewArr = this.getAvailableViews();
 			var currentViewId = this.getActiveView();
 
 			// hide all tabs
@@ -157,6 +166,12 @@
 			// show visible
 			for(var i = 0; i < viewArr.length; i++){
 				viewArr[i].viewEntry.tab.css('display', '');
+				if(viewArr[i].icon){
+					viewArr[i].viewEntry.tab.find('> .icon').css('background-image', 'url(' + viewArr[i].icon + ')')
+				}
+				if(viewArr[i].caption){
+					viewArr[i].viewEntry.tab.find('> .title').text(viewArr[i].caption);
+				}
 			}
 			
 			// reorder tabs
@@ -173,7 +188,7 @@
 			if(!ignorePrevView && currentViewId){
 				for(var i = 0; i < viewArr.length; i++){
 					if(viewArr[i].viewEntry.id == currentViewId){
-						this.activateView(currentViewId);
+						this.activateView(currentViewId, viewArr[i]);
 						bActivated = true;
 						break;
 					}
@@ -181,7 +196,7 @@
 			}
 			if(!bActivated){
 				// activate first view
-				this.activateView(viewArr[0].viewEntry.id);
+				this.activateView(viewArr[0].viewEntry.id, viewArr[0]);
 			}
 			
 			this.updateNavigator();
