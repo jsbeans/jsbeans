@@ -12,6 +12,7 @@
         ],
 
 		transform: function(rootQuery, cubeOrDataProvider){
+
 		    Visitors.extractedFields(rootQuery, function(fieldsExtractor){
                 Visitors.visitProxy(rootQuery, {
                     query: {

@@ -83,6 +83,11 @@
 
         extract: function(){
             $this.visit($this.rootQuery);
+            /// add all final output fields
+            var usedFields = $this.queryUsedOutputFields.get($this.rootQuery);
+            for(var alias in $this.rootQuery.$select) {
+                usedFields[alias] = alias;
+            }
         },
 
         /** Обходит все запросы в произвольном порядке, включая подзапросы и запросы-источники

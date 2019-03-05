@@ -14,7 +14,7 @@
 		transform: function(transformers, dcQuery, defaultCube){
 		    for(var i = 0; i < transformers.length; i++) {
                 var conf = transformers[i];
-                var names = conf.split('@');
+                var names = conf.split('~');
                 var transformerName = names[0];
 
                 var transformer = $this.ensureTransformer(transformerName);
