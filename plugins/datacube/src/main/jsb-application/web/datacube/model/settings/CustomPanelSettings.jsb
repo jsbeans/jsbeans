@@ -15,12 +15,6 @@
 					name: 'Название',
 					valueType: 'string',
 				},
-				viewPanel: {
-					render: 'browserViewBinding',
-					name: 'Панель',
-					accept: 'DataCube.Model.Dashboard',
-					emptyText: 'Перетащите сюда визуализацию'
-				},
 				viewIcon: {
 					name: 'Иконка',
 					render: 'item',
@@ -31,6 +25,10 @@
 					name: 'Отображать',
 					optional: 'checked',
 					editor: 'none'
+				},
+				viewPanel: {
+					render: 'browserViewBinding',
+					name: 'Панель'
 				}
 			}
 		}
@@ -125,6 +123,29 @@
 			return this._settingsContext;
 		},
 		
+		combineScheme: function(jsb){
+			var scheme = {},
+            curJsb = jsb,
+            schemesArray = [];
+
+	        while(curJsb){
+	            if(!curJsb.isSubclassOf('DataCube.Workspace.BrowserView')){
+	                break;
+	            }
+	            var wScheme = curJsb.getDescriptor().$scheme;
+	            if(wScheme && Object.keys(wScheme).length > 0){
+	                schemesArray.push(wScheme);
+	            }
+	            curJsb = curJsb.getParent();
+	        }
+	
+	        for(var i = schemesArray.length - 1; i > -1; i--){
+	            JSB.merge(true, scheme, schemesArray[i]);
+	        }
+	
+	        return scheme;
+		},
+		
 		fixupViews: function(nodeJsb, views){
 			var ctx = this.getSettingsContext();
 			var panelKey = (!nodeJsb ? 'null' : nodeJsb.getDescriptor().$name.replace(/\./g, '_'));
@@ -140,14 +161,8 @@
 					continue;
 				}
 				var viewPanelSel = pSel.find('viewPanel');
-				var view = viewPanelSel.getSystemView();
-				var newView = {};
-				if(view){
-					newView = JSB.clone(view);
-				} else {
-					// add dashboard
-					continue;
-				}
+				var view = viewPanelSel.getView();
+				var newView = JSB.clone(view);
 				var caption = pSel.find('viewName').value();
 				var icon = pSel.find('viewIcon').value();
 				if(caption && caption.length > 0){
@@ -157,6 +172,17 @@
 					newView.icon = icon;
 				}
 				newView.priority = pSels.length - i - 1;
+				
+				// check for settings
+				var viewJsb = JSB.get(newView.viewType);
+				if(viewJsb.isSubclassOf('DataCube.Workspace.BrowserView')){
+					var scheme = $this.combineScheme(viewJsb);
+					if(Object.keys(scheme).length > 0){
+						newView.scheme = scheme;
+						newView.settings = viewPanelSel.getFullValues();
+					}
+				}
+				
 				views.push(newView);
 			}
 		}

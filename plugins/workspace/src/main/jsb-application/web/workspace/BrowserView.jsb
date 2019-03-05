@@ -6,10 +6,9 @@
 	           'JSB.Widgets.Button',
 	           'JQuery.UI.Effects',
 	           'css:BrowserView.css'],
-	
+	           
 	$client: {
-//		node: null,
-		entry: null,
+		entry: 0,
 		workspace: null,
 		
 		$constructor: function(opts){
@@ -19,17 +18,17 @@
 			
 		},
 		
-		setCurrentEntry: function(entry){
-			if(this.entry == entry){
+		setCurrentEntry: function(entry, opts){
+			if(this.entry === entry){
 				return;
 			}
 			this.entry = entry;
 			if(this.entry){
 				this.workspace = this.entry.getWorkspace();
+				this.server().setCurrentEntry(entry);
 			} else {
 				this.workspace = null;
 			}
-			this.server().setCurrentEntry(entry);
 			this.refresh();
 		},
 		
@@ -44,7 +43,9 @@
 	
 	$server: {
 		setCurrentEntry: function(entry){
-			this.publish('JSB.Workspace.BrowserView.setCurrentEntry', entry);
+			if(entry){
+				this.publish('JSB.Workspace.BrowserView.setCurrentEntry', entry);
+			}
 		}
 	}
 }
