@@ -484,6 +484,7 @@
 	        category: 'Функции',
 	        displayName: 'Первое не NULL',
 	        desc: 'Возвращает первое не NULL значение, перебирая заданные выражения по очереди',
+	        multiple: true,
 	        defaultValues: {$const: 0}
 	    },
 
