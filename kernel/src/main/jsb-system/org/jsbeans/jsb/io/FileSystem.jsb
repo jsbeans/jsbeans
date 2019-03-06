@@ -7,6 +7,7 @@
 		$require: [
 			'JSB.IO.Stream',
 			'JSB.IO.TextStream',
+			'JSB.System.Kernel',
 			
 			'java:java.lang.System',
 			'java:java.nio.file.Paths',
@@ -294,14 +295,17 @@
 			var sourcePath = this._resolvePath(from);
 		    var targetPath = this._resolvePath(to);
 		    
-		    for(var i = 0; i < 10; i++){
+		    var tries = 10;
+		    
+		    for(var i = 0; i < tries; i++){
 		    	try {
 		    		Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
 		    		break;
 		    	} catch(e){
-		    		if(!bForce){
+		    		if(!bForce || i >= tries - 1){
 		    			throw e;
 		    		}
+		    		Kernel.sleep((i + 1) * 100);
 		    	}
 		    }
 		},
