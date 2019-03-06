@@ -28,7 +28,7 @@
 	min-height: 25px;
 	cursor: pointer;
     display: inline-block;
-    margin: 1px 2px 0px;
+    margin: 1px -1px 0px;
     padding: 4px 10px;
     text-align: center;
     color: #aaa;

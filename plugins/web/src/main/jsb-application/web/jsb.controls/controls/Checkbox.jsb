@@ -13,9 +13,11 @@
 			this.addClass('jsb-checkbox');
 
 			this.getElement().append(`#dot
-			    <div class="check-elem">
-			        <input type="checkbox" class="flat" style="position: absolute; opacity: 0;">
-			        <ins class="check-helper"></ins>
+				<div class="caption">
+				    <div class="check-elem">
+				        <input type="checkbox" class="flat" style="position: absolute; opacity: 0;">
+				        <ins class="check-helper"></ins>
+	                </div>
                 </div>
 			`);
 
@@ -27,8 +29,8 @@
 			    this.setContent(this.options.content);
 			}
 
-            this.find('> .check-elem > ins').click(function(evt){
-                $this.setChecked(!$this.find('> .check-elem').hasClass('checked'));
+            this.find('> .caption > .check-elem > ins').click(function(evt){
+                $this.setChecked(!$this.find('> .caption > .check-elem').hasClass('checked'));
 
                 if($this.options.onclick){
                     $this.options.onclick.call($this, evt);
@@ -71,16 +73,16 @@
         },
 
 		isChecked: function(){
-			return this.find('> .check-elem > input').prop('checked');
+			return this.find('> .caption > .check-elem > input').prop('checked');
 		},
 
 		setChecked: function(b, hideEvent){
-			this.find('> .check-elem > input').prop('checked', b);
+			this.find('> .caption > .check-elem > input').prop('checked', b);
 
 			if(b){
-			    this.find('> .check-elem').addClass('checked');
+			    this.find('> .caption > .check-elem').addClass('checked');
 			} else {
-			    this.find('> .check-elem').removeClass('checked');
+			    this.find('> .caption > .check-elem').removeClass('checked');
 			}
 
 			this.enableContent(b);
@@ -99,18 +101,18 @@
 
 		setLabel: function(str){
 		    if(!this._label){
-		        this._label = this.$('<div class="caption"></div>');
+		        this._label = this.$('<div class="label"></div>');
 
 		        if(this.options.labelPosition === 'right'){
-		            this.getElement().find('.check-elem').after(this._label);
+		            this.getElement().find('> .caption > .check-elem').after(this._label);
 		        }
 
 		        if(this.options.labelPosition === 'left'){
-		            this.getElement().find('.check-elem').before(this._label);
+		            this.getElement().find('> .caption > .check-elem').before(this._label);
 		        }
 
                 this._label.click(function(evt){
-                    $this.setChecked(!$this.find('> .check-elem').hasClass('checked'));
+                    $this.setChecked(!$this.find('> .caption > .check-elem').hasClass('checked'));
 
                     if($this.options.onclick){
                         $this.options.onclick.call($this, evt);
@@ -135,15 +137,15 @@
 		},
 
 		toggleChecked: function(hideEvent){
-		    var input = this.find('> .check-elem > input'),
+		    var input = this.find('> .caption > .check-elem > input'),
 		        checked = input.prop('checked');
 
             input.prop('checked', !checked);
 
 			if(!checked){
-			    this.find('> .check-elem').addClass('checked');
+			    this.find('> .caption > .check-elem').addClass('checked');
 			} else {
-			    this.find('> .check-elem').removeClass('checked');
+			    this.find('> .caption > .check-elem').removeClass('checked');
 			}
 
 			this.enableContent(!checked);

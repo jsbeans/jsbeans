@@ -219,7 +219,7 @@
 
 				// write file
 				FileSystem.write(eFileNameTmp, JSON.stringify(entry.getEntryDoc(), null, 4));
-				FileSystem.move(eFileNameTmp, eFileName);
+				FileSystem.move(eFileNameTmp, eFileName, true);
 			} catch(e){
 				entry.getWorkspace().blockWithException(e);
 				throw e;

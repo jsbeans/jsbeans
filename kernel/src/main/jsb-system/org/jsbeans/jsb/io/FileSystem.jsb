@@ -290,11 +290,20 @@
 		    }
 		},
 		
-		move: function(from, to){
+		move: function(from, to, bForce){
 			var sourcePath = this._resolvePath(from);
 		    var targetPath = this._resolvePath(to);
 		    
-		    Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
+		    for(var i = 0; i < 10; i++){
+		    	try {
+		    		Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
+		    		break;
+		    	} catch(e){
+		    		if(!bForce){
+		    			throw e;
+		    		}
+		    	}
+		    }
 		},
 		
 		createSymbolicLink: function(existing, link) {

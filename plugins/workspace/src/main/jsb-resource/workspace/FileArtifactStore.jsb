@@ -51,7 +51,7 @@
 						FileSystem.write(eFileName, a, opts);
 					} else {
 						FileSystem.write(eFileNameTmp, a, opts);
-						FileSystem.move(eFileNameTmp, eFileName);
+						FileSystem.move(eFileNameTmp, eFileName, true);
 					}
 				} else if(artifactType == 'value'){
 					var val = JSON.stringify(a, null, 4);
@@ -59,7 +59,7 @@
 						FileSystem.write(eFileName, val);
 					} else {
 						FileSystem.write(eFileNameTmp, val);
-						FileSystem.move(eFileNameTmp, eFileName);
+						FileSystem.move(eFileNameTmp, eFileName, true);
 					}
 				} else if(artifactType == 'binary'){
 					if(JSB.isInstanceOf(a, 'JSB.IO.Stream')){
@@ -75,14 +75,14 @@
 								onProgress: opts && opts.onProgress
 							});
 							oStream.close();
-							FileSystem.move(eFileNameTmp, eFileName);
+							FileSystem.move(eFileNameTmp, eFileName, true);
 						}
 					} else {
 						if(opts && opts.append){
 							FileSystem.write(eFileName, a, {binary: true});
 						} else {
 							FileSystem.write(eFileNameTmp, a, {binary: true});
-							FileSystem.move(eFileNameTmp, eFileName);
+							FileSystem.move(eFileNameTmp, eFileName, true);
 						}
 					}
 				} else {
@@ -199,7 +199,7 @@
 			JSB.getLocker().lock(mtxName);
 			try {
 				if(FileSystem.exists(eFileName)){
-					FileSystem.move(eFileName, eFileNewName);
+					FileSystem.move(eFileName, eFileNewName, true);
 				} else {
 					eDir = this.getArtifactDir(entry, true);
 					eFileName = FileSystem.join(eDir, existedName);
