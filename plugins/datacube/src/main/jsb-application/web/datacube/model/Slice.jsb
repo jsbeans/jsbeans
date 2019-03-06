@@ -212,27 +212,6 @@
 				$this.executeScheduledJob(params);
 			});
 		},
-
-		createQuerySelect: function(useContext){
-            var fields = this.extractFields(),
-                context = this.getFullId(),
-                select = {};
-
-            for(var i in fields){
-                if(useContext){
-                    select[i] = {
-                        $context: context,
-                        $field: i
-                    };
-                } else {
-                    select[i] = {
-                        $field: i
-                    };
-                }
-            }
-
-            return select;
-		},
 		
 		destroy: function(){
 			if($this.queryCache){
@@ -307,11 +286,11 @@
                         query['$join'] = opts.sourceOpts['$join'];
 
                         if(query['$join'].$left){
-                            selectLeft = WorkspaceController.getEntryByFullId(query['$join'].$left).createQuerySelect(opts.selectedFields, true);
+                            selectLeft = WorkspaceController.getEntryByFullId(query['$join'].$left).createQuerySelect(opts.selectedFields, false, true);
                         }
 
                         if(query['$join'].$right){
-                            selectRight = WorkspaceController.getEntryByFullId(query['$join'].$right).createQuerySelect(opts.selectedFields, true);
+                            selectRight = WorkspaceController.getEntryByFullId(query['$join'].$right).createQuerySelect(opts.selectedFields, false, true);
                         }
 
                         JSB.merge(query['$select'], selectLeft, selectRight);
