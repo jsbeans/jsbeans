@@ -255,29 +255,25 @@
 	        switch(this.getKey()){
 	            case '$from':
 	                sources = [{
-	                    id: values,
-	                    context: values
+	                    id: values
 	                }];
 	                break;
                 case '$join':
                     sources = [
                     {
                         id: values.$left,
-                        context: values.$left,
-                        sourceContext: '$left'
+                        sourceContext: values.$left
                     },
                     {
                         id: values.$right,
-                        context: values.$right,
-                        sourceContext: '$right'
+                        sourceContext: values.$right
                     }
                     ];
                     break;
                 case '$union':
                     for(var i = 0; i < values.length; i++){
                         sources.push({
-                            id: values[i],
-                            context: values[i]
+                            id: values[i]
                         });
                     }
                     break;
