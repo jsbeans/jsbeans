@@ -65,7 +65,7 @@
 	            onChange: function(value){
 	                curValue.first = {
 	                    $field: value,
-	                    $sourceContext: '$left'
+	                    $sourceContext: values.$left
 	                };
 	                updateCurValue();
 	            }
@@ -93,7 +93,7 @@
 	            onChange: function(value){
 	                curValue.second = {
 	                    $field: value,
-	                    $sourceContext: '$right'
+	                    $sourceContext: values.$right
 	                };
 	                updateCurValue();
 	            }

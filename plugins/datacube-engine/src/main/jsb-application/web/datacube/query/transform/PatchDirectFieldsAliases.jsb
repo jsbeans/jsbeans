@@ -17,7 +17,10 @@
                 for(var alias in query.$select) {
                     var e = query.$select[alias];
                     if (e.$field && (!e.$context || e.$context == query.$context) || JSB.isString(e)) {
-                        directAliases[alias] = JSB.isString(e) ? {$field: e} : JSB.clone(e);
+                        if (alias != e && alias != e.$field) {
+                            directAliases[alias] = JSB.isString(e) ? {$field: e} : JSB.clone(e);
+                        }
+
                     }
                 }
 

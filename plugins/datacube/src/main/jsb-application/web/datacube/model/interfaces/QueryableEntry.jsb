@@ -15,7 +15,7 @@
 			throw new Error('QueryableEntry.extractFields should be overridden');
 		},
 		
-		createQuerySelect: function(selectedFields, useContext){
+		createQuerySelect: function(selectedFields, useContext, useSourceContext){
             var fields = this.extractFields(),
                 context = this.getFullId(),
                 select = {};
@@ -25,16 +25,11 @@
                     continue;
                 }
 
-                if(useContext){
-                    select[i] = {
-                        $context: context,
-                        $field: i
-                    };
-                } else {
-                    select[i] = {
-                        $field: i
-                    };
-                }
+                select[i] = {
+                    $context: useContext ? context : undefined,
+                    $field: i,
+                    $sourceContext: useSourceContext ? context : undefined
+                };
             }
 
             return select;

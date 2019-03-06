@@ -19,6 +19,10 @@
 
             for(var i = 0; i < fieldsArr.length; i++){
                 for(var j in values[fieldsArr[i]]){
+                    if(j === '$context' || j === '$sourceContext'){
+                        continue;
+                    }
+
                     var render = this.createRender({
                         key: fieldsArr[i],
                         renderName: '$selectItem',
