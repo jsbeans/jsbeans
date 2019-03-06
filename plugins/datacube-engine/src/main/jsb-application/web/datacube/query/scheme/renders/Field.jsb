@@ -30,7 +30,7 @@
                             };
 
                         if(desc.sourceContext){
-                            newVal.$sourceContext = sourceContext;
+                            newVal.$sourceContext = desc.sourceContext;
                         }
 /*
                         if(desc.category === 'Поля источника'){

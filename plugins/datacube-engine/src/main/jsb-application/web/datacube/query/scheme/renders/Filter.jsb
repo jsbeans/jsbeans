@@ -13,7 +13,7 @@
 	        var replacements = Syntax.getReplacementGroup('$filter');
 
 	        for(var i = 0; i < replacements.length; i++){
-	            this._menuItems.push(JSB.merge({}, Syntax.getSchema(replacements[i]), {key: replacements[i]}));
+	            this._menuItems.push(JSB.merge({}, Syntax.getScheme(replacements[i]), {key: replacements[i]}));
 	        }
 
 	        $base(opts);

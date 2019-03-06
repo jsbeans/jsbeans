@@ -5,7 +5,8 @@
 	$alias: '$default',
 
 	$client: {
-	    $require: ['css:Default.css'],
+	    $require: ['DataCube.Query.Syntax',
+	               'css:Default.css'],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -18,6 +19,39 @@
 
 	        if(this.isMultiple() && !this.isFixedFieldCount()){
 	            this.createAddButton();
+            }
+	    },
+
+	    changeValue: function(oldDesc){
+	        var schemeValues = this.getScheme().values,
+	            oldValues = this.getValues(),
+	            newVal = {};
+
+            if(oldDesc.render === '$multiField'){
+                var oldScheme = Syntax.getScheme(oldDesc.key),
+                    newVal;
+
+                if(this.isMultiple()){
+                    oldValues = oldValues[0];
+                    newVal = [];
+
+                    for(var i in oldValues){
+                        if(!oldScheme.values[i].parameter){
+                            newVal.push(oldValues[i]);
+                        }
+                    }
+                } else {
+                    newVal = {};
+
+                    for(var i in oldValues){
+                        if(!oldScheme[i].parameter){
+                            newVal = oldValues[i];
+                            break;
+                        }
+                    }
+                }
+
+                this.setValues(newVal);
             }
 	    },
 

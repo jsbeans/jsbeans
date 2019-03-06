@@ -117,6 +117,10 @@
 	        });
 	    },
 
+	    changeValue: function(oldDesc){
+	        this.setValues(this.getDefaultValues());
+	    },
+
 	    checkValues: function(){
 	        var values = this.getValues();
 

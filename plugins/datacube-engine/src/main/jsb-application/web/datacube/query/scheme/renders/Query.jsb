@@ -36,7 +36,7 @@
                 descriptions.push({
                     key: i,
                     order: order++,
-                    scheme: Syntax.getSchema(i) || {}
+                    scheme: Syntax.getScheme(i) || {}
                 });
             }
 

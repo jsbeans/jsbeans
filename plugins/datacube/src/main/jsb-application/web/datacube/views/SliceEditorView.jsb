@@ -110,7 +110,7 @@
 			
 			var hSplitBox = new SplitBox({
 				type: 'horizontal',
-				position: 0.5
+				position: 0.7
 			});
 			this.append(hSplitBox);
 			

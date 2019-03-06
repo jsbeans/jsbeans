@@ -51,13 +51,17 @@
 	        this._scheme = opts.scheme;
 	        this._scope = opts.scope;
 
-	        if(JSB.isDefined(this.getValues())){
-	            this.checkValues();
+	        if(opts.changedFrom){
+	            this.changeValue(opts.changedFrom);
 	        } else {
-	            if(this.getDefaultValues()){
-	                this.setValues(this.getDefaultValues());
-	            }
-	        }
+                if(JSB.isDefined(this.getValues())){
+                    this.checkValues();
+                } else {
+                    if(this.getDefaultValues()){
+                        this.setValues(this.getDefaultValues());
+                    }
+                }
+            }
 
 	        this.getController().registerRender(this);
 	    },
@@ -66,17 +70,21 @@
         * Заменяет текущее значение в скопе новым, создаёт новый рендер
         * @param {string} newKey - новый ключ. Если не указан, то берётся текущий ключ
         * @param {*} [newValue] - новое значение. Если не указано, то берётся старое значение
-        * @param {string} [context] - контекст. Не добавляется, если не указан
+        * @param {object} [desc] - описание выбранного элемента (приходит из тултипа)
         */
-	    changeTo: function(newKey, newValue, context){
+	    changeTo: function(newKey, newValue, desc){
 	        if(JSB.isNull(newKey)){
 	            newKey = this.getKey();
 	        }
 
 	        this.replaceValue(newKey, newValue);
-
-	        if(context){
-	            //this.setContext(context);
+/*
+	        if(desc && desc.context){
+	            this.setContext(desc.context);
+	        }
+*/
+	        if(desc && desc.sourceContext){
+	            this.setParameter('$sourceContext', desc.sourceContext);
 	        }
 
 	        var render = this.createRender({
@@ -86,6 +94,10 @@
                 allowDelete: this.isAllowDelete(),
                 deleteCallback: this.getDeleteCallback(),
 
+                changedFrom: {
+                    key: this.getKey(),
+                    render: this.getRenderName()
+                },
 	            key: newKey,
 	            scope: this.getScope()
 	        }, this.getParent());
@@ -98,11 +110,14 @@
 	    },
 
         /**
+        * Вызывается для конвертации значений других рендеров в формат текущего
+        */
+	    changeValue: function(oldDesc){},
+
+        /**
         * Вызывается в конструкторе для проверки соответствия типа значения данному рендеру
         */
-	    checkValues: function(){
-	        // todo
-	    },
+	    checkValues: function(){},
 
         /**
         * Создаёт заголовок
@@ -487,7 +502,7 @@
         * @param {*} [newValue] - новое значение. Если не указано, то берётся старое значение
         */
 	    replaceValue: function(newKey, newValue){
-            var isNewValMultiple = Syntax.getSchema(newKey).multiple,
+            var isNewValMultiple = Syntax.getScheme(newKey).multiple,
                 isCurrentValMultiple = this.isMultiple();
 
 	        if(JSB.isDefined(newValue)){
@@ -514,19 +529,20 @@
 	    },
 
         /**
-        * Устанавливает новый контекст
-        * @param {string} context - новый контекст
-        */
-	    setContext: function(context){
-	        this._scope.$context = context;
-	    },
-
-        /**
         * Устанавливает новый ключ
         * @param {string} key - новый ключ
         */
 	    setKey: function(key){
 	        this._key = key;
+	    },
+
+        /**
+        * Устанавливает значение параметра
+        * @param {string} paramName - имя параметра
+        * @param {*} value - значение параметра
+        */
+	    setParameter: function(paramName, value){
+	        this._scope[paramName] = value;
 	    },
 
         /**

@@ -6,7 +6,12 @@
 
 	$client: {
 	    $require: ['DataCube.Query.Syntax',
+	               'JSB.Controls.Checkbox',
+	               'JSB.Widgets.ToolManager',
+	               'DataCube.Query.SimpleSelectTool',
 	               'css:MultiField.css'],
+
+        _addItems: [],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -16,21 +21,8 @@
 	        var scheme = this.getScheme(),
 	            values = this.getValues(),
 	            desc = this.getKey() + '\n' + scheme.desc,
-	            isNeedChangeEvt = false;
-
-            if(!JSB.isObject(values)){
-                this.setValues({});
-                values = this.getValues();
-            }
-
-            // remove unexisted keys
-            for(var i in values){
-                if(!scheme.values[i]){
-                    delete this._scope[this.getKey()][i];
-
-                    isNeedChangeEvt = true;
-                }
-            }
+	            isNeedChangeEvt = false,
+	            hasOptional = false;
 
 	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
             this.append(operator);
@@ -43,65 +35,216 @@
 
             this.append(this.createSeparator(true));
 
-            var fields = this.$('<div class="fields"></div>');
-            this.append(fields);
+            this.fields = this.$('<div class="fields"></div>');
+            this.append(this.fields);
 
             for(var i in scheme.values){
-                var field = this.$('<div class="field"></div>');
-                fields.append(field);
-
-                field.append('<div class="valueName">' + scheme.values[i].displayName + '</div>');
-
-                field.append(this.createSeparator());
-
-                if(scheme.values[i].parameter){
-                    var paramValue;
-
+                if(scheme.values[i].optional){
                     if(JSB.isDefined(values[i])){
-                        paramValue = values[i];
+                        isNeedChangeEvt = this.create(i, true) || isNeedChangeEvt;
                     } else {
-                        values[i] = scheme.values[i].defaultValues;
-                        isNeedChangeEvt = true;
-
-                        paramValue = values[i];
+                        this._addItems.push(JSB.merge({key: i}, scheme.values[i]));
                     }
 
-                    if(scheme.values[i].type === 'text'){
-                        paramValue = '"' + paramValue + '"';
-                    }
-
-                    var paramValueElement = this.$('<div class="paramValue">' + paramValue + '</div>');
-                    field.append(paramValueElement);
-
-                    (function(value, type, paramName){
-                        value.click(function(evt){
-                            evt.stopPropagation();
-
-                            $this.createInput(value, type, function(newVal){
-                                values[paramName] = newVal;
-                            });
-                        });
-                    })(paramValueElement, scheme.values[i].type, i);
+                    hasOptional = true;
                 } else {
-                    if(!values[i]){
-                        values[i] = scheme.values[i].defaultValues;
-                    }
+                    this.create(i);
+                }
+            }
 
-                    for(var k in values[i]){
-                        var render = this.createRender({
-                            key: k,
-                            scope: this.getValues()[i]
-                        });
+            if(hasOptional){
+                this.addBtn = this.$('<i class="addBtn"></i>');
+                this.append(this.addBtn);
+                this.addBtn.click(function(){
+                    ToolManager.activate({
+                        id: 'simpleSelectTool',
+                        cmd: 'show',
+                        data: {
+                            key: JSB.generateUid(),
+                            values: $this._addItems
+                        },
+                        scope: null,
+                        target: {
+                            selector: $this.getElement(),
+                            dock: 'bottom'
+                        },
+                        callback: function(desc){
+                            $this.create(desc.key, true);
 
-                        if(render){
-                            field.append(render);
+                            for(var i = 0; i < $this._addItems.length; i++){
+                                if($this._addItems[i].key === desc.key){
+                                    $this._addItems.splice(i, 1);
+                                    break;
+                                }
+                            }
+
+                            if($this._addItems.length === 0){
+                                $this.addBtn.addClass('hidden');
+                            }
+
+                            $this.onChange();
                         }
-                    }
+                    });
+                });
+
+                this._addItems.sort(function(a, b){
+                    return a.key > b.key;
+                });
+
+                if(this._addItems.length === 0){
+                    this.addBtn.addClass('hidden');
                 }
             }
 
             if(isNeedChangeEvt){
                 this.onChange();
+            }
+	    },
+
+	    changeValue: function(oldDesc){
+	        var schemeValues = this.getScheme().values,
+	            oldValues = this.getValues(),
+	            newVal = {};
+
+	        switch(oldDesc.render){
+	            case '$field':
+	            case '$default':
+	            case '$const':
+	                for(var i in schemeValues){
+	                    if(!schemeValues[i].parameter){
+	                        newVal[i] = oldValues;
+	                        break;
+	                    }
+	                }
+	                break;
+                case '$multiField':
+                    var oldScheme = Syntax.getScheme(oldDesc.key);
+
+                    for(var i in oldValues){
+                        if(oldScheme[i].parameter){
+                            for(var j in schemeValues){
+                                if(schemeValues[j].parameter){
+                                    newVal[j] = oldValues[i];
+                                }
+                            }
+                        }
+                    }
+                    break;
+	        }
+
+	        this.setValues(newVal);
+	    },
+
+	    create: function(name, removable){
+	        var scheme = this.getScheme().values[name],
+	            field = this.createField(name, scheme, removable);
+
+	        if(scheme.parameter){
+	            return this.createParameter(field, name);
+	        } else {
+	            return this.createValue(field, name);
+	        }
+	    },
+
+	    createField: function(name, scheme, removable){
+            var field = this.$('<div class="field"></div>');
+            this.fields.append(field);
+
+            var valueName = this.$('<div class="valueName">' + scheme.displayName + '</div>');
+            field.append(valueName);
+
+            if(removable){
+                this.installMenuEvents({
+                    element: valueName,
+                    id: this.getId() + '_value_' + name,
+                    edit: false,
+                    remove: true,
+                    deleteCallback: function(){
+                        delete $this.getValues()[name];
+
+                        field.remove();
+
+                        $this._addItems.push(JSB.merge({key: name}, scheme));
+
+                        // todo: не работает
+                        $this._addItems.sort(function(a, b){
+                            return a.key > b.key;
+                        });
+
+                        $this.addBtn.removeClass('hidden');
+
+                        $this.onChange();
+                    }
+                }, true, true);
+            }
+
+            field.append(this.createSeparator());
+
+            return field;
+	    },
+
+	    createParameter: function(field, name){
+	        var scheme = this.getScheme().values[name],
+	            value = this.getValues()[name],
+	            isNeedChangeEvt = false,
+	            paramValue;
+
+            if(!JSB.isDefined(value)){
+                this.getValues()[name] = scheme.defaultValues;
+                value = this.getValues()[name];
+
+                isNeedChangeEvt = true;
+            }
+
+            switch(scheme.type){
+                case 'text':
+                    value = '"' + value + '"';
+                case 'number':
+                    var paramValueElement = this.$('<div class="paramValue">' + value + '</div>');
+                    field.append(paramValueElement);
+
+                    paramValueElement.click(function(evt){
+                        evt.stopPropagation();
+
+                        $this.createInput(paramValueElement, scheme.type, function(newVal){
+                            $this.getValues()[name] = newVal;
+                        });
+                    });
+                    break;
+                case 'enum':
+                    break;
+                case 'boolean':
+                    var checkbox = new Checkbox({
+                        checked: value,
+                        onChange: function(b){
+                            $this.getValues()[name] = b;
+
+                            $this.onChange();
+                        }
+                    });
+                    field.append(checkbox);
+                    break;
+            }
+
+            return isNeedChangeEvt;
+	    },
+
+	    createValue: function(field, name){
+	        var scheme = this.getScheme().values[name];
+
+            if(!this.getValues()[name]){
+                this.getValues()[name] = scheme.defaultValues;
+            }
+
+            for(var k in this.getValues()[name]){
+                var render = this.createRender({
+                    key: k,
+                    scope: this.getValues()[name]
+                });
+
+                if(render){
+                    field.append(render);
+                }
             }
 	    }
 	}
