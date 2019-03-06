@@ -52,7 +52,7 @@
 	background: #E2E2E2;
 	cursor: pointer;
 	position: relative;
-
+	margin-right: -1px;
 	font-size: small;
 	color: #444;
 	box-sizing: border-box;
@@ -76,6 +76,7 @@
 	vertical-align: bottom;
 	border-bottom: 1px solid #BEBEBE;
 	top: 1px;
+	
 }
 
 ._dwp_tabview._dwp_tabTop > ._dwp_tabPane > li._dwp_tab.active {

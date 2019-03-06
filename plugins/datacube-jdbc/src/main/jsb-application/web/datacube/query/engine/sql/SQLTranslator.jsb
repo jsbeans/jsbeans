@@ -1347,11 +1347,11 @@ debugger
 //                    query.$from ? '$from' : query.$join ? '$join' : query.$union ? '$union' : query.$provider ? '$provider' : '',
 //                    sql
 ////            );
-if (sql== undefined
-) {
-    debugger;
-    $this._translateFieldInternal(field, context, sourceContext, useAlias, callerContext);
-}
+//if (sql== '"#0"."ShortName"'
+//) {
+//    debugger;
+//    $this._translateFieldInternal(field, context, sourceContext, useAlias, callerContext);
+//}
             return sql;
         },
 

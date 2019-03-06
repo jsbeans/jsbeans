@@ -1744,7 +1744,11 @@ debugger
 		                    if (e[i] == oldContext) {
 		                        e[i] = newContext;
 		                    }
-		                } else {
+		                } else if (i == '$sourceContext') {
+                            if (e[i] == oldContext) {
+                                e[i] = newContext;
+                            }
+                        } else {
 		                    walk(e[i]);
 		                }
 		            }

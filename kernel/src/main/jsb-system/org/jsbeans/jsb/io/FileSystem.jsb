@@ -7,6 +7,7 @@
 		$require: [
 			'JSB.IO.Stream',
 			'JSB.IO.TextStream',
+			'JSB.System.Kernel',
 			
 			'java:java.lang.System',
 			'java:java.nio.file.Paths',
@@ -290,11 +291,23 @@
 		    }
 		},
 		
-		move: function(from, to){
+		move: function(from, to, bForce){
 			var sourcePath = this._resolvePath(from);
 		    var targetPath = this._resolvePath(to);
 		    
-		    Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
+		    var tries = 10;
+		    
+		    for(var i = 0; i < tries; i++){
+		    	try {
+		    		Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
+		    		break;
+		    	} catch(e){
+		    		if(!bForce || i >= tries - 1){
+		    			throw e;
+		    		}
+		    		Kernel.sleep((i + 1) * 100);
+		    	}
+		    }
 		},
 		
 		createSymbolicLink: function(existing, link) {

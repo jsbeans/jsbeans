@@ -2,11 +2,15 @@
     display: inline-block;
     white-space: nowrap;
     position: relative;
-    min-width: 20px;
+}
+
+.jsb-checkbox > .caption {
+	position: relative;
+	min-width: 20px;
     min-height: 20px;
 }
 
-.jsb-checkbox > .check-elem {
+.jsb-checkbox > .caption > .check-elem {
 	position: absolute;
     top: 50%;
     margin-top: -10px;
@@ -19,7 +23,7 @@
     cursor: pointer;
 }
 
-.jsb-checkbox > .check-elem > .check-helper {
+.jsb-checkbox > .caption > .check-elem > .check-helper {
     position: absolute;
     top: 0%; left: 0%;
     display: block;
@@ -32,15 +36,15 @@
     opacity: 0;
 }
 
-.jsb-checkbox > .check-elem.checked {
+.jsb-checkbox > .caption > .check-elem.checked {
     background-position: -22px 0;
 }
 
-.jsb-checkbox > .check-elem:hover:not(.checked) {
+.jsb-checkbox > .caption > .check-elem:hover:not(.checked) {
     background-position: -66px 0;
 }
 
-.jsb-checkbox > .caption {
+.jsb-checkbox > .caption > .label {
     display: inline-block;
     vertical-align: middle;
     line-height: 20px;
@@ -53,12 +57,16 @@
     cursor: pointer;
 }
 
-.jsb-checkbox > .check-elem + .caption,
-.jsb-checkbox >  .caption + .check-elem {
+.jsb-checkbox > .caption> .check-elem + .label,
+.jsb-checkbox > .caption>  .label + .check-elem {
 }
 
-.jsb-checkbox > .check-elem + .caption {
+.jsb-checkbox > .caption > .check-elem + .label {
     text-align: left;
+}
+
+.jsb-checkbox > .content {
+	margin-top: 4px;
 }
 
 .jsb-checkbox > .content.disabled,
@@ -80,6 +88,6 @@
     display: block;
 }
 
-.jsb-checkbox.loading > .check-elem {
+.jsb-checkbox.loading > .caption > .check-elem {
     background-position: -44px 0;
 }
