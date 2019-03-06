@@ -16,10 +16,13 @@
 	            this._menuItems.push(JSB.merge({}, Syntax.getScheme(replacements[i]), {key: replacements[i]}));
 	        }
 
+	        if(opts.parent.getRenderName() === '$query'){
+	            this._isQueryElement = true;
+	        }
+
 	        $base(opts);
 
-	        if(this.getParent().getRenderName() === '$query'){
-	            this._isQueryElement = true;
+	        if(this._isQueryElement){
 	            this.addClass('queryElements');
 	        }
 
@@ -35,7 +38,8 @@
 	    },
 
 	    checkValues: function(){
-	        this.setValues(this.getDefaultValues());
+	        //
+	        //this.setValues(this.getDefaultValues());
 	    },
 
 	    constructHead: function(){
