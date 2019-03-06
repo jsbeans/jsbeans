@@ -254,6 +254,7 @@
             for(var k in this.getValues()[name]){
                 var render = this.createRender({
                     key: k,
+                    renderName: scheme.renderName ? scheme.renderName : undefined,
                     scope: this.getValues()[name]
                 });
 

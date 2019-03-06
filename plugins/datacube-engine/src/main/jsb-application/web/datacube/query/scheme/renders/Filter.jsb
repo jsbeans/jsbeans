@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Renders.Filter',
-	$parent: 'DataCube.Query.Renders.QueryElements',
+	$parent: 'DataCube.Query.Renders.Default',
 
 	$alias: '$filter',
 
@@ -18,10 +18,33 @@
 
 	        $base(opts);
 
+	        if(this.getParent().getRenderName() === '$query'){
+	            this._isQueryElement = true;
+	            this.addClass('queryElements');
+	        }
+
 	        this.addClass('filterRender');
 	    },
 
+	    _isQueryElement: false,
 	    _menuItems: [],
+
+	    changeValue: function(oldDesc){
+	        // todo
+	        this.setValues({});
+	    },
+
+	    checkValues: function(){
+	        this.setValues(this.getDefaultValues());
+	    },
+
+	    constructHead: function(){
+	        if(this._isQueryElement){
+	            this.createHeader(true);
+            } else {
+                $base();
+            }
+	    },
 
 	    createAddButton: function(){
             this.addBtn = this.$('<i class="addBtn"></i>');
@@ -72,6 +95,14 @@
 	        });
 
 	        return $base(options, parent);
+	    },
+
+	    remove: function(){
+	        if(this._isQueryElement){
+	            this.getParent().addMenuItem(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
+            }
+
+	        $base();
 	    },
 
 	    updateMenuItems: function(){

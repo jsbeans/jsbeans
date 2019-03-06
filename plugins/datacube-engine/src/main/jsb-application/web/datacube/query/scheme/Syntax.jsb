@@ -22,7 +22,7 @@
 	    // функции
 	    '$greatest', '$least', '$splitString', '$substring', '$trim', '$concat', '$regexpReplace',
 	    '$dateYear', '$dateMonth', '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$dateTotalSeconds',
-	    '$dateIntervalOrder', '$timeHour', '$timeMinute', '$timeSecond',
+	    '$dateIntervalOrder', '$timeHour', '$timeMinute', '$timeSecond', '$coalesce',
 	    // преобразование типов
 	    '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toTimestamp', '$toString',
 	    // функции агрегации
@@ -34,7 +34,8 @@
 	    // логика
 	    '$and', '$or', '$not',
 	    // сравнения
-	    '$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike'
+	    '$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike',
+	    // условные выражения
 	    ],
 	    $filter: ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike', '$and', '$or', '$not']
 	},
@@ -476,6 +477,14 @@
 	        displayName: 'Извлечь секунды',
 	        desc: 'Извлечь секунды в в минуте (0-59) из даты/времени (date/timestamp)',
 	        defaultValues: {$const: 1550252269}
+	    },
+
+	    $coalesce: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Первое не NULL',
+	        desc: 'Возвращает первое не NULL значение, перебирая заданные выражения по очереди',
+	        defaultValues: {$const: 0}
 	    },
 
         // type conversion
