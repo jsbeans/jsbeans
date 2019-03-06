@@ -19,6 +19,8 @@
 //debugger;
                         if (!sourceContext) {
                             var exp = this.getCurrent();
+                            if (exp.$sourceContext) throw 'Illegal state';
+
                             if (!JSB.isObject(exp)) {
                                 return;
                             }
