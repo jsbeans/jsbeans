@@ -58,8 +58,7 @@
             for(var i = 0; i < descriptions.length; i++){
                 var render = this.createRender({
                     key: descriptions[i].key,
-                    scope: this.getScope(),
-                    queryBean: this
+                    scope: this.getScope()
                 });
 
                 if(render){

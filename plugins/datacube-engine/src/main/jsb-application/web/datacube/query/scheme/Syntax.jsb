@@ -128,6 +128,7 @@
 	        multiple: true,
 	        queryElement: true,
 	        replaceable: false,
+	        removable: true,
 	        defaultValues: [],
 	        defaultAddValues: {$const: 0},
 
@@ -142,8 +143,9 @@
 	        multiple: true,
 	        queryElement: true,
 	        replaceable: false,
+	        removable: true,
 
-	        defaultValues: {$and: []},
+	        defaultValues: {},
 	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
 
 	        allowOutputFields: false,
@@ -158,7 +160,8 @@
 	        multiple: true,
 	        queryElement: true,
 	        replaceable: false,
-	        defaultValues: {$and: []},
+	        removable: true,
+	        defaultValues: {},
 	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
 
 	        allowSourceFields: false,
@@ -183,6 +186,7 @@
 	        desc: 'Сортировка элементов (строк)',
 	        queryElement: true,
 	        replaceable: false,
+	        removable: true,
 	        defaultValues: [],
 	        defaultAddValues: {$expr: {$const: 0}, $type: 1}
 	    },
@@ -193,6 +197,7 @@
 	        desc: 'Ограничение количества элементов',
 	        queryElement: true,
 	        replaceable: false,
+	        removable: true,
 	        defaultValues: 10
 	    },
 
@@ -700,7 +705,9 @@
 	        desc: 'Логический оператор "И"',
 	        multiple: true,
 	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
-	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }],
+
+	        children: '$filter'
 	    },
 
 	    $or: {
@@ -710,7 +717,9 @@
 	        desc: 'Логический оператор "ИЛИ"',
 	        multiple: true,
 	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
-	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }],
+
+	        children: '$filter'
 	    },
 
 	    $not: {
@@ -720,7 +729,9 @@
 	        desc: 'Логический оператор "НЕ"',
 	        multiple: true,
 	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
-	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }],
+
+	        children: '$filter'
 	    },
 
 	    // comparison operators

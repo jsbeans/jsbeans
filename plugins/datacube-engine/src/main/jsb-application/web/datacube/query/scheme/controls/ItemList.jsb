@@ -22,6 +22,8 @@
                 }
             }
 
+            this.sortCategories();
+
             this.selectDefaultCategory();
         },
 
@@ -31,7 +33,7 @@
             onSelect: null
         },
 
-        addCategory: function(category){
+        addCategory: function(category, noSort){
             if(!this._categories){
                 this._categories = this.$('<ul class="categories"></ul>');
                 this.prepend(this._categories);
@@ -55,6 +57,10 @@
                 categoryLabel: categoryLabel,
                 itemsList: categoryItem
             };
+
+            if(!noSort){
+                this.sortCategories();
+            }
         },
 
         addItem: function(itemDesc){    // item, key, category
@@ -74,7 +80,7 @@
 
             if(itemDesc.category){
                 if(!this._categoriesList[itemDesc.category]){
-                    this.addCategory(itemDesc.category);
+                    this.addCategory(itemDesc.category, true);
                 }
 
                 this._categoriesList[itemDesc.category].itemsList.append(el);
@@ -182,6 +188,31 @@
             }
 
             this._itemList[key].item.addClass('selected');
+        },
+
+        sortCategories: function(){
+            if(!this._categories){
+                return;
+            }
+
+		    var categories = this._categories.children();
+
+		    categories.sort(function(a, b){
+		        a = $this.$(a).text();
+		        b = $this.$(b).text();
+
+                if(a > b){
+                    return 1;
+                }
+
+                if(a < b){
+                    return -1;
+                }
+
+                return 0;
+		    });
+
+		    categories.detach().appendTo(this._categories);
         }
     }
 }

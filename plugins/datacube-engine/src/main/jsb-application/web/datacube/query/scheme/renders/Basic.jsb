@@ -14,7 +14,7 @@
 	    * @param {object} opts - опции передаются из функции createRender контроллера
 	    * @see DataCube.Query.SchemeController.createRender
 	    *
-	    * @param {boolean} [opts.allowDelete] - возможность удаления. Если не задана, то false
+	    * @param {boolean} [opts.allowDelete] - возможность удаления
         * @param {boolean} [opts.allowOutputFields] - можно ли дочерним элементам использовать поля текущего запроса. Если не задана, то true
 	    * @param {boolean} [opts.allowSourceFields] - можно ли дочерним элементам использовать поля источника. Если не задана, то true
 	    * @param {object} opts.controller - контроллер схемы
@@ -42,7 +42,7 @@
                 this._allowSourceFields = JSB.isDefined(opts.allowSourceFields) ? opts.allowSourceFields : true;
             }
 
-	        this._allowDelete = JSB.isDefined(opts.allowDelete) ? opts.allowDelete : false;
+	        this._allowDelete = opts.allowDelete;
 	        this._controller = opts.controller;
 	        this._deleteCallback = opts.deleteCallback;
 	        this._key = opts.key;

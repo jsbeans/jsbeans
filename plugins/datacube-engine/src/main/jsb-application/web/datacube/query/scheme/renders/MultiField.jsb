@@ -88,7 +88,15 @@
                 });
 
                 this._addItems.sort(function(a, b){
-                    return a.key > b.key;
+                    if(a.key > b.key){
+                        return 1;
+                    }
+
+                    if(a.key < b.key){
+                        return -1;
+                    }
+
+                    return 0;
                 });
 
                 if(this._addItems.length === 0){
@@ -166,9 +174,16 @@
 
                         $this._addItems.push(JSB.merge({key: name}, scheme));
 
-                        // todo: не работает
                         $this._addItems.sort(function(a, b){
-                            return a.key > b.key;
+                            if(a.key > b.key){
+                                return 1;
+                            }
+
+                            if(a.key < b.key){
+                                return -1;
+                            }
+
+                            return 0;
                         });
 
                         $this.addBtn.removeClass('hidden');
