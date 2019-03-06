@@ -40,7 +40,7 @@
         },
 
         logDebug: function(msg, a0, a1){
-            if (Config.get('jsbeans.debug')) {
+            if (true){//Config.get('jsbeans.debug')) {
                 Log.debug($this.sformat.apply(this, arguments));
             }
         },

@@ -85,6 +85,10 @@
             $this.visit($this.rootQuery);
             /// add all final output fields
             var usedFields = $this.queryUsedOutputFields.get($this.rootQuery);
+            if (!usedFields) {
+                usedFields = {};
+                $this.queryUsedOutputFields.put($this.rootQuery, usedFields);
+            }
             for(var alias in $this.rootQuery.$select) {
                 usedFields[alias] = alias;
             }
