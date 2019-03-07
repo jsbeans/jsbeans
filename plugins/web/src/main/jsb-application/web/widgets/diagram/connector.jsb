@@ -98,12 +98,13 @@
 		},
 		
 		updateOrigin: function(){
+			var zoom = this.node.diagram.getOption('zoom');
 			var nodePos = this.node.getElement().get(0).getBoundingClientRect();
 			var originRc = this.options.origin.get(0).getBoundingClientRect();
-			this.originRc.left = originRc.left - nodePos.left;
-			this.originRc.top = originRc.top - nodePos.top;
-			this.originRc.width = originRc.right - originRc.left;
-			this.originRc.height = originRc.bottom - originRc.top;
+			this.originRc.left = (originRc.left - nodePos.left) / zoom;
+			this.originRc.top = (originRc.top - nodePos.top) / zoom;
+			this.originRc.width = (originRc.right - originRc.left) / zoom;
+			this.originRc.height = (originRc.bottom - originRc.top) / zoom;
 		},
 		
 		install: function(){
