@@ -4,9 +4,9 @@
 	$session: false,
 	$server: {
 		$require: [
-		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
-		    'DataCube.Query.Transforms.QueryTransformer'
+		    'DataCube.Query.Transforms.QueryTransformer',
+		    'DataCube.Query.Syntax'
         ],
 
 		transform: function(dcQuery, cubeOrDataProvider){
@@ -19,7 +19,7 @@
 		unwrapMacros: function(dcQuery) {
             QueryUtils.walkQueries(dcQuery, {}, null, function(subQuery){
                 // unwrap macros and $grmax* to complex expressions
-                QuerySyntax.unwrapMacrosCurrentQuery(subQuery, dcQuery);
+                Syntax.unwrapMacrosCurrentQuery(subQuery, dcQuery);
             });
 		},
 

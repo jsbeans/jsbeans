@@ -43,6 +43,7 @@
             }
 
 	        this._allowDelete = opts.allowDelete;
+	        this._allowWrap = opts.allowWrap;
 	        this._controller = opts.controller;
 	        this._deleteCallback = opts.deleteCallback;
 	        this._key = opts.key;
@@ -379,6 +380,14 @@
 	    },
 
         /**
+        * Возвращает возможность оборачивания рендера в другой рендер
+        * @return {boolean} флаг возможности оборачивания
+        */
+	    isAllowWrap: function(){
+	        return JSB.isDefined(this._allowWrap) ? this._allowWrap : true;
+	    },
+
+        /**
         * Рендер с фиксированным количеством значений?
         * @return {boolean}
         */
@@ -404,6 +413,12 @@
         */
 	    installMenuEvents: function(menuOpts, noHover, noClick){
 	        menuOpts = this._expandOptions(menuOpts);
+
+	        if(!menuOpts.wrap && !menuOpts.edit && !menuOpts.remove){
+	            return;
+	        }
+
+	        menuOpts.element.addClass('pointer');
 
             menuOpts.element.hover(function(evt){
                 evt.stopPropagation();

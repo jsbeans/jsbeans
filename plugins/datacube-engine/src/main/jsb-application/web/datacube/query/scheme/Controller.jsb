@@ -54,6 +54,10 @@
 	    * @return {object|undefined} Объект, если существует подходящий рендер
 	    */
         createRender: function(options, parent){
+            if(options.key === '$context' || options.key === '$sourceContext'){
+                return;
+            }
+
             var scheme = Syntax.getScheme(options.key);
 
             if(!options.renderName && !scheme){

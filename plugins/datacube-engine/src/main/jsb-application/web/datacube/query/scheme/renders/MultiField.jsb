@@ -129,7 +129,7 @@
                     var oldScheme = Syntax.getScheme(oldDesc.key);
 
                     for(var i in oldValues){
-                        if(oldScheme[i].parameter){
+                        if(oldScheme.values[i].parameter){
                             for(var j in schemeValues){
                                 if(schemeValues[j].parameter){
                                     newVal[j] = oldValues[i];
@@ -247,19 +247,35 @@
 	    createValue: function(field, name){
 	        var scheme = this.getScheme().values[name];
 
-            if(!this.getValues()[name]){
-                this.getValues()[name] = scheme.defaultValues;
-            }
-
-            for(var k in this.getValues()[name]){
+            if(scheme.scopeValue){
                 var render = this.createRender({
-                    key: k,
+                    allowDelete: false,
+                    allowWrap: scheme.wrap,
+                    key: name,
                     renderName: scheme.renderName ? scheme.renderName : undefined,
-                    scope: this.getValues()[name]
+                    scope: this.getValues()
                 });
 
                 if(render){
                     field.append(render);
+                }
+            } else {
+                if(!this.getValues()[name]){
+                    this.getValues()[name] = scheme.defaultValues;
+                }
+
+                for(var k in this.getValues()[name]){
+                    var render = this.createRender({
+                        allowDelete: false,
+                        allowWrap: scheme.wrap,
+                        key: k,
+                        renderName: scheme.renderName ? scheme.renderName : undefined,
+                        scope: this.getValues()[name]
+                    });
+
+                    if(render){
+                        field.append(render);
+                    }
                 }
             }
 	    }

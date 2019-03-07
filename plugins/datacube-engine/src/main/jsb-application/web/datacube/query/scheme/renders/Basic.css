@@ -52,10 +52,13 @@
     font-family: monospace;
     font-weight: bold;
     font-size: 14px;
+}
+
+.basicQueryRender .operator.pointer {
     cursor: pointer;
 }
 
-.basicQueryRender .operator:hover {
+.basicQueryRender .operator.pointer:hover {
     text-shadow: 0px 0px 1px #a0b9ce;
 }
 
