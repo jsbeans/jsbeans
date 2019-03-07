@@ -122,6 +122,10 @@
 	            }
 	        }
 
+	        if(curKey === '$provider'){
+	            newValue = {};
+	        }
+
 	        $base(newKey, newValue || null);
 	    },
 
@@ -247,7 +251,7 @@
 	            debugger;
 	        }
 	    },
-
+/*
 	    getSourceFields: function(callback){
 	        var sources,
 	            values = this.getValues();
@@ -287,7 +291,7 @@
 	            callback.call($this, res);
 	        });
 	    },
-
+*/
         /**
         * Возвращает значения из скопа для текущего рендера
         * @params {number} index - индекс нужного значения

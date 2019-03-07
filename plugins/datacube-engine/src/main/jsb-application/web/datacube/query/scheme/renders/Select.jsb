@@ -18,20 +18,14 @@
                 fieldsArr = Object.keys(values).sort();
 
             for(var i = 0; i < fieldsArr.length; i++){
-                for(var j in values[fieldsArr[i]]){
-                    if(j === '$context' || j === '$sourceContext'){
-                        continue;
-                    }
+                var render = this.createRender({
+                    key: fieldsArr[i],
+                    renderName: '$selectItem',
+                    scope: this.getValues()
+                });
 
-                    var render = this.createRender({
-                        key: fieldsArr[i],
-                        renderName: '$selectItem',
-                        scope: this.getValues()
-                    });
-
-                    if(render){
-                        this.append(render);
-                    }
+                if(render){
+                    this.append(render);
                 }
             }
 
@@ -61,8 +55,6 @@
                     $this.onChange();
                 }
             });
-	    },
-
-	    sort: function(){}
+	    }
 	}
 }

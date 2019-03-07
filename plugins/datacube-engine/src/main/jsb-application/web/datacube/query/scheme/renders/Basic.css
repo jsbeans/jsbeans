@@ -23,6 +23,10 @@
     background: -webkit-linear-gradient(top, #ffffff 0%, #f1f1f1 100%);
 }
 
+.basicQueryRender > header.pointer {
+    cursor: pointer;
+}
+
 .basicQueryRender .separator {
     display: inline-block;
     margin: 0 2px;

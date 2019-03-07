@@ -78,30 +78,52 @@
 	            newKey = this.getKey();
 	        }
 
-	        this.replaceValue(newKey, newValue);
-/*
-	        if(desc && desc.context){
-	            this.setContext(desc.context);
-	        }
-*/
-	        if(desc && desc.sourceContext){
-	            this.setParameter('$sourceContext', desc.sourceContext);
-	        }
+	        var render;
 
-	        var render = this.createRender({
-	            // поля, заданные родителем
-                allowOutputFields: this.isAllowOutputFields(),
-                allowSourceFields: this.isAllowSourceFields(),
-                allowDelete: this.isAllowDelete(),
-                deleteCallback: this.getDeleteCallback(),
+	        if(newKey === '$query'){
+	            var newVal = {};
+	            this.getParent().setValues(newVal);
 
-                changedFrom: {
-                    key: this.getKey(),
-                    render: this.getRenderName()
-                },
-	            key: newKey,
-	            scope: this.getScope()
-	        }, this.getParent());
+                render = this.createRender({
+                    // поля, заданные родителем
+                    allowOutputFields: this.isAllowOutputFields(),
+                    allowSourceFields: this.isAllowSourceFields(),
+                    allowDelete: this.isAllowDelete(),
+                    deleteCallback: this.getDeleteCallback(),
+
+                    changedFrom: {
+                        key: this.getKey(),
+                        render: this.getRenderName()
+                    },
+                    key: newKey,
+                    scope: newVal
+                }, this.getParent());
+	        } else {
+                this.replaceValue(newKey, newValue);
+    /*
+                if(desc && desc.context){
+                    this.setContext(desc.context);
+                }
+    */
+                if(desc && desc.sourceContext){
+                    this.setParameter('$sourceContext', desc.sourceContext);
+                }
+
+                render = this.createRender({
+                    // поля, заданные родителем
+                    allowOutputFields: this.isAllowOutputFields(),
+                    allowSourceFields: this.isAllowSourceFields(),
+                    allowDelete: this.isAllowDelete(),
+                    deleteCallback: this.getDeleteCallback(),
+
+                    changedFrom: {
+                        key: this.getKey(),
+                        render: this.getRenderName()
+                    },
+                    key: newKey,
+                    scope: this.getScope()
+                }, this.getParent());
+            }
 
 	        if(render){
 	            this.getElement().replaceWith(render.getElement());
@@ -127,8 +149,6 @@
 	    createHeader: function(hasMenu){
             var header = this.$('<header>' + this._scheme.displayName + '</header>');
             this.append(header);
-
-            var scheme = this.getScheme();
 
             if(hasMenu){
                 this.installMenuEvents({
@@ -200,6 +220,25 @@
 	        return this.getController().createRender(options, parent || this);
 	    },
 
+	    createRenderFromValues: function(renderOpts){
+	        // check if query
+	        if(renderOpts.scope.$select){
+	            return this.createRender(JSB.merge(renderOpts, {
+	                renderName: '$query'
+	            }));
+	        }
+
+	        for(var i in renderOpts.scope){
+	            if(i === '$context' || i === '$sourceContext'){
+	                continue;
+	            }
+
+	            return this.createRender(JSB.merge(renderOpts, {
+	                key: i
+	            }));
+	        }
+	    },
+
         /**
         * Создаёт разделитель
         * @param {boolean} [isCollapsible] - является ли разделитель элементом для сворачивания
@@ -230,6 +269,16 @@
         */
 	    getChildren: function(){
 	        return this.getController().getRenderById(this.getId()).children;
+	    },
+
+        /**
+        * Возвращает контекст текущего запроса
+        * @return {string} контекст
+        */
+	    getContext: function(){
+	        if(this.getParent()){
+	            return this.getParent().getContext();
+	        }
 	    },
 
         /**
@@ -301,6 +350,14 @@
 	    },
 
         /**
+        * Возвращает выходные поля основного запроса
+        * @return {string[]} выходные поля
+        */
+	    getOutputFields: function(){
+	        this.getParent().getOutputFields();
+	    },
+
+        /**
         * Возвращает родительский рендер, если существует
         * @return {object|undefined} объект рендера
         */
@@ -314,6 +371,14 @@
         */
 	    getRenderName: function(){
 	        return this._renderName;
+	    },
+
+        /**
+        * Возвращает основной запрос
+        * @return {object} запрос
+        */
+	    getQuery: function(){
+	        return this.getController().getQuery();
 	    },
 
         /**
@@ -339,6 +404,10 @@
 	        return this._scope;
 	    },
 
+        /**
+        * Возвращает текущий срез
+        * @return {JSB} бин среза
+        */
 	    getSlice: function(){
 	        return this.getController().getSlice();
 	    },
@@ -469,7 +538,7 @@
         /**
         *
         * Удаляет значение (для multiple элементов)
-        * @param {array} items - массив элементов
+        * @param {jQuery[]} items - массив элементов
         * @param {jQuery} item - удаляемый элемент
         */
 	    removeItem: function(items, item){
@@ -493,7 +562,7 @@
         /**
         *
         * Изменяет порядок значений (для multiple элементов)
-        * @param {array} items - массив элементов
+        * @param {jQuery[]} items - массив элементов
         */
 	    reorderValues: function(items){
 	        for(var i = 0; i < items.length; i++){

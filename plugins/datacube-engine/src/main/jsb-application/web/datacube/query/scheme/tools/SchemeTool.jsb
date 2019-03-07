@@ -7,6 +7,7 @@
 	               'JSB.Widgets.RendererRepository',
 	               'DataCube.Query.ItemList',
 	               'DataCube.Query.Syntax',
+	               'DataCube.Query.Extractors.ExtractUtils',
 	               'css:SchemeTool.css'],
 
 		$bootstrap: function(){
@@ -38,11 +39,19 @@
                 if(itemDesc.category === 'Срезы'){
                     itemElement.append(RendererRepository.createRendererFor(itemDesc.item));
                 } else if(itemDesc.category === $this._SOURCE_FIELDS_NAME || itemDesc.category === $this._OUTPUT_FIELDS_NAME){
-                    if(JSB.isInstanceOf(itemDesc.item, 'DataCube.Model.Slice')){
-                        itemElement.append(RendererRepository.createRendererFor(itemDesc.item));
+
+                    if(itemDesc.isHeader){
+
+                        if(JSB.isInstanceOf(itemDesc.item, 'DataCube.Model.Slice')){
+                            itemElement.append(RendererRepository.createRendererFor(itemDesc.item));
+                        } else {
+                            itemElement.append('<div class="contextName">Подзапрос ' + itemDesc.item + '</div>');
+                        }
+
                     } else {
-                        itemElement.append('<div class="fieldName cubeFieldIcon sliceField">' + itemDesc.item + '</div>')
+                        itemElement.append('<div class="fieldName cubeFieldIcon sliceField">' + itemDesc.item + '</div>');
                     }
+
                 } else {
                     itemElement.append('<div class="key">' + itemDesc.key + '</div><div class="desc">' + itemDesc.desc + '</div>');
                 }
@@ -69,8 +78,7 @@
 		        data = this.getData('data'),
 		        key = this.getData('key'),
 		        sliceId = this.getData('sliceId'),
-		        showSlices = this.getData('showSlices'),
-		        query = this.getData('query');
+		        showSlices = this.getData('showSlices');
 
 		    // fill slices
 		    if(this._sliceId !== sliceId){
@@ -99,6 +107,8 @@
             }
 
             if(allowItems.indexOf('$field') > -1){
+                var context = caller.getContext();
+
                 var allowOutputFields = caller.isAllowOutputFields(),
                     allowSourceFields = caller.isAllowSourceFields();
 
@@ -107,10 +117,7 @@
 
                     this.itemList.clearCategory(this._OUTPUT_FIELDS_NAME);
 
-                    var fields = Object.keys(query.getScope().$select),
-                        context = query.getScope().$context;
-
-                    fields.sort();
+                    var fields = caller.getOutputFields();
 
                     for(var i = 0; i < fields.length; i++){
                         if(true){   // i !== key
@@ -129,31 +136,47 @@
 
                     this.itemList.clearCategory(this._SOURCE_FIELDS_NAME);
 
-                    query.getSourceFields(function(slices){
-                        // slice: slices[i].entry
-                        // fields: slices[i].fields
-                        for(var i = 0; i < slices.length; i++){
-                            $this.itemList.addItem({
-                                allowSelect: false,
-                                item: slices[i].entry,
-                                key: i,
-                                category: $this._SOURCE_FIELDS_NAME
-                            });
+                    ExtractUtils.server().extractAllowedFields(caller.getQuery(), context, function(fields, fail){
+                        if(fail){
+                            throw new Error('Ошибка при загрузке доступных полей источников');
+                        }
+console.log(fields);
+                        var cubeSlices = caller.getData('cubeSlices'),
+                            curContext;
 
-                            var sliceId = slices[i].entry.getFullId();
+                        for(var i = 0; i < fields.length; i++){
+                            if(JSB.isDefined(fields[i].$sourceContext)){
+                                if(curContext !== fields[i].$sourceContext){
+                                    curContext = fields[i].$sourceContext;
 
-                            var fields = Object.keys(slices[i].fields);
-                            fields.sort();
+                                    $this.itemList.addItem({
+                                        allowSelect: false,
+                                        isHeader: true,
+                                        item: cubeSlices[curContext],
+                                        key: curContext,
+                                        category: $this._SOURCE_FIELDS_NAME
+                                    });
+                                }
+                            } else if(fields[i].$context !== curContext){
+                                curContext = fields[i].$context;
 
-                            for(var j = 0; j < fields.length; j++){
                                 $this.itemList.addItem({
-                                    context: slices[i].context,
-                                    item: fields[j],
-                                    key: sliceId + '|' + fields[j],
-                                    category: $this._SOURCE_FIELDS_NAME,
-                                    sourceContext: slices[i].sourceContext
+                                    allowSelect: false,
+                                    isHeader: true,
+                                    item: curContext,
+                                    key: curContext,
+                                    category: $this._SOURCE_FIELDS_NAME
                                 });
                             }
+
+                            $this.itemList.addItem({
+                                item: fields[i].$field,
+                                key: curContext + '|' + fields[i].$field,
+                                category: $this._SOURCE_FIELDS_NAME,
+
+                                context: fields[i].$context,
+                                sourceContext: fields[i].$sourceContext
+                            });
                         }
                     });
                 }

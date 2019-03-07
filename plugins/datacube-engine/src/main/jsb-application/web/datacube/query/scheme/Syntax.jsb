@@ -30,7 +30,7 @@
 	    // функции глобальной агрегации
 	    '$gsum', '$gcount', '$gmin', '$gmax', '$gavg', '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 	    // разное
-	    '$const', '$distinct',// '$query',
+	    '$const', '$distinct', '$query',
 	    // логика
 	    '$and', '$or', '$not',
 	    // сравнения
@@ -42,7 +42,12 @@
 
 	scheme: {
 	    $query: {
-	        render: '$query'
+	        render: '$query',
+	        category: 'Разное',
+	        displayName: 'Подзапрос',
+	        desc: 'Запрос внутри запроса',
+	        replaceable: true,
+	        defaultValues: {$from: {}, $select: {}}
 	    },
 
         /*******/
