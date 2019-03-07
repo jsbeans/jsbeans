@@ -476,8 +476,9 @@
 			JSB.defer(function(){
 				$this.load();
 				// invalidate slices
-				for(var slId in $this.slices){
-					var slice = $this.slices[slId];
+				var slices = $this.getSlices();
+				for(var slId in slices){
+					var slice = slices[slId];
 					if(slice){
 						slice.invalidate();
 					}
@@ -497,16 +498,17 @@
 				$this.updatingCache = true;
 				try {
 					// invalidate slices
-					var totalSlices = Object.keys($this.slices).length;
+					var slices = $this.getSlices();
+					var totalSlices = Object.keys(slices).length;
 					var cnt = 0;
 					var lastPP = -1;
-					for(var slId in $this.slices){
+					for(var slId in slices){
 						var pp = Math.round(cnt * 100 / totalSlices);
 						if(pp > lastPP){
 		            		$this.publish('DataCube.Model.Cube.status', {status: 'Обновление кэша ' + pp + '%', success: true}, {session: true});
 		            		lastPP = pp;
 		            	}
-						var slice = $this.slices[slId];
+						var slice = slices[slId];
 						if(slice){
 							slice.updateCache();
 							
