@@ -1014,11 +1014,12 @@
 
         registerMacro: function(definition, values, objectGenerator){
             this.scheme[definition.name] = {
-                render: '$multiField',
+                render: '$multiField', //definition.renderName, //'$multiField',
                 category: 'Макросы',
                 displayName: definition.displayName || definition.name,
                 desc: definition.desc,
-                values: values
+                values: values,
+                replaceable: true
             };
 
 		    this._macros[definition.name] = {

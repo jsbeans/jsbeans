@@ -38,8 +38,18 @@
 	    },
 
 	    checkValues: function(){
-	        //
-	        //this.setValues(this.getDefaultValues());
+	        var values = this.getValues(),
+	            filter = Syntax.getReplacementGroup('$filter');
+
+            for(var i in values){
+                if(filter.indexOf(i) === -1){
+                    delete values[i];
+                }
+            }
+
+            if(Object.keys(values).length === 0){
+                this.setValues(this.getDefaultValues());
+            }
 	    },
 
 	    constructHead: function(){

@@ -86,7 +86,7 @@
             this.installMenuEvents({
                 element: operator,
                 id: this.getId() + '_operator',
-                wrap: true,
+                wrap: this.isAllowWrap(),
                 deleteCallback: function(){
                     $this.getDeleteCallback().call($this);
                 }
