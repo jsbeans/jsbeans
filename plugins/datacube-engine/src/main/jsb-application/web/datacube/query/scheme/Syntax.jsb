@@ -22,7 +22,7 @@
 	    // функции
 	    '$greatest', '$least', '$splitString', '$substring', '$trim', '$concat', '$regexpReplace',
 	    '$dateYear', '$dateMonth', '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$dateTotalSeconds',
-	    '$dateIntervalOrder', '$timeHour', '$timeMinute', '$timeSecond',
+	    '$dateIntervalOrder', '$timeHour', '$timeMinute', '$timeSecond', '$coalesce',
 	    // преобразование типов
 	    '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toTimestamp', '$toString',
 	    // функции агрегации
@@ -30,18 +30,24 @@
 	    // функции глобальной агрегации
 	    '$gsum', '$gcount', '$gmin', '$gmax', '$gavg', '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 	    // разное
-	    '$const', '$distinct',// '$query',
+	    '$const', '$distinct', '$query',
 	    // логика
 	    '$and', '$or', '$not',
 	    // сравнения
-	    '$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike'
+	    '$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike',
+	    // условные выражения
 	    ],
 	    $filter: ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike', '$and', '$or', '$not']
 	},
 
 	scheme: {
 	    $query: {
-	        render: '$query'
+	        render: '$query',
+	        category: 'Разное',
+	        displayName: 'Подзапрос',
+	        desc: 'Запрос внутри запроса',
+	        replaceable: true,
+	        defaultValues: {$from: {}, $select: {}}
 	    },
 
         /*******/
@@ -128,6 +134,7 @@
 	        multiple: true,
 	        queryElement: true,
 	        replaceable: false,
+	        removable: true,
 	        defaultValues: [],
 	        defaultAddValues: {$const: 0},
 
@@ -142,8 +149,9 @@
 	        multiple: true,
 	        queryElement: true,
 	        replaceable: false,
+	        removable: true,
 
-	        defaultValues: {$and: []},
+	        defaultValues: {},
 	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
 
 	        allowOutputFields: false,
@@ -158,7 +166,8 @@
 	        multiple: true,
 	        queryElement: true,
 	        replaceable: false,
-	        defaultValues: {$and: []},
+	        removable: true,
+	        defaultValues: {},
 	        defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
 
 	        allowSourceFields: false,
@@ -183,6 +192,7 @@
 	        desc: 'Сортировка элементов (строк)',
 	        queryElement: true,
 	        replaceable: false,
+	        removable: true,
 	        defaultValues: [],
 	        defaultAddValues: {$expr: {$const: 0}, $type: 1}
 	    },
@@ -193,6 +203,7 @@
 	        desc: 'Ограничение количества элементов',
 	        queryElement: true,
 	        replaceable: false,
+	        removable: true,
 	        defaultValues: 10
 	    },
 
@@ -473,6 +484,15 @@
 	        defaultValues: {$const: 1550252269}
 	    },
 
+	    $coalesce: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Первое не NULL',
+	        desc: 'Возвращает первое не NULL значение, перебирая заданные выражения по очереди',
+	        multiple: true,
+	        defaultValues: {$const: 0}
+	    },
+
         // type conversion
 	    $toInt: {
 	        render: '$default',
@@ -700,7 +720,9 @@
 	        desc: 'Логический оператор "И"',
 	        multiple: true,
 	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
-	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }],
+
+	        children: '$filter'
 	    },
 
 	    $or: {
@@ -710,7 +732,9 @@
 	        desc: 'Логический оператор "ИЛИ"',
 	        multiple: true,
 	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
-	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }],
+
+	        children: '$filter'
 	    },
 
 	    $not: {
@@ -720,7 +744,9 @@
 	        desc: 'Логический оператор "НЕ"',
 	        multiple: true,
 	        defaultAddValues: { $eq: [{$const: 0},{$const: 0}] },
-	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }]
+	        defaultValues: [{ $eq: [{$const: 0},{$const: 0}] }],
+
+	        children: '$filter'
 	    },
 
 	    // comparison operators
@@ -993,11 +1019,12 @@
 
         registerMacro: function(definition, values, objectGenerator){
             this.scheme[definition.name] = {
-                render: '$multiField',
+                render: '$multiField', //definition.renderName, //'$multiField',
                 category: 'Макросы',
                 displayName: definition.displayName || definition.name,
                 desc: definition.desc,
-                values: values
+                values: values,
+                replaceable: true
             };
 
 		    this._macros[definition.name] = {

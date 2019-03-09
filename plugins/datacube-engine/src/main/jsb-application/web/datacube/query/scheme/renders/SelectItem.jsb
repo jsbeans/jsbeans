@@ -56,15 +56,13 @@
                 }
             });
 
-            for(var i in this.getValues()){
-                var render = this.createRender({
-                    key: i,
-                    scope: this.getValues()
-                });
+            var render = this.createRenderFromValues({
+                allowDelete: false,
+                scope: this.getValues()
+            });
 
-                if(render){
-                    this.append(render);
-                }
+            if(render){
+                this.append(render);
             }
 	    },
 

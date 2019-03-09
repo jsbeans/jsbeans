@@ -14,7 +14,7 @@
 
 	        this.append(this.getValues());
 
-	        var context = this.getContext();
+	        var context = this.getFieldContext();
 
 	        if(context){
 	            this.getElement().attr('title', context);
@@ -45,7 +45,7 @@
             });
 	    },
 
-	    getContext: function(){
+	    getFieldContext: function(){
 	        return this.getScope().$context;
 	    },
 
@@ -56,7 +56,7 @@
 	    replaceValue: function(newKey, newValue){
 	        if(!JSB.isDefined(newValue)){
 	            newValue = {
-	                $context: this.getContext(),
+	                $context: this.getFieldContext(),
 	                $field: this.getValues(),
 	                $sourceContext: this.getSourceContext()
 	            };
@@ -75,7 +75,7 @@
 
 	    wrap: function(desc, options){
 	        var oldVal = {
-	                $context: this.getContext(),
+	                $context: this.getFieldContext(),
 	                $field: this.getValues(),
 	                $sourceContext: this.getSourceContext()
 	            };

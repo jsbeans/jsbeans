@@ -9,6 +9,7 @@
 	           'css:Controller.css'],
 
 	$client: {
+	    _contextMap: {},
 	    _data: {},
 	    _menu: null,
 	    _query: null,
@@ -54,6 +55,10 @@
 	    * @return {object|undefined} Объект, если существует подходящий рендер
 	    */
         createRender: function(options, parent){
+            if(options.key === '$context' || options.key === '$sourceContext'){
+                return;
+            }
+
             var scheme = Syntax.getScheme(options.key);
 
             if(!options.renderName && !scheme){
@@ -80,6 +85,21 @@
             this.ensureTrigger(['Syntax_initialized', 'RenderRepository_initialized'], callback);
         },
 
+        generateContext: function(){
+            var contextBase = 'subContext',
+                context = contextBase,
+                cnt = 1;
+
+            while(this._contextMap[context]){
+                context = contextBase + '_' + cnt;
+                cnt++;
+            }
+
+            this._contextMap[context] = true;
+
+            return context;
+        },
+
         getData: function(key){
             if(key){
                 return this._data[key];
@@ -89,7 +109,7 @@
         },
 
         getQuery: function(){
-            return this._query;
+            return this._query.getScope();
         },
 
         getRenderById: function(id){
@@ -99,11 +119,11 @@
         getSlice: function(){
             return this._slice;
         },
-
+/*
         getSourceFields: function(callback){
             this.getQuery().getSourceFields(callback);
         },
-
+*/
         getValues: function(){
             return this._values;
         },
@@ -127,6 +147,8 @@
                     $this._query.destroy();
                 }
 
+                $this._contextMap = {};
+
                 $this._data = opts.data || $this._data;
 
                 $this._slice = opts.slice || $this._slice;
@@ -144,6 +166,10 @@
                     $this._query = query;
                 }
             });
+        },
+
+        registerContext: function(context){
+            this._contextMap[context] = true;
         },
 
         registerRender: function(render){
@@ -218,7 +244,7 @@
 				data: JSB.merge(opts, {
 				    data: this.getData(),
 				    sliceId: this._refreshUid,
-				    query: this.getQuery()
+				    //query: this.getQuery()
 				}),
 				scope: null,
 				target: {

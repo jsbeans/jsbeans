@@ -380,7 +380,7 @@ debugger;
 
         visitGroupBy: function($groupBy) {
             for (var i = 0; i < $groupBy.length; i++) {
-                $this.visit($groupBy[i]);
+                $this.visit($groupBy[i], {asExpression:true});
             }
         },
 

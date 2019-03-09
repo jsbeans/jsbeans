@@ -1,9 +1,31 @@
+.queryRender.subQuery {
+    min-width: 300px;
+    border: 2px solid #97b3f152;
+}
+
+.queryRender.subQuery > header {
+    margin-bottom: 0;
+}
+
+.queryRender.subQuery > header > * {
+    display: inline-block;
+}
+
+.queryRender.subQuery > header > .context {
+    float: right;
+    font-size: 12px;
+    font-weight: 400;
+}
+
 .queryRender > .addBtn {
     width: 20px;
     height: 20px;
     margin-top: 10px;
 }
 
-.queryRender > .queryElements > .basicQueryRender {
-    padding: 5px;
+.queryRender.subQuery > .basicQueryRender > header {
+    padding: 1px 2px;
+    height: 20px;
+    font-size: 13px;
+    font-weight: 500;
 }

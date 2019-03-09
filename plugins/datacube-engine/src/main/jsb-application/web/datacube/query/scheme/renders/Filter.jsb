@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Renders.Filter',
-	$parent: 'DataCube.Query.Renders.QueryElements',
+	$parent: 'DataCube.Query.Renders.Default',
 
 	$alias: '$filter',
 
@@ -16,12 +16,49 @@
 	            this._menuItems.push(JSB.merge({}, Syntax.getScheme(replacements[i]), {key: replacements[i]}));
 	        }
 
+	        if(opts.parent.getRenderName() === '$query'){
+	            this._isQueryElement = true;
+	        }
+
 	        $base(opts);
+
+	        if(this._isQueryElement){
+	            this.addClass('queryElements');
+	        }
 
 	        this.addClass('filterRender');
 	    },
 
+	    _isQueryElement: false,
 	    _menuItems: [],
+
+	    changeValue: function(oldDesc){
+	        // todo
+	        this.setValues({});
+	    },
+
+	    checkValues: function(){
+	        var values = this.getValues(),
+	            filter = Syntax.getReplacementGroup('$filter');
+
+            for(var i in values){
+                if(filter.indexOf(i) === -1){
+                    delete values[i];
+                }
+            }
+
+            if(Object.keys(values).length === 0){
+                this.setValues(this.getDefaultValues());
+            }
+	    },
+
+	    constructHead: function(){
+	        if(this._isQueryElement){
+	            this.createHeader(true);
+            } else {
+                $base();
+            }
+	    },
 
 	    createAddButton: function(){
             this.addBtn = this.$('<i class="addBtn"></i>');
@@ -72,6 +109,14 @@
 	        });
 
 	        return $base(options, parent);
+	    },
+
+	    remove: function(){
+	        if(this._isQueryElement){
+	            this.getParent().addMenuItem(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
+            }
+
+	        $base();
 	    },
 
 	    updateMenuItems: function(){
