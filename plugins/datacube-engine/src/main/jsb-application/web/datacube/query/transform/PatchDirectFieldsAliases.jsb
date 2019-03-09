@@ -25,8 +25,10 @@
                 }
 
                 QueryUtils.walkFields(query, function fieldsCallback(field, context, q, path){
-                    if (directAliases[field] && (!context || context == query.$context)) {
-                        return directAliases[field];
+                    if (path.indexOf('$postFilter') == -1 || path.indexOf('$globalFilter') == -1) {
+                        if (directAliases[field] && (!context || context == query.$context)) {
+                            return directAliases[field];
+                        }
                     }
                 });
 

@@ -13,13 +13,28 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
+		acceptable: function(name, executor, queryTask){
+		    var query = queryTask.query;
+		    var cube = queryTask.cube;
+		    var config = $this.getLocalConfig(name);
+		    var providers = queryTask.providers = QueryUtils.extractProviders(query, cube);
+            for(var  i = 0; i < providers.length; i++) {
+                if(providers[i].getStore() instanceof SQLStore
+                        && config.vendor == providers[i].getStore().getVendor())
+                {
+                    return true;
+                }
+            }
+            return false; // has no compatible provider
+		},
+
 		execute: function(name, executor, queryTask){
 		    var query = queryTask.query;
 		    var cube = queryTask.cube;
 		    var params = queryTask.params;
 		    var config = $this.getLocalConfig(name);
+		    var providers = queryTask.providers || QueryUtils.extractProviders(query, cube);
 
-		    var providers = QueryUtils.extractProviders(query, cube);
             for(var  i = 0; i < providers.length; i++) {
                 if(providers[i].getStore() instanceof SQLStore
                         && config.vendor == providers[i].getStore().getVendor())

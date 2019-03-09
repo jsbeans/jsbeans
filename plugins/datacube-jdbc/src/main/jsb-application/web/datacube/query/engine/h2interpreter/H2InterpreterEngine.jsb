@@ -13,6 +13,10 @@
 		    'JSB.Store.Sql.JDBC',
         ],
 
+		acceptable: function(name, executor, queryTask) {
+            return true;
+		},
+
 		execute: function(name, executor, queryTask){
 debugger;
 		    var query = queryTask.query;

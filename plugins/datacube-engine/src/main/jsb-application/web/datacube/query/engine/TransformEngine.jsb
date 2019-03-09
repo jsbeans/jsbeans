@@ -24,11 +24,14 @@
             var preparedQuery = QueryTransformer.transform(transformers||[], query, cube);
             for(var i = 0; i < config.next.length; i++) {
                 var next = config.next[i];
-                executor.executeEngine(next, {
+                var it = executor.executeEngine(next, {
                     cube: cube,
                     query: JSB.clone(preparedQuery),
                     params: JSB.clone(params),
                 });
+                if(it) {
+                    return it;
+                }
             }
 
             return null; // no iterator
