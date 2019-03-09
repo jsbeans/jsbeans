@@ -1405,7 +1405,7 @@
         extractNativeType: function (exp, query, cube, getQuery) {
 
 		    var getQuery = getQuery || function(name) {
-		        if (query.$views && query[name]) {
+		        if (query.$views && query.$views[name]) {
 		            return query[name];
 		        }
 		        return $this.findView(name, null, query);
@@ -1418,8 +1418,15 @@
                     var fields = slice.extractFields();
                     return fields[field] ? (fields[field].nativeType || fields[field].type) : null;
                 } else {
-                    return false;
+                    var viewQuery = getQuery(view);
+                    if (viewQuery && viewQuery.$select[field]) {
+                        var type = $this.extractNativeType(viewQuery.$select[field], viewQuery, cube, getQuery);
+                        if (type) {
+                            return type;
+                        }
+                    }
                 }
+                return null;
             }
             function extractFieldType(field){
                 if (field.startsWith('${') && field.endsWith('}')) {

@@ -219,15 +219,11 @@ debugger;
             }
 
             if (exp.$filter && Object.keys(exp.$filter).length > 0) {
-                $this.visitWithPath('$filter', function(){
-                    $this.visit(exp.$filter, {asCondition:true});
-                });
+                $this.visitFilter(exp.$filter);
             }
 
             if (exp.$globalFilter && Object.keys(exp.$globalFilter).length > 0) {
-                $this.visitWithPath('$globalFilter', function(){
-                    $this.visit(exp.$globalFilter, {asCondition:true});
-                });
+                $this.visitGlobalFilter(exp.$globalFilter);
             }
 
             if (exp.$groupBy && exp.$groupBy.length > 0) {
@@ -241,9 +237,7 @@ debugger;
             }
 
             if (exp.$postFilter && Object.keys(exp.$postFilter).length > 0) {
-                $this.visitWithPath('$postFilter', function(){
-                    $this.visit(exp.$postFilter, {asCondition:true});
-                });
+                $this.visitPostFilter(exp.$postFilter);
             }
         },
 
@@ -351,6 +345,24 @@ debugger;
 
         visitCube: function($cube) {
 
+        },
+
+        visitFilter: function($filter) {
+            $this.visitWithPath('$filter', function(){
+                $this.visit($filter, {asCondition:true});
+            });
+        },
+
+        visitGlobalFilter: function($globalFilter) {
+            $this.visitWithPath('$globalFilter', function(){
+                $this.visit($globalFilter, {asCondition:true});
+            });
+        },
+
+        visitGlobalFilter: function($postFilter) {
+            $this.visitWithPath('$postFilter', function(){
+                $this.visit($postFilter, {asCondition:true});
+            });
         },
 
         visitSelect: function($select) {

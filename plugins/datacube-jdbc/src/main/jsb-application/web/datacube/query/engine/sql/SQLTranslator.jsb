@@ -9,6 +9,7 @@
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.Console',
 			'Datacube.Types.DataTypes',
+            'DataCube.Query.Extractors.ExpressionsTypesExtractor',
 		    'JSB.Store.Sql.JDBC',
 		    'JSB.Crypt.MD5',
         ],
@@ -90,6 +91,11 @@
 		},
 
 		translateQuery: function(query) {
+		    ExpressionsTypesExtractor.extractedTypes($this.dcQuery, function(queryFieldsTypes, expressionsTypes){
+		        $this.queryFieldsTypes = queryFieldsTypes;
+		        $this.expressionsTypes = expressionsTypes;
+		    });
+
 		    $this._views = QueryUtils.indexViews($this.dcQuery);
 
 		    // translate query
@@ -484,10 +490,11 @@ debugger
                     if (i > 0) sql += ' ' + op + ' ';
                     var arg = $this._translateExpression(args[i], dcQuery, useAlias);
                     if (wrapper) {
-                        var type = QueryUtils.extractType(args[i], dcQuery, $this.cube || $this.providers[0], function(ctx){
-                            return $this.contextQueries[ctx];
+                        sql += wrapper(arg, i, function(){
+                            var type = $this.expressionsTypes.get(args[i]);
+                            if (type) return type.type;
+                            return null;
                         });
-                        sql += wrapper(arg, i, type);
                     } else {
                         sql += arg;
                     }
@@ -589,7 +596,7 @@ debugger
             if (exp.hasOwnProperty('$const')) {
                 return $this._translateConst(exp);
             } else if (exp.$field){
-                return this._translateField(
+                var fieldSQL = this._translateField(
                         exp.$field,
                         // if context is not defined then use current
                         exp.$context || dcQuery.$context,
@@ -598,6 +605,10 @@ debugger
                         useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context,
                         dcQuery.$context
                 );
+                if (exp.$nativeType || exp.$type) {
+                    return 'CAST(' + fieldSQL + ' AS ' + (exp.$nativeType||DataTypes.toVendor($this.vendor, exp.$type)) + ')';
+                }
+                return fieldSQL;
             }
 
             var op = Object.keys(exp)[0];
@@ -607,15 +618,15 @@ debugger
                     return 'COALESCE('+ translateNOperator(exp[op], ',') + ')';
 
                 case '$add':
-                    return '('+ translateNOperator(exp[op], '+', function(arg, n, type){return type == 'date' ? arg : 'COALESCE('+arg+', 0.0)'}) + ')';
+                    return '('+ translateNOperator(exp[op], '+', function(arg, n, getType){return getType() == 'date' ? arg : 'COALESCE('+arg+', 0.0)'}) + ')';
                 case '$sub':
-                    return '('+ translateNOperator(exp[op], '-', function(arg, n, type){return type == 'date' ? arg : 'COALESCE('+arg+', 0.0)'}) + ')';
+                    return '('+ translateNOperator(exp[op], '-', function(arg, n, getType){return getType() == 'date' ? arg : 'COALESCE('+arg+', 0.0)'}) + ')';
                 case '$mod':
-                    return '('+ translateNOperator(exp[op], '%', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '%', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$mul':
-                    return '('+ translateNOperator(exp[op], '*', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '*', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$div':
-                    return '('+ translateNOperator(exp[op], '/', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '/', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$divz':
                     return '('+ translateDivzOperator(exp[op]) + ')';
                 case '$sqrt':
@@ -1143,8 +1154,9 @@ debugger
 		    function findType(field) {
                 for(var i = 0; i < query.$union.length; i++) {
                     var subQuery = query.$union[i];
-                    var type = QueryUtils.extractType(subQuery.$select[field], subQuery, $this.cube, getQuery);
-                    if(type) return type;
+                    return $this.queryFieldsTypes.get(subQuery)[field].type;
+//                    var type = QueryUtils.extractType(subQuery.$select[field], subQuery, $this.cube, getQuery);
+//                    if(type) return type;
                 }
                 return null;
 		    }

@@ -43,6 +43,9 @@
                 'visitRecursive',
                 'visitProvider',
                 'visitCube',
+                'visitFilter',
+                'visitGlobalFilter',
+                'visitPostFilter',
                 'visitSelect',
                 'visitGroupBy',
                 'visitSort',
@@ -109,6 +112,18 @@
 
         visitCube: function($cube) {
              $base($cube);
+        },
+
+        visitFilter: function($filter) {
+            $base($filter);
+        },
+
+        visitGlobalFilter: function($globalFilter) {
+            $base($globalFilter);
+        },
+
+        visitPostFilter: function($postFilter) {
+            $base($postFilter);
         },
 
         visitSelect: function($select) {
