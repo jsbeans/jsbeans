@@ -902,10 +902,12 @@
 		},
 		
 		getAccessForUser: function(user){
+			var bAdmin = false;
 			if(!user){
 				user = Kernel.user();
+				bAdmin = Kernel.isAdmin();
 			}
-			if($this.getOwner() == user){
+			if($this.getOwner() == user || bAdmin){
 				return 2;	// read/write access
 			}
 //			return 1;	// temp
