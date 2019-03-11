@@ -6,16 +6,21 @@
 		$require: [
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
-		    'DataCube.Query.Transforms.QueryTransformer'
+		    'DataCube.Query.Transforms.QueryTransformer',
+		    'DataCube.Query.Visitors.Visitors',
         ],
 
-		transform: function(dcQuery, cubeOrDataProvider){
-            QueryUtils.walkQueries(dcQuery, {}, null, function(query){
-                if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
-                    $this._unwrapForQuery(query);
+		transform: function(rootQuery, cubeOrDataProvider){
+            Visitors.visitProxy(rootQuery, {
+                query: {
+                    after: function(query){
+                        if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
+                            $this._unwrapForQuery(query);
+                        }
+                    }
                 }
             });
-            return dcQuery;
+            return rootQuery;
 		},
 
 		_unwrapForQuery: function(query) {
@@ -63,7 +68,7 @@
                     wrapQuery.$id = query.$id;
                      delete wrapQuery.$from.$id;
                 }
-                QueryUtils.updateContext(wrapQuery.$from, query.$context, 'wrapped_'+query.$context);
+                QueryUtils.updateContext(wrapQuery.$from, query.$context, 'postFilter_'+query.$context);
                 for (var alias in query.$select) {
                     wrapQuery.$select[alias] = {$field: alias};
                 }
