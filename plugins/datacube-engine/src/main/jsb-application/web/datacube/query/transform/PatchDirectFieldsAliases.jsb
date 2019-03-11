@@ -20,8 +20,9 @@
                             return;
                         }
 
+                        var currentQuery = this.getQuery();
                         var query = this.getQuery(context);
-                        if (this.getQuery() != query) {
+                        if (currentQuery != query) {
                             return;
                         }
 
@@ -34,16 +35,15 @@
                                     if (alias != e && alias != e.$field) {
                                         directAliases[alias] = JSB.isString(e) ? {$field: e} : JSB.clone(e);
                                     }
-
                                 }
                             }
                         }
                         if (directAliases[field] && (!context || context == query.$context)) {
-                            for(var i = this.path.length - 2; i >=0; i++) {
+                            for(var i = this.path.length - 2; i >=0; i--) {
                                 if (this.path[i] == '$postFilter' || this.path[i] == '$globalFilter'){
                                     return;
                                 }
-                                if (JSB.isObject(this.path[i])) {
+                                if (this.path[i] == currentQuery) {
                                     break;
                                 }
                             }
