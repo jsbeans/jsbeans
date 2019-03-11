@@ -1759,6 +1759,29 @@ debugger
 		                    walk(e[i]);
 		                }
 		            }
+
+		            if (e.$left == oldContext) {
+		                e.$left = newContext;
+		            }
+		            if (e.$right == oldContext) {
+                        e.$right = newContext;
+                    }
+		            if (e.$from == oldContext) {
+                        e.$from = newContext;
+                    }
+                    if (e.$union) {
+                        for(var i = 0; i < e.$union.length; i++) {
+                            if (e.$union[i]== oldContext) {
+                                e.$union[i] = newContext;
+                            }
+                        }
+                    }
+
+		            if (e.$views && e.$views[oldContext]) {
+		                var view = e.$views[oldContext];
+		                delete e.$views[oldContext];
+		                e.$views[newContext] = view;
+		            }
 		        } else if(JSB.isArray(e)) {
 		            for(var i = 0; i < e.length; i++) if(filter.call(e, e[i])) {
 		                walk(e[i]);
