@@ -359,7 +359,7 @@ debugger;
             });
         },
 
-        visitGlobalFilter: function($postFilter) {
+        visitPostFilter: function($postFilter) {
             $this.visitWithPath('$postFilter', function(){
                 $this.visit($postFilter, {asCondition:true});
             });
