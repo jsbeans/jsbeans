@@ -208,6 +208,8 @@
 		},
 
 		extractFields: function(isForDisplay){
+			this.load();
+			
 		    if(isForDisplay){
 		        var fields = [];
 
