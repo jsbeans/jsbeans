@@ -142,7 +142,7 @@
                         if(fail){
                             throw new Error('Ошибка при загрузке доступных полей источников');
                         }
-console.log(fields);
+
                         var cubeSlices = caller.getData('cubeSlices'),
                             curContext;
 

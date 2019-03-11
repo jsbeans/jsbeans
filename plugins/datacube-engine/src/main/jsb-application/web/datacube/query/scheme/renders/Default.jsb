@@ -162,6 +162,18 @@
 
             this.variables.append(item);
 
+            var render = this.createRenderFromValues({
+                allowDelete: !this.isFixedFieldCount(),
+                deleteCallback: function(){
+                    $this.removeItem($this.variables.find('> .variable'), item);
+                },
+                scope: values[index]
+            });
+
+            if(render){
+                item.append(render);
+            }
+/*
             for(var j in values[index]){
                 var render = $this.createRender({
                     allowDelete: !this.isFixedFieldCount(),
@@ -176,7 +188,7 @@
                     item.append(render);
                 }
             }
-
+*/
             if(!hideChangeEvt){
                 this.onChange();
             }

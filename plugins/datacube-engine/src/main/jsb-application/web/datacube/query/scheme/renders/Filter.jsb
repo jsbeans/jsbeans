@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Renders.Filter',
-	$parent: 'DataCube.Query.Renders.Default',
+	$parent: 'DataCube.Query.Renders.Basic',
 
 	$alias: '$filter',
 
@@ -10,6 +10,10 @@
                    'DataCube.Query.SimpleSelectTool'],
 
 	    $constructor: function(opts){
+	        $base(opts);
+
+	        this.addClass('filterRender');
+
 	        var replacements = Syntax.getReplacementGroup('$filter');
 
 	        for(var i = 0; i < replacements.length; i++){
@@ -18,15 +22,17 @@
 
 	        if(opts.parent.getRenderName() === '$query'){
 	            this._isQueryElement = true;
-	        }
 
-	        $base(opts);
+	            this.createHeader(true);
 
-	        if(this._isQueryElement){
 	            this.addClass('queryElements');
+	        } else {
+	            this.constructHead()
 	        }
 
-	        this.addClass('filterRender');
+	        this.createAddButton();
+
+	        this.constructValues();
 	    },
 
 	    _isQueryElement: false,
@@ -53,10 +59,36 @@
 	    },
 
 	    constructHead: function(){
-	        if(this._isQueryElement){
-	            this.createHeader(true);
-            } else {
-                $base();
+	        var scheme = this.getScheme(),
+	            desc = this.getKey() + '\n' + scheme.desc;
+
+	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
+            this.append(operator);
+
+            this.installMenuEvents({
+                element: operator,
+                id: this.getId() + '_operator',
+                wrap: this.isAllowWrap(),
+                deleteCallback: function(){
+                    $this.getDeleteCallback().call($this);
+                }
+            });
+
+            this.append(this.createSeparator(this.isMultiple() || scheme.parameters));
+	    },
+
+	    constructValues: function(){
+	        var values = this.getValues();
+
+            for(var i in values){
+                var render = $this.createRender({
+                    key: i,
+                    scope: values
+                });
+
+                if(render){
+                    this.addBtn.before(render);
+                }
             }
 	    },
 
@@ -92,6 +124,8 @@
                     }
                 });
             });
+
+            this.updateMenuItems();
 	    },
 
 	    createRender: function(options, parent){
