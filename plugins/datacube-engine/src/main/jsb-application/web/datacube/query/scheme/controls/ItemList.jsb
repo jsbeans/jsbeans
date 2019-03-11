@@ -3,6 +3,7 @@
 	$parent: 'JSB.Controls.Control',
     $client: {
     	$require: ['JSB.Controls.ScrollBox',
+    	           'JSB.Workspace.SearchEditor',
     	           'css:ItemList.css'],
 
     	_categoriesList: {},
@@ -12,6 +13,13 @@
             $base(opts);
 
             this.addClass('queryItemList');
+
+            this._searchEl = new SearchEditor({
+                onChange: function(txt){
+                    $this.search(txt && txt.toLowerCase());
+                }
+            });
+            this.append(this._searchEl);
 
             this._items = this.$('<div class="items"></div>');
             this.append(this._items);
@@ -36,7 +44,7 @@
         addCategory: function(category, noSort){
             if(!this._categories){
                 this._categories = this.$('<ul class="categories"></ul>');
-                this.prepend(this._categories);
+                this._searchEl.getElement().after(this._categories);
             }
 
             var categoryLabel = this.$('<li>' + category + '</li>');
@@ -158,6 +166,38 @@
         },
 
         removeItem: function(key){},
+
+        search: function(text){
+            if(text){
+                for(var i in this._itemList){
+                    if(this._itemList[i].itemDesc.searchId){
+                        if(this._itemList[i].itemDesc.searchId.indexOf(text) > -1){
+                            this._itemList[i].item.removeClass('searchHidden');
+                        } else {
+                            this._itemList[i].item.addClass('searchHidden');
+                        }
+                    } else {
+                        // todo
+                    }
+                }
+
+                for(var i in this._categoriesList){
+                    if(this._categoriesList[i].itemsList.children(':not(.searchHidden)').length === 0){
+                        this._categoriesList[i].categoryLabel.addClass('searchHidden');
+                    } else {
+                        this._categoriesList[i].categoryLabel.removeClass('searchHidden');
+                    }
+                }
+            } else {
+                for(var i in this._itemList){
+                    this._itemList[i].item.removeClass('searchHidden');
+                }
+
+                for(var i in this._categoriesList){
+                    this._categoriesList[i].categoryLabel.removeClass('searchHidden');
+                }
+            }
+        },
 
         selectCategory: function(category){
             for(var i in this._categoriesList){

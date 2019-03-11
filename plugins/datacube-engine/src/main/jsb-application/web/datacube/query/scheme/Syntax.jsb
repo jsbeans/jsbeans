@@ -1025,7 +1025,7 @@
 
                 // create tool categories
                 if(this.scheme[i].category){
-                    this._toolItems.push(JSB.merge({}, this.scheme[i], {key: i}));
+                    this._toolItems.push(JSB.merge({}, this.scheme[i], {key: i, searchId: i + '|' + this.scheme[i].displayName}));
                 }
 
                 // collect source keys
@@ -1057,7 +1057,7 @@
 		        objectGenerator: objectGenerator
 		    };
 
-            this._toolItems.push(JSB.merge({}, this.scheme[definition.name], {key: definition.name}));
+            this._toolItems.push(JSB.merge({}, this.scheme[definition.name], {key: definition.name, searchId: definition.name + '|' + definition.displayName}));
             this._replacements.$default.push(definition.name);
         },
 

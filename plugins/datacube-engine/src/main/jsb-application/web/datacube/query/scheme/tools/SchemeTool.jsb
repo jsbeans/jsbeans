@@ -91,7 +91,8 @@
 		                this.itemList.addItem({
 		                    item: data.cubeSlices[i],
 		                    key: i,
-		                    category: 'Срезы'
+		                    category: 'Срезы',
+		                    searchId: data.cubeSlices[i].getName()
 		                });
                     }
 		        }
@@ -125,7 +126,8 @@
                                 context: context,
                                 item: fields[i],
                                 key: 'curSlice' + '|' + fields[i],
-                                category: this._OUTPUT_FIELDS_NAME
+                                category: this._OUTPUT_FIELDS_NAME,
+                                searchId: fields[i]
                             });
                         }
                     }
@@ -175,7 +177,8 @@ console.log(fields);
                                 category: $this._SOURCE_FIELDS_NAME,
 
                                 context: fields[i].$context,
-                                sourceContext: fields[i].$sourceContext
+                                sourceContext: fields[i].$sourceContext,
+                                searchId: fields[i].$field
                             });
                         }
                     });

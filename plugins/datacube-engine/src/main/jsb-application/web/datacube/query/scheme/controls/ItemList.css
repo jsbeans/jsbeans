@@ -3,6 +3,10 @@
     vertical-align: top;
 }
 
+.queryItemList > .searchEditor {
+    display: block;
+}
+
 .queryItemList > .categories {
     width: 30%;
     border-right: 1px solid #abc;
@@ -60,4 +64,9 @@
 
 .queryItemList > .items .item.selected {
     background-color: #a5d7f1;
+}
+
+.queryItemList > .categories > li.searchHidden,
+.queryItemList > .items .item.searchHidden {
+    display: none;
 }
