@@ -12,16 +12,13 @@
 
 	        var values = this.getValues()[this.getOption('index')];
 
-            for(var i in values){
-                var render = this.createRender({
-                    allowDelete: true,
-                    key: i,
-                    scope: values
-                });
+            var render = this.createRenderFromValues({
+                allowDelete: true,
+                scope: values
+            });
 
-                if(render){
-                    this.append(render);
-                }
+            if(render){
+                this.append(render);
             }
 	    },
 

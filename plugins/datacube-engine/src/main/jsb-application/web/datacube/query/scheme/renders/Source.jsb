@@ -251,47 +251,7 @@
 	            debugger;
 	        }
 	    },
-/*
-	    getSourceFields: function(callback){
-	        var sources,
-	            values = this.getValues();
 
-	        switch(this.getKey()){
-	            case '$from':
-	                sources = [{
-	                    id: values
-	                }];
-	                break;
-                case '$join':
-                    sources = [
-                    {
-                        id: values.$left,
-                        sourceContext: values.$left
-                    },
-                    {
-                        id: values.$right,
-                        sourceContext: values.$right
-                    }
-                    ];
-                    break;
-                case '$union':
-                    for(var i = 0; i < values.length; i++){
-                        sources.push({
-                            id: values[i]
-                        });
-                    }
-                    break;
-	        }
-
-	        this.server().getSourceFields(sources, function(res, fail){
-	            if(fail){
-	                return;
-	            }
-
-	            callback.call($this, res);
-	        });
-	    },
-*/
         /**
         * Возвращает значения из скопа для текущего рендера
         * @params {number} index - индекс нужного значения

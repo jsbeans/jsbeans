@@ -36,15 +36,12 @@
 
             expr.append(this.createSeparator());
 
-            for(var i in values.$expr){
-                var render = this.createRender({
-                    key: i,
-                    scope: values.$expr
-                });
+            var render = this.createRenderFromValues({
+                scope: values.$expr
+            });
 
-                if(render){
-                    expr.append(render);
-                }
+            if(render){
+                expr.append(render);
             }
 
             // направление сортировки
