@@ -387,7 +387,7 @@
         * @return {object} объект схемы
         */
 	    getScheme: function(){
-	        return this._scheme || {};
+	        return this._scheme || Syntax.getScheme(this.getRenderName()) || {};
 	    },
 
         /**

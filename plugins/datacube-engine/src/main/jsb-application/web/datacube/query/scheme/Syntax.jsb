@@ -30,12 +30,11 @@
 	    // функции глобальной агрегации
 	    '$gsum', '$gcount', '$gmin', '$gmax', '$gavg', '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 	    // разное
-	    '$const', '$distinct', '$query',
+	    '$const', '$distinct', '$query', '$if',
 	    // логика
 	    '$and', '$or', '$not',
 	    // сравнения
-	    '$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike',
-	    // условные выражения
+	    '$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike'
 	    ],
 	    $filter: ['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$like', '$ilike', '$and', '$or', '$not']
 	},
@@ -886,8 +885,32 @@
 	        render: '$default',
 	        category: 'Разное',
 	        displayName: 'Убрать повторения',
-	        desc: 'Пропустить повторения (уменьшает число элелемнтов в группе)',
+	        desc: 'Пропустить повторения (уменьшает число элелементов в группе)',
 	        defaultValues: {$const: 1}
+	    },
+
+	    $if: {
+	        render: '$multiField',
+	        category: 'Разное',
+	        displayName: 'Условие',
+	        desc: '',
+	        values: {
+	            $cond: {
+                    displayName:'Условие',
+                    desc:'Условное выражение',
+                    renderName: '$filter',
+                    scopeValue: true,
+                    wrap: false
+	            },
+	            $then: {
+	                displayName: 'Истина',
+	                defaultValues: {$const: 0}
+	            },
+	            $else: {
+	                displayName: 'Ложь',
+	                defaultValues: {$const: 0}
+	            }
+	        }
 	    }
 	},
 

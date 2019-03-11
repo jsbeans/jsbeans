@@ -125,15 +125,12 @@
                     });
                 }
             } else {
-                for(var j in values){
-                    var render = this.createRender({
-                        key: j,
-                        scope: this.getValues()
-                    });
+                var render = this.createRenderFromValues({
+                    scope: this.getValues()
+                });
 
-                    if(render){
-                        this.append(render);
-                    }
+                if(render){
+                    this.append(render);
                 }
             }
 	    },

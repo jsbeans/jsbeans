@@ -264,18 +264,15 @@
                     this.getValues()[name] = scheme.defaultValues;
                 }
 
-                for(var k in this.getValues()[name]){
-                    var render = this.createRender({
-                        allowDelete: false,
-                        allowWrap: scheme.wrap,
-                        key: k,
-                        renderName: scheme.renderName ? scheme.renderName : undefined,
-                        scope: this.getValues()[name]
-                    });
+                var render = this.createRenderFromValues({
+                    allowDelete: false,
+                    allowWrap: scheme.wrap,
+                    renderName: scheme.renderName ? scheme.renderName : undefined,
+                    scope: this.getValues()[name]
+                });
 
-                    if(render){
-                        field.append(render);
-                    }
+                if(render){
+                    field.append(render);
                 }
             }
 	    }
