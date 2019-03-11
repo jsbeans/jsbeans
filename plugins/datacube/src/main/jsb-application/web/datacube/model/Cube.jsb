@@ -7,7 +7,7 @@
 	getSliceCount: function(){
 		return this.sliceCount;
 	},
-
+	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'DataCube.Model.Slice',

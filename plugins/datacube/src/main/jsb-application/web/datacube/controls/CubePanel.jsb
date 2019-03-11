@@ -34,6 +34,9 @@
             });
 
 			this.subscribe('DataCube.Model.Cube.updateCubeFields', {session: true}, function(sender, msg, opts){
+				if($this.cube != sender){
+					return;
+				}
 			    $this.refresh(null, opts);
 			});
         },
