@@ -6,6 +6,10 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
+		acceptable: function(name, executor, queryTask){
+		    return true;
+		},
+
 		execute: function(alias, executor, queryTask){
             throw 'interface method not implemented';
 		},

@@ -340,7 +340,7 @@ debugger
                 query: subQuery,
                 params: $this.params,
                 fromInterpreter: $this.interpreterMode || null,
-                startEngine: ($this.engineConfig ? $this.engineConfig.remoteStart : null)
+                startEngine: ($this.engineConfig ? $this.engineConfig.loopbackStart : null)
             };
 
             switch($this.vendor) {

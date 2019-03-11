@@ -26,42 +26,58 @@
 		execute: function(){
             var startEngine = $this.queryTask.startEngine || Config.get('datacube.query.engine.start');
 
-            $this.executeEngine(startEngine, {
+            var it = $this.executeEngine(startEngine, {
                 cube: $this.cube,
                 query: $this.query,
                 params: $this.params,
             });
-
-            var it = $this.awaitIterator();
+            if (!it) {
+                var it = $this.awaitIterator();
+            }
             return it;
 		},
 
         /** Асинхронный запуск движка по имени, который регистрируется в пуле
         */
 		executeEngine: function(name, queryTask) {
+		    var engineConfig = $this.getEngineConfig(name);
+		    var engine = $this.getEngine(name,engineConfig);
 
-		    var engine = $this.getEngine(name);
+		    if(!engine.acceptable(name, $this, queryTask)) {
+		        // skip not acceptable
+		        return;
+		    }
 
-		    var key = $this.getId() + '/' + name;
-		    $this.pool.put(key, {
-		        key: key,
-		        queryTask: queryTask,
-		        status: 'prepared',
-		    });
-		    JSB.defer(function(){
-		        try {
-		            var task = $this.pool.get(key);
-    		        task.status = 'started';
-		            task.iterator = engine.execute(name, $this, queryTask);
-		            if (task.iterator) {
-		                task.iterator.meta.engine = JSB.merge({}, $this.getEngineConfig(name), {alias:name});
-		            }
-		        } catch(e) {
-		            task.error = e;
-		        } finally {
-		            task.status = 'completed';
-		        }
-		    }, 1, key);
+		    if (engineConfig.async == true) {
+		        /// async
+                var key = $this.getId() + '/' + name;
+                $this.pool.put(key, {
+                    key: key,
+                    queryTask: queryTask,
+                    status: 'prepared',
+                });
+                JSB.defer(function(){
+                    try {
+                        var task = $this.pool.get(key);
+                        task.status = 'started';
+                        task.iterator = engine.execute(name, $this, queryTask);
+                        if (task.iterator) {
+                            task.iterator.meta.engine = JSB.merge({}, engineConfig, {alias:name});
+                        }
+                    } catch(e) {
+                        task.error = e;
+                    } finally {
+                        task.status = 'completed';
+                    }
+                }, 1, key);
+		    } else {
+		        /// sync
+		        var it = engine.execute(name, $this, queryTask);
+                if (it) {
+                    it.meta.engine = JSB.merge({}, engineConfig, {alias:name});
+                }
+                return it;
+		    }
 		},
 
 		getEngineConfig: function(name){
@@ -70,8 +86,8 @@
 		    return engine;
 		},
 
-		getEngine: function(name){
-		    var engine = $this.getEngineConfig(name);
+		getEngine: function(name, engineConfig) {
+		    var engine = engineConfig || $this.getEngineConfig(name);
             var inst = JSB.getInstance(engine.jsb);
             QueryUtils.throwError(inst, 'Query engine "{}" instance is null', name);
             return inst;

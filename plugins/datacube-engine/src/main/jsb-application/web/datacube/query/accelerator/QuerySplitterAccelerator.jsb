@@ -8,7 +8,7 @@
         ],
 
         $bootstrap: function(){
-        	AcceleratorRegistry.register(this);
+        	//AcceleratorRegistry.register(this);
         },
 
 		getDescriptor: function(){

@@ -30,11 +30,11 @@
 		},
 
 		selectByEnginePriority: function(its){
-		    var enginesPriority = Config.get('datacube.query.engine.iteratorSelector.enginesPriority');
-		    var defaultEnginePriority = 0+Config.get('datacube.query.engine.iteratorSelector.defaultEnginePriority');
+		    var enginesPriority = Config.get('datacube.query.engine.iteratorSelector.selectByEnginePriority_selectByEnginePriority');
+		    var selectByEnginePriority_defaultPriority = 0+Config.get('datacube.query.engine.iteratorSelector.selectByEnginePriority_defaultPriority');
 		    its.sort(function(a,b){
-		        var ap = 0+enginesPriority[a.meta.engine.alias]||defaultEnginePriority;
-		        var bp = 0+enginesPriority[b.meta.engine.alias]||defaultEnginePriority;
+		        var ap = 0+enginesPriority[a.meta.engine.alias]||selectByEnginePriority_defaultPriority;
+		        var bp = 0+enginesPriority[b.meta.engine.alias]||selectByEnginePriority_defaultPriority;
                 if (ap > bp) return -1;
                 if (ap < bp) return 1;
                 return 0;
@@ -115,8 +115,8 @@
             }
 		},
 
-		selectVendorsOrver: function(its){
-		    var vendors = Config.get('datacube.query.engine.iteratorSelector.vendorsOrder');
+		selectVendorsOrder: function(its){
+		    var vendors = Config.get('datacube.query.engine.iteratorSelector.selectVendorsOrder_vendorsOrder');
 		    for(var v = 0; v < vendors.length; v++) {
                 for(var i = 0; i < its.length; i++) {
                     if(its[i].meta && its[i].meta.vendor == vendors[v]) {
