@@ -354,7 +354,7 @@
         * @return {string[]} выходные поля
         */
 	    getOutputFields: function(){
-	        this.getParent().getOutputFields();
+	        return this.getParent().getOutputFields();
 	    },
 
         /**
