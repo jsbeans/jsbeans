@@ -17,16 +17,15 @@
 					posCls = 'top';
 				}
 				this.append(this.$('<div class="_dwp_icon"></div>').addClass(posCls));
-				if(!this.options.hideCaption){
+				if(!this.options.hideCaption && this.hasCaption()){
 					this.append('<div class="_dwp_separator"></div>');
 				}
 			}
-			if(!this.options.hideCaption){
+			if(!this.options.hideCaption && this.hasCaption()){
 				var caption = this.$('<div class="_dwp_caption"></div>'); 
 				this.append(caption);
 				
-				
-				if(JSB().isString(this.options.caption)){
+				if(JSB.isString(this.options.caption)){
 					caption.text(this.options.caption);
 					this.attr('caption', this.options.caption);
 				} else if(JSB().isInstanceOf(this.options.caption, 'JSB.Widgets.Control')){
@@ -34,7 +33,7 @@
 				}
 			}
 			if(this.options.iconPosition == 'right' || this.options.iconPosition == 'bottom'){
-				if(!this.options.hideCaption){
+				if(!this.options.hideCaption && this.hasCaption()){
 					this.append('<div class="_dwp_separator"></div>');
 				}
 
@@ -56,11 +55,11 @@
 			}
 			
 			this.enable(this.options.enabled);
-			
+/*			
 			if(!this.options.caption || this.options.caption.length == 0){
 				this.getElement().find('._dwp_separator').addClass('_dwp_hidden');
 			}
-			
+*/			
 			// install event handlers
 			if(this.options.onClick){
 				this.getElement().click(function(evt){
@@ -93,6 +92,13 @@
 			onClick: null,
 			onDblClick: null,
 			onMouseOver: null
+		},
+		
+		hasCaption: function(){
+			return this.options 
+				&& this.options.caption 
+				&& ((JSB.isString(this.options.caption) && this.options.caption.length > 0)
+					||(JSB.isInstanceOf(this.options.caption, 'JSB.Widgets.Control')));
 		},
 		
 		setCaption: function(str){

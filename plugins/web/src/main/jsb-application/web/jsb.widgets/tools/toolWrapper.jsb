@@ -556,16 +556,16 @@
 				switch(this.targets[0].dock){
 				case 'top':
 					if(this.targets[0].align == 'right'){
-						priorityList = [posObj.topRight, posObj.bottomRight, posObj.top, posObj.bottom, posObj.right, posObj.left];
+						priorityList = [posObj.topRight, posObj.bottomRight, posObj.top, posObj.bottom, posObj.right, posObj.rightCenter, posObj.left, posObj.leftCenter];
 					} else {
-						priorityList = [posObj.top, posObj.topRight, posObj.bottom, posObj.bottomRight, posObj.right, posObj.left];
+						priorityList = [posObj.top, posObj.topRight, posObj.bottom, posObj.bottomRight, posObj.right, posObj.rightCenter, posObj.left, posObj.leftCenter];
 					}
 					break;
 				case 'bottom':
 					if(this.targets[0].align == 'right'){
-						priorityList = [posObj.bottomRight, posObj.topRight, posObj.bottom, posObj.top, posObj.right, posObj.left];
+						priorityList = [posObj.bottomRight, posObj.topRight, posObj.bottom, posObj.top, posObj.right, posObj.rightCenter, posObj.left, posObj.leftCenter];
 					} else {
-						priorityList = [posObj.bottom, posObj.bottomRight, posObj.top, posObj.topRight, posObj.right, posObj.left];
+						priorityList = [posObj.bottom, posObj.bottomRight, posObj.top, posObj.topRight, posObj.right, posObj.rightCenter, posObj.left, posObj.leftCenter];
 					}
 					break;
 				case 'left':
