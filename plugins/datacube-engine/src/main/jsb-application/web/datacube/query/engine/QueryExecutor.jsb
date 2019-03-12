@@ -26,10 +26,21 @@
 		execute: function(){
             var startEngine = $this.queryTask.startEngine || Config.get('datacube.query.engine.start');
 
+            Console.message({
+                message: 'Query executed',
+                params: {
+                    queryId:''+$this.queryTask.$id,
+                    query: $this.queryTask.query,
+                    params: $this.queryTask.params,
+                    startEngine: $this.queryTask.startEngine,
+                },
+            });
+
             var it = $this.executeEngine(startEngine, {
                 cube: $this.cube,
                 query: $this.query,
                 params: $this.params,
+                times: $this.queryTask.times,
             });
             if (!it) {
                 var it = $this.awaitIterator();
@@ -58,6 +69,10 @@
                 });
                 JSB.defer(function(){
                     try {
+                        queryTask.times.pipeline[queryTask.times.length] = {};
+                        queryTask.times.pipeline[queryTask.times.length][name] = (Date.now() - queryTask.times.last)/1000;
+                        queryTask.times.last = Date.now();
+
                         var task = $this.pool.get(key);
                         task.status = 'started';
                         task.iterator = engine.execute(name, $this, queryTask);

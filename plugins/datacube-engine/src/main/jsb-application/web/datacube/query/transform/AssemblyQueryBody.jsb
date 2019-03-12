@@ -184,7 +184,7 @@
 		    for(var i = queryStack.length - 1; i >= 0; i--) {
 		        var query = queryStack[i];
                 if (query.$cubeFilter && Object.keys(query.$cubeFilter).length > 0) {
-                    QueryUtils.walkExpressionFields(query.$cubeFilter, query, true, function(name, context){
+                    QueryUtils.walkExpressionFields(query.$cubeFilter, query, true, function(name, context,sourceContext){
                         usedDimensions[name] = name;
                     });
                 }

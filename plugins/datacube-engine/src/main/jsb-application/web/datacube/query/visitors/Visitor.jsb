@@ -310,9 +310,11 @@ debugger;
 
         visitUnion: function($union) {
             for (var i = 0; i < $union.length; i++) {
-                $this.visitWithPath('$union', i, function(){
-                    $this.visit($union[i], {asQuery: true});
-                });
+                (function(i){
+                    $this.visitWithPath('$union', i, function(){
+                        $this.visit($union[i], {asQuery: true});
+                    });
+                })(i);
             }
         },
 

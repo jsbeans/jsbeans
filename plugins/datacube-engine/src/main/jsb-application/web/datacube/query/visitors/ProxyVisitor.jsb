@@ -29,7 +29,7 @@
         $constructor: function(options){
             $base(options);
 
-            $this._installWrappers([
+            $this.proxyWrapped([
                 'visitQuery',
                 'visitExpression',
                 'visitField',
@@ -147,7 +147,7 @@
         },
 
 
-        _installWrappers: function(methods) {
+        proxyWrapped: function(methods) {
             for(var i = 0; i < methods.length; i++) {
                 (function(m){
                     if (!m.startsWith('visit')) {

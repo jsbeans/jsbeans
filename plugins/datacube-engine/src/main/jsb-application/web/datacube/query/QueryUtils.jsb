@@ -614,76 +614,23 @@
             function collect(exp, fixedContext) {
                 if (JSB.isString(exp) && !exp.startsWith('$')) {
                     if (!fixedContext) {
-                        return callback(exp, query.$context||query.$context, query, false);
+                        return callback(exp, query.$context||query.$context, null, query, false);
                     }
                 } else if (JSB.isObject(exp) && exp.$field) {
                     $this.throwError(JSB.isString(exp.$field), 'Invalid $field value type "{}"', typeof exp.$field);
                     if (exp.$context) {
                         if (query.$context == exp.$context || !fixedContext) {
-                            return callback(exp.$field, exp.$context, query, true);
+                            return callback(exp.$field, exp.$context, exp.$sourceContext, query, true);
                         } else if (query.$join && (query.$join.$left.$context == exp.$context || query.$join.$right.$context == exp.$context)) {
-                            return callback(exp.$field, exp.$context, query, true);
+                            return callback(exp.$field, exp.$context, exp.$sourceContext, query, true);
                         }
                     } else {
                         return callback(exp.$field, query.$context, query, true);
                     }
                     if (exp.$context && fixedContext && query.$context == exp.$context) {
-                        return callback(exp.$field, exp.$context, query, true);
+                        return callback(exp.$field, exp.$context, exp.$sourceContext, query, true);
                     } else if (!exp.$context && !fixedContext) {
-                        return callback(exp.$field, exp.$context||query.$context, query, true);
-                    }
-                } else if (JSB.isObject(exp)) {
-                    if (exp == query || !exp.$select) {
-                        // if start query or any expression
-                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            var res = collect(exp[f], fixedContext);
-                            if (res) {
-                                exp[f] = res;
-                            }
-                        }
-                    } else if(exp.$select && !skipSubQuery) {
-                        // if enabled sub-query
-                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            var res = collect(exp[f], true);
-                            if (res) {
-                                exp[f] = res;
-                            }
-                        }
-                    }
-                } else if (JSB.isArray(exp)) {
-                    for (var i = 0 ; i < exp.length; i++) {
-                        var res = collect(exp[i], fixedContext);
-                        if (res) {
-                            exp[i] = res;
-                        }
-                    }
-                }
-            }
-
-            return collect(valueExp, false);
-        },
-
-        walkExpressionFields: function(valueExp, query, skipSubQuery, callback) {
-            function collect(exp, fixedContext) {
-                if (JSB.isString(exp) && !exp.startsWith('$')) {
-                    if (!fixedContext) {
-                        return callback(exp, query.$context||query.$context, query, false);
-                    }
-                } else if (JSB.isObject(exp) && exp.$field) {
-                    $this.throwError(JSB.isString(exp.$field), 'Invalid $field value type "{}"', typeof exp.$field);
-                    if (exp.$context) {
-                        if (query.$context == exp.$context || !fixedContext) {
-                            return callback(exp.$field, exp.$context, query, true);
-                        } else if (query.$join && (query.$join.$left.$context == exp.$context || query.$join.$right.$context == exp.$context)) {
-                            return callback(exp.$field, exp.$context, query, true);
-                        }
-                    } else {
-                        return callback(exp.$field, query.$context, query, true);
-                    }
-                    if (exp.$context && fixedContext && query.$context == exp.$context) {
-                        return callback(exp.$field, exp.$context, query, true);
-                    } else if (!exp.$context && !fixedContext) {
-                        return callback(exp.$field, exp.$context||query.$context, query, true);
+                        return callback(exp.$field, exp.$context||query.$context, exp.$sourceContext, query, true);
                     }
                 } else if (JSB.isObject(exp)) {
                     if (exp == query || !exp.$select) {
@@ -765,7 +712,7 @@
             function filteredBinaryCondition(op, args, isAccepted, path) {
                 for (var i in args) {
                     var skipped = false;
-                    $this.walkExpressionFields(args[i], query, false, function(f, c, isExp) {
+                    $this.walkExpressionFields(args[i], query, false, function(f, c, sc, q, isExp) {
                         if (!isAccepted(f, args[i], path)) {
                             skipped = true;
                         }
@@ -808,7 +755,7 @@
                             var rightExpr = exps[field][opp];
 
                             var skipped = false;
-                            $this.walkExpressionFields(rightExpr, query, false, function(f, c, isExp) {
+                            $this.walkExpressionFields(rightExpr, query, false, function(f, c, sc, q, isExp) {
                                 if (!isAccepted(f, rightExpr, path.concat([opp]))) {
                                     skipped = true;
                                 }

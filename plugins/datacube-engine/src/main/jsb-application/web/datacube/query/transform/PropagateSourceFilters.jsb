@@ -42,7 +42,7 @@
 		_propagateFilter: function(query, rootQuery){
 		    function transformFilter(filter, transformField){
                 var subFilter = JSB.clone(filter);
-                QueryUtils.walkExpressionFields(subFilter, query, /**skipSubQuery=*/true, function(field, context){
+                QueryUtils.walkExpressionFields(subFilter, query, /**skipSubQuery=*/true, function(field, context, sourceContext){
                     var e = transformField(field, context);
                     // TODO: if $groupBy exists - only group fields
                     if (e) {
@@ -138,6 +138,130 @@
             if (propagate(query.$filter)) {
                 delete query.$filter;
             }
-		}
+		},
+
+
+
+
+
+
+
+
+
+
+		transform: function(rootQuery, defaultCube){
+		    var queryAliasesMap = new HashMap();
+            Visitors.visitProxy(rootQuery, {
+                query: {
+                    before: function(query){
+                        if (query.$filter && Object.keys(query.$filter).length > 0 && (query.$from||query.$join||query.$union)) {
+                            $this._propagateFilter(query, rootQuery, this);
+                        }
+                    },
+                }
+            });
+        },
+
+		_propagateFilter: function(query, rootQuery, visitor){
+		    function transformFilter(filter, transformField){
+                var subFilter = JSB.clone(filter);
+                QueryUtils.walkExpressionFields(subFilter, query, /**skipSubQuery=*/true, function(field, context, sourceContext){
+                    var e = transformField(field, context, sourceContext);
+                    if (e) {
+                        return e;
+                    } else {
+                        subFilter = null;
+                    }
+                });
+                return subFilter;
+		    }
+
+            function propagate(filter){
+                if (query.$from) {
+                    var sourceQuery = visitor.getQuery(query.$from);
+                    var newFilter = transformFilter(filter, function(field, context, sourceContext){
+                        return sourceQuery.$select[field];
+                    });
+                    if (newFilter) {
+                        sourceQuery.$filter = QueryUtils.mergeFilters(sourceQuery.$filter, newFilter);
+                        return true;
+                    }
+                } else if (query.$join){
+                    var prevContext;
+                    var inner = /inner/i.test(query.$join.$joinType);
+                    var left = /left/i.test(query.$join.$joinType);
+                    var right = /right/i.test(query.$join.$joinType);
+                    var newFilter = transformFilter(filter, function(field, context, sourceContext){
+                        /// check all fields single context
+                        if (prevContext && prevContext != sourceContext) {
+                            return null;
+                        }
+                        prevContext = sourceContext;
+
+                        QueryUtils.throwError(sourceQuery, 'Source context is not defined in {} for field {}', context, field);
+                        var sourceQuery = visitor.getQuery(sourceContext);
+                        if (QueryUtils.queryHasBody(sourceQuery)) {
+                            QueryUtils.throwError(sourceQuery.$select[field], 'Field {} not found in ', field, sourceContext);
+                            return sourceQuery.$select[field];
+                        }
+                    });
+                    if (newFilter) {
+                        var sourceQuery = visitor.getQuery(prevContext);
+                        sourceQuery.$filter = QueryUtils.mergeFilters(sourceQuery.$filter, newFilter);
+                        return true;
+                    }
+                } else if (query.$union){
+                    for (var i = 0; i < query.$union.length; i++) {
+                        (function(source){
+                            var sourceQuery = visitor.getQuery(source);
+                            var newFilter = transformFilter(filter, function(field, context, sourceContext){
+                                return sourceQuery.$select[field];
+                            });
+                            source.$filter = QueryUtils.mergeFilters(source.$filter, newFilter);
+                        })(query.$union[i]);
+                    }
+                    return true;
+                } else {
+                    // other - skip
+                    return false;
+                }
+
+                // if not propagated: try split
+
+                for(var op in filter) {
+                    switch(op) {
+                        case '$or':
+                            return;
+                        case '$and': {
+                            if (filter.$and.length > 1) {
+                                for (var i = 0 ; i < filter.$and.length; i++) {
+                                    if(propagate(filter.$and[i])) {
+                                        filter.$and.splice(i--, 1);
+                                    }
+                                }
+                                if (filter.$and.length == 0) {
+                                    delete filter.$and;
+                                }
+                            }
+                            break;
+                        }
+                        default: {
+                            var part = {};
+                            part[op] = filter[op];
+                            if (propagate(part)) {
+                                delete filter[op];
+                            }
+                        }
+                    }
+                }
+                if (Object.keys(filter).length == 0) {
+                    return true; // delete
+                }
+            } // end propagate()
+
+            if (propagate(query.$filter)) {
+                delete query.$filter;
+            }
+		},
 	}
 }

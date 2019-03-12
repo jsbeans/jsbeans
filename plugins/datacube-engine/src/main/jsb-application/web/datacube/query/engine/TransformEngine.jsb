@@ -21,13 +21,14 @@
 		        ? Config.get(config.transformers)
 		        : config.transformers;
 
-            var preparedQuery = QueryTransformer.transform(transformers||[], query, cube);
+            var preparedQuery = QueryTransformer.transform(transformers||[], queryTask);
             for(var i = 0; i < config.next.length; i++) {
                 var next = config.next[i];
                 var it = executor.executeEngine(next, {
                     cube: cube,
                     query: JSB.clone(preparedQuery),
                     params: JSB.clone(params),
+                    times: JSB.clone(queryTask.times),
                 });
                 if(it) {
                     return it;

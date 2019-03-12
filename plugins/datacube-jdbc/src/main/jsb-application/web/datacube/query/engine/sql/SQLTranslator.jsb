@@ -33,6 +33,26 @@
 		    }
 		},
 
+		translatedQueryIterator: function(dcQuery, params){
+		    try {
+		        var it = $base(dcQuery, params);
+            } catch(e) {
+                Console.message({
+                    message: 'SQLTranslator error ',
+                    params: {queryId:''+dcQuery.$id, preparedQuery:dcQuery},
+                    error: e
+                });
+                throw e;
+            }
+		    it.meta.id = $this.getJsb().$name+'/'+$this.vendor+'#'+JSB.generateUid();
+		    it.meta.vendor = $this.vendor;
+		    var oldClose = it.close;
+		    it.close = function(){
+		        oldClose.call(this);
+		    };
+		    return it;
+		},
+
 		executeQuery: function(translatedQuery){
 		    var store = this.providers[0].getStore();
 		    var iterator = store.asSQL().iteratedParametrizedQuery2(
@@ -68,26 +88,6 @@
 		        close: function(){
 		        }
 		    };
-		},
-
-		translatedQueryIterator: function(dcQuery, params){
-		    try {
-		        var it = $base(dcQuery, params);
-            } catch(e) {
-                Console.message({
-                    message: 'SQLTranslator error ',
-                    params: {queryId:''+dcQuery.$id, preparedQuery:dcQuery},
-                    error: e
-                });
-                throw e;
-            }
-		    it.meta.id = $this.getJsb().$name+'/'+$this.vendor+'#'+JSB.generateUid();
-		    it.meta.vendor = $this.vendor;
-		    var oldClose = it.close;
-		    it.close = function(){
-		        oldClose.call(this);
-		    };
-		    return it;
 		},
 
 		translateQuery: function(query) {
@@ -1154,10 +1154,11 @@ debugger
 		    function findType(field) {
                 for(var i = 0; i < query.$union.length; i++) {
                     var subQuery = query.$union[i];
-                    return $this.queryFieldsTypes.get(subQuery)[field].type;
-//                    var type = QueryUtils.extractType(subQuery.$select[field], subQuery, $this.cube, getQuery);
-//                    if(type) return type;
+                    if ($this.queryFieldsTypes.get(subQuery)[field]) {
+                        return $this.queryFieldsTypes.get(subQuery)[field].type;
+                    }
                 }
+debugger
                 return null;
 		    }
             var usedFields = QueryUtils.extractInputFields(query);
