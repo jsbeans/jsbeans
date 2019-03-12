@@ -66,8 +66,10 @@
                 caption: "Анализировать",
                 onClick: function(){
                 	var q = JSB.clone($this.textQueryEditor.getData().getValue());
+
                 	q['$analyze'] = true;
-                	$this.updateGrid(q);
+
+                	$this.gridView.updateData($this.slice, q);
                 }
             });
             this.titleBlock.append(this.analyzeBtn.getElement());
@@ -191,5 +193,4 @@
 			this.ignoreHandlers = false;
 		}
 	}
-	
 }
