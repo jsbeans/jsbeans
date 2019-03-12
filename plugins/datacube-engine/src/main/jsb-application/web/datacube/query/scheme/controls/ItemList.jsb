@@ -171,7 +171,7 @@
             if(text){
                 for(var i in this._itemList){
                     if(this._itemList[i].itemDesc.searchId){
-                        if(this._itemList[i].itemDesc.searchId.indexOf(text) > -1){
+                        if(this._itemList[i].itemDesc.searchId.toLowerCase().indexOf(text) > -1){
                             this._itemList[i].item.removeClass('searchHidden');
                         } else {
                             this._itemList[i].item.addClass('searchHidden');

@@ -893,7 +893,7 @@
 	        render: '$multiField',
 	        category: 'Разное',
 	        displayName: 'Условие',
-	        desc: '',
+	        desc: 'Условное выражение',
 	        values: {
 	            $cond: {
                     displayName:'Условие',
@@ -954,8 +954,30 @@
 	    }
 	},
 
+    /**
+    * Возвращает список ключей замены для данного ключа группы
+    * @param {key} name - ключ, для которого нудно вернуть список замен
+    *
+    * @return {array} массив ключей для замены
+    */
 	getReplacementGroup: function(key){
 	    return this._replacements[key];
+	},
+
+    /**
+    * Возвращает массив схем для замены указанного ключа
+    * @param {key} name - ключ, для которого нудно вернуть список замен
+    *
+    * @return {array} массив схем
+    */
+	getReplacementGroupItems: function(key){
+	    var replacements = [];
+
+	    for(var i = 0; i < this._replacements[key].length; i++){
+	        replacements.push(JSB.merge({}, this.getScheme(this._replacements[key][i]), {key: this._replacements[key][i]}));
+	    }
+
+	    return replacements;
 	},
 
     /**

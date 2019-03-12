@@ -7,11 +7,8 @@
 	$client: {
 	    $require: ['DataCube.Query.Syntax',
 	               'JSB.Controls.Checkbox',
-	               'JSB.Widgets.ToolManager',
-	               'DataCube.Query.SimpleSelectTool',
+	               'DataCube.Query.Controls.AddMenu',
 	               'css:MultiField.css'],
-
-        _addItems: [],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -21,8 +18,7 @@
 	        var scheme = this.getScheme(),
 	            values = this.getValues(),
 	            desc = this.getKey() + '\n' + scheme.desc,
-	            isNeedChangeEvt = false,
-	            hasOptional = false;
+	            isNeedChangeEvt = false;
 
 	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
             this.append(operator);
@@ -43,64 +39,11 @@
                     if(JSB.isDefined(values[i])){
                         isNeedChangeEvt = this.create(i, true) || isNeedChangeEvt;
                     } else {
-                        this._addItems.push(JSB.merge({key: i}, scheme.values[i]));
+                        this.createAddMenu();
+                        this.addMenu.addItem(JSB.merge({key: i}, scheme.values[i]));
                     }
-
-                    hasOptional = true;
                 } else {
                     this.create(i);
-                }
-            }
-
-            if(hasOptional){
-                this.addBtn = this.$('<i class="addBtn"></i>');
-                this.append(this.addBtn);
-                this.addBtn.click(function(){
-                    ToolManager.activate({
-                        id: 'simpleSelectTool',
-                        cmd: 'show',
-                        data: {
-                            key: JSB.generateUid(),
-                            values: $this._addItems
-                        },
-                        scope: null,
-                        target: {
-                            selector: $this.getElement(),
-                            dock: 'bottom'
-                        },
-                        callback: function(desc){
-                            $this.create(desc.key, true);
-
-                            for(var i = 0; i < $this._addItems.length; i++){
-                                if($this._addItems[i].key === desc.key){
-                                    $this._addItems.splice(i, 1);
-                                    break;
-                                }
-                            }
-
-                            if($this._addItems.length === 0){
-                                $this.addBtn.addClass('hidden');
-                            }
-
-                            $this.onChange();
-                        }
-                    });
-                });
-
-                this._addItems.sort(function(a, b){
-                    if(a.key > b.key){
-                        return 1;
-                    }
-
-                    if(a.key < b.key){
-                        return -1;
-                    }
-
-                    return 0;
-                });
-
-                if(this._addItems.length === 0){
-                    this.addBtn.addClass('hidden');
                 }
             }
 
@@ -154,6 +97,21 @@
 	        }
 	    },
 
+	    createAddMenu: function(){
+	        if(this.addMenu){
+	            return;
+	        }
+
+	        this.addMenu = new AddMenu({
+	            callback: function(desc){
+                    $this.create(desc.key, true);
+
+                    $this.onChange();
+	            }
+	        });
+	        this.append(this.addMenu);
+	    },
+
 	    createField: function(name, scheme, removable){
             var field = this.$('<div class="field"></div>');
             this.fields.append(field);
@@ -172,21 +130,7 @@
 
                         field.remove();
 
-                        $this._addItems.push(JSB.merge({key: name}, scheme));
-
-                        $this._addItems.sort(function(a, b){
-                            if(a.key > b.key){
-                                return 1;
-                            }
-
-                            if(a.key < b.key){
-                                return -1;
-                            }
-
-                            return 0;
-                        });
-
-                        $this.addBtn.removeClass('hidden');
+                        $this.addMenu.addItem(JSB.merge({key: name}, scheme));
 
                         $this.onChange();
                     }

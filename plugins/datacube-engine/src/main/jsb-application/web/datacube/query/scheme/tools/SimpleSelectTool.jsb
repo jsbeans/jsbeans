@@ -58,7 +58,8 @@
 		        for(var i = 0; i < values.length; i++){
                     this.itemList.addItem({
                         item: values[i],
-                        key: values[i].key
+                        key: values[i].key,
+                        searchId: values[i].key + '|' + values[i].displayName
                     });
 		        }
             }

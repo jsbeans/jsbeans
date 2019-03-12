@@ -5,9 +5,7 @@
 	$alias: '$selectItem',
 
 	$client: {
-		$require: ['JSB.Widgets.ToolManager',
-		           'DataCube.Query.SimpleSelectTool',
-		           'css:Const.css'],
+		$require: ['css:Const.css'],
 
 	    $constructor: function(opts){
 	        $base(opts);

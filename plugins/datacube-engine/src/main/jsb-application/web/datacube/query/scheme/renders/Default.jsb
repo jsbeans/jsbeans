@@ -57,7 +57,8 @@
 
 	    // совместимость с некоторыми видами синтаксиса
 	    checkValues: function(){
-	        var curValues = this.getValues();
+	        var curValues = this.getValues(),
+	            scheme = Syntax.getScheme(this.getKey());
 
 	        if(this.isMultiple()){
 	            for(var i = 0; i < curValues.length; i++){
@@ -173,22 +174,7 @@
             if(render){
                 item.append(render);
             }
-/*
-            for(var j in values[index]){
-                var render = $this.createRender({
-                    allowDelete: !this.isFixedFieldCount(),
-                    deleteCallback: function(){
-                        $this.removeItem($this.variables.find('> .variable'), item);
-                    },
-                    key: j,
-                    scope: values[index]
-                });
 
-                if(render){
-                    item.append(render);
-                }
-            }
-*/
             if(!hideChangeEvt){
                 this.onChange();
             }

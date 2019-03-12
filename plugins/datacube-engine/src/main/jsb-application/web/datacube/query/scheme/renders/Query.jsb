@@ -6,18 +6,13 @@
 
 	$client: {
 	    $require: ['DataCube.Query.Syntax',
-	               'JSB.Widgets.ToolManager',
-	               'DataCube.Query.SimpleSelectTool',
+	               'DataCube.Query.Controls.AddMenu',
 	               'css:Query.css'],
-
-        _menuItems: [],
 
 	    $constructor: function(opts){
 	        $base(opts);
 
 	        this.addClass('queryRender');
-
-	        var sourceKeys = Syntax.getSourceKeys();
 
 	        if(this.getParent()){
 	            this.addClass('subQuery');
@@ -31,9 +26,7 @@
 	    },
 
 	    addMenuItem: function(item){
-	        this._menuItems.push(item);
-
-	        this.addBtn.removeClass('hidden');
+	        this.addMenu.addItem(item);
 	    },
 
 	    changeValue: function(){
@@ -80,50 +73,24 @@
                 }
             }
 
-            this._menuItems = Syntax.getQueryElements();
+	        this.addMenu = new AddMenu({
+	            existElements: this.getScope(),
+	            menuItems: Syntax.getQueryElements(),
+	            callback: function(desc){
+                    var render = $this.createRender({
+                        key: desc.key,
+                        scope: $this.getScope(),
+                        queryBean: $this
+                    });
 
-            this.updateQueryItems();
-
-            this.addBtn = this.$('<i class="addBtn"></i>');
-            this.append(this.addBtn);
-            this.addBtn.click(function(){
-                ToolManager.activate({
-                    id: 'simpleSelectTool',
-                    cmd: 'show',
-                    data: {
-                        key: JSB.generateUid(),
-                        values: $this._menuItems
-                    },
-                    scope: null,
-                    target: {
-                        selector: $this.getElement(),
-                        dock: 'bottom'
-                    },
-                    callback: function(desc){
-                        var render = $this.createRender({
-                            key: desc.key,
-                            scope: $this.getScope(),
-                            queryBean: $this
-                        });
-
-                        if(render){
-                            $this.addBtn.before(render);
-
-                            $this.updateQueryItems();
-
-                            if($this._menuItems.length === 0){
-                                $this.addBtn.addClass('hidden');
-                            }
-                        }
-
-                        $this.onChange();
+                    if(render){
+                        $this.addMenu.before(render);
                     }
-                });
-            });
 
-            if(this._menuItems.length === 0){
-                this.addBtn.addClass('hidden');
-            }
+                    $this.onChange();
+	            }
+	        });
+	        this.append(this.addMenu);
 	    },
 
 	    createHeader: function(){
@@ -154,18 +121,6 @@
 	        for(var i in this._scope){
 	            delete this._scope[i];
 	        }
-	    },
-
-	    updateQueryItems: function(){
-            for(var i in this.getScope()){
-                for(var j = 0; j < this._menuItems.length; j++){
-                    if(this._menuItems[j].key === i){
-                        this._menuItems.splice(j, 1);
-
-                        break;
-                    }
-                }
-            }
 	    }
 	}
 }

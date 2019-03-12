@@ -6,19 +6,13 @@
 
 	$client: {
 	    $require: ['DataCube.Query.Syntax',
-	               'JSB.Widgets.ToolManager',
-                   'DataCube.Query.SimpleSelectTool'],
+	               'DataCube.Query.Controls.AddMenu',
+	               'css:Filter.css'],
 
 	    $constructor: function(opts){
 	        $base(opts);
 
 	        this.addClass('filterRender');
-
-	        var replacements = Syntax.getReplacementGroup('$filter');
-
-	        for(var i = 0; i < replacements.length; i++){
-	            this._menuItems.push(JSB.merge({}, Syntax.getScheme(replacements[i]), {key: replacements[i]}));
-	        }
 
 	        if(opts.parent.getRenderName() === '$query'){
 	            this._isQueryElement = true;
@@ -30,13 +24,28 @@
 	            this.constructHead()
 	        }
 
-	        this.createAddButton();
-
 	        this.constructValues();
+
+	        this.addMenu = new AddMenu({
+	            existElements: this.getValues(),
+	            menuItems: Syntax.getReplacementGroupItems('$filter'),
+	            callback: function(desc){
+                    var render = $this.createRender({
+                        key: desc.key,
+                        scope: $this.getValues()
+                    });
+
+                    if(render){
+                        $this.addMenu.before(render);
+
+                        $this.onChange();
+                    }
+	            }
+	        });
+	        this.append(this.addMenu);
 	    },
 
 	    _isQueryElement: false,
-	    _menuItems: [],
 
 	    changeValue: function(oldDesc){
 	        // todo
@@ -49,6 +58,33 @@
 
             for(var i in values){
                 if(filter.indexOf(i) === -1){
+                    // совместимость со старым синтаксисом
+                    if(JSB.isObject(values[i]) && filter.indexOf(Object.keys(values[i])[0]) !== -1){
+                        if(values[Object.keys(values[i])[0]]){
+                            if(!values['$and']){
+                                values['$and'] = [];
+                            }
+
+                            var newVal = {};
+
+                            newVal[Object.keys(values[i])[0]] = [
+                            {
+                                $field: i
+                            },
+                            values[i][Object.keys(values[i])[0]]
+                            ];
+
+                            values['$and'].push(newVal);
+                        } else {
+                            values[Object.keys(values[i])[0]] = [
+                                {
+                                    $field: i
+                                },
+                                values[i][Object.keys(values[i])[0]]
+                            ];
+                        }
+                    }
+
                     delete values[i];
                 }
             }
@@ -87,56 +123,18 @@
                 });
 
                 if(render){
-                    this.addBtn.before(render);
+                    this.append(render);
                 }
             }
-	    },
-
-	    createAddButton: function(){
-            this.addBtn = this.$('<i class="addBtn"></i>');
-            this.append(this.addBtn);
-            this.addBtn.click(function(){
-                ToolManager.activate({
-                    id: 'simpleSelectTool',
-                    cmd: 'show',
-                    data: {
-                        key: JSB.generateUid(),
-                        values: $this._menuItems
-                    },
-                    scope: null,
-                    target: {
-                        selector: $this.getElement(),
-                        dock: 'bottom'
-                    },
-                    callback: function(desc){
-                        var render = $this.createRender({
-                            key: desc.key,
-                            scope: $this.getValues()
-                        });
-
-                        if(render){
-                            $this.addBtn.before(render);
-
-                            $this.updateMenuItems();
-
-                            $this.onChange();
-                        }
-                    }
-                });
-            });
-
-            this.updateMenuItems();
 	    },
 
 	    createRender: function(options, parent){
 	        JSB.merge(options, {
 	            allowDelete: true,
 	            deleteCallback: function(){
-	                $this._menuItems.push(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
+	                $this.addMenu.addItem(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
 
 	                this.remove();
-
-	                $this.updateMenuItems();
 
 	                $this.onChange();
 	            }
@@ -151,24 +149,6 @@
             }
 
 	        $base();
-	    },
-
-	    updateMenuItems: function(){
-	        for(var i in this.getValues()){
-                for(var j = 0; j < this._menuItems.length; j++){
-                    if(this._menuItems[j].key === i){
-                        this._menuItems.splice(j, 1);
-
-                        break;
-                    }
-                }
-	        }
-
-            if($this._menuItems.length === 0){
-                this.addBtn.addClass('hidden');
-            } else {
-                this.addBtn.removeClass('hidden');
-            }
 	    }
 	}
 }

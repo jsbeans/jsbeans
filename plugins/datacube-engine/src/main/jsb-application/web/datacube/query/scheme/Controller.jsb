@@ -243,14 +243,12 @@
 				cmd: 'show',
 				data: JSB.merge(opts, {
 				    data: this.getData(),
-				    sliceId: this._refreshUid,
-				    //query: this.getQuery()
+				    sliceId: this._refreshUid
 				}),
 				scope: null,
 				target: {
 					selector: opts.element,
-					dock: 'bottom',
-					offsetVert: -1
+					dock: 'bottom'
 				},
 				callback: opts.callback || function(desc){
                     if(opts.editToolCallback){
