@@ -35,7 +35,7 @@
             this.saveBtn = new Button({
                 cssClass: "btnOk",
                 caption: "Сохранить",
-                onclick: function(){
+                onClick: function(){
                     $this.saveSettings();
                 }
             });

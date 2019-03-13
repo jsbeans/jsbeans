@@ -34,9 +34,9 @@
                                 minSize: '100px',
                                 widgets: 'cubeEditor'
                             },{
-                                key: 'gridView',
+                                key: 'grid',
                                 minSize: '100px',
-                                widgets: 'gridView'
+                                widgets: 'grid'
                             }]
 						},{
 						    key: 'rightPane',
@@ -55,8 +55,8 @@
 					cubeEditor: {
 						jsb: 'DataCube.CubeEditor',
 					},
-					gridView: {
-						jsb: 'DataCube.GridView',
+					grid: {
+						jsb: 'DataCube.Controls.Grid',
 						options: {
 							noDataMessage: 'Выберите объект на диаграмме'
 						},
@@ -81,7 +81,7 @@
 		refresh: function(){
 			this.ensureTrigger(['_layoutInitialized'], function(){
 			    $this.layoutManager.getWidget('cubeEditor').refresh($this.getCurrentEntry());
-			    $this.layoutManager.getWidget('gridView').clear();
+			    $this.layoutManager.getWidget('grid').clear();
 			});
 		}
 	}

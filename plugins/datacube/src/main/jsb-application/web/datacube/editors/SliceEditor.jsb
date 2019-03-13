@@ -7,6 +7,8 @@
                    'JSB.Widgets.PrimitiveEditor',
                    'DataCube.Query.SchemeController'],
 
+        sliceData: null,
+
 	    $constructor: function(opts){
 	        $base(opts);
 
@@ -32,7 +34,7 @@
 			    cssClass: 'okBtn',
 			    enabled: false,
 				tooltip: 'Сохранить',
-			    onclick: function(){
+			    onClick: function(){
 			        $this.apply();
 			    }
 			});
@@ -50,6 +52,10 @@
 			scrollBox.append(this.editor);
 
 			this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(sender, msg, obj){
+			    if($this.sliceData !== null){
+			        return;
+			    }
+
 			    $this.addClass('active');
 
 			    okBtn.enable(true);
@@ -57,9 +63,15 @@
 			});
 
 			this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(sender, msg, obj){
+			    if($this.sliceData === obj){
+			        return;
+			    }
+
 			    $this.removeClass('active');
 
 			    okBtn.enable(false);
+
+			    $this.sliceData = null;
 			});
 	    },
 

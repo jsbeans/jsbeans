@@ -211,6 +211,7 @@
             }
             
             $this.server().loadData( qObj, function(res){
+debugger;
                 if(storedLoadId !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');

@@ -332,6 +332,18 @@
 
                 $this._selectedItems = selectedItems;
             });
+
+			this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(sender, msg, obj){
+                $this.options.layoutManager.ensureInitialize(function(){
+                    $this.options.layoutManager.getWidget('grid').refresh(obj.entry);
+                });
+			});
+
+			this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(sender, msg, obj){
+                $this.options.layoutManager.ensureInitialize(function(){
+                    $this.options.layoutManager.getWidget('grid').clear();
+                });
+			});
 	    },
 
 	    addDataSource: function(entry, selectedFields, position){

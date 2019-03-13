@@ -11,7 +11,7 @@
 	},
 	
 	$require: ['JSB.Widgets.SplitBox',
-	           'DataCube.GridView', 
+	           'DataCube.Controls.Grid',
 	           'JSB.Controls.ScrollBox',
 	           'JSB.Widgets.PrimitiveEditor', 
 	           'JSB.Widgets.Button',
@@ -56,7 +56,7 @@
                 cssClass: "btnUpdate",
                 caption: "Обновить",
                 onClick: function(){
-                    $this.gridView.updateData($this.slice, $this.textQueryEditor.getData().getValue());
+                    $this.grid.refresh($this.slice, $this.textQueryEditor.getData().getValue());
                 }
             });
             this.titleBlock.append(this.updateBtn.getElement());
@@ -69,7 +69,7 @@
 
                 	q['$analyze'] = true;
 
-                	$this.gridView.updateData($this.slice, q);
+                	$this.grid.refresh($this.slice, q);
                 }
             });
             this.titleBlock.append(this.analyzeBtn.getElement());
@@ -100,7 +100,7 @@
                             },
                             callback: function(key, item, evt){
                                 exportBtn.getElement().loader();
-                                $this.gridView.exportData(key, $this.slice && $this.slice.getName(), function(){
+                                $this.grid.exportData(key, $this.slice && $this.slice.getName(), function(){
                                     exportBtn.getElement().loader('hide');
                                 });
                             }
@@ -152,10 +152,10 @@
 			vSplitBox.addToPane(1, this.textQueryEditor);
 			
 			// add grid view
-			this.gridView = new GridView({
+			this.grid = new Grid({
 				noDataMessage: 'Сформируйте запрос в конструкторе и нажмите кнопку "Обновить"'
 			});
-			hSplitBox.addToPane(1, this.gridView);
+			hSplitBox.addToPane(1, this.grid);
 		},
 		
 		refresh: function(){
@@ -183,7 +183,7 @@
 
                 $this.updateTextQuery(query);
 
-                //$this.gridView.updateData($this.slice, query);
+                //$this.grid.updateData($this.slice, query);
 			});
 		},
 		
