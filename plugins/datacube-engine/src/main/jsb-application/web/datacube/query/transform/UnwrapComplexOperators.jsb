@@ -59,6 +59,7 @@
                             subQuery.$select[innerOp] = {};
                             subQuery.$select[innerOp]['$'+innerOp] = exp;
                             subQuery.$filter = query.$filter && JSB.clone(query.$filter);
+                            subQuery.$groupBy = query.$groupBy && JSB.clone(query.$groupBy);
                             copySource(subQuery, query);
                             return subQuery;
                     }
