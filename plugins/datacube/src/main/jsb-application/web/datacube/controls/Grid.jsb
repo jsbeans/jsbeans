@@ -22,7 +22,12 @@
                 table: {
                     rowHeaders: false,
                     readOnly: false,
-                    manualRowMove: false
+                    manualRowMove: false,
+                    /*
+                    manualColumnResize: true,
+                    manualRowResize: true,
+                    rowHeights: 40
+                    */
                 },
                 callbacks: {
                     createHeader: function(i, header) {
@@ -115,8 +120,9 @@
 		        if(res.eof){
 		            $this._eof = true;
 		        } else {
-		            // load more if big height ?
-		            // todo: load more
+                    if($this.table.getElement().height() >= $this.table.getElement().find('.ht_master.handsontable > div.wtHolder > .wtHider').height()){
+                        $this.fetch(false, $this.table.getRowCount());
+                    }
 		        }
 		    });
 		},

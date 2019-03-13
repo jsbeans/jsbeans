@@ -12,6 +12,10 @@
     max-height: 500px;
 }
 
+.querySchemeTool .queryItemList > .items{
+    max-height: calc(500px - 23px);
+}
+
 .querySchemeTool .queryItemList > .items .item > .key,
 .simpleSelectTool .queryItemList > .items .item > .key {
     font-family: monospace;
