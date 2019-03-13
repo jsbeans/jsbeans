@@ -11,18 +11,19 @@
 	},
 
 	$client: {
-		$require: ['DataCube.GridView'],
+		$require: ['DataCube.Controls.Grid'],
+
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.dataGridView = new GridView();
-            this.append(this.dataGridView);
+			this.grid = new Grid();
+            this.append(this.grid);
 		},
 
 		refresh: function(){
 		    var table = this.getCurrentEntry();
-		    this.dataGridView.updateData(table, {}, table.getQueryableContainer());
+
+		    this.grid.refresh(table);
 		}
 	}
-
 }

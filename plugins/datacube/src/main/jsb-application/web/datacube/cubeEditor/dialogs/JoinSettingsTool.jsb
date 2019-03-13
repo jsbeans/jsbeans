@@ -30,7 +30,7 @@
 			    caption: 'Отмена',
 			    cssClass: 'textButton cancelBtn',
 				tooltip: 'Отмена',
-			    onclick: function(){
+			    onClick: function(){
 			        $this.close();
 			    }
 			});
@@ -40,7 +40,7 @@
 			    caption: 'Сохранить',
 			    cssClass: 'textButton okBtn',
 				tooltip: 'Сохранить',
-			    onclick: function(){
+			    onClick: function(){
                     $this.data.callback.call($this, $this.controller.getValues());
 
 			        $this.close()
