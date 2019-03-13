@@ -35,7 +35,6 @@
 
 .queryItemList > .categories + .items {
     width: 70%;
-    max-height: inherit;
 }
 
 .queryItemList > .items {
