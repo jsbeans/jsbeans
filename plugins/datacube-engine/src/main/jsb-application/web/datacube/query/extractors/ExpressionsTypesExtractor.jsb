@@ -192,6 +192,10 @@
                             }
                         }
 
+                        if (exp.$count || exp.$gcount || exp.$grmaxcount) {
+                            setType.call(this, DataTypes.integer.name);
+                        }
+
                         if (exp.$toString)    { setType.call(this, DataTypes.string.name); }
                         if (exp.$toInt)       { setType.call(this, DataTypes.integer.name); }
                         if (exp.$toDouble)    { setType.call(this, DataTypes.double.name); }

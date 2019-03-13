@@ -180,5 +180,61 @@
             }
             return sliceDimensions;
         },
+
+        /** Возвращает параметры, использованные в запросе и внутренних запросах, включая срезы (их тоже обходит рекурсивно)
+        */
+        extractInternalSlices: function(rootQuery, includeSubSlices){
+            var usedParams = {};
+            var params = {};
+            Visitors.visitProxy(rootQuery, {
+                getUndefinedView: function(name) {
+                    if (includeSubSlices) {
+                        var slice = QueryUtils.getQuerySlice(name);
+                        return slice.getQuery();
+                    } else {
+                        return {};
+                    }
+                },
+                query: {
+                    after: function(query){
+                        JSB.merge(true, params, query.$params);
+                    }
+                },
+                param: {
+                    before: function(param) {
+                        if(!usedParams[param]) usedParams[param] = {used:0};
+                        usedParams[param] += 1;
+                    }
+                }
+            });
+            JSB.merge(true, usedParams, params);
+            return usedParams;
+        },
+
+        /** Возвращает объект с параметрами, объявленными и доступными для использования в текущем запросе
+            (мотает от текущего запроса наверх по цепочке вызова, самая верхняя декларация считается главной)
+        */
+        extractAllowedParams: function(rootQuery, current/**query/context*/) {
+            var allowedParams = {};
+            Visitors.visitProxy(rootQuery, {
+                getUndefinedView: function(name) {
+                    return {};
+                },
+                query: {
+                    before: function(query){
+                        if (query == current || query.$context == current) {
+                            this.skip = true;
+                            this.beak = true;
+
+                            var params = {};
+                            for(var i = this.queryPath.length - 1; i >= 0; i--) {
+                                JSB.merge(true, allowedParams, this.queryPath[i].$params);
+                            }
+                        }
+                    },
+                },
+            });
+            return allowedParams;
+        },
     }
 }
