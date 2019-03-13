@@ -135,7 +135,7 @@
                 time: 'timestamp',
                 timestamp: 'timestamp',
                 array: 'ARRAY',
-                object: 'blob',
+                object: 'nvarchar',
 			},
 			'Microsoft SQL Server': {
                 string: 'nvarchar(max)',
