@@ -986,6 +986,7 @@
 			if(!JSB.isDefined(bSelect)){
 				bSelect = true;
 			}
+
 			if(JSB.isInstanceOf(node, 'JSB.Widgets.Diagram.Node') || JSB.isInstanceOf(node, 'JSB.Widgets.Diagram.Link')){
 				node.select(bSelect);
 			} else if(JSB.isObject(node)){
@@ -1131,7 +1132,5 @@
 		        y: this.grid.height()
 		    };
 		}
-	},
-	
-	$server: {}
+	}
 }

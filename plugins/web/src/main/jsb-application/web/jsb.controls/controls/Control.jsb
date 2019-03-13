@@ -132,11 +132,16 @@
 		},
 
 		on: function(eventName, func){
-		    if(!JSB().isFunction(func)) return;
+		    if(!JSB().isFunction(func)){
+		        return;
+		    }
 
 		    this.options[eventName] = func;
 		    this.getElement().on(eventName, function(evt){
-		        if(!$this.options.enabled) return;
+		        if(!$this.options.enabled){
+		            return;
+		        }
+
 		        $this.options[eventName].call($this, evt);
 		    });
 		},

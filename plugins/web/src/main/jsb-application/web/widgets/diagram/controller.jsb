@@ -98,18 +98,15 @@
 					params.event.stopPropagation();
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') && params.event.which == 1){
 					params.event.stopPropagation();
+
 					if(params.event.altKey){
 						if(sender.isSelected()){
 							sender.select(false);
 						}
-						
 					} else if(params.event.ctrlKey){
 						// toggle
 						sender.select(!sender.isSelected());
 					} else {
-						// select new
-						sender.select(true);
-						
 						// remove old selected
 						var rMap = {};
 						for(var nodeId in this.diagram.nodes){
@@ -121,6 +118,9 @@
 						}
 						this.select(rMap, false);
 						this.select(this.diagram.links, false);
+
+						// select new
+						sender.select(true);
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Link') && params.event.which == 1){
 					params.event.stopPropagation();
@@ -208,7 +208,6 @@
 					this.nodeMovePt = null;
 					
 					if(this.isSelecting){
-						
 						// remove all highlights
 						this.highlight(this.diagram.nodes, false);
 						this.highlight(this.diagram.links, false);
@@ -233,9 +232,6 @@
 							// append highlighted to current selection
 							this.select(itemMap, true);
 						} else {
-							// select new
-							this.select(itemMap, true);
-							
 							// remove old selected
 							var rItemMap = {};
 							for(var nodeId in this.diagram.nodes){
@@ -253,7 +249,9 @@
 								rItemMap[linkId] = link;
 							}
 							this.select(rItemMap, false);
-							
+
+							// select new
+							this.select(itemMap, true);
 						}
 						this.isSelecting = false;
 						this.selectorToolPt = null;
@@ -448,7 +446,5 @@
 				obj.select(bEnable);
 			}
 		}
-		
-
 	}
 }

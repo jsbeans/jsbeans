@@ -3,6 +3,7 @@
 	$parent: 'JSB.Controls.Control',
 	$client: {
 		$require: ['css:button.css'],
+
 	    $constructor: function(opts){
 	        if(opts && !opts.element) opts.element = '<button></button>';
 	        $base(opts);
@@ -46,14 +47,6 @@
 
             if(this.options.onClick){
                 this.getElement().click(this.options.onClick);
-            }
-
-            // todo: remove in all places
-            // options events
-            for(var i in this.options){
-                if(i.substr(0, 2) === 'on'){
-                    this.on(i.substr(2), this.options[i]);
-                }
             }
 
             // options enable

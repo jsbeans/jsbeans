@@ -142,6 +142,8 @@
         },
 
         refresh: function(opts){
+            this.getElement().loader();
+
             this.ensureComponentsInitialized(function(){
                 if($this._query){
                     $this._query.destroy();
@@ -165,6 +167,8 @@
                     $this._values = opts.values;
                     $this._query = query;
                 }
+
+                this.getElement().loader('hide');
             });
         },
 
