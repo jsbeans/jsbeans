@@ -90,8 +90,8 @@
 	                var leftContext = this.getController().generateContext(),
 	                    rightContext = this.getController().generateContext();
 
-	                this.replaceContexts(this.getValues()['$filter'], values.$left, leftContext, '$sourceContext');
-	                this.replaceContexts(this.getValues()['$filter'], values.$right, rightContext, '$sourceContext');
+	                this.replaceContexts(values['$filter'], values.$left, undefined, '$sourceContext');
+	                this.replaceContexts(values['$filter'], values.$right, undefined, '$sourceContext');
 
 	                newValue = {
 	                    $start: {

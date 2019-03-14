@@ -68,6 +68,41 @@
             });
 
             this.append(filterRender);
+	    },
+
+	    changeTo: function(newKey){
+	        var newValue,
+	            values = this.getValues();
+
+            if(newKey === '$from'){
+                newValue = values.$start.$from || values.$joinedNext.$from;
+            }
+
+            if(newKey === '$union'){
+                newValue = [];
+
+                if(values.$start.$from){
+                    newValue.push(values.$start.$from);
+                }
+
+                if(values.$joinedNext.$from){
+                    newValue.push(values.$joinedNext.$from);
+                }
+            }
+
+            if(newKey === '$join'){
+                newValue = {
+                    $left: values.$start.$from,
+                    $right: values.$joinedNext.$from,
+                    $filter: {}
+                };
+                /*
+                this.replaceContexts(values.$filter, values.$right, rightContext, '$sourceContext');
+                this.replaceContexts(values.$filter, values.$right, rightContext, '$sourceContext');
+                */
+            }
+
+	        $base(newKey, newValue || null);
 	    }
 	}
 }
