@@ -1,0 +1,8 @@
+.recursiveQueryRender > .operator:not(:last-child),
+.recursiveQueryRender > .separator {
+    display: inline-block;
+}
+
+.recursiveQueryRender > .separator.collapsed + .basicQueryRender {
+    display: none;
+}

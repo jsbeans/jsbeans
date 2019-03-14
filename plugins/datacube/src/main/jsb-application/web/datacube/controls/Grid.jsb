@@ -23,11 +23,8 @@
                     rowHeaders: false,
                     readOnly: false,
                     manualRowMove: false,
-                    /*
-                    manualColumnResize: true,
-                    manualRowResize: true,
-                    rowHeights: 40
-                    */
+                    rowHeights: 40,
+                    wordWrap: true
                 },
                 callbacks: {
                     createHeader: function(i, header) {

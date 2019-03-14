@@ -50,3 +50,7 @@
     vertical-align: middle;
     display: inline-block;
 }
+
+.defaultRender > .addBtn {
+    margin-left: 15px;
+}

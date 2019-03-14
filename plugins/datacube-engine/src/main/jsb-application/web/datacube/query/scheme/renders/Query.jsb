@@ -9,6 +9,16 @@
 	               'DataCube.Query.Controls.AddMenu',
 	               'css:Query.css'],
 
+	    /**
+	    * @constructor
+	    *
+	    * Описание дополнительных опций для рендера $query
+	    * Основные опции @see DataCube.Query.Renders.Basic
+	    *
+	    * @param {boolean} [opts.allowChangeSource] - возможность изменения источника
+	    * @param {string[]} [opts.allowChild] - разрешённые для добавления элементы (фильтрация, сортировка и тп)
+	    * @param {boolean} [opts.noHeader] - не создавать header при наличии родителя (подзапрос)
+	    */
 	    $constructor: function(opts){
 	        $base(opts);
 
@@ -17,7 +27,13 @@
 	        if(this.getParent()){
 	            this.addClass('subQuery');
 
-	            this.createHeader();
+	            if(!this.options.noHeader){
+	                this.createHeader();
+                }
+
+                if(!this.getScope().$context){
+                    this.getScope().$context = this.getController().generateContext();
+                }
 
 	            this.getController().registerContext(this.getContext());
 	        }
@@ -36,8 +52,10 @@
 	    },
 
 	    construct: function(){
-            var descriptions = [],
-                order = 0;
+            var allowChangeSource = this.isAllowChangeSource(),
+                descriptions = [],
+                order = 0,
+                sourceKeys = Syntax.getSourceKeys();
 
             for(var i in this.getScope()){
                 descriptions.push({
@@ -63,7 +81,14 @@
             });
 
             for(var i = 0; i < descriptions.length; i++){
+                var allowReplace = undefined;
+
+                if(!allowChangeSource && sourceKeys[descriptions[i].key]){
+                    allowReplace = false;
+                }
+
                 var render = this.createRender({
+                    allowReplace: allowReplace,
                     key: descriptions[i].key,
                     scope: this.getScope()
                 });
@@ -75,7 +100,7 @@
 
 	        this.addMenu = new AddMenu({
 	            existElements: this.getScope(),
-	            menuItems: Syntax.getQueryElements(),
+	            menuItems: this.resolveMenuItems(),
 	            callback: function(desc){
                     var render = $this.createRender({
                         key: desc.key,
@@ -117,10 +142,33 @@
 	        return Object.keys(this.getScope().$select).sort();
 	    },
 
+	    isAllowChangeSource: function(){
+	        return JSB.isDefined(this.options.allowChangeSource) ? this.options.allowChangeSource : true;
+	    },
+
 	    replaceValue: function(newKey, newValue){
 	        for(var i in this._scope){
 	            delete this._scope[i];
 	        }
-	    }
+	    },
+
+	    resolveMenuItems: function(){
+	        var child = Syntax.getQueryElements(),
+	            allowChild = this.options.allowChild;
+
+            if(allowChild){
+                child = child.filter(function(el){
+                    if(allowChild.indexOf(el.key) === -1){
+                        return false;
+                    }
+
+                    return true;
+                });
+            }
+
+            return child;
+	    },
+
+	    setDefaultValues: function(){}
 	}
 }
