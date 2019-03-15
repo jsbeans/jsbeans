@@ -8,7 +8,7 @@
 }
 
 .queryItemList > .categories {
-    width: 30%;
+    width: 40%;
     border-right: 1px solid #abc;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .queryItemList > .categories + .items {
-    width: 70%;
+    width: 60%;
 }
 
 .queryItemList > .items {

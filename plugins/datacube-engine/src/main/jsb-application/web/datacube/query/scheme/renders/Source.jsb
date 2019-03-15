@@ -14,7 +14,7 @@
             this.addClass('sourceRender');
 
             // create header
-            var header = this.$('<header>' + this._scheme.category + ': ' + this._scheme.displayName + '</header>');
+            var header = this.$('<header>' + this.getScheme().category + ': ' + this.getScheme().displayName + '</header>');
             this.append(header);
 
             this.installMenuEvents({ element: header });
@@ -85,6 +85,28 @@
 	            if(newKey === '$union'){
 	                newValue = [values.$left, values.$right];
 	            }
+
+	            if(newKey === '$recursive'){
+	                var leftContext = this.getController().generateContext(),
+	                    rightContext = this.getController().generateContext();
+
+	                this.replaceContexts(values['$filter'], values.$left, undefined, '$sourceContext');
+	                this.replaceContexts(values['$filter'], values.$right, undefined, '$sourceContext');
+
+	                newValue = {
+	                    $start: {
+	                        $context: leftContext,
+	                        $select: {},
+	                        $from: values.$left
+	                    },
+	                    $joinedNext: {
+	                        $context: rightContext,
+	                        $select: {},
+	                        $from: values.$right
+	                    },
+	                    $filter: values.$filter
+	                };
+	            }
 	        }
 
 	        if(curKey === '$from'){
@@ -96,6 +118,20 @@
 
 	            if(newKey === '$union'){
 	                newValue = [values];
+	            }
+
+	            if(newKey === '$recursive'){
+	                newValue = {
+	                    $start: {
+	                        $select: {},
+	                        $from: values
+	                    },
+	                    $joinedNext: {
+	                        $select: {},
+	                        $from: values
+	                    },
+	                    $filter: {}
+	                };
 	            }
 	        }
 
@@ -110,6 +146,20 @@
 	                    $right: values[1]
 	                }
 	            }
+
+	            if(newKey === '$recursive'){
+	                newValue = {
+	                    $start: {
+	                        $select: {},
+	                        $from: values[0]
+	                    },
+	                    $joinedNext: {
+	                        $select: {},
+	                        $from: values[1]
+	                    },
+	                    $filter: {}
+	                };
+	            }
 	        }
 
 	        if(curKey === '$cube'){
@@ -120,10 +170,38 @@
 	            if(newKey === '$union'){
 	                newValue = [];
 	            }
+
+	            if(newKey === '$recursive'){
+	                newValue = {
+	                    $start: {
+	                        $select: {},
+	                        $from: {}
+	                    },
+	                    $joinedNext: {
+	                        $select: {},
+	                        $from: {}
+	                    },
+	                    $filter: {}
+	                };
+	            }
 	        }
 
 	        if(curKey === '$provider'){
 	            newValue = {};
+
+	            if(newKey === '$recursive'){
+	                newValue = {
+	                    $start: {
+	                        $select: {},
+	                        $from: {}
+	                    },
+	                    $joinedNext: {
+	                        $select: {},
+	                        $from: {}
+	                    },
+	                    $filter: {}
+	                };
+	            }
 	        }
 
 	        $base(newKey, newValue || null);
