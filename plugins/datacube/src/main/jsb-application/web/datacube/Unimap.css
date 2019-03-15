@@ -11,8 +11,12 @@
     border: 1px dotted rgba(2, 47, 78, 0.4) !important;
 }
 
+.scheme i.btn {
+	opacity: 0.7 !important;
+}
+
 .scheme i.btn:hover {
-    opacity: 0.7;
+    opacity: 1 !important;
 }
 
 .scheme i.btn.btnMultiple {

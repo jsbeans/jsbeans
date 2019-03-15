@@ -80,6 +80,9 @@
 								if(!fieldMap[fn]){
 									// append missing column
 									var fType = fields[fn].type;
+									if(fType == 'null'){
+										fType = 'string';
+									}
 									var fComment = fields[fn].comment;
 									var sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fn + '" ' + DataTypes.toVendor(vendor, fType);
 									JDBC.executeUpdate(connection, sql);
@@ -116,6 +119,9 @@
 					for(var i = 0; i < fNameArr.length; i++){
 						var fName = fNameArr[i];
 						var fType = fields[fName].type;
+						if(fType == 'null'){
+							fType = 'string';
+						}
 						var jdbcType = DataTypes.toVendor(vendor, fType);
 						if(i > 0){
 							sql += ', ';
@@ -144,6 +150,9 @@
 					var fNameArr = Object.keys(fields);
 					for(var i = 0; i < fNameArr.length; i++){
 						var fType = fields[fNameArr[i]].type;
+						if(fType == 'null'){
+							fType = 'string';
+						}
 						var fComment = fields[fNameArr[i]].comment;
 						sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + DataTypes.toVendor(vendor, fType);
 						JDBC.executeUpdate(connection, sql);
