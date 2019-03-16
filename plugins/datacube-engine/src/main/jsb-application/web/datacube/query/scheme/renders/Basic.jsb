@@ -15,6 +15,7 @@
 	    * @see DataCube.Query.SchemeController.createRender
 	    *
 	    * @param {boolean} [opts.allowDelete] - возможность удаления
+	    * @param {boolean} [opts.allowReplace] - возможность замены
         * @param {boolean} [opts.allowOutputFields] - можно ли дочерним элементам использовать поля текущего запроса. Если не задана, то true
 	    * @param {boolean} [opts.allowSourceFields] - можно ли дочерним элементам использовать поля источника. Если не задана, то true
 	    * @param {object} opts.controller - контроллер схемы
@@ -30,26 +31,19 @@
 
 	        this.addClass('basicQueryRender');
 
-            if(opts.scheme && JSB.isDefined(opts.scheme.allowOutputFields)){
-                this._allowOutputFields = opts.scheme.allowOutputFields;
-            } else {
-                this._allowOutputFields = JSB.isDefined(opts.allowOutputFields) ? opts.allowOutputFields : true;
-            }
+	        if(!JSB.isDefined(opts.allowOutputFields)){
+	            if(JSB.isDefined(this.getScheme().allowOutputFields)){
+	                this.options.allowOutputFields = this.getScheme().allowOutputFields;
+	            }
+	        }
 
-            if(opts.scheme && JSB.isDefined(opts.scheme.allowSourceFields)){
-                this._allowSourceFields = opts.scheme.allowSourceFields;
-            } else {
-                this._allowSourceFields = JSB.isDefined(opts.allowSourceFields) ? opts.allowSourceFields : true;
-            }
+	        if(!JSB.isDefined(opts.allowSourceFields)){
+	            if(JSB.isDefined(this.getScheme().allowSourceFields)){
+	                this.options.allowSourceFields = this.getScheme().allowSourceFields;
+	            }
+	        }
 
-	        this._allowDelete = opts.allowDelete;
-	        this._allowWrap = opts.allowWrap;
-	        this._controller = opts.controller;
-	        this._deleteCallback = opts.deleteCallback;
 	        this._key = opts.key;
-	        this._parent = opts.parent;
-	        this._renderName = opts.renderName;
-	        this._scheme = opts.scheme;
 	        this._scope = opts.scope;
 
 	        if(opts.changedFrom){
@@ -58,9 +52,7 @@
                 if(JSB.isDefined(this.getValues())){
                     this.checkValues();
                 } else {
-                    if(this.getDefaultValues()){
-                        this.setValues(this.getDefaultValues());
-                    }
+                    this.setDefaultValues();
                 }
             }
 
@@ -86,8 +78,8 @@
 
                 render = this.createRender({
                     // поля, заданные родителем
-                    allowOutputFields: this.isAllowOutputFields(),
-                    allowSourceFields: this.isAllowSourceFields(),
+                    allowOutputFields: this.options.allowOutputFields,
+                    allowSourceFields: this.options.allowSourceFields,
                     allowDelete: this.isAllowDelete(),
                     deleteCallback: this.getDeleteCallback(),
 
@@ -100,19 +92,15 @@
                 }, this.getParent());
 	        } else {
                 this.replaceValue(newKey, newValue);
-    /*
-                if(desc && desc.context){
-                    this.setContext(desc.context);
-                }
-    */
+
                 if(desc && desc.sourceContext){
                     this.setParameter('$sourceContext', desc.sourceContext);
                 }
 
                 render = this.createRender({
                     // поля, заданные родителем
-                    allowOutputFields: this.isAllowOutputFields(),
-                    allowSourceFields: this.isAllowSourceFields(),
+                    allowOutputFields: this.options.allowOutputFields,
+                    allowSourceFields: this.options.allowSourceFields,
                     allowDelete: this.isAllowDelete(),
                     deleteCallback: this.getDeleteCallback(),
 
@@ -147,7 +135,7 @@
         * @param {boolean} [hasMenu] - создавать меню при наведении
         */
 	    createHeader: function(hasMenu){
-            var header = this.$('<header>' + this._scheme.displayName + '</header>');
+            var header = this.$('<header>' + this.getScheme().displayName + '</header>');
             this.append(header);
 
             if(hasMenu){
@@ -214,8 +202,8 @@
 	            options = {};
 	        }
 
-	        options.allowOutputFields = this.isAllowOutputFields();
-	        options.allowSourceFields = this.isAllowSourceFields();
+	        options.allowOutputFields = this.options.allowOutputFields;
+	        options.allowSourceFields = this.options.allowSourceFields;
 
 	        return this.getController().createRender(options, parent || this);
 	    },
@@ -286,7 +274,7 @@
         * @return {object} контроллер
         */
 	    getController: function(){
-	        return this._controller;
+	        return this.options.controller;
 	    },
 
         /**
@@ -338,7 +326,7 @@
         * @return {function} функция, которую необходимо вызвать при удалении
         */
 	    getDeleteCallback: function(){
-	        return this._deleteCallback;
+	        return this.options.deleteCallback;
 	    },
 
         /**
@@ -362,7 +350,7 @@
         * @return {object|undefined} объект рендера
         */
 	    getParent: function(){
-	        return this._parent;
+	        return this.options.parent;
 	    },
 
         /**
@@ -370,7 +358,7 @@
         * @return {string} имя рендера
         */
 	    getRenderName: function(){
-	        return this._renderName;
+	        return this.options.renderName;
 	    },
 
         /**
@@ -387,7 +375,7 @@
         * @return {object} объект схемы
         */
 	    getScheme: function(){
-	        return this._scheme || Syntax.getScheme(this.getRenderName()) || {};
+	        return this.options.scheme || Syntax.getScheme(this.getRenderName()) || {};
 	    },
 
         /**
@@ -429,7 +417,7 @@
         * @return {boolean} флаг возможности удаления
         */
 	    isAllowDelete: function(){
-	        return JSB.isDefined(this._allowDelete) ? this._allowDelete : this.getScheme().removable;
+	        return JSB.isDefined(this.options.allowDelete) ? this.options.allowDelete : this.getScheme().removable;
 	    },
 
         /**
@@ -437,7 +425,19 @@
         * @return {boolean}
         */
 	    isAllowOutputFields: function(){
-	        return this._allowOutputFields;
+	        if(JSB.isDefined(this.options.allowOutputFields)){
+	            return this.options.allowOutputFields;
+	        }
+
+	        return true;
+	    },
+
+        /**
+        * Возвращает возможность замены. Флаг задаётся при создании рендера родительским рендером
+        * @return {boolean} флаг возможности замены
+        */
+	    isAllowReplace: function(){
+	        return JSB.isDefined(this.options.allowReplace) ? this.options.allowReplace : this.getScheme().replaceable;
 	    },
 
         /**
@@ -445,7 +445,11 @@
         * @return {boolean}
         */
 	    isAllowSourceFields: function(){
-	        return this._allowSourceFields;
+	        if(JSB.isDefined(this.options.allowSourceFields)){
+	            return this.options.allowSourceFields;
+	        }
+
+	        return true;
 	    },
 
         /**
@@ -453,7 +457,7 @@
         * @return {boolean} флаг возможности оборачивания
         */
 	    isAllowWrap: function(){
-	        return JSB.isDefined(this._allowWrap) ? this._allowWrap : true;
+	        return JSB.isDefined(this.options.allowWrap) ? this.options.allowWrap : true;
 	    },
 
         /**
@@ -580,6 +584,28 @@
 	        this.onChange();
 	    },
 
+	    replaceContexts: function(value, oldContext, newContext, contextName){
+	        if(!contextName){
+	            contextName = '$context';
+	        }
+
+	        function replace(value){
+	            for(var i in value){
+	                if(i === contextName && value[i] === oldContext){
+	                    value[i] = newContext;
+	                } else if(JSB.isObject(value[i])) { // isObject
+	                    replace(value[i]);
+	                } else if(JSB.isArray(value[i])){   // isArray
+	                    for(var j = 0; j < value[i].length; j++){
+	                        replace(value[i][j]);
+	                    }
+	                }
+	            }
+	        }
+
+	        replace(value);
+	    },
+
         /**
         * Заменяет текущее значение в скопе новым
         * @param {string} newKey - новый ключ
@@ -610,6 +636,15 @@
             }
 
 	        this._scope[newKey] = newValue;
+	    },
+
+        /**
+        * Устанавливает значения по умолчанию (при наличии)
+        */
+	    setDefaultValues: function(){
+	        if(this.getDefaultValues()){
+	            this.setValues(this.getDefaultValues());
+	        }
 	    },
 
         /**
@@ -686,8 +721,8 @@
 
 	        var render = this.createRender({
 	            // поля, заданные родителем
-                allowOutputFields: this.isAllowOutputFields(),
-                allowSourceFields: this.isAllowSourceFields(),
+                allowOutputFields: this.options.allowOutputFields,
+                allowSourceFields: this.options.allowSourceFields,
                 allowDelete: this.isAllowDelete(),
                 deleteCallback: this.getDeleteCallback(),
 
@@ -709,7 +744,7 @@
 	            key: this.getKey(),
 
 	            // buttons
-	            edit: this.getScheme().replaceable,
+	            edit: this.isAllowReplace(),
 	            remove: this.isAllowDelete(),
 
 	            // callbacks

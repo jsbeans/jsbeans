@@ -7,6 +7,7 @@
 		    'java:org.jsbeans.serialization.JsObjectSerializerHelper',
 		    'java:org.jsbeans.helpers.NetworkHelper',
 		    'java:java.net.InetAddress',
+		    'java:org.jsbeans.web.HttpService',
 		],
 
 		$constructor: function(){
@@ -166,10 +167,14 @@
 			return "";
 		},
 
+		serverPort: function(){
+            return Config.get('web.http.port') || HttpService.DEFAULT_PORT;
+		},
+
 		serverAddr: function(withPort){
             var ip = NetworkHelper.detectSelfAddress();
             if (withPort) {
-                return ip + ':' + Config.get('web.http.port');
+                return ip + ':' + $this.serverPort();
             }
             return ip;
 		},

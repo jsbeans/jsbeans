@@ -44,6 +44,8 @@ public class HttpService extends Service {
     private static final String WEB_XML = "web.config";
     private static final String WEB_REQUEST_HEADER_SIZE = "web.http.requestHeaderSize";
     private static final String WEB_RESPONSE_BUFFER_SIZE = "web.http.responseBufferSize";
+
+    public static final int DEFAULT_PORT = 8888;
     
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
@@ -56,7 +58,7 @@ public class HttpService extends Service {
     }
 
     private void startJettyServer() {
-    	Integer portVal = 8888;
+    	Integer portVal = DEFAULT_PORT;
     	if(ConfigHelper.has(WEB_PORT_KEY)){
     		portVal = ConfigHelper.getConfigInt(WEB_PORT_KEY);
     	}

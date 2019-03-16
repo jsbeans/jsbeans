@@ -82,7 +82,7 @@
                         } else if (targetQuery.$union) {
                             var exist = false;
                             for(var i = 0; i < targetQuery.$union.length; i++) {
-                                var q = this.geQuery(targetQuery.$union[i]);
+                                var q = this.getQuery(targetQuery.$union[i]);
                                 exist = putOutput(q) || exist;
                             }
                             if(!exist) putAlias();

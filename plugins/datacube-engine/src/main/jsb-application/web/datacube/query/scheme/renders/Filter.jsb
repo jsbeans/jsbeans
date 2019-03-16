@@ -95,10 +95,9 @@
 	    },
 
 	    constructHead: function(){
-	        var scheme = this.getScheme(),
-	            desc = this.getKey() + '\n' + scheme.desc;
+	        var scheme = this.getScheme();
 
-	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
+	        var operator = this.$('<div class="operator" title="Условия фильтрации">Фильтрация</div>');
             this.append(operator);
 
             this.installMenuEvents({

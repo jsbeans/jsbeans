@@ -14,7 +14,7 @@
 	_toolItems: [],
 
 	_replacements: {
-	    $sources: ['$join', '$from', '$union', '$cube'],
+	    $sources: ['$join', '$from', '$union', '$cube', '$recursive'],
 	    $source: ['$source'],
 	    $default: ['$field',
 	    // матеметические операции
@@ -106,6 +106,18 @@
 	        desc: 'Задает в качестве источника запроса объединение результатов двух запросов',
 	        isSource: true,
 	        multiple: true,
+	        priority: 1,
+	        removable: false,
+
+	        replacements: '$sources'
+	    },
+
+	    $recursive: {
+	        render: '$recursive',
+	        category: 'Источник запроса',
+	        displayName: 'Рекурсия',
+	        desc: 'Рекурсивный запрос',
+	        isSource: true,
 	        priority: 1,
 	        removable: false,
 

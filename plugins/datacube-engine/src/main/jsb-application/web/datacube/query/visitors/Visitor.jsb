@@ -104,6 +104,9 @@
                                 return $this.queryPath[i].$views[view];
                             }
                         }
+                        if ($this.queryPath[i].$views[context]) {
+                            return $this.queryPath[i].$views[context];
+                        }
                     }
                 }
                 return $this.getView(context);

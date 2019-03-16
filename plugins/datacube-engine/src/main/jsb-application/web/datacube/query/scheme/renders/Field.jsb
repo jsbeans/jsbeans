@@ -92,8 +92,8 @@
 
 	        var render = this.createRender({
 	            // поля, заданные родителем
-                allowOutputFields: this.isAllowOutputFields(),
-                allowSourceFields: this.isAllowSourceFields(),
+                allowOutputFields: this.options.allowOutputFields,
+                allowSourceFields: this.options.allowSourceFields,
                 allowDelete: this.isAllowDelete(),
                 deleteCallback: this.getDeleteCallback(),
 
