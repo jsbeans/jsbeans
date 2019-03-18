@@ -8,6 +8,8 @@
 		$require: ['DataCube.Query.Syntax',
 		           'css:Basic.css'],
 
+        _subscribers: {},
+
 	    /**
 	    * @constructor
 	    *
@@ -401,6 +403,14 @@
 	    },
 
         /**
+        * Возвращает объект подписанных на изменения рендера
+        * @return {object} объект типа id: callback
+        */
+	    getSubscribers: function(){
+	        return this._subscribers;
+	    },
+
+        /**
         * Возвращает значения из скопа для текущего рендера
         * @return {object} значения
         */
@@ -526,15 +536,27 @@
             }
 	    },
 
-	    onChange: function(){
+	    onChange: function(changeDesc){
+	        for(var i in this._subscribers){
+	            this._subscribers[i].call(this, changeDesc);
+	        }
+
 	        this.getController().onChange();
 	    },
 
         /**
         * Удаляет текущее значение из скопа и уничтожает рендер
+        * @param {boolean} hideEvent - не порождать событие удаления
         */
-	    remove: function(){
+	    remove: function(hideEvent){
 	        delete this._scope[this.getKey()];
+
+            if(hideEvent){
+                $this.onChange({
+                    name: 'removeItem',
+                    item: this
+                });
+	        }
 
 	        this.destroy();
 	    },
@@ -584,7 +606,7 @@
 	        this.onChange();
 	    },
 
-	    replaceContexts: function(value, oldContext, newContext, contextName){
+	    replaceContexts: function(value, oldContext, newContext, contextName, newContextName){
 	        if(!contextName){
 	            contextName = '$context';
 	        }
@@ -592,7 +614,11 @@
 	        function replace(value){
 	            for(var i in value){
 	                if(i === contextName && value[i] === oldContext){
-	                    value[i] = newContext;
+	                    if(newContextName){
+	                        value[newContextName] = newContext;
+	                    } else {
+	                        value[i] = newContext;
+                        }
 	                } else if(JSB.isObject(value[i])) { // isObject
 	                    replace(value[i]);
 	                } else if(JSB.isArray(value[i])){   // isArray
@@ -701,6 +727,16 @@
 	        return this.getController().showTool(JSB.merge({
 	            key: this.getKey()
 	        }, options));
+	    },
+
+	    subscribeToChanges: function(id, callback){
+	        this._subscribers[id] = callback;
+	    },
+
+	    unsubscribe: function(id){
+	        if(this._subscribers[id]){
+	            delete this._subscribers[id];
+	        }
 	    },
 
 	    wrap: function(desc, options){

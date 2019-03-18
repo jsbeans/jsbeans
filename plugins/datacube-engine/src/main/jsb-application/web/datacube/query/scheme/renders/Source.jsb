@@ -90,9 +90,6 @@
 	                var leftContext = this.getController().generateContext(),
 	                    rightContext = this.getController().generateContext();
 
-	                this.replaceContexts(values['$filter'], values.$left, undefined, '$sourceContext');
-	                this.replaceContexts(values['$filter'], values.$right, undefined, '$sourceContext');
-
 	                newValue = {
 	                    $start: {
 	                        $context: leftContext,
@@ -103,8 +100,7 @@
 	                        $context: rightContext,
 	                        $select: {},
 	                        $from: values.$right
-	                    },
-	                    $filter: values.$filter
+	                    }
 	                };
 	            }
 	        }
@@ -304,29 +300,37 @@
 	        }
 	    },
 
-	    extractFields: function(source, callback){
-	        if(JSB.isInstanceOf('DataCube.Model.QueryableEntry', source)){
-	            source.server().extractFields(function(res, fail){
+	    extractFields: function(sources, callback){
+	        if(!JSB.isArray(sources)){
+	            sources = [sources];
+	        }
+
+	        var isNeedServer = false,
+	            res = [];
+
+	        for(var i = 0; i < sources.length; i++){
+	            res.push({
+	                source: sources[i]
+	            });
+
+	            if(!JSB.isBean(sources[i]) && JSB.isObject(sources[i])){
+	                res[i].fields = sources[i].$select || {};
+	            } else {
+	                isNeedServer = true;
+	            }
+	        }
+
+	        if(isNeedServer){
+	            this.server().getSourceFields(res, function(res, fail){
 	                if(fail){
-	                    // todo: error
+	                    // todo: error ?
 	                    return;
 	                }
 
 	                callback.call($this, res);
-	            });
-	        } else if(JSB.isObject(source)){
-	            callback.call(this, source.$select || {});
-	        } else if(JSB.isString(source)){
-                this.server().getSourceFields([{id: source}], function(res, fail){
-                    if(fail){
-                        // todo: error
-                        return;
-                    }
-
-                    callback.call($this, res[0].fields);
-                });
+	            })
 	        } else {
-	            debugger;
+	            callback.call(this, res);
 	        }
 	    },
 
@@ -364,16 +368,18 @@
 	        return WorkspaceController.getEntryByFullId(id);
         },
 
-        getSourceFields: function(sources){
-            var result = [];
-
-            for(var i = 0; i < sources.length; i++){
+        getSourceFields: function(result){
+            for(var i = 0; i < result.length; i++){
                 try{
-                    var entry = WorkspaceController.getEntryByFullId(sources[i].id);
+                    var entry = null;
+
+                    if(JSB.isString(result[i].source)){
+                        entry = WorkspaceController.getEntryByFullId(result[i].source);
+                    } else if(JSB.isInstanceOf('DataCube.Model.QueryableEntry', result[i].source)){
+                        entry = result[i].source;
+                    }
 
                     if(entry){
-                        result.push(sources[i]);
-                        result[i].entry = entry;
                         result[i].fields = entry.extractFields();
                     }
                 } catch(ex){

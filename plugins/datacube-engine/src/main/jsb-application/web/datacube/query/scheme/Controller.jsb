@@ -119,11 +119,7 @@
         getSlice: function(){
             return this._slice;
         },
-/*
-        getSourceFields: function(callback){
-            this.getQuery().getSourceFields(callback);
-        },
-*/
+
         getValues: function(){
             return this._values;
         },
@@ -227,7 +223,6 @@
                             }
 
                             opts.caller.remove();
-                            $this.onChange();
                             break;
                         case 'wrap':
                             $this.showTool(JSB.merge(opts, {

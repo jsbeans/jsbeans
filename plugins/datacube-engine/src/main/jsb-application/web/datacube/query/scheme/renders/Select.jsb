@@ -25,13 +25,15 @@
                 });
 
                 if(render){
+                    render.subscribeToChanges(this.getId(), this.changeEvent);
+
                     this.append(render);
                 }
             }
 
-            var addBtn = this.$('<i class="addBtn"></i>');
-            this.append(addBtn);
-            addBtn.click(function(){
+            this._addBtn = this.$('<i class="addBtn"></i>');
+            this.append(this._addBtn);
+            this._addBtn.click(function(){
                 var count = 1,
                     name = 'Столбец',
                     newName = name;
@@ -41,20 +43,53 @@
                     count++;
                 }
 
-                values[newName] = $this.getDefaultValues();
-
-                var render = $this.createRender({
-                    key: newName,
-                    renderName: '$selectItem',
-                    scope: $this.getValues()
-                });
-
-                if(render){
-                    addBtn.before(render);
-
-                    $this.onChange();
-                }
+                $this.addField(newName);
             });
+	    },
+
+	    addField: function(fieldName, hideEvent){
+	        var values = this.getValues();
+
+	        values[fieldName] = this.getDefaultValues();
+
+            var render = $this.createRender({
+                key: fieldName,
+                renderName: '$selectItem',
+                scope: values
+            });
+
+            if(render){
+                render.subscribeToChanges(this.getId(), this.changeEvent);
+
+                this._addBtn.before(render);
+
+                if(!hideEvent){
+                    $this.onChange({
+                        name: 'addField',
+                        fieldName: fieldName
+                    });
+                }
+            }
+	    },
+
+	    changeEvent: function(){
+            var subscribers = $this.getSubscribers();
+
+            for(var i in subscribers){
+                subscribers[i].call($this, changeDesc);
+            }
+	    },
+
+	    renameField: function(oldName, newName){
+	        var children = this.getChildren();
+
+	        children[oldName].rename(newName);
+	    },
+
+	    removeField: function(fieldName){
+	        var children = this.getChildren();
+
+	        children[fieldName].remove(true);
 	    }
 	}
 }
