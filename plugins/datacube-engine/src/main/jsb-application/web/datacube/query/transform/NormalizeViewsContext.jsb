@@ -9,9 +9,13 @@
         ],
 
 		transform: function(dcQuery, cube){
+            var count = 0;
 		    QueryUtils.walkQueries(dcQuery, {}, null, function(query){
                 if (query.$views) {
                     for(var name in query.$views) {
+                        if (!query.$views[name].$context) {
+                            query.$views[name].$context = 'view' + count++;
+                        }
                         QueryUtils.updateContext(query.$views[name], query.$views[name].$context, name);
                     }
                 }

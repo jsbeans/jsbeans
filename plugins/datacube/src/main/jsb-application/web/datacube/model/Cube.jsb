@@ -392,6 +392,10 @@
 		                isNeedUpdate = true;
 		            }
 		        }
+		        
+		        if(isNeedUpdate){
+		        	slice.invalidate();
+		        }
 
 		        return isNeedUpdate;
 		    }

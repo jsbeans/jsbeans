@@ -1695,11 +1695,11 @@ debugger
 		        } else if(JSB.isObject(e)) {
 		            for(var i in e) if (e.hasOwnProperty(i) && filter.call(e, e[i])) {
 		                if (i == '$context') {
-		                    if (e[i] == oldContext) {
+		                    if (e[i] === oldContext) {
 		                        e[i] = newContext;
 		                    }
 		                } else if (i == '$sourceContext') {
-                            if (e[i] == oldContext) {
+                            if (e[i] === oldContext) {
                                 e[i] = newContext;
                             }
                         } else {
@@ -1707,18 +1707,18 @@ debugger
 		                }
 		            }
 
-		            if (e.$left == oldContext) {
+		            if (e.$left === oldContext) {
 		                e.$left = newContext;
 		            }
-		            if (e.$right == oldContext) {
+		            if (e.$right === oldContext) {
                         e.$right = newContext;
                     }
-		            if (e.$from == oldContext) {
+		            if (e.$from === oldContext) {
                         e.$from = newContext;
                     }
                     if (e.$union) {
                         for(var i = 0; i < e.$union.length; i++) {
-                            if (e.$union[i]== oldContext) {
+                            if (e.$union[i] === oldContext) {
                                 e.$union[i] = newContext;
                             }
                         }

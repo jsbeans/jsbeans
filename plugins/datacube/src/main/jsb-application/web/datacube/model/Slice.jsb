@@ -418,7 +418,7 @@
                 this.updateFieldsTypes();
 
     			this.invalidate();
-    			this.loadCacheFromCube();
+    			//this.loadCacheFromCube();
 
     			this.cube.updateCubeFields(this);
 

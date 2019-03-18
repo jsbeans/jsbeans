@@ -22,11 +22,15 @@
 		        queryTask.times.last = Date.now();
 
                 var times = {};
+                var loggedQueries;// = {};
                 for(var i = 0; i < transformers.length; i++) {
                     var startedTime = Date.now();
                     var conf = transformers[i];
                     var names = conf.split('~');
                     var transformerName = names[0];
+                    if (loggedQueries) {
+                        loggedQueries[i+':'+conf] = JSB.clone(dcQuery);
+                    }
 
                     var transformer = $this.ensureTransformer(transformerName);
 

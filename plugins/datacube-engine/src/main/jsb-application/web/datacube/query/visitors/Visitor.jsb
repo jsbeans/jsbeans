@@ -98,11 +98,14 @@
                 for(var i = $this.queryPath.length - 1; i >= 0; i--) {
                     if ($this.queryPath[i].$context == context) {
                         return $this.queryPath[i];
-                    } else {
+                    } else if($this.queryPath[i].$views) {
                         for(var view in $this.queryPath[i].$views) {
                             if ($this.queryPath[i].$views[view].$context == context) {
                                 return $this.queryPath[i].$views[view];
                             }
+                        }
+                        if ($this.queryPath[i].$views[context]) {
+                            return $this.queryPath[i].$views[context];
                         }
                     }
                 }
