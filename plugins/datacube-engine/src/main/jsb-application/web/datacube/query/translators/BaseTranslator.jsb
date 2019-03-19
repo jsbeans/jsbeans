@@ -75,7 +75,8 @@
                                         executor: $this.executor.getId(),
                                         timestamp: Date.now(),
                                         iterator: this.meta.id,
-                                        query: queryTask.query,
+                                        firstResultTime: (Date.now() - $this.executor.startedTimestamp)/1000,
+                                        //query: dcQuery,
                                     },
                                 });
                                 $this.iterator = $this.executeQuery(translatedQuery);
