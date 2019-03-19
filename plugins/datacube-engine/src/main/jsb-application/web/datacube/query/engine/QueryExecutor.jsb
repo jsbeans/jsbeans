@@ -28,32 +28,46 @@
             var startEngine = $this.queryTask.startEngine || Config.get('datacube.query.engine.start');
 
             Console.message({
-                message: 'Query executed',
-                params: {
-                    queryId:''+$this.queryTask.$id,
+                message: 'query.started',
+                params:{
+                    executor: $this.getId(),
+                    timestamp: Date.now(),
                     query: $this.queryTask.query,
-                    params: $this.queryTask.params,
-                    startEngine: $this.queryTask.startEngine,
+                    startEngine: startEngine,
                 },
             });
 
-            if ($this.query.$analyze) {
-		        $this.analyze = {
-		            engines: {},
-		            inputQuery: $this.queryTask.query,
-		            startEngine: $this.queryTask.startEngine,
-		        };
-            }
+            try {
 
-            var it = $this.executeEngine(startEngine, {
-                cube: $this.cube,
-                query: $this.query,
-                params: $this.params,
-            });
-            if (!it) {
-                var it = $this.awaitIterator();
+                if ($this.query.$analyze) {
+                    $this.analyze = {
+                        engines: {},
+                        inputQuery: $this.queryTask.query,
+                        startEngine: $this.queryTask.startEngine,
+                    };
+                }
+
+                var it = $this.executeEngine(startEngine, {
+                    cube: $this.cube,
+                    query: $this.query,
+                    params: $this.params,
+                });
+                if (!it) {
+                    var it = $this.awaitIterator();
+                }
+                return it;
+
+            } catch(e) {
+                Console.message({
+                    message: 'query.error',
+                    params:{
+                        executor: $this.getId(),
+                        timestamp: Date.now(),
+                        error: JSB.stringifyError(e),
+                    },
+                });
+                throw e;
             }
-            return it;
 		},
 
         /** Асинхронный/синхронный запуск движка по имени конфигурации
@@ -169,29 +183,27 @@
                 if(task.iterator) {
                     its.push(task.iterator);
                     Console.message({
-                        message: 'Iterator created',
-                        params:{executor: $this.getId(), iteratorId: task.iterator.meta.id, meta: task.iterator.meta},
+                        message: 'query.iterator',
+                        params:{
+                            executor: $this.getId(),
+                            timestamp: Date.now(),
+                            iterator: task.iterator.meta.id,
+                            meta: task.iterator.meta,
+                        },
                     });
                     if (task.iterator.meta.translatedQuery) {
                         Console.message({
-                            message: 'Translated query',
+                            message: 'query.translated',
                             params:{
                                 executor: $this.getId(),
-                                iteratorId: task.iterator.meta.id,
+                                timestamp: Date.now(),
+                                iterator: task.iterator.meta.id,
                                 translatedQuery : (JSB.isString(task.iterator.meta.translatedQuery)
                                         ? task.iterator.meta.translatedQuery
-                                        : JSON.stringify(task.iterator.meta.translatedQuery))
+                                        : JSON.stringify(task.iterator.meta.translatedQuery)),
                             },
                         });
                     }
-                }
-                if (task.error) {
-                    Console.message({
-                        message: 'Query execution error',
-                        error: task.error,
-                        params: {executor: $this.getId()}
-                    });
-                    errors.push(task.error);
                 }
             }
 
@@ -209,9 +221,15 @@
             var method = Config.get('datacube.query.engine.iteratorSelector.method');
             var IteratorSelector = JSB.getInstance(jsb);
             var it = IteratorSelector[method].call(IteratorSelector, its);
+            it.meta.prepareTime = (Date.now() - $this.startedTimestamp) / 1000;
+
             Console.message({
-                message: 'Iterator selected',
-                params:{executor: $this.getId(), iteratorId: it.meta.id, meta: it.meta},
+                message: 'query.prepared',
+                params:{
+                    executor: $this.getId(),
+                    timestamp: Date.now(),
+                    prepareTime: it.meta.prepareTime,
+                },
             });
 
             if ($this.analyze) {
@@ -250,6 +268,7 @@
             if (iterator && iterator.meta) {
                 result.translatedQuery = iterator.meta.translatedQuery;
                 result.translatorInputQuery = iterator.meta.translatorInputQuery;
+                result.prepareTime = iterator.meta.prepareTime;
             }
             /// вместо объекта с данными вернуть анализ
             iterator.next = function() {

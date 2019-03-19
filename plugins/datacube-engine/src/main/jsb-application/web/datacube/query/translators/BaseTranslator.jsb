@@ -11,13 +11,14 @@
 
 		paramTypes: {},
 
-		$constructor: function(providerOrProviders, cube){
+		$constructor: function(providerOrProviders, cube, executor){
 		    $base();
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
 		    QueryUtils.assert(cube && cube.getJsb().isSubclassOf('DataCube.Model.QueryableContainer'), 'Cube is undefined or failed');
 
 		    this.cube = cube;
             this.queryEngine = cube.queryEngine;
+            this.executor = executor;
 		},
 
 		setParamType: function(param, type){
@@ -69,8 +70,13 @@
                         try {
                             if (!$this.iterator) {
                                 Console.message({
-                                    message: 'Query iterator executed',
-                                    params: {iteratorId: this.meta.id}
+                                    message: 'query.executed',
+                                    params:{
+                                        executor: $this.executor.getId(),
+                                        timestamp: Date.now(),
+                                        iterator: this.meta.id,
+                                        query: queryTask.query,
+                                    },
                                 });
                                 $this.iterator = $this.executeQuery(translatedQuery);
                             }

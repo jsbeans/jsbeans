@@ -8,7 +8,7 @@
 		$require: [
             'JSB.Store.StoreManager',
 		    'DataCube.Query.Engine.SQL.SQLTranslator',
-		    'DataCube.Query.Engine.H2Interpreter.H2InterpreterRemoteQuery',
+		    'DataCube.Query.Engine.H2Interpreter.H2InterpreterLoopbackProvider',
 		    'DataCube.Query.QueryUtils',
 		    'JSB.Store.Sql.JDBC',
         ],
@@ -26,11 +26,11 @@ debugger;
 
 		    var providers = QueryUtils.extractProviders(query, cube);
             providers = [$this._getSystemStoreProvider()].concat(providers);
-            var translator = new SQLTranslator(providers, cube);
+            var translator = new SQLTranslator(providers, cube, executor);
             translator.vendor = 'H2';
             translator.interpreterMode = true;
             translator.engineConfig = config;
-            translator.remoteQuery = new H2InterpreterRemoteQuery(cube);
+            translator.remoteQuery = new H2InterpreterLoopbackProvider(cube);
             return translator.translatedQueryIterator(query, params);
 		},
 
@@ -41,7 +41,7 @@ debugger;
                 url: 'jdbc:h2:mem:system.db;DB_CLOSE_DELAY=-1',
             });;
             store.asSQL().connectedJDBC(function(connection){
-                return JDBC.executeUpdate(connection, 'DROP ALIAS IF EXISTS DATACUBE; CREATE ALIAS datacube FOR "org.jsbeans.datacube.RemoteQueryIterator.datacube"; ');
+                return JDBC.executeUpdate(connection, 'DROP ALIAS IF EXISTS DATACUBE; CREATE ALIAS datacube FOR "org.jsbeans.datacube.LoopbackProviderIterator.datacube"; ');
             });
 		    return {
 		        getStore: function() {

@@ -18,8 +18,8 @@
 
         storedViews: {},
 
-		$constructor: function(providerOrProviders, cubeOrQueryEngine){
-		    $base(providerOrProviders, cubeOrQueryEngine);
+		$constructor: function(providerOrProviders, cube, executor){
+		    $base(providerOrProviders, cube, executor);
 		    if ($this.cube) {
 		        $this.cubeFields = $this.cube.extractFields();
             }

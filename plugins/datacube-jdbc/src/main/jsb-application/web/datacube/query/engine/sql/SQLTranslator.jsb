@@ -27,8 +27,8 @@
         	TranslatorRegistry.register(this);
         },
 
-		$constructor: function(providerOrProviders, cube){
-		    $base(providerOrProviders, cube);
+		$constructor: function(providerOrProviders, cube, executor){
+		    $base(providerOrProviders, cube, executor);
 		    $this.config = {
 		    }
 		},
@@ -37,11 +37,11 @@
 		    try {
 		        var it = $base(dcQuery, params);
             } catch(e) {
-                Console.message({
-                    message: 'SQLTranslator error ',
-                    params: {queryId:''+dcQuery.$id, preparedQuery:dcQuery},
-                    error: e
-                });
+//                Console.message({
+//                    message: 'SQLTranslator error ',
+//                    params: {queryId:''+dcQuery.$id, preparedQuery:dcQuery},
+//                    error: e
+//                });
                 throw e;
             }
 		    it.meta.id = $this.getJsb().$name+'/'+$this.vendor+'#'+JSB.generateUid();
@@ -130,7 +130,7 @@
                         $this._breakTranslator('Nothing remote query engine');
                     }
 
-                    var sql = $this._translateRemoteQuery(query)
+                    var sql = $this._translateLoopbackProvider(query)
                     if (!asRoot) {
                         sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
                     }
@@ -294,7 +294,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
             return q;
         },
 
-        _translateRemoteQuery: function(query) {
+        _translateLoopbackProvider: function(query) {
             function generateSubQuery(query) {
                 var subQuery = JSB.clone(query);
                 subQuery.$views = subQuery.$views || {};
@@ -351,7 +351,7 @@ debugger
 //                    var dataProvider = providers[0];
 //                    var url = dataProvider.getStore().config.url;
 //                    var desc = JDBC.parseURL(url);
-//                    var remoteQuery = $this._translateRemoteQuery(query);
+//                    var remoteQuery = $this._translateLoopbackProvider(query);
 //                    var sql = QueryUtils.sformat(
 //                            "dblink('dbname={} host={} port={} user={} password={}', '{}')",
 //                            desc.dbname, desc.host, desc.port,
@@ -375,10 +375,10 @@ debugger
                         }
                         clickhouseColumns += alias + ' ' + jdbcType;
                     }
-                    /** URL 'Datacube.Query.Engine.Clickhouse.ClickHouseRemoteApi' */
+                    /** URL 'Datacube.Query.Engine.ClickHouse.ClickHouseLoopbackApi' */
                     var serverUrl = Kernel.serverUrl();
                     desc.uid = $this.remoteQuery.register(queryTask);
-                    desc.sql = "url('"+serverUrl+"/datacube/query/engine/Clickhouse/ClickHouseRemoteApi.jsb?uid=" + desc.uid + "', JSONEachRow, '" + clickhouseColumns + "')";
+                    desc.sql = "url('"+serverUrl+"/datacube/query/engine/ClickHouse/ClickHouseLoopbackApi.jsb?uid=" + desc.uid + "', JSONEachRow, '" + clickhouseColumns + "')";
                     return '(SELECT ' + fieldsSql + ' FROM ' + desc.sql + ')';
 
                 case 'H2' :

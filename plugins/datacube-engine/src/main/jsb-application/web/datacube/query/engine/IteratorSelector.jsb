@@ -76,20 +76,10 @@
                                 }
                             }
                         } catch(e) {
-                            Console.message({
-                                message: 'Query iteration error [{}]',
-                                params: [it.meta.id],
-                                error: e
-                            });
                             it.error = e;
                             it.close();
                         } finally {
                             executedIts.add(it);
-                            var executedTime = Date.now();
-                            Console.message({
-                                message: 'Iterator selector waited first element [{}]: {} ms ',
-                                params:[it.meta.id, executedTime-startedTime],
-                            });
                         }
                     },1,it.deferKey);
                 })(its[i]);
