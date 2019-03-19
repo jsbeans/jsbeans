@@ -15,26 +15,30 @@
 		    var cube = queryTask.cube;
 		    var params = queryTask.params;
 
+            var started = Date.now();
+
 		    var config = $this.getLocalConfig(name);
 
 		    var transformers = JSB.isString(config.transformers)
 		        ? Config.get(config.transformers)
 		        : config.transformers;
 
-            var preparedQuery = QueryTransformer.transform(transformers||[], queryTask);
+            var result = QueryTransformer.transform(transformers||[], queryTask, executor);
+            executor.setEngineMeta(name, result.meta);
+            if (result.error) {
+                throw result.error;
+            }
             for(var i = 0; i < config.next.length; i++) {
                 var next = config.next[i];
                 var it = executor.executeEngine(next, {
                     cube: cube,
-                    query: JSB.clone(preparedQuery),
+                    query: JSB.clone(result.query),
                     params: JSB.clone(params),
-                    times: JSB.clone(queryTask.times),
                 });
                 if(it) {
                     return it;
                 }
             }
-
             return null; // no iterator
 		},
 	}

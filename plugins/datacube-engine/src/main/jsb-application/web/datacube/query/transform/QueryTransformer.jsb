@@ -18,10 +18,8 @@
 		    var dcQuery = queryTask.query;
 		    var defaultCube = queryTask.cube;
 		    try{
-		        queryTask.times.pipeline.push({transform:(Date.now()-queryTask.times.last)/1000});
-		        queryTask.times.last = Date.now();
-
                 var times = {};
+                var totalTime = 0;
                 var loggedQueries;// = {};
                 for(var i = 0; i < transformers.length; i++) {
                     var startedTime = Date.now();
@@ -35,19 +33,26 @@
                     var transformer = $this.ensureTransformer(transformerName);
 
                     dcQuery = transformer.transform(dcQuery, defaultCube, names.length > 1 ? names[1]:null);
-                    times[i+':'+conf] = (Date.now()-startedTime)/1000;
+                    totalTime += times[i+':'+conf] = (Date.now()-startedTime)/1000;
 
                     if (!dcQuery) throw new Error('Failed transform ' + transformer.getJsb().$name);
                 }
-                queryTask.times.pipeline.push(times);
-                queryTask.times.last = Date.now();
-
-                return dcQuery;
-            } finally {
-                Console.message({
-                    message: 'Query transformed',
-                    params: {queryId:''+dcQuery.$id, times:queryTask.times}
-                });
+                return {
+                    query: dcQuery,
+                    meta: {
+                        totalTime: totalTime,
+                        times: times,
+                    }
+                };
+            } catch(e) {
+                return {
+                    error: e,
+                    query: dcQuery,
+                    meta: {
+                        totalTime: totalTime,
+                        times: times,
+                    }
+                };
             }
 		},
 

@@ -62,7 +62,7 @@
                     msg = 'Error: ' + msg;
                 }
                 //Log.debug(msg);
-                throw new Error(msg);
+                throw new JSB.Error(msg);
             }
 
         },

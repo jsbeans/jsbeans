@@ -18,10 +18,6 @@
 
 		    this.cube = cube;
             this.queryEngine = cube.queryEngine;
-
-            this.translatorExecuteLazy = Config.has('query.translator.lazy.enabled')
-                    ? Config.get('query.translator.lazy.enabled')
-                    : true;
 		},
 
 		setParamType: function(param, type){
@@ -29,15 +25,7 @@
 		},
 
 		getParamType: function(param){
-		    return $this.paramTypes[param] || $this.params && $this.params.hasOwnProperty(param) && (function(){
-		        if (JSB.isString($this.params[param])) return 'string';
-                if (JSB.isInteger($this.params[param])) return 'int';
-                if (JSB.isFloat($this.params[param])) return 'double';
-                if (JSB.isBoolean($this.params[param])) return 'boolean';
-                if (JSB.isDate($this.params[param])) return 'timestamp';
-                if (JSB.isArray($this.params[param])) return 'array';
-                return null;
-		    })() || null;
+		    return null; // TODO: analyze query and extract type from $params
         },
 
 
@@ -74,45 +62,40 @@
 		translatedQueryIterator: function(dcQuery, params){
 		    var translatedQuery = $this.translate(dcQuery, params);
 
-		    // create iterator
-		    if (this.dcQuery.$analyze) {
-		        return this.analyzeQuery(translatedQuery);
-		    } else {
-		        try {
-                    this.iterator = $this.translatorExecuteLazy ? null : this.executeQuery(translatedQuery);
-                    return {
-                        next: function(){
-                            try {
-                                if (!$this.iterator) {
-                                    Console.message({
-                                        message: 'Query iterator executed',
-                                        params: {iteratorId: this.meta.id}
-                                    });
-                                    $this.iterator = $this.executeQuery(translatedQuery);
-                                }
-                                return $this.translateResult($this.iterator.next());
-                            } catch(e) {
-                                this.close();
-                                throw e;
+            try {
+                this.iterator = null; /// lazy iterator
+                return {
+                    next: function(){
+                        try {
+                            if (!$this.iterator) {
+                                Console.message({
+                                    message: 'Query iterator executed',
+                                    params: {iteratorId: this.meta.id}
+                                });
+                                $this.iterator = $this.executeQuery(translatedQuery);
                             }
-                        },
-                        close:function(){
-                            $this.iterator && $this.iterator.close();
-                            $this.destroy();
-                        },
-                        meta: {
-                            id: $this.getJsb().$name+'#'+JSB.generateUid(),
-                            translator: $this.getJsb().$name,
-                            query: $this.dcQuery,
-                            params: $this.params,
-                            translatedQuery: translatedQuery,
+                            return $this.translateResult($this.iterator.next());
+                        } catch(e) {
+                            this.close();
+                            throw e;
                         }
-                    };
-                } catch (error){
-                    var translatedError = $this.translateError(error);
-                    throw translatedError;
-                }
-		    }
+                    },
+                    close:function(){
+                        $this.iterator && $this.iterator.close();
+                        $this.destroy();
+                    },
+                    meta: {
+                        id: $this.getJsb().$name+'#'+JSB.generateUid(),
+                        params: $this.params,
+                        translatorName: $this.getJsb().$name,
+                        translatorInputQuery: $this.dcQuery,
+                        translatedQuery: translatedQuery,
+                    }
+                };
+            } catch (error){
+                var translatedError = $this.translateError(error);
+                throw translatedError;
+            }
 		},
 
 		translateError: function(error) {
@@ -215,9 +198,6 @@ debugger;
 		},
 
 		executeQuery: function(translatedQuery){
-            throw new 'Not implemented';
-        },
-        analyzeQuery: function(translatedQuery){
             throw new 'Not implemented';
         },
 
