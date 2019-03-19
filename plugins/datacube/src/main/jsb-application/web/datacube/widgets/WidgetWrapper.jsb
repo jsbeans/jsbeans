@@ -3,13 +3,16 @@
 	$parent: 'JSB.Widgets.Widget',
 
 	widgetEntry: null,
+	widgetType: null,
 	
 	getWidgetType: function(){
-		return this.widgetEntry.getWidgetType();
+		return this.widgetType;
 	},
 	
 	getDashboard: function(){
-		return this.widgetEntry.getDashboard();
+		if(this.widgetEntry){
+			return this.widgetEntry.getDashboard();
+		}
 	},
 	
 	getWidgetEntry: function(){
@@ -91,17 +94,25 @@
 			auto: true
 		},
 		
-		$constructor: function(widgetEntry, owner, opts){
+		$constructor: function(wDesc, owner, opts){
 			$base(opts);
-			this.widgetEntry = widgetEntry;
+			if(JSB.isInstanceOf(wDesc, 'DataCube.Model.Widget')){
+				this.widgetEntry = wDesc;
+				this.widgetType = wDesc.getWidgetType();
+				this.setTitle(this.widgetEntry.getName());
+			} else if(JSB.isString(wDesc)){
+				this.widgetType = wDesc;
+				if(opts && opts.widgetEntry){
+					this.widgetEntry = opts.widgetEntry;
+				}
+			}
+			
 			this.owner = owner;
 			
 			this.filterManager = (opts && opts.filterManager) || (this.owner && this.owner.getFilterManager());
 
 			this.addClass('widgetWrapper');
 			
-			this.setTitle(this.getWidgetEntry().getName());
-
 			if(!this.options.viewMode){
 				this.updateTabHeader();
 			}
@@ -117,7 +128,7 @@
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.mainWidget = new WidgetClass({
 				    filterManager: $this.filterManager,
-				    widgetEntry: $this.widgetEntry,
+				    widgetEntry: $this.getWidgetEntry(),
 				    widgetWrapper: $this
 				});
 				$this.append($this.mainWidget);
