@@ -40,7 +40,7 @@
 
 	    clear: function(){
             for(var i in this._rendersMap){
-                this._rendersMap[i].destroy();
+                this._rendersMap[i].render.destroy();
             }
 	    },
 
@@ -153,10 +153,16 @@
 
                 $this._refreshUid = JSB.generateUid();
 
-                var query = $this.createRender({
+                var queryOpts = {
                     renderName: '$query',
                     scope: opts.values
-                });
+                };
+
+                if(JSB.isDefined(opts.queryOpts)){
+                    JSB.merge(queryOpts, opts.queryOpts);
+                }
+
+                var query = $this.createRender(queryOpts);
 
                 if(query){
                     $this.append(query);

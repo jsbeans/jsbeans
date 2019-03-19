@@ -58,6 +58,10 @@
 
             this.controller = new SchemeController({
                 data: this.data.data,
+                queryOpts: {
+                    allowChangeSource: false,
+                    allowChild: []
+                },
                 values: {
                     $join: {
                         $left: sources[0] && sources[0].getFullId(),

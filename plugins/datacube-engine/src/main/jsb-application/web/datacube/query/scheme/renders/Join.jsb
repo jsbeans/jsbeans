@@ -32,6 +32,10 @@
 	            values.$joinType = 'inner';
 	        }
 
+	        if(!values.$filter){
+	            values.$filter = {};
+	        }
+
 	        // join type
 	        var joinType = new Selectize({
 	            cssClass: 'joinType',
