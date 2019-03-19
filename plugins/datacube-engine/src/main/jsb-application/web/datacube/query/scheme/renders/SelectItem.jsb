@@ -12,13 +12,13 @@
 
 	        this.addClass('selectItemRender');
 
-            var fieldName = this.$('<div class="fieldName cubeFieldIcon sliceField">' + this.getKey() + '</div>');
-            this.append(fieldName);
+            this.fieldName = this.$('<div class="fieldName cubeFieldIcon sliceField">' + this.getKey() + '</div>');
+            this.append(this.fieldName);
 
             this.append('<div class="separator"></div>');
 
             this.installMenuEvents({
-                element: fieldName,
+                element: $this.fieldName,
                 id: JSB.generateUid(),
                 edit: true,
                 remove: true,
@@ -27,7 +27,7 @@
 
                     var curName = $this.getKey(),
                         input = $this.$('<input type="text" value="' + curName + '" />');
-                    fieldName.append(input);
+                    $this.fieldName.append(input);
 
                     input.change(function(){
                         var newVal = input.val();
@@ -35,9 +35,12 @@
                         if(newVal !== curName){
                             $this.rename(newVal);
                             input.remove();
-                            fieldName.text(newVal);
 
-                            $this.onChange();
+                            $this.onChange({
+                                name: 'renameField',
+                                oldName: curName,
+                                newName: newVal
+                            });
                         }
                         $this.$(window).off('click.renameQueryFieldInput');
                     });
@@ -71,6 +74,8 @@
 	        delete this._scope[this.getKey()];
 
 	        this.setKey(newName);
+
+	        this.fieldName.text(newVal);
 	    }
 	}
 }

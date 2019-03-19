@@ -5,7 +5,8 @@
 	$alias: '$recursive',
 
 	$client: {
-	    $require: ['css:Recursive.css'],
+	    $require: ['DataCube.Query.Controls.FieldComparison',
+	               'css:Recursive.css'],
 
 	    $constructor: function(opts) {
 	        $base(opts);
@@ -18,11 +19,12 @@
 
             this.installMenuEvents({ element: header });
 
-	        // $start
-	        var start = this.$('<div class="operator">$start</div>');
-            this.append(start);
+            // $start
+            var startContainer = this.$('<div class="startContainer"></div>');
+            this.append(startContainer);
 
-	        this.append(this.createSeparator(true));
+	        var start = this.$('<div class="operator">$start</div>');
+            startContainer.append(start);
 
             var startRender = this.createRender({
                 allowChangeSource: false,
@@ -34,13 +36,14 @@
                 renderName: '$query',
                 scope: this.getValues()['$start']
             });
-            this.append(startRender);
+            startContainer.append(startRender);
 
-	        // $joinedNext
+            // $joinedNext
+            var joinedNextContainer = this.$('<div class="joinedNextContainer"></div>');
+            this.append(joinedNextContainer);
+
 	        var joinedNext = this.$('<div class="operator">$joinedNext</div>');
-            this.append(joinedNext);
-
-	        this.append(this.createSeparator(true));
+            joinedNextContainer.append(joinedNext);
 
             var joinedNextRender = this.createRender({
                 allowChangeSource: false,
@@ -52,22 +55,23 @@
                 renderName: '$query',
                 scope: this.getValues()['$joinedNext']
             });
-            this.append(joinedNextRender);
+            joinedNextContainer.append(joinedNextRender);
 
-	        // $filter
-	        var filter = this.$('<div class="operator">$filter</div>');
+            var filter = new FieldComparison({
+	            context: '$context',
+	            fields: [{
+	                context: startRender.getContext(),
+	                fields: startRender.getOutputFields()
+	            },{
+	                context: joinedNextRender.getContext(),
+	                fields: joinedNextRender.getOutputFields()
+	            }],
+	            values: this.getValues()['$filter'],
+	            onChange: this.onChange
+            });
             this.append(filter);
 
-            var filterRender = this.createRender({
-                allowSourceFields: true,
-                allowOutputFields: false,
-                allowDelete: false,
-                allowWrap: false,
-                key: '$filter',
-                scope: this.getValues()
-            });
-
-            this.append(filterRender);
+            this.connectSelect(startRender, joinedNextRender, filter);
 	    },
 
 	    changeTo: function(newKey){
@@ -96,13 +100,83 @@
                     $right: values.$joinedNext.$from,
                     $filter: {}
                 };
-                /*
-                this.replaceContexts(values.$filter, values.$right, rightContext, '$sourceContext');
-                this.replaceContexts(values.$filter, values.$right, rightContext, '$sourceContext');
-                */
             }
 
 	        $base(newKey, newValue || null);
+	    },
+
+	    connectSelect: function(startRender, joinedNextRender, filter){
+	        function findByKey(render, key){
+	            var renders = render.getChildren();
+
+	            for(var i in renders){
+	                if(renders[i].getKey() === key){
+	                    return renders[i];
+	                }
+	            }
+	        }
+
+	        function resizeFields(firstRender, secondRender){
+                var firstRenderChildren = firstRender.getChildren();
+
+                for(var i in firstRenderChildren){
+                    var firstHeight = firstRenderChildren[i].getElement().height(),
+                        secondChild = findByKey(secondRender, firstRenderChildren[i].getKey()),
+                        secondHeight = secondChild.getElement().height();
+
+                    if(firstHeight > secondHeight){
+                        secondChild.getElement().height(firstHeight);
+                    }
+
+                    if(firstHeight < secondHeight){
+                        firstRenderChildren[i].getElement().height(secondHeight);
+                    }
+                }
+	        }
+
+	        function subscribe(firstRender, secondRender){
+                firstRender.subscribeToChanges($this.getId(), function(changeDesc){
+                    switch(changeDesc.name){
+                        case 'addField':
+                            secondRender.addField(changeDesc.fieldName, true);
+                            break;
+                        case 'renameField':
+                            secondRender.renameField(changeDesc.oldName, changeDesc.newName);
+                            break;
+                        case 'removeItem':
+                            secondRender.removeField(changeDesc.item.getKey());
+                            break;
+                    }
+
+                    filter.changeFields(0, {
+                        context: startRender.getContext(),
+                        fields: startRender.getOutputFields()
+                    });
+
+                    filter.changeFields(1, {
+                        context: joinedNextRender.getContext(),
+                        fields: joinedNextRender.getOutputFields()
+                    });
+                });
+
+                firstRender.getElement().resize(function(){
+                    if(Math.ceil(firstRender.getElement().height()) === Math.ceil(secondRender.getElement().height())){
+                        return;
+                    }
+
+                    resizeFields(firstRender, secondRender);
+                });
+	        }
+
+	        var startSelect = findByKey(startRender, '$select'),
+	            joinedNextSelect = findByKey(joinedNextRender, '$select');
+
+            subscribe(startSelect, joinedNextSelect);
+            subscribe(joinedNextSelect, startSelect);
+
+            JSB.defer(function(){
+                resizeFields(startSelect, joinedNextSelect);
+            }, 500);
 	    }
 	}
 }

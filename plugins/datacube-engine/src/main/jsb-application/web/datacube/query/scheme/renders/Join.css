@@ -11,55 +11,11 @@
 }
 
 .joinRender > .sourceLeft,
-.joinRender > .sourceRight,
-.joinRender > .fields > .field > .firstField,
-.joinRender > .fields > .field > .secondField {
+.joinRender > .sourceRight {
     width: calc(50% - 50px);
 }
 
 .joinRender > .sourceLeft > .renderer,
 .joinRender > .sourceRight > .renderer {
     width: 100%;
-}
-
-.joinRender > .fields {
-
-}
-
-.joinRender > .fields > .field {
-    margin-top: 5px;
-}
-
-.joinRender > .fields > .field > .firstField {
-    padding-right: 5px;
-}
-
-.joinRender > .fields > .field > .compare {
-    width: 70px;
-}
-
-.joinRender > .fields > .field > .secondField {
-    padding-left: 5px;
-}
-
-.joinRender > .fields > .field > .compare > .selectize-control {
-    min-width: 60px;
-}
-
-.joinRender > .fields > .field > * {
-    display: inline-block;
-}
-
-.joinRender > .fields > .field > .removeBtn {
-    border-radius: 100%;
-    border: 1px solid red;
-    padding: 5px;
-    color: white;
-    background: #f96363;
-    margin-left: 5px;
-}
-
-.joinRender > .fields > .field > .removeBtn,
-.joinRender > .addBtn {
-    cursor: pointer;
 }

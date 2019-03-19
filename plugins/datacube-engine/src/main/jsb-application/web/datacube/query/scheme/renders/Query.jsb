@@ -169,6 +169,21 @@
             return child;
 	    },
 
-	    setDefaultValues: function(){}
+	    // переопределение базового метода
+	    setDefaultValues: function(){},
+
+	    updateContexts: function(oldContext, newContext, oldSourceContext, newSourceContext){
+	        function update(list){
+	            for(var i in list){
+	                if(list[i].getKey() === '$field'){
+	                    //
+	                }
+
+	                if(list[i].getKey() === '$query'){
+	                    //
+	                }
+	            }
+	        }
+	    }
 	}
 }
