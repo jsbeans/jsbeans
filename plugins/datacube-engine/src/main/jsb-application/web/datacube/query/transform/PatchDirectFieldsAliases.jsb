@@ -11,9 +11,14 @@
 
         ],
 
-		transform: function(rootQuery, cubeOrDataProvider){
+		transform: function(rootQuery, cube){
 		    var queryAliasesMap = new HashMap();
             Visitors.visitProxy(rootQuery, {
+                getUndefinedView: function(name){
+                    var slice = QueryUtils.getQuerySlice(name, cube);
+                    QueryUtils.throwError(slice, 'Query slice or named view is undefined: ' + name);
+                    return {};
+                },
                 field: {
                     before: function(field, context, sourceContext) {
                         if (sourceContext) {

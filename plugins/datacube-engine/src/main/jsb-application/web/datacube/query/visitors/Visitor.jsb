@@ -262,6 +262,9 @@ debugger;
 //                $this.scheme[key].visitor.call(this, exp);
 //                return;
 //            }
+            if (exp.$count == 1 || exp.$sum == 1) {
+                return;
+            }
             // default visitor
             for(var op in exp) {
                 if (!QuerySyntax.constValueOperators[op]) {

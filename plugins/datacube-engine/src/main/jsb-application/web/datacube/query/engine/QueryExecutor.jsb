@@ -31,7 +31,7 @@
 		},
 
 		execute: function(){
-            var startEngine = $this.queryTask.startEngine || Config.get('datacube.query.engine.start');
+            var startEngine = $this.queryTask.startEngine;
 
             Console.message({
                 message: 'query.started',
