@@ -61,8 +61,8 @@
 
 Если запрос содержит внешние источники крайне рекомендуется контролировать размер выборки (число и размер объектов) в связи с необходимостью ее копирования во время выполнения запроса. Управление ограничениями удаленных запросов можно выполнить:
 - $offset + $limit в самом запросе к удаленному источнику;
-- в конфигурации опция `datacube.query.engine.remoteQuery.limit` - число строк в результирующей выборке;
-- для ClickHouse: в конфигурации опция `datacube.query.engine.remoteQuery.clickhouse.api.maxsize` - число байт в результирующей выборке.
+- в конфигурации опция `datacube.query.engine.loopbackQuery.limit` - число строк в результирующей выборке;
+- для ClickHouse: в конфигурации опция `datacube.query.engine.loopbackQuery.clickhouse.api.maxsize` - число байт в результирующей выборке.
 
 
 ## 5. Движок запросов
@@ -110,6 +110,8 @@
 - `method = selectExecutedFirst`     - выбирает итератор, который первый вернет результат (запускаются все варианты и ожидается первый элемент результирующей выборки);
 - `method = selectByEnginePriority`  - выбирает итератор по обработчику и таблице приоритетов (опция`selectByEnginePriority_defaultPriority` задает приоритет по-умолчаниюб, опция `selectByEnginePriority_selectByEnginePriority` - таблицу приоритетов);
 - `method = selectVendorsOrder`      - выбирает по приоритету типа БД (вендору; порядок/приоритет задается опцией `selectVendorsOrder_vendorsOrder`).
+
+### 5.4. Работа анализатора - $analyze:true
 
 
 ## 6. ...

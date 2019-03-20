@@ -56,24 +56,24 @@
 		    return iterator;
         },
 
-		analyzeQuery: function(translatedQuery){
-		    var json = {
-		        translatedQuery: translatedQuery,
-		        preparedQuery: this.dcQuery,
-		        params: this.params
-		    };
-		    return {
-		        next: function(){
-                    try {
-                        return json;
-                    } finally {
-                        if (json) json = null;
-                    }
-		        },
-		        close: function(){
-		        }
-		    };
-		},
+//		analyzeQuery: function(translatedQuery){
+//		    var json = {
+//		        translatedQuery: translatedQuery,
+//		        preparedQuery: this.dcQuery,
+//		        params: this.params
+//		    };
+//		    return {
+//		        next: function(){
+//                    try {
+//                        return json;
+//                    } finally {
+//                        if (json) json = null;
+//                    }
+//		        },
+//		        close: function(){
+//		        }
+//		    };
+//		},
 
 		translateQuery: function(){
 		    var aggregate = $this.mainAggregate = {

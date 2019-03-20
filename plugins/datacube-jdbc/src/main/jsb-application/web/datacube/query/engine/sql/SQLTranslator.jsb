@@ -71,24 +71,24 @@
 		    return iterator;
         },
 
-		analyzeQuery: function(translatedQuery){
-		    var json = {
-		        translatedQuery: translatedQuery,
-		        preparedQuery: this.dcQuery,
-		        params: this.params
-		    };
-		    return {
-		        next: function(){
-                    try {
-                        return json;
-                    } finally {
-                        if (json) json = null;
-                    }
-		        },
-		        close: function(){
-		        }
-		    };
-		},
+//		analyzeQuery: function(translatedQuery){
+//		    var json = {
+//		        translatedQuery: translatedQuery,
+//		        preparedQuery: this.dcQuery,
+//		        params: this.params
+//		    };
+//		    return {
+//		        next: function(){
+//                    try {
+//                        return json;
+//                    } finally {
+//                        if (json) json = null;
+//                    }
+//		        },
+//		        close: function(){
+//		        }
+//		    };
+//		},
 
 		translateQuery: function(query) {
 		    ExpressionsTypesExtractor.extractedTypes($this.dcQuery, function(queryFieldsTypes, expressionsTypes){
@@ -311,8 +311,11 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                     }
                 );
 debugger
-                if (!subQuery.$limit) {
-                    subQuery.$limit = 0+Config.get('datacube.query.engine.remoteQuery.limit');
+                if (!subQuery.$limit && Config.get('datacube.query.engine.loopbackQuery.limit')) {
+                    var limit = 0+Config.get('datacube.query.engine.loopbackQuery.limit')
+                    if (limit > 0) {
+                        subQuery.$limit = limit;
+                    }
                 }
                 return subQuery;
             }

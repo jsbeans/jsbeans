@@ -394,6 +394,7 @@
 				if(!JSB().isNull(t.offsetVert)){
 					pt.y += t.offsetVert;
 				}
+				t.rect = tRect;
 				t.pt = pt;
 				ap.x += pt.x;
 				ap.y += pt.y;

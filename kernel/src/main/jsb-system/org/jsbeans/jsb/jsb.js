@@ -97,7 +97,7 @@ if(!(function(){return this;}).call(null).JSB){
 			ownLast: checkOwnLast()
 		},
 
-		
+
 		isClient: function(){
 			if(this.isNull(this._isClient)){
 				// check for window object existed
@@ -2929,7 +2929,7 @@ if(!(function(){return this;}).call(null).JSB){
            	try {
            		var body;
            		if (this.isString(error)) body = error;
-           		if (!body) body = error.message && (error.message + '\r\n' + (error.stackTrace||error.stack||'NO STACK')) || error;
+           		if (!body) body = error.message && (error.message + '\r\n' + (error.stackTrace||error.stacktrace||error.stack||'NO STACK')) || error;
            		if (message) {
            			return message + '\r\n' + body;
            		}
@@ -3840,6 +3840,14 @@ if(!(function(){return this;}).call(null).JSB){
 		}
 	}
 
+
+    // setup JSB.Error
+    jsbScope.Error = function (message){
+        this.message = message;
+        Error.apply(this, arguments);
+        Error.captureStackTrace(this);
+    };
+    jsbScope.Error.prototype = Object.create(Error.prototype);
 	
 	// setup window
 	if(JSB().isClient()){

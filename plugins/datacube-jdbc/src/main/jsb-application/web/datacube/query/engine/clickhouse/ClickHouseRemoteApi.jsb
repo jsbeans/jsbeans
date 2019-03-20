@@ -16,7 +16,7 @@
 
         $constructor: function(){
             $this.remoteQueries = new ConcurrentHashMap();
-            $this.maxsize = 0+Config.get('datacube.query.engine.remoteQuery.clickhouse.api.maxsize');
+            $this.maxsize = 0+Config.get('datacube.query.engine.loopbackQuery.clickhouse.api.maxsize');
         },
 
         /** Returns query result objects with ClickHouse JSONEachRow format*/

@@ -21,6 +21,7 @@
 		    $this.params = queryTask.params || {};
 		    $this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
 		    $this.pool = new ConcurrentHashMap();
+		    $this.startedTimestamp = Date.now();
 		},
 
 		execute: function(){
@@ -36,11 +37,18 @@
                 },
             });
 
+            if ($this.query.$analyze) {
+		        $this.analyze = {
+		            engines: {},
+		            inputQuery: $this.queryTask.query,
+		            startEngine: $this.queryTask.startEngine,
+		        };
+            }
+
             var it = $this.executeEngine(startEngine, {
                 cube: $this.cube,
                 query: $this.query,
                 params: $this.params,
-                times: $this.queryTask.times,
             });
             if (!it) {
                 var it = $this.awaitIterator();
@@ -48,7 +56,7 @@
             return it;
 		},
 
-        /** Асинхронный запуск движка по имени, который регистрируется в пуле
+        /** Асинхронный/синхронный запуск движка по имени конфигурации
         */
 		executeEngine: function(name, queryTask) {
 		    var engineConfig = $this.getEngineConfig(name);
@@ -57,6 +65,17 @@
 		    if(!engine.acceptable(name, $this, queryTask)) {
 		        // skip not acceptable
 		        return;
+		    }
+
+		    if ($this.analyze) {
+		        $this.analyze.engines[name] = {
+		            name: name,
+		            async: engineConfig.async,
+		            input: {
+		                query: JSB.clone(queryTask.query),
+		            },
+		            startedTimestamp: Date.now(),
+		        };
 		    }
 
 		    if (engineConfig.async == true) {
@@ -69,44 +88,62 @@
                 });
                 JSB.defer(function(){
                     try {
-                        queryTask.times.pipeline[queryTask.times.length] = {};
-                        queryTask.times.pipeline[queryTask.times.length][name] = (Date.now() - queryTask.times.last)/1000;
-                        queryTask.times.last = Date.now();
-
                         var task = $this.pool.get(key);
                         task.status = 'started';
                         task.iterator = engine.execute(name, $this, queryTask);
                         if (task.iterator) {
                             task.iterator.meta.engine = JSB.merge({}, engineConfig, {alias:name});
                         }
+                        if($this.analyze) {
+                            $this.analyze.engines[name].output = {
+                                iterator: task.iterator
+                            };
+                        }
                     } catch(e) {
+                        if($this.analyze) {
+                            $this.analyze.engines[name].output = {
+                                error: JSB.stringifyError(e),
+                            }
+                        }
                         task.error = e;
                     } finally {
                         task.status = 'completed';
+                        if ($this.analyze) {
+                            $this.analyze.engines[name].engineTime = (Date.now() - $this.analyze.engines[name].startedTimestamp)/1000;
+                        }
                     }
                 }, 1, key);
 		    } else {
-		        /// sync
-		        var it = engine.execute(name, $this, queryTask);
-                if (it) {
-                    it.meta.engine = JSB.merge({}, engineConfig, {alias:name});
+		        try {
+                    /// sync
+                    var it = engine.execute(name, $this, queryTask);
+//                    if (it) {
+//                        it.meta.engine = JSB.merge({}, engineConfig, {alias:name});
+//                        if($this.analyze) {
+//                            $this.analyze.engines[name].output = {
+//                                iterator: it,
+//                            };
+//                            return $this.generateAnalyzeIterator($this.analyze.engines[name]);
+//                        }
+//                    }
+                    if (it) {
+                        throw new Error('Internal error: Invalid configuration: Execution engine is not async');
+                    }
+                } catch(e) {
+                    if($this.analyze) {
+                        $this.analyze.engines[name].output = {
+                            error: e
+                        };
+                        /// при включенном анализаторе ошибка проглатывается
+                        return $this.generateAnalyzeIterator($this.analyze.engines[name]);
+                    }
+                    throw e;
+                } finally {
+                    if ($this.analyze) {
+                        $this.analyze.engines[name].engineTime = (Date.now() - $this.analyze.engines[name].startedTimestamp) / 1000;
+                    }
                 }
-                return it;
 		    }
-		},
-
-		getEngineConfig: function(name){
-		    var engine = Config.get('datacube.query.engines.' + name);
-		    QueryUtils.throwError(engine, 'Unknown query engine configuration "{}"', name);
-		    return engine;
-		},
-
-		getEngine: function(name, engineConfig) {
-		    var engine = engineConfig || $this.getEngineConfig(name);
-            var inst = JSB.getInstance(engine.jsb);
-            QueryUtils.throwError(inst, 'Query engine "{}" instance is null', name);
-            return inst;
-
 		},
 
         /** Ожидает, пока все движки не закончат свою работу, и возвращает итератор с лучшим оценочным временем выполнения
@@ -159,7 +196,13 @@
             }
 
             QueryUtils.throwError(its.length || errors.length > 0, 'Compatible query engine not found, all engines no return iterator');
-            if (errors.length > 0) throw QueryUtils.mergeErrors.apply(QueryUtils, errors);
+            if (errors.length > 0) {
+                if ($this.analyze) {
+                    /// при анализе проглотить ошибки
+                    return $this.generateAnalyzeIterator();
+                }
+                throw QueryUtils.mergeErrors.apply(QueryUtils, errors);
+            }
 
             /// select iterator
             var jsb = Config.get('datacube.query.engine.iteratorSelector.jsb');
@@ -170,7 +213,53 @@
                 message: 'Iterator selected',
                 params:{executor: $this.getId(), iteratorId: it.meta.id, meta: it.meta},
             });
+
+            if ($this.analyze) {
+                return $this.generateAnalyzeIterator(it);
+            }
             return it;
+		},
+
+		setEngineMeta: function(name, result) {
+		    if ($this.analyze) {
+        	    $this.analyze.engines[name].meta = result;
+            }
+		},
+
+		getEngineConfig: function(name){
+		    var engine = Config.get('datacube.query.engines.' + name);
+		    QueryUtils.throwError(engine, 'Unknown query engine configuration "{}"', name);
+		    return engine;
+		},
+
+		getEngine: function(name, engineConfig) {
+		    var engine = engineConfig || $this.getEngineConfig(name);
+            var inst = JSB.getInstance(engine.jsb);
+            QueryUtils.throwError(inst, 'Query engine "{}" instance is null', name);
+            return inst;
+
+		},
+
+		generateAnalyzeIterator: function(iterator){
+		    var iterator = iterator || {
+		        close: function(){},
+		    };
+
+            //var result = analyzer;
+            var result = $this.analyze;
+            if (iterator && iterator.meta) {
+                result.translatedQuery = iterator.meta.translatedQuery;
+                result.translatorInputQuery = iterator.meta.translatorInputQuery;
+            }
+            /// вместо объекта с данными вернуть анализ
+            iterator.next = function() {
+                try {
+                    return result;
+                } finally {
+                    if (result) result = null;
+                }
+            };
+            return iterator;
 		},
 
 		destroy: function() {

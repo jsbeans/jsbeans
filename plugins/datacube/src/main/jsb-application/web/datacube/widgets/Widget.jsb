@@ -76,13 +76,15 @@
                 this.wrapper = opts.widgetWrapper;
                 this.filterManager = opts.filterManager;
 
-                this.widgetEntry.getData(function(res){
-                    if(!res) { return ;}
-
-                    $this.updateValues(res, function(){
-                    	$this.setTrigger('_valuesLoaded');
-                    });
-                });
+                if(this.widgetEntry){
+	                this.widgetEntry.getData(function(res){
+	                    if(!res) { return ;}
+	
+	                    $this.updateValues(res, function(){
+	                    	$this.setTrigger('_valuesLoaded');
+	                    });
+	                });
+                }
 		    }
 		    
 		    var UpdateDispatcher = function(){
