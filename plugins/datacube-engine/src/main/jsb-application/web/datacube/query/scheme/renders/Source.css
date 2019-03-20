@@ -1,13 +1,12 @@
-.sourceRender .source,
 .sourceRender .source {
     display: inline-block;
     border: 1px solid transparent;
     padding: 5px;
     border-radius: 5px;
+    width: 100%;
 }
 
-.sourceRender .source:not(.notEditable):hover,
-.sourceRender .source:not(.notEditable):hover {
+.sourceRender .source:not(.notEditable):hover{
     cursor: pointer;
     border: 1px solid #d8d8d8;
     background-color: #e3eff5;

@@ -193,6 +193,9 @@
 
 				if(this.property('fieldsTypes')){
 				    this.fieldsTypes = this.property('fieldsTypes');
+
+				    JSB.getLogger().debug(this.getName());
+				    JSB.getLogger().debug(JSON.stringify(this.fieldsTypes));
 				}
 			}
 			var ctx = this.getSettingsContext();
@@ -219,12 +222,6 @@
 				$this.queryCache = null;
 			}
 			$base();
-		},
-		
-		setName: function(name){
-			$base(name);
-			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
-			this.doSync();
 		},
 
 		executeQuery: function(opts){
@@ -386,13 +383,13 @@
 		remove: function(){
 		    this.cube.removeSlice(this.getFullId());
 
+		    this.publish('DataCube.Model.Slice.remove', { cubeFullId: this.getCube().getFullId(), fullId: this.getFullId() }, {session: true});
+
 		    $base();
 		},
 
 		setName: function(name){
 			$base(name);
-
-			this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
 
 			this.doSync();
 		},
@@ -404,8 +401,6 @@
             // name
 		    if(JSB.isDefined(params.name) && !JSB.isEqual(this.getName(), params.name)){
 		        $super.setName(params.name);
-
-		        this.publish('DataCube.Model.Slice.renameSlice', { name: params.name }, {session: true});
 
 		        updates.name = params.name;
 		    }
@@ -451,7 +446,11 @@
                 var fieldsTypes = TypeExtractor.extractQueryOutputFieldsTypes($this.query);
                 this.fieldsTypes = {};
                 for(var i in this.query.$select){
-                    this.fieldsTypes[i] = fieldsTypes[i].type || fieldsTypes[i].nativeType || '';
+                    if(fieldsTypes[i]){
+                        this.fieldsTypes[i] = fieldsTypes[i].type || fieldsTypes[i].nativeType;
+                    } else {
+                        this.fieldsTypes[i] = '';
+                    }
                 }
 		    } catch(ex){
                 JSB.getLogger().error(ex);

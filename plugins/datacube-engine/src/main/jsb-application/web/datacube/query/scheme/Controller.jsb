@@ -11,9 +11,9 @@
 	$client: {
 	    _contextMap: {},
 	    _data: {},
+	    _dataId: null,
 	    _menu: null,
 	    _query: null,
-	    _refreshUid: 0,
 	    _rendersMap: {},
 	    _slice: null,
 
@@ -108,6 +108,10 @@
             return this._data;
         },
 
+        getDataId: function(){
+            return this._dataId;
+        },
+
         getQuery: function(){
             return this._query.getScope();
         },
@@ -147,11 +151,13 @@
 
                 $this._contextMap = {};
 
-                $this._data = opts.data || $this._data;
+                if(opts.data){
+                    $this.setData(opts.data);
+                }
 
-                $this._slice = opts.slice || $this._slice;
-
-                $this._refreshUid = JSB.generateUid();
+                if(opts.slice){
+                    $this._slice = opts.slice
+                }
 
                 var queryOpts = {
                     renderName: '$query',
@@ -189,6 +195,12 @@
             if(render.getParent()){
                 this._rendersMap[render.getParent().getId()].children[renderId] = render;
             }
+        },
+
+        setData: function(data){
+            this._data = data;
+
+            this._dataId = JSB.generateUid();
         },
 
         showMenu: function(opts){
@@ -248,7 +260,8 @@
 				cmd: 'show',
 				data: JSB.merge(opts, {
 				    data: this.getData(),
-				    sliceId: this._refreshUid
+				    dataId: this.getDataId(),
+				    sliceId: this.getSlice().getFullId()
 				}),
 				scope: null,
 				target: {
@@ -280,6 +293,6 @@
             }
 
             delete this._rendersMap[renderId];
-        },
+        }
     }
 }

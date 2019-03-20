@@ -642,6 +642,8 @@
 		           'DataCube.Controls.SortSelector',
 		           'DataCube.Controls.FilterEntry',
 		           'JSB.Utils.Formatter',
+		           'DataCube.Widgets.WidgetTool',
+		           'JSB.Widgets.ToolManager',
 		           'css:Table.css'],
 		
 		_ready: false,
@@ -662,6 +664,7 @@
 		embeddedBindings: [],
 		refreshOrdered: false,
 		refreshOrderedOpts: null,
+		widgetTool: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -677,6 +680,10 @@
 			
 			this.scroll = new ScrollBox({
 				onScroll: function(){
+					if($this.useTooltipOnHover && $this.widgetTool){
+						$this.widgetTool.close();
+						$this.widgetTool = null;
+					}
 					var scrollY = $this.scroll.getScrollPosition().y;
 					if( $this.paneHeight - ($this.scrollHeight - scrollY) > 0.3 * $this.scrollHeight){
 						return;
@@ -1984,7 +1991,11 @@
 		},
 		
 		onRowOut: function(d, rowElt, evt){
-			if((!d.filter || d.filter.length == 0) && !this.callApiOnClick && !this.useDrillDownOnClick && !$this.useGroupOperations){
+			if((!d.filter || d.filter.length == 0) 
+				&& !this.callApiOnClick 
+				&& !this.useDrillDownOnClick 
+				&& !$this.useGroupOperations
+				&& !$this.useTooltipOnHover){
 				return;
 			}
 
@@ -1997,11 +2008,22 @@
 				rowElt.removeClass('highlight');
 				$this.rowFilterTool.addClass('hidden');
 				$this.highlightedRowKey = null;
+				if($this.useTooltipOnHover){
+					JSB.cancelDefer('widgetTool_' + $this.getId());
+					if($this.widgetTool){
+						$this.widgetTool.close();
+						$this.widgetTool = null;
+					}
+				}
 			}, 100, deferRowKey);
 		},
 		
 		onRowHover: function(d, rowElt, evt){
-			if((!d.filter || d.filter.length == 0) && !this.callApiOnClick && !this.useDrillDownOnClick && !$this.useGroupOperations){
+			if((!d.filter || d.filter.length == 0) 
+				&& !$this.callApiOnClick 
+				&& !$this.useDrillDownOnClick 
+				&& !$this.useGroupOperations
+				&& !$this.useTooltipOnHover){
 				return;
 			}
 			
@@ -2016,6 +2038,13 @@
 			if($this.highlightedRowKey){
 				var oldRowElt = $this.scroll.find('tr.row[key="'+$this.highlightedRowKey+'"]');
 				oldRowElt.removeClass('highlight');
+				if($this.useTooltipOnHover){
+					JSB.cancelDefer('widgetTool_' + $this.getId());
+					if($this.widgetTool){
+						$this.widgetTool.close();
+						$this.widgetTool = null;
+					}
+				}
 			}
 
 			rowElt.addClass('highlight');
@@ -2062,6 +2091,13 @@
 				bNot = bRowExisted && !bSameApplied;
 			}
 			
+			// check for hover tooltip
+			if($this.useTooltipOnHover && d.filter && d.filter.length > 0){
+				JSB.defer(function(){
+					$this.showWidgetTip(d, rowElt);	
+				}, 1000, 'widgetTool_' + $this.getId());
+			}
+			
 			if(!bAnd && !bOr && !bNot && !bMark){
 				$this.rowFilterTool.addClass('hidden');
 				return;
@@ -2097,6 +2133,54 @@
 
 			$this.rowFilterTool.css({left: pX, top: pY});
 			
+		},
+		
+		showWidgetTip: function(d, rowElt){
+			var filterOpts = {};
+			for(var i = 0; i < d.filter.length; i++){
+				var cubeField = this.getCubeField(d.filter[i].field);
+				if(cubeField){
+					filterOpts[cubeField] = {$eq:{$const:d.filter[i].value}};
+				}
+			}
+			
+			
+			var widgetType = this.getContext().find('toolWidgetType').value();
+			if(widgetType == 'toolNewWidget'){
+				var widget = this.getContext().find('toolWidgetType widget').value();
+				// TODO: 
+				debugger;
+			} else if(widgetType == 'toolExistedWidget'){
+				var widgetDesc = this.getContext().find('toolWidgetType widget').value();
+				$this.getWrapper().server().getWidgetEntry(widgetDesc.widgetWsid, widgetDesc.widgetWid, function(wEntry){
+					if($this.widgetTool){
+						$this.widgetTool.close();
+					}
+					$this.widgetTool = ToolManager.activate({
+						id: 'widgetTool',
+						cmd: 'show',
+						data: {
+							widgetEntry: wEntry,
+							filter: filterOpts
+						},
+						scope: $this.getElement(),
+						target: {
+							selector: rowElt,
+						},
+						constraints: [{
+							selector: rowElt,
+							weight: 10.0
+						},{
+							selector: $this.getElement(),
+							weight: 1.0
+						}],
+						callback: function(){
+							
+						}
+					})
+				});
+				
+			}
 		},
 		
 		updateRows: function(){
@@ -2627,6 +2711,7 @@
 			this.showSortIcon = this.getContext().find('showSortIcon').checked();
 			this.callApiOnClick = this.getContext().find('callApiOnClick').checked();
 			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
+			this.useTooltipOnHover = this.getContext().find('showRowToolTip').checked();
 			this.usePrefetch = this.getContext().find('usePrefetch').checked();
 			this.useAnimation = this.getContext().find('useAnimation').checked();
 			if(this.useAnimation){

@@ -16,6 +16,7 @@
 		options: {
 			cellRoundMax: 2,
 			wiringClass: '_jsb_diagramWiringLinkMode',
+			userSelect: true,
 			
 			onHighlight: function(bEnable){
 				this.group.classed('highlighted', bEnable);
@@ -32,7 +33,6 @@
 				} else if(!this.isHighlighted()){
 					this.group.attr('filter', null);
 				}
-
 			}
 		},
 		
@@ -155,8 +155,6 @@
 			this.redraw();
 		},
 		
-		
-		
 		updateConnectors: function(){
 			if(!JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') || !JSB().isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector')){
 				return;
@@ -235,7 +233,6 @@
 			}
 			return pathStr;
 		},
-
 		
 		redraw: function(){
 			if(JSB().isNull(this.source) || JSB().isNull(this.target)){
@@ -370,6 +367,10 @@
 		},
 		
 		select: function(bEnable){
+		    if(!this.options.userSelect){
+		        return;
+		    }
+
 			if(bEnable){
 				if(!this.diagram.selected[this.getId()]){
 					this.diagram.selected[this.getId()] = this;
@@ -422,7 +423,6 @@
 				self.diagram.publish('_jsb_diagramHighlightChanged', self.diagram.getHighlighted());
 			}, 100, '_jsb_notifyUpdateHighlighted');
 		},
-
 		
 		isSelected: function(){
 			if(this.diagram.selected[this.getId()]){
@@ -447,7 +447,5 @@
 			}
 			return pArr;
 		}
-	},
-	
-	$server: {}
+	}
 }

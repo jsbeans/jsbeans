@@ -73,6 +73,33 @@
 
 			    $this.sliceData = null;
 			});
+
+			function updateData(){
+                $this.sliceData.entry.server().getEditorData(function(data, fail){
+                    if(fail){
+                        // todo: error
+                        return;
+                    }
+
+                    $this.editor.setData(data);
+                });
+			}
+
+            this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
+                if($this.sliceData.entry.getCube().getId() !== slice.getCube().getId()){
+                    return;
+                }
+
+                updateData();
+            });
+
+            this.subscribe('DataCube.Model.Slice.remove', {session: true}, function(sender, msg, desc){
+                if($this.sliceData.entry.getCube().getFullId() !== desc.cubeFullId){
+                    return;
+                }
+
+                updateData();
+            });
 	    },
 
 	    apply: function(){

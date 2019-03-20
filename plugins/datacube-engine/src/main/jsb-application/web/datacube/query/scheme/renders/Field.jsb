@@ -73,6 +73,15 @@
             }
 	    },
 
+	    setSourceContext: function(context){
+	        this.getScope().$sourceContext = context;
+	    },
+
+	    showError: function(text){
+	        this.getElement().attr('title', text);
+	        this.addClass('error');
+	    },
+
 	    wrap: function(desc, options){
 	        var oldVal = {
 	                $context: this.getFieldContext(),
