@@ -17,9 +17,22 @@
 
 	    construct: function(){
 	        function changeSource(index, source){
+	            var newContext = source.getFullId(),
+	                sourceFields = source.extractFields();
+
+	            if(index === 0){
+	                $this.getParent().updateContexts(values.$left, newContext, sourceFields);
+
+	                values.$left = newContext;
+	            } else {
+	                $this.getParent().updateContexts(values.$right, newContext, sourceFields);
+
+	                values.$right = newContext;
+	            }
+
                 fieldComparison.changeFields(index, {
                     context: source.getFullId(),
-                    fields: Object.keys(source.extractFields())
+                    fields: Object.keys(sourceFields)
                 });
 
 	            $this.onChange();
@@ -54,7 +67,6 @@
 	        var sourceLeft = this.$('<div class="source sourceLeft"></div>');
 	        this.append(sourceLeft);
 	        this.createSource(values.$left, sourceLeft, function(newSourceType, source){
-	            values.$left = source.getFullId();
 	            changeSource(0, source);
 	        });
 
@@ -62,7 +74,6 @@
 	        var sourceRight = this.$('<div class="source sourceRight"></div>');
 	        this.append(sourceRight);
 	        this.createSource(values.$right, sourceRight, function(newSourceType, source){
-	            values.$right = source.getFullId();
 	            changeSource(1, source);
 	        });
 

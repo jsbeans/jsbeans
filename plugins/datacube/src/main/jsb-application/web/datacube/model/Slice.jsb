@@ -220,12 +220,6 @@
 			}
 			$base();
 		},
-		
-		setName: function(name){
-			$base(name);
-			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
-			this.doSync();
-		},
 
 		executeQuery: function(opts){
 			$this.getCube().load();
@@ -386,13 +380,13 @@
 		remove: function(){
 		    this.cube.removeSlice(this.getFullId());
 
+		    this.publish('DataCube.Model.Slice.remove', { cubeFullId: this.getCube().getFullId(), fullId: this.getFullId() }, {session: true});
+
 		    $base();
 		},
 
 		setName: function(name){
 			$base(name);
-
-			this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
 
 			this.doSync();
 		},
@@ -404,8 +398,6 @@
             // name
 		    if(JSB.isDefined(params.name) && !JSB.isEqual(this.getName(), params.name)){
 		        $super.setName(params.name);
-
-		        this.publish('DataCube.Model.Slice.renameSlice', { name: params.name }, {session: true});
 
 		        updates.name = params.name;
 		    }

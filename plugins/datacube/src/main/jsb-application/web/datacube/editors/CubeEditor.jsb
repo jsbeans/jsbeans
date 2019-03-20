@@ -88,8 +88,8 @@
 				    $this.setTrigger('diagramReady');
 				},
 				onPositionChanged: function(type, changes){
-				    if($this._cube){
-				        $this._cube.server().updateDiagramPosition(changes);
+				    if($this.getCube()){
+				        $this.getCube().server().updateDiagramPosition(changes);
 				    }
 				},
 				nodes: {
@@ -285,7 +285,7 @@
             });
 
             this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
-                if(sender !== $this && slice.cube === $this._cube){
+                if(sender !== $this && slice.cube === $this.getCube()){
                     $this.addSlice(slice);
                 }
             });
@@ -344,10 +344,24 @@
                     $this.options.layoutManager.getWidget('grid').clear();
                 });
 			});
+
+            this.subscribe('DataCube.Model.Slice.remove', {session: true}, function(sender, msg, desc){
+                if($this.getCube().getFullId() !== desc.cubeFullId){
+                    return;
+                }
+
+                if($this._slices[desc.fullId]){
+                    delete $this._slices[desc.fullId];
+                }
+
+                if($this._nodes[desc.fullId]){
+                    $this._nodes[desc.fullId].destroy();
+                }
+            });
 	    },
 
 	    addDataSource: function(entry, selectedFields, position){
-	        this._cube.server().addSlice({
+	        this.getCube().server().addSlice({
 	            diagramOpts: {position: position},
                 name: entry.getName(),
                 selectedFields: selectedFields,
@@ -362,6 +376,8 @@
 
                 $this._slices[slice.getFullId()] = slice;
                 $this._nodes[slice.getFullId()] = $this.diagram.createNode('sliceDiagramNode', {entry: slice, editor: $this, position: position});
+
+                $this.publish('Datacube.CubeNode.createSlice', slice);
 	        });
 	    },
 
@@ -436,14 +452,14 @@
 	    },
 
 	    refresh: function(entry){
-			if(this._cube == entry){
+			if(this.getCube() == entry){
 				return;
 			}
 
 			this._cube = entry;
 			this.diagram.clear();
 
-			this._cube.server().load(true, function(desc){
+			this.getCube().server().load(true, function(desc){
 			    $this.ensureTrigger(['diagramReady'], function(){
 			        $this.constructCube(desc);
 			    });

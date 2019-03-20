@@ -156,6 +156,33 @@
 				noDataMessage: 'Сформируйте запрос в конструкторе и нажмите кнопку "Обновить"'
 			});
 			hSplitBox.addToPane(1, this.grid);
+
+			function updateData(){
+                $this.slice.server().getEditorData(function(data, fail){
+                    if(fail){
+                        // todo: error
+                        return;
+                    }
+
+                    $this.editor.setData(data);
+                });
+			}
+
+            this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
+                if($this.slice.getCube().getId() !== slice.getCube().getId()){
+                    return;
+                }
+
+                updateData();
+            });
+
+            this.subscribe('DataCube.Model.Slice.remove', {session: true}, function(sender, msg, desc){
+                if($this.slice.getCube().getFullId() !== desc.cubeFullId){
+                    return;
+                }
+
+                updateData();
+            });
 		},
 		
 		refresh: function(){

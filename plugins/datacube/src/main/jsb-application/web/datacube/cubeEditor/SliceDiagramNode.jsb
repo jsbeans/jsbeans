@@ -143,16 +143,6 @@
                 this.addClass('dataSourceSlice');
 			}
 
-			this.subscribe('DataCube.Model.Slice.renameSlice', {session: true}, function(sender, msg, desc){
-				var entry = desc.entry;
-
-				if($this.entry != entry){
-					return;
-				}
-
-				caption.find('.name').text(desc.name);
-			});
-
             this.subscribe('DataCube.CubeEditor.search', function(sender, msg, value){
                 $this.search(value);
             });

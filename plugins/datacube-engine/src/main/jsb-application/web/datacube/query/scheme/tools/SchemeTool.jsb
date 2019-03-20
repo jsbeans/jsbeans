@@ -27,7 +27,7 @@
 			});
 		},
 
-		_sliceId: null,
+		_dataId: null,
 
 		_SOURCE_FIELDS_NAME: 'Поля источника',
 		_OUTPUT_FIELDS_NAME: 'Поля среза',
@@ -75,19 +75,21 @@
 
 		update: function(){
 		    var caller = this.getData('caller'),
-		        data = this.getData('data'),
+		        dataId = this.getData('dataId'),
 		        key = this.getData('key'),
-		        sliceId = this.getData('sliceId'),
 		        showSlices = this.getData('showSlices');
 
 		    // fill slices
-		    if(this._sliceId !== sliceId){
-		        this._sliceId = sliceId;
+		    if(this._dataId !== dataId){
+		        this._dataId = dataId;
 
 		        this.itemList.clearCategory('Срезы');
 
+		        var data = this.getData('data'),
+		            sliceId = this.getData('sliceId');
+
 		        for(var i in data.cubeSlices){
-		            if(i !== this._sliceId){
+		            if(i !== sliceId){
 		                this.itemList.addItem({
 		                    item: data.cubeSlices[i],
 		                    key: i,

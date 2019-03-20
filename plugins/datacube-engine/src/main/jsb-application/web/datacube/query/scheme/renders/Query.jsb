@@ -172,18 +172,30 @@
 	    // переопределение базового метода
 	    setDefaultValues: function(){},
 
-	    updateContexts: function(oldContext, newContext, oldSourceContext, newSourceContext){
-	        function update(list){
+	    updateContexts: function(oldSourceContext, newSourceContext, sourceFields){
+	        var sourceKeys = Syntax.getSourceKeys();
+
+	        function update(list, context){
 	            for(var i in list){
-	                if(list[i].getKey() === '$field'){
-	                    //
+	                if(sourceKeys[list[i].getKey()]){
+	                    continue;
 	                }
 
-	                if(list[i].getKey() === '$query'){
-	                    //
+	                if(list[i].getKey() === '$field' && list[i].getFieldContext() === context && list[i].getSourceContext() === oldSourceContext){
+	                    if(sourceFields[list[i].getValues()]){
+	                        list[i].setSourceContext(newSourceContext);
+	                    } else {
+	                        list[i].showError('В новом источнике нет данного поля');
+	                    }
+	                } else if(list[i].getKey() === '$query'){
+	                    update(list[i].getChildren(), context || $this.getContext());
+	                } else {
+	                    update(list[i].getChildren(), context);
 	                }
 	            }
 	        }
+
+	        update(this.getChildren());
 	    }
 	}
 }
