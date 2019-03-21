@@ -131,7 +131,8 @@
 				links: {
 				    $from: fromLink,
 					$join: joinLink,
-					$union: unionLink
+					$union: unionLink,
+					$recursive: linkOpts
 				}
 			});
 			this.append(this.diagram);

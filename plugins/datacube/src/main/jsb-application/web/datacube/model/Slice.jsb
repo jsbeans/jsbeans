@@ -3,9 +3,7 @@
     $parent: 'DataCube.Model.QueryableEntry',
 
     $require: [
-        'DataCube.Query.QuerySyntax',
-        'DataCube.Query.QueryUtils',
-        'DataCube.Query.Extractors.TypeExtractor',
+        'DataCube.Query.QuerySyntax'
     ],
 
     $scheme: {
@@ -143,6 +141,8 @@
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
+		           'DataCube.Query.Extractors.TypeExtractor',
+		           'DataCube.Query.Query',
 		           'DataCube.Query.QueryCache',
 		           'DataCube.Scheduler.EntryScheduleController'],
 		
@@ -160,6 +160,7 @@
 		},
 
 		fieldsTypes: {},
+		preparedQuery: {},
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
@@ -177,6 +178,7 @@
                     this.source = opts.sources[0];
                     this.property('source', this.source.getFullId());
                 }
+
 				this.property('queryParams', this.queryParams);
 			} else {    // load existed slice
 				if(this.property('cube')){
@@ -195,6 +197,12 @@
 
 				if(this.property('fieldsTypes')){
 				    this.fieldsTypes = this.property('fieldsTypes');
+				}
+
+				if(this.property('preparedQuery')){
+				    this.preparedQuery = this.property('preparedQuery');
+				} else {
+				    this.updatePreparedQuery();
 				}
 			}
 			var ctx = this.getSettingsContext();
@@ -249,7 +257,7 @@
             if(this.query.$select){
                 for(var i in this.query.$select){
                     if(!this.fieldsTypes[i]){
-                        this.updateFieldsTypes();
+                        this.updateFieldsTypes(true, true);
                     }
 
                     fields[i] = {
@@ -367,6 +375,10 @@
 			return fMap;
 		},
 
+		getPreparedQuery: function(){
+		    return this.preparedQuery;
+		},
+
 		invalidate: function(){
 			if(!this.cacheEnabled){
 				return;
@@ -413,7 +425,9 @@
                 this.query =  params.query;
                 this.property('query', this.query);
 
-                this.updateFieldsTypes();
+                this.updateFieldsTypes(true);
+
+                this.updatePreparedQuery();
 
     			this.invalidate();
     			//this.loadCacheFromCube();
@@ -444,50 +458,65 @@
 			this.queryCache.update();
 		},
 
-		updateFieldsTypes: function(){
-		    /*
+		updateFieldsTypes: function(hideEvent, stopPropagate){
 		    try{
 		        var fieldsTypes = TypeExtractor.extractQueryOutputFieldsTypes($this.query),
 		            isNeedUpdate = false;
 
-		        //
+		        for(var i in this.getQuery().$select){
+                    if(fieldsTypes[i]){
+                        if(fieldsTypes[i].type){
+                            if(this.fieldsTypes[i] !== fieldsTypes[i].type){
+                                this.fieldsTypes[i] = fieldsTypes[i].type;
+
+                                isNeedUpdate = true;
+                            }
+                        } else if(fieldsTypes[i].nativeType){
+                            if(this.fieldsTypes[i] !== fieldsTypes[i].nativeType){
+                                this.fieldsTypes[i] = fieldsTypes[i].nativeType;
+
+                                isNeedUpdate = true;
+                            }
+                        }
+                    }
+		        }
+
+		        if(isNeedUpdate){
+		            this.property('fieldsTypes', this.fieldsTypes);
+
+		            if(!stopPropagate){
+		                // todo: update slices which use current slice
+		            }
+
+		            if(!hideEvent){
+                        this.publish('DataCube.CubeEditor.sliceUpdated', {
+                            fields: this.extractFields()
+                        }, {session: true});
+		            }
+		        }
 		    } catch(ex){
 		        JSB.getLogger().error(ex);
 		    }
-		    */
+		},
+
+		updatePreparedQuery: function() {
+		    var iterator;
 
 		    try {
-                var fieldsTypes = TypeExtractor.extractQueryOutputFieldsTypes($this.query);
-                this.fieldsTypes = {};
-                for(var i in this.query.$select){
-                    if(fieldsTypes[i]){
-                        this.fieldsTypes[i] = fieldsTypes[i].type || fieldsTypes[i].nativeType;
-                    } else {
-                        this.fieldsTypes[i] = '';
-                    }
+                iterator = Query.prepare({
+                    query: this.getQuery()
+                });
+
+                this.preparedQuery = iterator.next();
+
+                this.property('preparedQuery', this.preparedQuery);
+		    } catch(e) {
+		        this.property('preparedQuery', null);
+		    } finally {
+		        if(iterator){
+		            iterator.close();
                 }
-		    } catch(ex){
-                JSB.getLogger().error(ex);
-            }
-
-//		    function getQuery(name) {
-//		        if ($this.query.$views && $this.query[name]) {
-//		            return $this.query[name];
-//		        }
-//		        return QueryUtils.findView(name, null, $this.query);
-//		    }
-//
-//		    for(var i in this.query.$select){
-//		        try{
-//		            this.fieldsTypes[i] = QueryUtils.extractType(this.query.$select[i], this.query, this.getCube(), getQuery);
-//                } catch(ex){
-//                    JSB.getLogger().error(ex);
-//
-//                    this.fieldsTypes[i] = '';
-//                }
-//		    }
-
-		    this.property('fieldsTypes', this.fieldsTypes);
+		    }
 		},
 
 		onChangeSettings: function(){

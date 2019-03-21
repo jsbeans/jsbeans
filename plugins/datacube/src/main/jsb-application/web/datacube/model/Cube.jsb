@@ -11,6 +11,7 @@
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'DataCube.Model.Slice',
+		           'DataCube.Query.Extractors.ExtractUtils',
 		           'DataCube.Query.Query',
 		           'DataCube.Query.QueryCache'],
 		
@@ -486,6 +487,11 @@
                     for(var j in this.fields[i].slices){
                         var curType = this.slices[j].entry.getFieldType(i);
 
+                        if(!curType){
+                            JSB.getLogger().debug('Warning! Type field ' + i + ' from slice ' + this.slices[j].entry.getName() + ' is undefined');
+                            continue;
+                        }
+
                         if(!type){  // first element of object
                             type = curType;
                             conflictType = type;
@@ -531,8 +537,10 @@
 
         // временно для обновления ошибочных типов
 		updateFieldsTypes: function(){
-		    for(var i in this.slices){
-		        this.slices[i].entry.updateFieldsTypes();
+		    var slices = ExtractUtils.extractOrderedSlices(this);
+
+		    for(var i = 0; i < slices.length; i++){
+		        slices[i].updateFieldsTypes(false, true);
 		    }
 
 		    this.updateCubeFields();
