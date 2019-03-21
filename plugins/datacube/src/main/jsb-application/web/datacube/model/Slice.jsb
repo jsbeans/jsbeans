@@ -59,12 +59,12 @@
         var fromKeys = QuerySyntax.getFromContext(), //['$from', '$cube', '$join', '$union', '$provider', '$recursive']
             sources = [];
 
-        if(query['$provider']){
-            return sources;
+        if(!query){
+            query = this.getQuery();
         }
 
-        if(!query){
-            query = this.query;
+        if(query['$provider']){
+            return sources;
         }
 
         for(var i = 0; i < fromKeys.length; i++){
@@ -88,7 +88,9 @@
                         sources = query.$union;
                         break;
                     case '$recursive':
-                        // todo
+                        if(query.$recursive.$start.$from){
+                            sources.push(query.$recursive.$start.$from);
+                        }
                         break;
                 }
             }
@@ -443,6 +445,17 @@
 		},
 
 		updateFieldsTypes: function(){
+		    /*
+		    try{
+		        var fieldsTypes = TypeExtractor.extractQueryOutputFieldsTypes($this.query),
+		            isNeedUpdate = false;
+
+		        //
+		    } catch(ex){
+		        JSB.getLogger().error(ex);
+		    }
+		    */
+
 		    try {
                 var fieldsTypes = TypeExtractor.extractQueryOutputFieldsTypes($this.query);
                 this.fieldsTypes = {};
