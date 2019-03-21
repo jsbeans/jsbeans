@@ -56,17 +56,7 @@
             var dataSource = this.entry.getSource();
 
 			this.addClass('sliceDiagramNode');
-/*
-			// drag handle
-			var dragHandle = this.$('<div class="dragHandle"><div></div><div></div><div></div></div>');
-			this.append(dragHandle);
 
-			this.installHandle({
-			    key: 'drag',
-				selector: dragHandle,
-				type: 'drag'
-			});
-*/
 			var header = this.$('<header></header>');
 			this.append(header);
 			
@@ -96,11 +86,7 @@
 			header.append(caption);
 
 			caption.append(RendererRepository.createRendererFor(this.entry).getElement());
-/*			
-			this.sliceName = this.$('<div class="name">' + this.entry.getName() + '</div>');
-			this.sliceName.attr('title', this.entry.getName());
-			caption.append(this.sliceName);
-*/
+
 			var editBtn = new Button({
 			    cssClass: 'roundButton btnEdit btn10',
 			    tooltip: 'Редактировать срез',
@@ -239,7 +225,7 @@
                 if(fromType !== '$cube'){
                     // update links
                     var oldLinks = this._sources,
-                        newLinks = opts && opts.sources || this.entry.extractSources(opts && opts.query || this.entry.getQuery());
+                        newLinks = opts && opts.sources || this.entry.extractSources(opts && opts.query);
 
                     for(var i in oldLinks){
                         if(!newLinks[i]){
@@ -262,6 +248,8 @@
                             });
                         }
                     }
+
+                    this.getElement().attr('sourceType', fromType);
                 }
             }
 
