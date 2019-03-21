@@ -866,11 +866,17 @@
 			var wrapQuery = {$select:{'cnt':{$count: 1}}, $filter:{}};
 			wrapQuery.$filter[$this.parentRowKeySelector.binding()] = {$eq:{$const:rowDesc.rowKeyVal}};
 			
-			$this.server().executeQuery(source, $this.getEntry(), {extQuery: {}, wrapQuery: wrapQuery}, function(res){
-				if(res.length > 0 && JSB.isDefined(res[0].cnt)){
-					$this.descendantsMap[rowDesc.key] = res[0].cnt;
+			$this.server().executeQuery(source, $this.getEntry(), {extQuery: {}, wrapQuery: wrapQuery}, function(res, fail){
+				if(fail){
+					JSB.getLogger().error(fail);
+                    $this.showMessage('<strong>Ошибка!</strong><br /> ' + fail.message);
+                    $this.descendantsMap[rowDesc.key] = 0;
 				} else {
-					$this.descendantsMap[rowDesc.key] = 0;
+					if(res && res.length > 0 && JSB.isDefined(res[0].cnt)){
+						$this.descendantsMap[rowDesc.key] = res[0].cnt;
+					} else {
+						$this.descendantsMap[rowDesc.key] = 0;
+					}
 				}
 				callback.call($this, $this.descendantsMap[rowDesc.key]);
 			});
@@ -1289,153 +1295,157 @@
 			}
 			
 			this.fetchRowsBatch(fetchSize, function(rows, fail){
-				if(fail){
-					JSB.getLogger().error(fail);
-					$this.rowAppending = false;
-					return;
-				}
-				if(!rows || $this.blockFetch){
-					$this.rowAppending = false;
-					return;
-				}
-				
-				// prepare rows
-				var pRows = [];
-				var idxOffset = $this.rows.length;
-				for(var i = 0; i < rows.length; i++){
-					var rowDesc = rows[i];
-					var row = rowDesc.row;
-					if(!rowDesc.key){
-						rowDesc.key = $this.rows.length + i;
+				try {
+					if(fail){
+						JSB.getLogger().error(fail);
+						$this.rowAppending = false;
+						return;
 					}
-					var key = rowDesc.key;
-					if($this.rowKeyMap[key]){
-						continue;
+					if(!rows || $this.blockFetch){
+						$this.rowAppending = false;
+						return;
 					}
-					rowDesc.depth = 0;
-					rowDesc.position = idxOffset + pRows.length;
-					pRows.push(rowDesc);
-					$this.rowKeyMap[key] = rowDesc;
 					
-					// proceed cells
-					for(var j = 0; j < $this.colDesc.length; j++){
-						row[j].rowKey = key;
-						
-						// check for cellSpan
-						if($this.colDesc[j].cellSpan){
-							var prevDesc = null;
-							if(i > 0){
-								prevDesc = rows[i-1].row[j];
-							} else {
-								if(idxOffset > 0){
-									prevDesc = $this.rows[idxOffset-1].row[j];
-								}
-							}
-							if(prevDesc && JSB.isEqual(row[j].value, prevDesc.value)){
-								
-								if(JSB.isDefined(prevDesc.spanFrom)){
-									row[j].spanFrom = prevDesc.spanFrom;
-								} else {
-									row[j].spanFrom = idxOffset + i - 1;
-								}
-								if(row[j].spanFrom >= idxOffset){
-									rows[row[j].spanFrom - idxOffset].row[j].spanCount = (rows[row[j].spanFrom - idxOffset].row[j].spanCount || 1) + 1;
-								} else {
-									$this.rows[row[j].spanFrom].row[j].spanCount = ($this.rows[row[j].spanFrom].row[j].spanCount || 1) + 1;
-								}
-							}
+					// prepare rows
+					var pRows = [];
+					var idxOffset = $this.rows.length;
+					for(var i = 0; i < rows.length; i++){
+						var rowDesc = rows[i];
+						var row = rowDesc.row;
+						if(!rowDesc.key){
+							rowDesc.key = $this.rows.length + i;
 						}
+						var key = rowDesc.key;
+						if($this.rowKeyMap[key]){
+							continue;
+						}
+						rowDesc.depth = 0;
+						rowDesc.position = idxOffset + pRows.length;
+						pRows.push(rowDesc);
+						$this.rowKeyMap[key] = rowDesc;
 						
-						// perform widgets
-						if($this.colDesc[j].widget){
-							var colName = $this.colDesc[j].title;
-							if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
-								$this.widgetMap[key][colName].updateValues({ values: row[j].value });
-							} else {
-								var WidgetCls = $this.colDesc[j].widget.cls;
-								if(WidgetCls){
-									var widget = new WidgetCls();
-									widget.setWrapper($this.getWrapper(), { values: row[j].value });
-									if(!$this.widgetMap[key]){
-										$this.widgetMap[key] = {};
+						// proceed cells
+						for(var j = 0; j < $this.colDesc.length; j++){
+							row[j].rowKey = key;
+							
+							// check for cellSpan
+							if($this.colDesc[j].cellSpan){
+								var prevDesc = null;
+								if(i > 0){
+									prevDesc = rows[i-1].row[j];
+								} else {
+									if(idxOffset > 0){
+										prevDesc = $this.rows[idxOffset-1].row[j];
 									}
-									$this.widgetMap[key][colName] = widget;
+								}
+								if(prevDesc && JSB.isEqual(row[j].value, prevDesc.value)){
+									
+									if(JSB.isDefined(prevDesc.spanFrom)){
+										row[j].spanFrom = prevDesc.spanFrom;
+									} else {
+										row[j].spanFrom = idxOffset + i - 1;
+									}
+									if(row[j].spanFrom >= idxOffset){
+										rows[row[j].spanFrom - idxOffset].row[j].spanCount = (rows[row[j].spanFrom - idxOffset].row[j].spanCount || 1) + 1;
+									} else {
+										$this.rows[row[j].spanFrom].row[j].spanCount = ($this.rows[row[j].spanFrom].row[j].spanCount || 1) + 1;
+									}
+								}
+							}
+							
+							// perform widgets
+							if($this.colDesc[j].widget){
+								var colName = $this.colDesc[j].title;
+								if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
+									$this.widgetMap[key][colName].updateValues({ values: row[j].value });
+								} else {
+									var WidgetCls = $this.colDesc[j].widget.cls;
+									if(WidgetCls){
+										var widget = new WidgetCls();
+										widget.setWrapper($this.getWrapper(), { values: row[j].value });
+										if(!$this.widgetMap[key]){
+											$this.widgetMap[key] = {};
+										}
+										$this.widgetMap[key][colName] = widget;
+									}
 								}
 							}
 						}
-					}
-					
-					if($this.useTree){
-						// update row chain
-						var node = {children:[], rowDesc: rowDesc};
-						var pKey = rowDesc.pKey;
-						$this.treeKeyMap[key] = node;
-						if($this.treeKeyMap[pKey]){
-							// insert
-							$this.treeKeyMap[pKey].children.push(node);
-							$this.treeKeyMap[pKey].rowDesc.expanded = true;
-						} else {
-							// append to unsorted
-							if(!$this.treePKeyMap[pKey]){
-								$this.treePKeyMap[pKey] = [];
+						
+						if($this.useTree){
+							// update row chain
+							var node = {children:[], rowDesc: rowDesc};
+							var pKey = rowDesc.pKey;
+							$this.treeKeyMap[key] = node;
+							if($this.treeKeyMap[pKey]){
+								// insert
+								$this.treeKeyMap[pKey].children.push(node);
+								$this.treeKeyMap[pKey].rowDesc.expanded = true;
+							} else {
+								// append to unsorted
+								if(!$this.treePKeyMap[pKey]){
+									$this.treePKeyMap[pKey] = [];
+								}
+								$this.treePKeyMap[pKey].push(node);
 							}
-							$this.treePKeyMap[pKey].push(node);
+							// dock children if existed
+							if($this.treePKeyMap[key]){
+								node.children = $this.treePKeyMap[key];
+								node.rowDesc.expanded = true;
+								delete $this.treePKeyMap[key];
+							}
 						}
-						// dock children if existed
-						if($this.treePKeyMap[key]){
-							node.children = $this.treePKeyMap[key];
-							node.rowDesc.expanded = true;
-							delete $this.treePKeyMap[key];
-						}
+						
 					}
 					
-				}
-				
-				if(pRows.length == 0 && !bRefresh){
+					if(pRows.length == 0 && !bRefresh){
+						$this.rowAppending = false;
+						return;
+					}
+					
+					$this.rowsDrawn = $this.rows.length;
+					if($this.useTree){
+						$this.rows = [];
+						// serialize tree
+						function serializeNode(node, depth){
+							node.rowDesc.depth = depth;
+							$this.rows.push(node.rowDesc);
+							for(var c = 0; c < node.children.length; c++){
+								serializeNode(node.children[c], depth + 1);
+							}
+						}
+						for(var pk in $this.treePKeyMap){
+							var pkArr = $this.treePKeyMap[pk];
+							for(var pi = 0; pi < pkArr.length; pi++){
+								serializeNode(pkArr[pi], 0);
+							}
+						}
+					} else {
+						$this.rows = $this.rows.concat(pRows);
+					}
+					
+					$this.drawRows();
+					if($this.useGroupOperations){
+						$this.synchronizeSelection();
+					}
+					
 					$this.rowAppending = false;
-					return;
-				}
-				
-				$this.rowsDrawn = $this.rows.length;
-				if($this.useTree){
-					$this.rows = [];
-					// serialize tree
-					function serializeNode(node, depth){
-						node.rowDesc.depth = depth;
-						$this.rows.push(node.rowDesc);
-						for(var c = 0; c < node.children.length; c++){
-							serializeNode(node.children[c], depth + 1);
-						}
+					if(/*!$this.useTree &&*/ pRows.length > 0){
+						var lastRow = $this.rows[$this.rows.length - 1];
+						var lastRowElt = $this.find('.row[key="'+lastRow.key+'"]');
+						JSB.deferUntil(function(){
+							$this.appendRows();	
+						}, function(){
+							if(!$this.getElement().is(':visible')){
+								return true;
+							}
+							return lastRowElt.width() > 0 && lastRowElt.height() > 0;
+						});
 					}
-					for(var pk in $this.treePKeyMap){
-						var pkArr = $this.treePKeyMap[pk];
-						for(var pi = 0; pi < pkArr.length; pi++){
-							serializeNode(pkArr[pi], 0);
-						}
-					}
-				} else {
-					$this.rows = $this.rows.concat(pRows);
+					$this.classed('noData', $this.rows.length == 0);
+				} finally {
+					$this.rowAppending = false;
 				}
-				
-				$this.drawRows();
-				if($this.useGroupOperations){
-					$this.synchronizeSelection();
-				}
-				
-				$this.rowAppending = false;
-				if(/*!$this.useTree &&*/ pRows.length > 0){
-					var lastRow = $this.rows[$this.rows.length - 1];
-					var lastRowElt = $this.find('.row[key="'+lastRow.key+'"]');
-					JSB.deferUntil(function(){
-						$this.appendRows();	
-					}, function(){
-						if(!$this.getElement().is(':visible')){
-							return true;
-						}
-						return lastRowElt.width() > 0 && lastRowElt.height() > 0;
-					});
-				}
-				$this.classed('noData', $this.rows.length == 0);
 			});
 		},
 		
@@ -2593,16 +2603,6 @@
 			return filterId;
 		},
 		
-		showMessage: function(txt){
-			this.messageBox.empty();
-			this.messageBox.append(txt);
-			this.messageBox.removeClass('hidden');
-		},
-		
-		hideMessage: function(){
-			this.messageBox.addClass('hidden');
-		},
-
 		refresh: function(opts){
 		    this.onRefresh(opts);
 		},

@@ -469,6 +469,7 @@ if(!(function(){return this;}).call(null).JSB){
 			this._readyState = 0;
 			this._reqState = 0;
 			
+			
 			// build common section
 			var commonSection = this.$common;
 			if(!commonSection){
