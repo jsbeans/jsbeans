@@ -193,9 +193,6 @@
 
 				if(this.property('fieldsTypes')){
 				    this.fieldsTypes = this.property('fieldsTypes');
-
-				    JSB.getLogger().debug(this.getName());
-				    JSB.getLogger().debug(JSON.stringify(this.fieldsTypes));
 				}
 			}
 			var ctx = this.getSettingsContext();
@@ -318,6 +315,10 @@
 		    }
 
 		    return query;
+		},
+
+		getFieldType: function(fieldName){
+		    return this.fieldsTypes[fieldName];
 		},
 		
 		combineCacheOpts: function(){

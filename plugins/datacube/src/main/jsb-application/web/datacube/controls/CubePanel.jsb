@@ -15,6 +15,13 @@
             var caption = this.$('<header>Поля и измерения куба</header>');
             this.append(caption);
 
+            // временно для обновления ошибочных типов
+            caption.click(function(){
+                if($this.cube){
+                    $this.cube.server().updateFieldsTypes();
+                }
+            });
+
             var onlyDimensionsCheckbox = new Switch({
                 title: 'Только измерения',
                 onChange: function(b){
