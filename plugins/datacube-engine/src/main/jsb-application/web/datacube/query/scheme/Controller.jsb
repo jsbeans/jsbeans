@@ -293,6 +293,6 @@
             }
 
             delete this._rendersMap[renderId];
-        },
+        }
     }
 }

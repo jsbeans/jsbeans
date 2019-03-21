@@ -193,6 +193,9 @@
 
 				if(this.property('fieldsTypes')){
 				    this.fieldsTypes = this.property('fieldsTypes');
+
+				    JSB.getLogger().debug(this.getName());
+				    JSB.getLogger().debug(JSON.stringify(this.fieldsTypes));
 				}
 			}
 			var ctx = this.getSettingsContext();
@@ -443,7 +446,11 @@
                 var fieldsTypes = TypeExtractor.extractQueryOutputFieldsTypes($this.query);
                 this.fieldsTypes = {};
                 for(var i in this.query.$select){
-                    this.fieldsTypes[i] = fieldsTypes[i].type || fieldsTypes[i].nativeType || '';
+                    if(fieldsTypes[i]){
+                        this.fieldsTypes[i] = fieldsTypes[i].type || fieldsTypes[i].nativeType;
+                    } else {
+                        this.fieldsTypes[i] = '';
+                    }
                 }
 		    } catch(ex){
                 JSB.getLogger().error(ex);
