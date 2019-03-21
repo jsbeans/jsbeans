@@ -121,33 +121,6 @@
             return sourceFields;
         },
 
-        /** Возвращает срезы (внешние именованные запросы), используемые в запросе
-        */
-        extractInternalSlices: function(rootQuery, includeSubSlices){
-            var slices = {};
-            Visitors.visitProxy(rootQuery, {
-                getUndefinedView: function(name) {
-                    var slice = QueryUtils.getQuerySlice(name);
-                    slices[name] = {
-                        sliceId: slice ? slice.getId() : null,
-                        operator: (function(){
-                            for(var i = this.path.length - 1; i >= 0; i--) {
-                                switch(this.path[i]) {
-                                    case '$union':
-                                    case '$join':
-                                    case '$recursive':
-                                    case '$from':
-                                        return this.path[i];
-                                }
-                            }
-                        }).call(this),
-                    }
-                    return includeSubSlices ? slice.getQuery() : {};
-                },
-            });
-            return slices;
-        },
-
         /** Извлекает из запроса среза измерения, которые он публекует, и идентификаторы срезов, в которых они определены.
             includeImplicit - включает неявно публикуемые измерения от встроенных срезов
         */
@@ -183,7 +156,7 @@
 
         /** Возвращает параметры, использованные в запросе и внутренних запросах, включая срезы (их тоже обходит рекурсивно)
         */
-        extractInternalSlices: function(rootQuery, includeSubSlices){
+        extractUsedParams: function(rootQuery, includeSubSlices){
             var usedParams = {};
             var params = {};
             Visitors.visitProxy(rootQuery, {
@@ -235,6 +208,57 @@
                 },
             });
             return allowedParams;
+        },
+
+        /** Возвращает срезы (внешние именованные запросы), используемые в запросе
+        */
+        extractInternalSlices: function(rootQuery, includeSubSlices){
+            var slices = {};
+            Visitors.visitProxy(rootQuery, {
+                getUndefinedView: function(name) {
+                    var slice = QueryUtils.getQuerySlice(name);
+                    slices[name] = {
+                        sliceId: slice ? slice.getId() : null,
+                        operator: (function(){
+                            for(var i = this.path.length - 1; i >= 0; i--) {
+                                switch(this.path[i]) {
+                                    case '$union':
+                                    case '$join':
+                                    case '$recursive':
+                                    case '$from':
+                                        return this.path[i];
+                                }
+                            }
+                        }).call(this),
+                    }
+                    return includeSubSlices ? slice.getQuery() : {};
+                },
+            });
+            return slices;
+        },
+
+        /** Возвращает массив с упорядоченными срезами куба (и все используемые в этих срезах срезы)
+            в порядке использования (сначала первичные источники потом сложные срезы)*/
+        extractOrderedSlices: function(cube) {
+            var orderedSlices = [];
+
+            var slices = cube.getSlices();
+            for(var sid in slices) {
+                Visitors.visitProxy(slices[sid].getQuery(), {
+                    getUndefinedView: function(name) {
+                        var slice = QueryUtils.getQuerySlice(name);
+                        if (orderedSlices.indexOf(slice) == -1) {
+                            orderedSlices.splice(0,0, slice);
+                            return slice.getQuery();
+                        }
+                        return {};
+                    },
+                });
+                if (orderedSlices.indexOf(slices[sid]) == -1) {
+                    orderedSlices.push(slices[sid]);
+                }
+            }
+            return orderedSlices;
         },
     }
 }
