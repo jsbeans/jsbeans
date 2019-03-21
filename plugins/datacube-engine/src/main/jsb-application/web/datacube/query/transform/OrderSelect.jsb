@@ -13,7 +13,7 @@
              $this.upperGeneralFields(dcQuery);
 
              // embed global groups
-             QueryUtils.walkQueries(dcQuery, {}, null,
+             QueryUtils.walkQueries(dcQuery, {getExternalView:function(){return {};}}, null,
                 function(query){
                     if (!query.$groupBy || query.$groupBy.length == 0) {
                         for(var alias in query.$select) {

@@ -17,7 +17,7 @@
 		},
 
 		unwrapMacros: function(dcQuery) {
-            QueryUtils.walkQueries(dcQuery, {}, null, function(subQuery){
+            QueryUtils.walkQueries(dcQuery, {getExternalView:function(){return {};}}, null, function(subQuery){
                 // unwrap macros and $grmax* to complex expressions
                 Syntax.unwrapMacrosCurrentQuery(subQuery, dcQuery);
             });
@@ -138,7 +138,7 @@
                 }
             } // unwrapForQuery
 
-            QueryUtils.walkQueries(dcQuery, {}, null, function(query){
+            QueryUtils.walkQueries(dcQuery, {getExternalView:function(){return {};}}, null, function(query){
                 unwrapForQuery(query);
             });
 		},

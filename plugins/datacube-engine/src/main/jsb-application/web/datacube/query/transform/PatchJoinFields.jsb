@@ -10,8 +10,22 @@
 		    'DataCube.Query.Visitors.Visitors',
         ],
 
-		transform: function(rootQuery, cubeOrDataProvider){
+		transform: function(rootQuery, cube){
+		    var slices = new HashMap();
             Visitors.visitProxy(rootQuery, {
+                getUndefinedView: function(name){
+                    var slice = QueryUtils.getQuerySlice(name, cube);
+                    QueryUtils.throwError(slice, 'Query slice or named view is undefined: ' + name);
+                    slices.put(slice.getQuery(), true);
+                    return slice.getQuery();
+                },
+                query: {
+                    before: function(query){
+                        if (slices.get(query)) {
+                            this.skip = true;
+                        }
+                    }
+                },
                 field: {
                     before: function(field, context, sourceContext) {
 //if (field == "Код ВМО" && (context == "a1f2f44103d7d846942093298e288643/8af3e43759ee6568935d7cd00e250540"

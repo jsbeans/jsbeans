@@ -18,7 +18,7 @@
         /** Преобразует $sort: [{"field":-1}] -> $sort: [{$expr: "field", $type: -1}]
         */
         unwrapSort: function(dcQuery) {
-		    QueryUtils.walkQueries(dcQuery, {}, null, function(query){
+		    QueryUtils.walkQueries(dcQuery, {getExternalView:function(){return {};}}, null, function(query){
                 if (query.$sort) {
                     for(var i = 0; i < query.$sort.length; i++) {
                         var e = query.$sort[i];

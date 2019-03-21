@@ -66,7 +66,7 @@
             }
             function walkQueryFilter(query, name){
                 if (includeSubQueries) {
-                    QueryUtils.walkQueries(query, {rootQuery:dcQuery}, null, function(query){
+                    QueryUtils.walkQueries(query, {rootQuery:dcQuery, getExternalView:function(){return {};}}, null, function(query){
                         walkSingleQueryFilter(query, name);
                     });
                 } else {
