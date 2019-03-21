@@ -38,7 +38,7 @@
                 return s + '}\n';
             }
 
-		    QueryUtils.walkQueries(rootQuery, {}, null,
+		    QueryUtils.walkQueries(rootQuery, {getExternalView:function(){return {};}}, null,
                 function leaveCallback(query){
                     if (!query.$context) {
                         query.$context = JSB.generateUid();

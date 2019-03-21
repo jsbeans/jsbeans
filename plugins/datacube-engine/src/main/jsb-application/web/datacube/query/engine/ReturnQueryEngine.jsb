@@ -6,6 +6,7 @@
 
 	$server: {
 		$require: [
+		    'DataCube.Query.Console',
         ],
 
 		execute: function(name, executor, queryTask){
@@ -19,10 +20,10 @@
                             Console.message({
                                 message: 'query.executed',
                                 params:{
-                                    executor: $this.executor.getId(),
+                                    executor: executor.getId(),
                                     timestamp: Date.now(),
                                     iterator: this.meta.id,
-                                    firstResultTime: (Date.now() - $this.executor.startedTimestamp)/1000,
+                                    firstResultTime: (Date.now() - executor.startedTimestamp)/1000,
                                     //query: dcQuery,
                                 },
                             });

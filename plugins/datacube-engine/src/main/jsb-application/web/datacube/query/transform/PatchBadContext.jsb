@@ -13,6 +13,9 @@
 
 		transform: function(rootQuery, cubeOrDataProvider){
             Visitors.visitProxy(rootQuery, {
+                getUndefinedView: function(name){
+                    return {};
+                },
                 field: {
                     before: function(field, context) {
                         var query = this.getQuery();

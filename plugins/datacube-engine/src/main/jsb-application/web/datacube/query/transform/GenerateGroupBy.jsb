@@ -11,8 +11,13 @@
         ],
 
         /** Generate/append $groupBy for expressions with $group */
-		transform: function(rootQuery, cubeOrDataProvider){
+		transform: function(rootQuery, cube){
             Visitors.visitProxy(rootQuery, {
+                getUndefinedView: function(name){
+                    var slice = QueryUtils.getQuerySlice(name, cube);
+                    QueryUtils.throwError(slice, 'Query slice or named view is undefined: ' + name);
+                    return {};
+                },
                 expression: {
                     before: function(exp) {
                         var query = this.getQuery();

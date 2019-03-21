@@ -33,7 +33,7 @@
                 var it = executor.executeEngine(next, {
                     cube: cube,
                     query: JSB.clone(result.query),
-                    params: JSB.clone(params),
+                    params: params,
                 });
                 if(it) {
                     return it;
