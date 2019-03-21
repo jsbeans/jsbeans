@@ -307,6 +307,25 @@
 			return slices;
 		},
 
+		invalidate: function(){
+			$this.publish('DataCube.Model.Cube.status', {status: 'Очистка кэша', success: true}, {session: true});
+			JSB.defer(function(){
+				$this.load();
+				// invalidate slices
+				var slices = $this.getSlices();
+				for(var slId in slices){
+					var slice = slices[slId];
+					if(slice){
+						slice.invalidate();
+					}
+				}
+				if($this.queryCache){
+					$this.queryCache.clear();
+				}
+				$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+			}, 300, 'invalidate_' + this.getId());
+		},
+
 		removeDimension: function(fields){
 		    if(!JSB.isArray(fields)){
 		        fields = [fields];
@@ -350,32 +369,78 @@
 			this.store();
 		},
 
+        updateCache: function(){
+			JSB.defer(function(){
+				$this.load();
+				$this.lock('DataCube.Model.Cube.updateCache');
+				$this.updatingCache = true;
+				try {
+					// invalidate slices
+					var slices = $this.getSlices();
+					var totalSlices = Object.keys(slices).length;
+					var cnt = 0;
+					var lastPP = -1;
+					for(var slId in slices){
+						var pp = Math.round(cnt * 100 / totalSlices);
+						if(pp > lastPP){
+		            		$this.publish('DataCube.Model.Cube.status', {status: 'Обновление кэша ' + pp + '%', success: true}, {session: true});
+		            		lastPP = pp;
+		            	}
+						var slice = slices[slId];
+						if(slice){
+							slice.updateCache();
+
+							var it = null;
+							try {
+								it = slice.executeQuery({useCache:true});
+							} catch(e){
+							} finally {
+								if(it){
+									try{ it.close(); }catch(e){}
+								}
+							}
+
+						}
+						cnt++;
+					}
+					if($this.queryCache){
+						$this.queryCache.update();
+					}
+					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+				} catch(e){
+					$this.publish('DataCube.Model.Cube.status', {status: e.message, success: false}, {session: true});
+				} finally {
+					$this.updatingCache = false;
+					$this.unlock('DataCube.Model.Cube.updateCache');
+				}
+			}, 300, 'updateCache_' + this.getId());
+		},
+
 		updateCubeFields: function(slice, noStore){
 		    function updateFields(slice){
 		        var sliceFields = slice.extractFields(),
 		            sliceId = slice.getFullId(),
 		            isNeedUpdate = false;
 
-                // add new fields
+                // add new fields && update existed field types
 		        for(var i in sliceFields){
 		            if(!$this.fields[i]){
 		                $this.fields[i] = {
-		                    slices: {},
-		                    type: [sliceFields[i].type]
+		                    slices: {}
                         };
 
-                        $this.fields[i].slices[sliceId] = {
-                            type: sliceFields[i].type
-                        };
+                        $this.fields[i].slices[sliceId] = {};
 
 		                isNeedUpdate = true;
 		            } else {
 		                if(!$this.fields[i].slices[sliceId]){
-                            $this.fields[i].slices[sliceId] = {
-                                type: sliceFields[i].type
-                            };
+                            $this.fields[i].slices[sliceId] = {};
 
                             isNeedUpdate = true;
+		                } else {
+		                    if($this.fields[i].slices[sliceId].type !== sliceFields[i].type){
+		                        isNeedUpdate = true;
+		                    }
 		                }
 		            }
 		        }
@@ -406,7 +471,7 @@
 		        isNeedUpdate = updateFields(slice);
 		    } else {
 		        for(var i in this.slices){
-		            isNeedUpdate = updateFields(this.slices[i]) || isNeedUpdate;
+		            isNeedUpdate = updateFields(this.slices[i].entry) || isNeedUpdate;
 		        }
 		    }
 
@@ -419,7 +484,7 @@
                         conflictDesc = {};
 
                     for(var j in this.fields[i].slices){
-                        var curType = this.fields[i].slices[j].type;
+                        var curType = this.slices[j].entry.getFieldType(i);
 
                         if(!type){  // first element of object
                             type = curType;
@@ -464,6 +529,15 @@
 		    this.store();
 		},
 
+        // временно для обновления ошибочных типов
+		updateFieldsTypes: function(){
+		    for(var i in this.slices){
+		        this.slices[i].entry.updateFieldsTypes();
+		    }
+
+		    this.updateCubeFields();
+		},
+
 		updateNodePosition: function(entry, diagramOpts){
 		    var entryId = entry.getFullId();
 
@@ -474,74 +548,6 @@
 		    }
 
 		    this.store();
-		},
-
-		// check necessity
-		invalidate: function(){
-			$this.publish('DataCube.Model.Cube.status', {status: 'Очистка кэша', success: true}, {session: true});
-			JSB.defer(function(){
-				$this.load();
-				// invalidate slices
-				var slices = $this.getSlices();
-				for(var slId in slices){
-					var slice = slices[slId];
-					if(slice){
-						slice.invalidate();
-					}
-				}
-				if($this.queryCache){
-					$this.queryCache.clear();
-				}
-				$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
-			}, 300, 'invalidate_' + this.getId());
-		},
-
-		// check necessity
-		updateCache: function(){
-			JSB.defer(function(){
-				$this.load();
-				$this.lock('DataCube.Model.Cube.updateCache');
-				$this.updatingCache = true;
-				try {
-					// invalidate slices
-					var slices = $this.getSlices();
-					var totalSlices = Object.keys(slices).length;
-					var cnt = 0;
-					var lastPP = -1;
-					for(var slId in slices){
-						var pp = Math.round(cnt * 100 / totalSlices);
-						if(pp > lastPP){
-		            		$this.publish('DataCube.Model.Cube.status', {status: 'Обновление кэша ' + pp + '%', success: true}, {session: true});
-		            		lastPP = pp;
-		            	}
-						var slice = slices[slId];
-						if(slice){
-							slice.updateCache();
-							
-							var it = null;
-							try {
-								it = slice.executeQuery({useCache:true});
-							} catch(e){					
-							} finally {
-								if(it){
-									try{ it.close(); }catch(e){}
-								}
-							}
-							
-						}
-						cnt++;
-					}
-					if($this.queryCache){
-						$this.queryCache.update();
-					}
-					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
-				} catch(e){
-					$this.publish('DataCube.Model.Cube.status', {status: e.message, success: false}, {session: true});
-				} finally {
-					$this.updatingCache = false;
-					$this.unlock('DataCube.Model.Cube.updateCache');
-				}
-			}, 300, 'updateCache_' + this.getId());
 		}
 	}
 }
