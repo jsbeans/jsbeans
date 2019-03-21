@@ -10,7 +10,7 @@
 
 		transform: function(dcQuery, cube){
             var count = 0;
-		    QueryUtils.walkQueries(dcQuery, {}, null, function(query){
+		    QueryUtils.walkQueries(dcQuery, {findView:function(){return {};}}, null, function(query){
                 if (query.$views) {
                     for(var name in query.$views) {
                         if (!query.$views[name].$context) {

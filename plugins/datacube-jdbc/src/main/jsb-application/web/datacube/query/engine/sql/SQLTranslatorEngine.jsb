@@ -8,8 +8,8 @@
 		$require: [
 		    'JSB.Store.Sql.SQLStore',
 		    'DataCube.Query.Engine.SQL.SQLTranslator',
-		    'DataCube.Query.Engine.Clickhouse.ClickHouseRemoteQuery',
-		    'DataCube.Query.Engine.H2Interpreter.H2InterpreterRemoteQuery',
+		    'DataCube.Query.Engine.ClickHouse.ClickHouseLoopbackProvider',
+		    'DataCube.Query.Engine.H2Interpreter.H2InterpreterLoopbackProvider',
 		    'DataCube.Query.QueryUtils',
         ],
 
@@ -41,14 +41,14 @@
                 {
                     // set vendor provider as first/main
                     providers = [providers[i]].concat(providers.splice(i,0));
-                    var translator = new SQLTranslator(providers, cube);
+                    var translator = new SQLTranslator(providers, cube, executor);
                     translator.vendor = config.vendor;
                     switch (config.vendor) {
                         case 'ClickHouse':
-                            translator.remoteQuery = new ClickHouseRemoteQuery(cube);
+                            translator.remoteQuery = new ClickHouseLoopbackProvider(cube);
                             break;
                         case 'H2':
-                            translator.remoteQuery = new H2InterpreterRemoteQuery(cube);
+                            translator.remoteQuery = new H2InterpreterLoopbackProvider(cube);
                             break;
                     }
 

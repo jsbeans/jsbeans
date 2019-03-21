@@ -1,5 +1,5 @@
 {
-	$name:'Datacube.Query.Engine.Clickhouse.ClickHouseRemoteApi',
+	$name:'Datacube.Query.Engine.ClickHouse.ClickHouseLoopbackApi',
 
 	$http: true,
 	$singleton: true,
@@ -46,7 +46,7 @@ debugger;
                     obj = it.next();
                 }
                 Console.message({
-                    message: 'ClickHouse remote sub-query output',
+                    message: 'query.loopback.clickhouse.returned',
                     params: {uid:params.uid, count: count, outputSize: length, limited: length > $this.maxsize }
                 });
                 return;

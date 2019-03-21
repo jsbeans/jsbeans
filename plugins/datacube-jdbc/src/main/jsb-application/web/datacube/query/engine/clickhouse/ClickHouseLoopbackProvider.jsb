@@ -1,10 +1,10 @@
 {
-	$name: 'DataCube.Query.Engine.Clickhouse.ClickHouseRemoteQuery',
-	$parent: 'DataCube.Query.Engine.RemoteQuery',
+	$name: 'DataCube.Query.Engine.ClickHouse.ClickHouseLoopbackProvider',
+	$parent: 'DataCube.Query.Engine.LoopbackProvider',
 
 	$server: {
 		$require: [
-		    'Datacube.Query.Engine.Clickhouse.ClickHouseRemoteApi',
+		    'Datacube.Query.Engine.ClickHouse.ClickHouseLoopbackApi',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Console',
 		    'DataCube.Query.Query',
@@ -17,7 +17,7 @@
 		register: function(queryTask){
 debugger
             var uid = $this.getId() + '/' + JSB.generateUid();
-            ClickHouseRemoteApi.remoteQueries.put(uid, function(offset, limit){
+            ClickHouseLoopbackApi.remoteQueries.put(uid, function(offset, limit){
                 if (offset != null) {
                     queryTask.query.$offset = offset;
                 }
@@ -28,21 +28,23 @@ debugger
             });
 
             Console.message({
-                message: 'ClickHouse remote sub-query prepared',
-                params: {type: $this.getJsb().$name, uid: uid, query: queryTask.query, limit : queryTask.query.limit}
+                message: 'query.loopback.prepared',
+                params: {
+                    timestamp: Date.now(),
+                    type: $this.getJsb().$name,
+                    uid: uid,
+                    query: queryTask.query,
+                    limit : queryTask.query.limit
+                },
             });
             return uid;
 		},
 
 		destroy: function() {
-            for(var it = ClickHouseRemoteApi.remoteQueries.entrySet().iterator(); it.hasNext();) {
+            for(var it = ClickHouseLoopbackApi.remoteQueries.entrySet().iterator(); it.hasNext();) {
                 var entry = it.next();
                 if (entry.getKey().startsWith($this.getId())) {
                     it.remove();
-                    Console.message({
-                        message: 'Remote sub-query destroyed',
-                        params: {uid: ''+entry.getKey()}
-                    });
                 }
             }
 		    $base();

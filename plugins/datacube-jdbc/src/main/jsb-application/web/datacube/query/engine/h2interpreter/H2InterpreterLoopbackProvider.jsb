@@ -1,10 +1,10 @@
 {
-	$name: 'DataCube.Query.Engine.H2Interpreter.H2InterpreterRemoteQuery',
-	$parent: 'DataCube.Query.Engine.RemoteQuery',
+	$name: 'DataCube.Query.Engine.H2Interpreter.H2InterpreterLoopbackProvider',
+	$parent: 'DataCube.Query.Engine.LoopbackProvider',
 
 	$server: {
 		$require: [
-		    'Datacube.Query.Engine.Clickhouse.ClickHouseRemoteApi',
+		    'Datacube.Query.Engine.ClickHouse.ClickHouseLoopbackApi',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Console',
 		    'DataCube.Query.Query',
@@ -12,7 +12,7 @@
 		    'Datacube.Types.DataTypes',
 
 
-		    'java:org.jsbeans.datacube.RemoteQueryIterator',
+		    'java:org.jsbeans.datacube.LoopbackProviderIterator',
             'java:org.jsbeans.datacube.SimpleResultSet',
 
             'java:org.h2.tools.SimpleRowSource',
@@ -27,15 +27,21 @@
 
 		register: function(queryTask){
             var uid = $this.getId() + '/' + JSB.generateUid();
-		    RemoteQueryIterator.RemoteIterators.put(uid, new Callable(){
+		    LoopbackProviderIterator.LoopbackIterators.put(uid, new Callable(){
 		        call: function(){
                     return $this.execute(queryTask);
 		        }
 		    });
 
             Console.message({
-                message: 'H2Interpreter remote sub-query prepared',
-                params: {type: $this.getJsb().$name, uid: uid, query: queryTask.query, limit: queryTask.query}
+                message: 'query.loopback.prepared',
+                params: {
+                     timestamp: Date.now(),
+                     type: $this.getJsb().$name,
+                     uid: uid,
+                     query: queryTask.query,
+                     limit : queryTask.query.limit,
+                },
             });
             return uid;
 		},
@@ -103,14 +109,10 @@ debugger;
 		},
 
 		destroy: function() {
-            for(var it = RemoteQueryIterator.RemoteIterators.entrySet().iterator(); it.hasNext();) {
+            for(var it = LoopbackProviderIterator.LoopbackIterators.entrySet().iterator(); it.hasNext();) {
                 var entry = it.next();
                 if (entry.getKey().startsWith($this.getId())) {
                     it.remove();
-                    Console.message({
-                        message: 'Remote sub-query destroyed',
-                        params: {uid:''+entry.getKey()}
-                    });
                 }
             }
 		    $base();

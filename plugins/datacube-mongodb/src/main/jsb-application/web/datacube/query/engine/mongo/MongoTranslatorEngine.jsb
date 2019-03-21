@@ -45,7 +45,7 @@
                     return null;
                 }
             }
-            var translator = new MongodbAggregateTranslator(providers, cube);
+            var translator = new MongodbAggregateTranslator(providers, cube, executor);
             return translator.translatedQueryIterator(query, params);
 		},
 	}

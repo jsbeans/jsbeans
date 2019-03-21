@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Engine.RemoteQuery',
+	$name: 'DataCube.Query.Engine.LoopbackProvider',
 
 	$server: {
 		$require: [

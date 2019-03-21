@@ -10,6 +10,8 @@
 		    'JSB.Crypt.MD5',
 
 		    'java:java.util.concurrent.ConcurrentHashMap',
+		    'java:java.util.concurrent.atomic.AtomicReference',
+		    'java:java.util.concurrent.ConcurrentLinkedDeque',
         ],
 
         pool: null,
@@ -18,42 +20,68 @@
 		    $this.queryTask = queryTask;
             $this.cube = queryTask.cube;
 		    $this.query = JSB.clone(queryTask.query);
+		    $this.callback = queryTask.callback;
 		    $this.params = queryTask.params || {};
 		    $this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
 		    $this.pool = new ConcurrentHashMap();
+		    $this.iterators = new ConcurrentLinkedDeque();
+		    $this.result = new AtomicReference();
 		    $this.startedTimestamp = Date.now();
+		    $this.resultReturned = false;
 		},
 
 		execute: function(){
-            var startEngine = $this.queryTask.startEngine || Config.get('datacube.query.engine.start');
+            var startEngine = $this.queryTask.startEngine;
 
             Console.message({
-                message: 'Query executed',
-                params: {
-                    queryId:''+$this.queryTask.$id,
+                message: 'query.started',
+                params:{
+                    executor: $this.getId(),
+                    timestamp: Date.now(),
                     query: $this.queryTask.query,
-                    params: $this.queryTask.params,
-                    startEngine: $this.queryTask.startEngine,
+                    startEngine: startEngine,
                 },
             });
 
-            if ($this.query.$analyze) {
-		        $this.analyze = {
-		            engines: {},
-		            inputQuery: $this.queryTask.query,
-		            startEngine: $this.queryTask.startEngine,
-		        };
-            }
+            try {
+                if ($this.query.$analyze) {
+                    $this.analyze = {
+                        engines: {},
+                        inputQuery: $this.queryTask.query,
+                        startEngine: $this.queryTask.startEngine,
+                    };
+                }
 
-            var it = $this.executeEngine(startEngine, {
-                cube: $this.cube,
-                query: $this.query,
-                params: $this.params,
-            });
-            if (!it) {
-                var it = $this.awaitIterator();
+                $this.executeEngine(startEngine, {
+                    cube: $this.cube,
+                    query: $this.query,
+                    params: $this.params,
+                });
+
+                /// wait result if sync
+                if (!$this.callback) {
+                    while(true) {
+                        if($this.result.get()) {
+                            var result = $this.result.get();
+                            if (result.error) {
+                                throw result.error;
+                            }
+                            return result.iterator;
+                        }
+                        Kernel.sleep(25);
+                    }
+                }
+            } catch(e) {
+                Console.message({
+                    message: 'query.error',
+                    params:{
+                        executor: $this.getId(),
+                        timestamp: Date.now(),
+                        error: JSB.stringifyError(e),
+                    },
+                });
+                throw e;
             }
-            return it;
 		},
 
         /** Асинхронный/синхронный запуск движка по имени конфигурации
@@ -111,24 +139,14 @@
                         if ($this.analyze) {
                             $this.analyze.engines[name].engineTime = (Date.now() - $this.analyze.engines[name].startedTimestamp)/1000;
                         }
+                        $this.submitResult(task.iterator);
                     }
                 }, 1, key);
 		    } else {
 		        try {
                     /// sync
                     var it = engine.execute(name, $this, queryTask);
-//                    if (it) {
-//                        it.meta.engine = JSB.merge({}, engineConfig, {alias:name});
-//                        if($this.analyze) {
-//                            $this.analyze.engines[name].output = {
-//                                iterator: it,
-//                            };
-//                            return $this.generateAnalyzeIterator($this.analyze.engines[name]);
-//                        }
-//                    }
-                    if (it) {
-                        throw new Error('Internal error: Invalid configuration: Execution engine is not async');
-                    }
+                    $this.submitResult(it);
                 } catch(e) {
                     if($this.analyze) {
                         $this.analyze.engines[name].output = {
@@ -146,78 +164,111 @@
 		    }
 		},
 
-        /** Ожидает, пока все движки не закончат свою работу, и возвращает итератор с лучшим оценочным временем выполнения
-        */
-		awaitIterator: function(){
+		submitResult: function(iterator) {
+		    if ($this.resultReturned) {
+		        return;
+		    }
 
-		    /// wait all completed
-            W: while(true) {
-                Kernel.sleep(10);
-                for(var it = $this.pool.entrySet().iterator(); it.hasNext(); ) {
-                    var task = it.next().getValue();
-                    if(task.status !== 'completed') {
-                        continue W;
-                    }
+		    if(iterator) {
+		        $this.iterators.add(iterator);
+                Console.message({
+                    message: 'query.iterator.created',
+                    params:{
+                        executor: $this.getId(),
+                        timestamp: Date.now(),
+                        iterator: iterator.meta.id,
+                        meta: iterator.meta,
+                    },
+                });
+                if (iterator.meta.translatedQuery) {
+                    Console.message({
+                        message: 'query.iterator.translated',
+                        params:{
+                            executor: $this.getId(),
+                            timestamp: Date.now(),
+                            iterator: iterator.meta.id,
+                            translatorInputQuery: iterator.meta.translatorInputQuery,
+                            translatedQuery : (JSB.isString(iterator.meta.translatedQuery)
+                                    ? iterator.meta.translatedQuery
+                                    : JSON.stringify(iterator.meta.translatedQuery)),
+                        },
+                    });
                 }
-                break;
+		    }
+
+		    /// check completed all async tasks
+            for(var it = $this.pool.entrySet().iterator(); it.hasNext(); ) {
+                var task = it.next().getValue();
+                if(task.status !== 'completed') {
+                    /// not completed
+                    return;
+                }
+            }
+
+            /// if completed
+
+            function sendResult(iterator, error) {
+                if (iterator) {
+                    Console.message({
+                        message: 'query.iterator.result',
+                        params:{
+                            executor: $this.getId(),
+                            timestamp: Date.now(),
+                            iterator: resultIterator.meta.id,
+                            prepareTime: resultIterator.meta.prepareTime,
+                        },
+                    });
+                }
+
+                if ($this.callback) {
+                    $this.callback.call(this, iterator, error);
+                } else {
+                    $this.result.set({iterator: iterator, error: error});
+                }
+                $this.resultReturned = true;
             }
 
             var its = [];
             var errors = [];
-            for(var it = $this.pool.entrySet().iterator(); it.hasNext(); ) {
-                var task = it.next().getValue();
-                if(task.iterator) {
-                    its.push(task.iterator);
-                    Console.message({
-                        message: 'Iterator created',
-                        params:{executor: $this.getId(), iteratorId: task.iterator.meta.id, meta: task.iterator.meta},
-                    });
-                    if (task.iterator.meta.translatedQuery) {
-                        Console.message({
-                            message: 'Translated query',
-                            params:{
-                                executor: $this.getId(),
-                                iteratorId: task.iterator.meta.id,
-                                translatedQuery : (JSB.isString(task.iterator.meta.translatedQuery)
-                                        ? task.iterator.meta.translatedQuery
-                                        : JSON.stringify(task.iterator.meta.translatedQuery))
-                            },
-                        });
-                    }
-                }
-                if (task.error) {
-                    Console.message({
-                        message: 'Query execution error',
-                        error: task.error,
-                        params: {executor: $this.getId()}
-                    });
-                    errors.push(task.error);
-                }
+            for(var it = $this.iterators.iterator(); it.hasNext(); ) {
+                var itt = it.next();
+                its.push(itt);
             }
-
             QueryUtils.throwError(its.length || errors.length > 0, 'Compatible query engine not found, all engines no return iterator');
             if (errors.length > 0) {
                 if ($this.analyze) {
                     /// при анализе проглотить ошибки
-                    return $this.generateAnalyzeIterator();
+                    sendResult($this.generateAnalyzeIterator(), null);
+                    return;
                 }
-                throw QueryUtils.mergeErrors.apply(QueryUtils, errors);
+                sendResult(null, QueryUtils.mergeErrors.apply(QueryUtils, errors));
             }
 
             /// select iterator
             var jsb = Config.get('datacube.query.engine.iteratorSelector.jsb');
             var method = Config.get('datacube.query.engine.iteratorSelector.method');
             var IteratorSelector = JSB.getInstance(jsb);
-            var it = IteratorSelector[method].call(IteratorSelector, its);
-            Console.message({
-                message: 'Iterator selected',
-                params:{executor: $this.getId(), iteratorId: it.meta.id, meta: it.meta},
-            });
+            var resultIterator = IteratorSelector[method].call(IteratorSelector, its);
+
+            /// close other iterators
+            for(var it = $this.iterators.iterator(); it.hasNext(); ) {
+                var itt = it.next();
+                if (itt != resultIterator) {
+                    try {
+                        itt.close();
+                    } catch(e) {
+                        /// ignore
+                    }
+                }
+            }
+
+            resultIterator.meta.prepareTime = (Date.now() - $this.startedTimestamp) / 1000;
 
             if ($this.analyze) {
-                return $this.generateAnalyzeIterator(it);
+                resultIterator = $this.generateAnalyzeIterator(resultIterator);
             }
-            return it;
+
+            sendResult(resultIterator, null);
 		},
 
 		setEngineMeta: function(name, result) {
@@ -250,13 +301,26 @@
             if (iterator && iterator.meta) {
                 result.translatedQuery = iterator.meta.translatedQuery;
                 result.translatorInputQuery = iterator.meta.translatorInputQuery;
+                result.prepareTime = iterator.meta.prepareTime;
             }
             /// вместо объекта с данными вернуть анализ
             iterator.next = function() {
                 try {
                     return result;
                 } finally {
-                    if (result) result = null;
+                    if (result) {
+                        Console.message({
+                            message: 'query.executed',
+                            params:{
+                                executor: $this.getId(),
+                                timestamp: Date.now(),
+                                iterator: this.meta.id,
+                                firstResultTime: (Date.now() - $this.startedTimestamp)/1000,
+                                //query: dcQuery,
+                            },
+                        });
+                        result = null;
+                    }
                 }
             };
             return iterator;

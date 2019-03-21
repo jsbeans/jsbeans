@@ -8,6 +8,12 @@
         ],
 
 		execute: function(queryTask){
+            if (!queryTask.startEngine) {
+//$this.prepare(JSB.merge({}, queryTask, {callback: function(q,er){
+//    Log.debug(JSON.stringify(arguments));
+//}}));
+                queryTask.startEngine = Config.get('datacube.query.engine.start');
+            }
 		    queryTask.cube && queryTask.cube.load();
             try {
     			var executor = new QueryExecutor(queryTask);
@@ -22,6 +28,11 @@
                 executor && executor.destroy();
                 throw e;
             }
+		},
+
+		prepare: function(queryTask){
+		    queryTask.startEngine = Config.get('datacube.query.engine.prepare');
+            return $this.execute(queryTask);
 		},
 	}
 }
