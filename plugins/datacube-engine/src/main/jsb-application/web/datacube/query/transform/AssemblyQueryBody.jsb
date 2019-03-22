@@ -136,6 +136,7 @@
 		        matchedSlices = slices;
 		    }
 		    var bestSlice = $this._selectTheEasiestSlice(matchedSlices, cube);
+		    QueryUtils.throwError(bestSlice, 'Slice not found fo cube source and fields');
 		    return bestSlice;
 		},
 
@@ -207,7 +208,7 @@
 		            var field = usedSliceFields[i];
 		            /// проверяется только относящиеся к данному источнику
 		            if (!field.$context || field.$context == context) {
-                        if (!sliceFields[field.$field]) {
+                        if (!sliceFields[field.$field] && !field.$alias) {
                             allFields = false;
                             break;
                         }
