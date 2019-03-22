@@ -57,6 +57,7 @@
                     query: $this.query,
                     params: $this.params,
                 });
+                $this.submitResult();
 
                 /// wait result if sync
                 if (!$this.callback) {
@@ -145,6 +146,13 @@
 		    } else {
 		        try {
                     /// sync
+                    var key = $this.getId() + '/' + name;
+                    var task = {
+                        key: key,
+                        queryTask: queryTask,
+                        status: 'started',
+                    };
+                    $this.pool.put(key, task);
                     var it = engine.execute(name, $this, queryTask);
                     $this.submitResult(it);
                 } catch(e) {
@@ -157,6 +165,7 @@
                     }
                     throw e;
                 } finally {
+                    task.status = 'completed';
                     if ($this.analyze) {
                         $this.analyze.engines[name].engineTime = (Date.now() - $this.analyze.engines[name].startedTimestamp) / 1000;
                     }
