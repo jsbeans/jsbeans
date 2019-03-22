@@ -263,7 +263,7 @@
 .cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link {}
 
 .cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link > path {
-	stroke-width: 4px;
+	stroke-width: 3px;
 }
 
 .cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link > .head.source > .shape {
@@ -272,11 +272,11 @@
 
 
 .cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$from"] > path {
-	stroke: #678e52;
+	stroke: #4f9457;
 }
 
 .cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$from"] > .head.source > .shape {
-	fill: #678e52;
+	fill: #4f9457;
     stroke: #446930;
     stroke-width: 2px;
     transform: scale(0.8);
@@ -294,12 +294,12 @@
 }
 
 .cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$union"] > path {
-	stroke: #8a8740;
+	stroke: #9863af;
 }
 
 .cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="$union"] > .head.source > .shape {
-	fill: #8a8740;
-    stroke: #636027;
+	fill: #9863af;
+    stroke: #6a437b;
     stroke-width: 2px;
     transform: scale(0.7);
 }

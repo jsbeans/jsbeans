@@ -212,6 +212,7 @@
                 	.attr('title', function(d){return d.key;});
                 
                 sliceFields.select('.type')
+                	.attr('type', function(d){ return d.type; })
                 	.text(function(d){ return d.type; });
 
                 // exit

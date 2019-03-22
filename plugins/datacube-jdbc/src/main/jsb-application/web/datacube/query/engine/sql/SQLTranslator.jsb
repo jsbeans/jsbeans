@@ -1157,6 +1157,9 @@ debugger
 		    function findType(field) {
                 for(var i = 0; i < query.$union.length; i++) {
                     var subQuery = query.$union[i];
+                    if (JSB.isString(subQuery)) {
+                        subQuery = $this.contextQueries[subQuery];
+                    }
                     if ($this.queryFieldsTypes.get(subQuery)[field]) {
                         return $this.queryFieldsTypes.get(subQuery)[field].type;
                     }
@@ -1169,6 +1172,9 @@ debugger
 
 		    for(var i = 0; i < query.$union.length; i++) {
 		        var subQuery = query.$union[i];
+		        if (JSB.isString(subQuery)) {
+		            subQuery = $this.contextQueries[subQuery];
+		        }
 		        var fixedSubQuery = JSB.clone(subQuery);
 		        var fields = [];
 		        /// add const:null fields
