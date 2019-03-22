@@ -601,6 +601,10 @@
 		        if (includeCubeFilter || path.indexOf('$cubeFilter') == -1) {
                     if (!inputFields[context+field]) {
                         var f = inputFields[context+field] = {$field: field, $context: context};
+                        if (query.$select[field] && path.indexOf('$sort') != -1) {
+                            // is alias
+                            f.$alias = field;
+                        }
                         array.push(f);
                     }
 		        }
