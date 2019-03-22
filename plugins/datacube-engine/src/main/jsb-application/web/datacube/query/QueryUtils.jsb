@@ -533,7 +533,11 @@
                         // self query
                         for (var f in exp)
                         if (exp[f] != null && !QuerySyntax.constValueOperators[f] && !QuerySyntax.queryOperators[f]) {
-                            walkExpressionFields(exp[f], query, path.concat([f]));
+                            if (!f.startsWith('$')) {
+                                fieldsCallback(f, null, query, path);
+                            } else {
+                                walkExpressionFields(exp[f], query, path.concat([f]));
+                            }
                         }
                     } else {
                          // query-expression
@@ -614,7 +618,7 @@
             function collect(exp, fixedContext) {
                 if (JSB.isString(exp) && !exp.startsWith('$')) {
                     if (!fixedContext) {
-                        return callback(exp, query.$context||query.$context, null, query, false);
+                        return callback(exp, query.$context, null, query, false);
                     }
                 } else if (JSB.isObject(exp) && exp.$field) {
                     $this.throwError(JSB.isString(exp.$field), 'Invalid $field value type "{}"', typeof exp.$field);
@@ -636,7 +640,11 @@
                     if (exp == query || !exp.$select) {
                         // if start query or any expression
                         for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
-                            var res = collect(exp[f], fixedContext);
+                            if (!f.startsWith('$')) {
+                                var res = callback(f, query.$context, null, query, false);
+                            } else {
+                                var res = collect(exp[f], fixedContext);
+                            }
                             if (res) {
                                 exp[f] = res;
                             }
