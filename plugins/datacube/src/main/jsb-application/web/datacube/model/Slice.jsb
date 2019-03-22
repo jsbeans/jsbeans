@@ -121,8 +121,12 @@
         return this.source;
     },
 
-	getQuery: function(){
-		return JSB.clone(this.query);
+	getQuery: function(isClone){
+	    if(isClone){
+		    return JSB.clone(this.query);
+        }
+
+        return this.query;
 	},
 
 	$client: {
@@ -485,7 +489,7 @@
 		            this.property('fieldsTypes', this.fieldsTypes);
 
 		            if(!stopPropagate){
-		                // todo: update slices which use current slice
+		                this.getCube().updateFieldsTypes(this.getFullId());
 		            }
 
 		            if(!hideEvent){

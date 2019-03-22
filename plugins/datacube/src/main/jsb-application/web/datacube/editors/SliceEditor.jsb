@@ -86,7 +86,7 @@
 			}
 
             this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
-                if($this.sliceData.entry.getCube().getId() !== slice.getCube().getId()){
+                if(!$this.sliceData || $this.sliceData.entry.getCube().getId() !== slice.getCube().getId()){
                     return;
                 }
 
@@ -94,7 +94,7 @@
             });
 
             this.subscribe('DataCube.Model.Slice.remove', {session: true}, function(sender, msg, desc){
-                if($this.sliceData.entry.getCube().getFullId() !== desc.cubeFullId){
+                if(!$this.sliceData || $this.sliceData.entry.getCube().getFullId() !== desc.cubeFullId){
                     return;
                 }
 
@@ -134,7 +134,7 @@
                     cubeSlices: data.slices
                 },
                 slice: data.entry,
-                values: data.entry.getQuery()
+                values: data.entry.getQuery(true)
             });
 	    }
 	}

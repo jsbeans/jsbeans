@@ -25,7 +25,9 @@
                 });
 
                 if(render){
-                    render.subscribeToChanges(this.getId(), this.changeEvent);
+                    render.subscribeToChanges(this.getId(), function(changeDesc){
+                        $this.changeEvent(changeDesc);
+                    });
 
                     this.append(render);
                 }
@@ -59,7 +61,9 @@
             });
 
             if(render){
-                render.subscribeToChanges(this.getId(), this.changeEvent);
+                render.subscribeToChanges(this.getId(), function(changeDesc){
+                    $this.changeEvent(changeDesc);
+                });
 
                 this._addBtn.before(render);
 
@@ -72,11 +76,11 @@
             }
 	    },
 
-	    changeEvent: function(){
-            var subscribers = $this.getSubscribers();
+	    changeEvent: function(changeDesc){
+            var subscribers = this.getSubscribers();
 
             for(var i in subscribers){
-                subscribers[i].call($this, changeDesc);
+                subscribers[i].call(this, changeDesc);
             }
 	    },
 
