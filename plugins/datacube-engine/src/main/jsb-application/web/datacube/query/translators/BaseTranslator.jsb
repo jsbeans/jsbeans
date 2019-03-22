@@ -69,6 +69,8 @@
                     next: function(){
                         try {
                             if (!$this.iterator) {
+                                $this.iterator = $this.executeQuery(translatedQuery);
+                                var obj = $this.iterator.next();
                                 Console.message({
                                     message: 'query.executed',
                                     params:{
@@ -79,7 +81,7 @@
                                         //query: dcQuery,
                                     },
                                 });
-                                $this.iterator = $this.executeQuery(translatedQuery);
+                                return $this.translateResult(obj);
                             }
                             return $this.translateResult($this.iterator.next());
                         } catch(e) {

@@ -9,19 +9,21 @@
         ],
 
         compareSlices: function(leftSlice, rightSlice) {
-            var leftCost = leftSlice.getQueryCost && leftSlice.getQueryCost
-                    ? leftSlice.getQueryCost()
-                    : $this.calculateQuery(leftSlice.getQuery(), leftSlice.getQuery());
-            var rightCost = rightSlice.getQueryCost && rightSlice.getQueryCost
-                    ? rightSlice.getQueryCost()
-                    : $this.calculateQuery(rightSlice.getQuery(), rightSlice.getQuery());
-            if (leftCost > rightCost) return 1;
-            if (leftCost < rightCost) return -1;
-
-            var leftDims  = QueryUtils.extractSliceDimensions(leftSlice, true);
-            var rightDims = QueryUtils.extractSliceDimensions(rightSlice, true);
-            if (leftDims > rightDims) return 1;
-            if (leftDims < rightDims) return -1;
+//debugger;
+            // TODO временно отключено: починить и реализовать взвешивание
+//            var leftCost = leftSlice.getQueryCost && leftSlice.getQueryCost
+//                    ? leftSlice.getQueryCost()
+//                    : $this.calculateQuery(leftSlice.getQuery(), leftSlice.getQuery());
+//            var rightCost = rightSlice.getQueryCost && rightSlice.getQueryCost
+//                    ? rightSlice.getQueryCost()
+//                    : $this.calculateQuery(rightSlice.getQuery(), rightSlice.getQuery());
+//            if (leftCost > rightCost) return 1;
+//            if (leftCost < rightCost) return -1;
+//
+//            var leftDims  = QueryUtils.extractSliceDimensions(leftSlice, true);
+//            var rightDims = QueryUtils.extractSliceDimensions(rightSlice, true);
+//            if (leftDims > rightDims) return 1;
+//            if (leftDims < rightDims) return -1;
 
             return 0;
         },
@@ -29,8 +31,14 @@
         calculateQuery: function(query, rootQuery) {
 
             if (JSB.isString(query)) {
-                // TODO get slice cost if exists or calculate query cost
-                throw 'TODO get view or slice cost';
+                var name = query;
+                query = QueryUtils.findView(name, rootQuery, rootQuery);
+                if (!query) {
+                    var slice = QueryUtils.getQuerySlice(name, null);
+                    query = slice.getQuery();
+                }
+
+                QueryUtils.throwError(query, 'Calculate cost error: Query is undefined: ' + name);
             }
 
             var bodyFactor = 0;
