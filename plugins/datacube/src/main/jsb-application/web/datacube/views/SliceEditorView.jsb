@@ -194,7 +194,7 @@
 
 			this.titleEditor.setData(this.slice.getName());
 
-			var query = this.slice.getQuery();
+			var query = this.slice.getQuery(true);
 
 			this.slice.server().getEditorData(function(data, fail){
 			    if(fail){

@@ -75,7 +75,7 @@
 
 	        this.setKey(newName);
 
-	        this.fieldName.text(newVal);
+	        this.fieldName.text(newName);
 	    }
 	}
 }

@@ -535,12 +535,18 @@
 		    this.store();
 		},
 
-        // временно для обновления ошибочных типов
-		updateFieldsTypes: function(){
-		    var slices = ExtractUtils.extractOrderedSlices(this);
+		updateFieldsTypes: function(sliceId){
+		    var slices = ExtractUtils.extractOrderedSlices(this),
+		        start = false;
 
 		    for(var i = 0; i < slices.length; i++){
-		        slices[i].updateFieldsTypes(false, true);
+		        if(sliceId && !start && slices[i].getFullId() === sliceId){
+		            start = true;
+		        }
+
+		        if(!sliceId || sliceId && start){
+		            slices[i].updateFieldsTypes(false, true);
+                }
 		    }
 
 		    this.updateCubeFields();
