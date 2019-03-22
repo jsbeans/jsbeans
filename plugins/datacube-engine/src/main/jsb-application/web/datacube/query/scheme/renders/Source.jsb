@@ -108,7 +108,8 @@
 	        if(curKey === '$from'){
 	            if(newKey === '$join'){
 	                newValue = {
-	                    $left: values
+	                    $left: values,
+	                    $right: {}
 	                };
 	            }
 

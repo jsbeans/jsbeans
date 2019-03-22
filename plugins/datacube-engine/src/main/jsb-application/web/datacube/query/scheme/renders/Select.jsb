@@ -87,7 +87,11 @@
 	    renameField: function(oldName, newName){
 	        var children = this.getChildren();
 
-	        children[oldName].rename(newName);
+	        for(var i in children){
+	            if(children[i].getKey() === oldName){
+	                children[i].rename(newName);
+	            }
+	        }
 	    },
 
 	    removeField: function(fieldName){

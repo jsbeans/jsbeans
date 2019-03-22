@@ -67,7 +67,9 @@
 	                fields: joinedNextRender.getOutputFields()
 	            }],
 	            values: this.getValues()['$filter'],
-	            onChange: this.onChange
+	            onChange: function(changeDesc){
+	                $this.onChange(changeDesc);
+	            }
             });
             this.append(filter);
 

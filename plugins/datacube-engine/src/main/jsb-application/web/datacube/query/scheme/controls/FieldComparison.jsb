@@ -25,8 +25,8 @@
                 this.setFields(this.options.fields);
             }
 
-            if(this.options.values){
-                this.setValues(this.options.values);
+            if(opts.values){
+                this.setValues(opts.values);
             }
         },
 

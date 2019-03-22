@@ -134,8 +134,6 @@
 	                $this.addMenu.addItem(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
 
 	                this.remove();
-
-	                $this.onChange();
 	            }
 	        });
 

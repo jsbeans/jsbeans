@@ -551,7 +551,7 @@
 	    remove: function(hideEvent){
 	        delete this._scope[this.getKey()];
 
-            if(hideEvent){
+            if(!hideEvent){
                 $this.onChange({
                     name: 'removeItem',
                     item: this
