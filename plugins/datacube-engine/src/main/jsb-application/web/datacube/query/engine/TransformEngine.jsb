@@ -28,16 +28,14 @@
             if (result.error) {
                 throw result.error;
             }
+
             for(var i = 0; i < config.next.length; i++) {
                 var next = config.next[i];
-                var it = executor.executeEngine(next, {
+                executor.executeEngine(next, {
                     cube: cube,
                     query: JSB.clone(result.query),
                     params: params,
                 });
-                if(it) {
-                    return it;
-                }
             }
             return null; // no iterator
 		},
