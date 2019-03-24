@@ -208,7 +208,7 @@
 		            var field = usedSliceFields[i];
 		            /// проверяется только относящиеся к данному источнику
 		            if (!field.$context || field.$context == context) {
-``                        if (!sliceFields[field.$field] && !field.$alias) {
+                        if (!sliceFields[field.$field] && !field.$alias) {
                             allFields = false;
                             break;
                         }
