@@ -414,8 +414,7 @@
 		},
 
 		setSliceParams: function(params){
-		    var updates = {},
-		        result = {};
+		    var updates = {};
 
             // name
 		    if(JSB.isDefined(params.name) && !JSB.isEqual(this.getName(), params.name)){
@@ -442,13 +441,16 @@
 		        updates.fields = this.extractFields();
 		    }
 
-		    result = {
-		        updates: params.returnUpdates ? updates : undefined,
+		    var result = {
+		        sliceFullId: this.getFullId(),
+		        updates: updates,
 		        wasUpdated: Boolean(Object.keys(updates).length)
 		    }
 
 		    if(result.wasUpdated){
 		        this.doSync();
+
+                this.publish('DataCube.CubeEditor.sliceUpdated', result, {session: true});
 		    }
 
 		    return result;
