@@ -134,10 +134,14 @@
             });
 
             this.subscribe('DataCube.CubeEditor.sliceUpdated', function(sender, msg, obj){
-                if(obj.slice.getId() === $this.entry.getId()){
-                    $this.refresh(obj);
+                if(obj.sliceFullId === $this.entry.getFullId()){
+                    $this.refresh({
+                        fields: obj.updates.fields,
+                        name: obj.updates.name,
+                        query: obj.updates.query
+                    });
                 }
-            });
+            }, {session: true});
 
             this.subscribe('DataCube.CubeEditor.toggleDimension', function(sender, msg, desc){
                 $this.toggleDimension(desc);
