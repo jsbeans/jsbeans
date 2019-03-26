@@ -121,7 +121,8 @@
                 /// is remote query with same providers
                 var providers = QueryUtils.extractProviders(query, $this.cube,
                     function(name){
-                        var view = QueryUtils.findView(name, query, $this.dcQuery);
+//                        var view = QueryUtils.findView(name, query, $this.dcQuery);
+                        var view = $this.contextQueries[name];
                         return view;
                     }
                 );
