@@ -108,18 +108,7 @@
 
 	        this.sliceData.entry.server().setSliceParams({
 	            name: name,
-	            query: query,
-
-	            returnUpdates: true
-	        }, function(res, err){
-	            if(!err && res.wasUpdated){
-	                $this.publish('DataCube.CubeEditor.sliceUpdated', {
-	                    fields: res.updates.fields,
-	                    name: res.updates.name,
-	                    slice: $this.sliceData.entry,
-	                    query: res.updates.query
-	                });
-	            }
+	            query: query
 	        });
 	    },
 
