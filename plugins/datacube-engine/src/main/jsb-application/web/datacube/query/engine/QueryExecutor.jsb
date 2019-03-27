@@ -154,6 +154,9 @@
                     };
                     $this.pool.put(key, task);
                     var it = engine.execute(name, $this, queryTask);
+                    if (it) {
+                        it.meta.engine = JSB.merge({}, engineConfig, {alias:name});
+                    }
                     $this.submitResult(it);
                 } catch(e) {
                     if($this.analyze) {

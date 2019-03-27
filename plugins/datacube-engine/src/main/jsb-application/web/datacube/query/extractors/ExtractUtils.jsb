@@ -260,5 +260,55 @@
             }
             return orderedSlices;
         },
+
+        /** Анализирует использованные в запросе поля и возвращает срезы,
+        *   содержащие все использованные поля
+        */
+        extractSourceSlicesCandidates: function(query, rootQuery){
+            QueryUtils.throwError(query.$cube || query.$from, 'Query source is not cube/slice/query');
+            var cube = QueryUtils.getQueryCube(query.$cube);
+            var cubeFields = cube.extractFields();
+
+            var inputFields = {};
+            Visitors.visitProxy(rootQuery||query, {
+                getUndefinedView: function(name) {
+                    return {};
+                },
+                field: {
+                    before: function(field, context, sourceContext){
+                        if (query.$context == context) {
+                            if (rootQuery.$cube) {
+                                if (cubeFields[field]) {
+                                    /// cube fields
+                                    inputFields[field] = field;
+                                } else if (query.$select[field]) {
+                                    /// alias
+                                } else {
+                                    QueryUtils.throwError(0, 'Field is not defined: ' + field);
+                                }
+                            }
+                        }
+                    },
+                },
+            });
+
+            var cubeSlices = cube.getSlices();
+            var candidateSlices = {}
+            SLICES: for(var sid in cubeSlices) {
+                var slice = cubeSlices[sid];
+
+		        var sliceQuery = slice.getQuery();
+		        var sliceFields = QueryUtils.extractOutputFields(sliceQuery);
+
+		        for(var field in inputFields) {
+		            if (!sliceFields[field]) {
+		                continue SLICES;
+		            }
+		        }
+
+                candidateSlices[sid] = cubeSlices[sid];
+            }
+            return candidateSlices;
+        },
     }
 }

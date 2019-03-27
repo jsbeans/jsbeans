@@ -22,6 +22,7 @@
         _translatedContexts: {},
         _views: {},
         _queryPath: [],
+        _loopbackQueries: [],
         
         $bootstrap: function(){
         	TranslatorRegistry.register(this);
@@ -44,13 +45,15 @@
 //                });
                 throw e;
             }
-		    it.meta.id = $this.getJsb().$name+'/'+$this.vendor+'#'+JSB.generateUid();
-		    it.meta.vendor = $this.vendor;
-		    var oldClose = it.close;
-		    it.close = function(){
-		        oldClose.call(this);
-		    };
-		    return it;
+            if (it) {
+                it.meta.id = $this.getJsb().$name+'/'+$this.vendor+'#'+JSB.generateUid();
+                it.meta.vendor = $this.vendor;
+                var oldClose = it.close;
+                it.close = function(){
+                    oldClose.call(this);
+                };
+            }
+            return it;
 		},
 
 		executeQuery: function(translatedQuery){
@@ -311,7 +314,6 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                     function _leave(query){
                     }
                 );
-debugger
                 if (!subQuery.$limit && Config.get('datacube.query.engine.loopbackQuery.limit')) {
                     var limit = 0+Config.get('datacube.query.engine.loopbackQuery.limit')
                     if (limit > 0) {
@@ -347,6 +349,8 @@ debugger
                 startEngine: ($this.engineConfig ? $this.engineConfig.loopbackStart : null)
             };
 
+            $this._loopbackQueries.push(query);
+
             switch($this.vendor) {
 //                case 'PostgreSQL':
 //                    var dataProvider = providers[0];
@@ -366,7 +370,6 @@ debugger
                 case 'ClickHouse':
                     /// prepare translated sql
                     var clickhouseColumns = '';
-debugger
                     for(var alias in subQuery.$select) {
                         var nativeType = QueryUtils.extractNativeType(subQuery.$select[alias], subQuery, $this.cube);
                         var type = DataTypes.fromAny(nativeType);
@@ -1391,6 +1394,11 @@ debugger
             }
 
             function translateSourceField(sourceQuery) {
+                if ($this._loopbackQueries.indexOf(sourceQuery) !== -1){
+                    /// loopback query
+                    return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);
+                }
+
                 if (!$this._isViewQuery(sourceQuery) && /*sourceQuery.$provider && */!QueryUtils.queryHasBody(sourceQuery)) {
                     return $this._translateExpression(sourceQuery.$select[field], sourceQuery);
                 }

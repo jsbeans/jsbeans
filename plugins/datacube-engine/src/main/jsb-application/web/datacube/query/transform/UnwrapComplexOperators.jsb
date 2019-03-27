@@ -59,7 +59,7 @@
                             subQuery.$select[innerOp] = {};
                             subQuery.$select[innerOp]['$'+innerOp] = exp;
                             subQuery.$filter = query.$filter && JSB.clone(query.$filter);
-                            subQuery.$groupBy = query.$groupBy && JSB.clone(query.$groupBy);
+                            //subQuery.$groupBy = query.$groupBy && JSB.clone(query.$groupBy);
                             copySource(subQuery, query);
                             return subQuery;
                     }
@@ -120,7 +120,7 @@
                         for (var f in exp) if(exp[f] != null) {
                             unwrapExpression(exp[f], function(newExp){
                                exp[f] = newExp;
-                           });
+                            });
                         }
                     } else if (JSB.isArray(exp)) {
                         for (var i = 0; i < exp.length; i++) {
