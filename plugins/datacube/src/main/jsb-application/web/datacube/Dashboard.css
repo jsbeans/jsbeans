@@ -72,9 +72,19 @@
 
 .dataCubeDashboard > .header > .cell {
 	display: table-cell;
+	vertical-align: top;
 }
 
 .dataCubeDashboard > .header > .cell.filter {
+	text-align: right;
+	width: 44px;
+}
+
+.dataCubeDashboard > .header > .cell.filter.noItems {
+	display: none;
+}
+
+.dataCubeDashboard > .header > .cell.dashboardMenu {
 	text-align: right;
 }
 

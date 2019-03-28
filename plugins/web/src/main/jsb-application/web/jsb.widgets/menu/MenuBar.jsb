@@ -48,14 +48,19 @@
 							dock: 'bottom'
 						},
 						callback: function(key, item, evt){
-							$this.executeAction($this._actions[key]);
+							$this.executeAction($this._actions[key], evt);
 						}
 					});
 				}
 			});
 			this.append(this.menuButton);
 			
+			this.updateButton();
 			this.update();
+		},
+		
+		ensureReady: function(callback){
+			this.ensureTrigger('ready', callback);
 		},
 		
 		setContext: function(ctx){
@@ -75,25 +80,50 @@
 			MenuRegistry.lookupActions(this.options.category, function(actMap){
 				$this._actions = actMap;
 				
-				// construct renderers
-				$this._items = [];
-				for(var actId in $this._actions){
-					var action = $this._actions[actId];
-					var renderer = $this._renderers[actId];
-					if(!renderer){
-						renderer = $this._renderers[actId] = RendererRepository.createRendererFor(action);
+				RendererRepository.ensureReady(function(){
+					// construct renderers
+					$this._items = [];
+					for(var actId in $this._actions){
+						var action = $this._actions[actId];
+						var renderer = $this._renderers[actId];
+						if(!renderer){
+							renderer = $this._renderers[actId] = RendererRepository.createRendererFor(action);
+						}
+						$this._items.push({
+							key: actId,
+							element: renderer.getElement()
+						});
 					}
-					$this._items.push({
-						key: actId,
-						element: renderer.getElement()
-					});
-				}
+					$this.updateButton();
+					$this.setTrigger('ready');
+				});
 			});
 		},
 		
-		executeAction: function(action){
+		updateButton: function(){
+			if(Object.keys($this._actions).length > 0){
+				$this.addClass('hasItems');
+				$this.removeClass('noItems');
+				this.menuButton.enable(true);
+				
+			} else {
+				$this.removeClass('hasItems');
+				$this.addClass('noItems');
+				this.menuButton.enable(false);
+			}
+		},
+		
+		getActions: function(){
+			return $this._actions;
+		},
+		
+		executeAction: function(action, evt){
 			if(action){
-				action.execute($this.options.category, $this.options.context);
+				action.execute({
+					category: $this.options.category, 
+					context: $this.options.context, 
+					event: evt,
+					sender: $this});
 			}
 		}
 		
