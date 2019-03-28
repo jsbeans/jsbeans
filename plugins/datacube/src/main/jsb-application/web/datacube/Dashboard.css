@@ -77,15 +77,15 @@
 
 .dataCubeDashboard > .header > .cell.filter {
 	text-align: right;
-	width: 44px;
-}
-
-.dataCubeDashboard > .header > .cell.filter.noItems {
-	display: none;
 }
 
 .dataCubeDashboard > .header > .cell.dashboardMenu {
 	text-align: right;
+	width: 44px;
+}
+
+.dataCubeDashboard > .header > .cell.dashboardMenu.noItems {
+	display: none;
 }
 
 .dataCubeDashboard > .header > .cell > .filterSelector {
