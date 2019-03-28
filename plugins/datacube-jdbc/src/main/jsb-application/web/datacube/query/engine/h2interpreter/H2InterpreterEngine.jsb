@@ -18,7 +18,7 @@
 		},
 
 		execute: function(name, executor, queryTask){
-debugger;
+//debugger;
 		    var query = queryTask.query;
 		    var cube = queryTask.cube;
 		    var params = queryTask.params;
@@ -41,7 +41,7 @@ debugger;
                 url: 'jdbc:h2:mem:system.db;DB_CLOSE_DELAY=-1',
             });;
             store.asSQL().connectedJDBC(function(connection){
-                return JDBC.executeUpdate(connection, 'DROP ALIAS IF EXISTS DATACUBE; CREATE ALIAS datacube FOR "org.jsbeans.datacube.LoopbackProviderIterator.datacube"; ');
+                return JDBC.executeUpdate(connection, 'DROP ALIAS IF EXISTS DATACUBE; CREATE ALIAS datacube DETERMINISTIC FOR "org.jsbeans.datacube.LoopbackProviderIterator.datacube"; ');
             });
 		    return {
 		        getStore: function() {

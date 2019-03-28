@@ -12,6 +12,7 @@
 		           'DataCube.Controls.FilterSelector',
 		           'DataCube.Widgets.FilterManager',
 		           'DataCube.Widgets.WidgetWrapper',
+		           'JSB.Widgets.MenuBar',
 		           'css:Dashboard.css'],
 		           
 		entry: null,
@@ -30,6 +31,13 @@
 			
 			this.filterSelector = new FilterSelector(this, this.filterManager);
 			this.headerElt.append($this.$('<div class="filter cell"></div>').append(this.filterSelector.getElement()));
+			
+			this.menuBar = new MenuBar({
+				category: 'dashboardViewer',
+				cssClass: 'dashboardMenu cell',
+				context: this
+			});
+			this.headerElt.append(this.menuBar.getElement());
 			
 			this.dashboard = new Dashboard({
 				emptyText: '',
@@ -123,6 +131,10 @@
 		
 		getDashboard: function(){
 			return this.entry;
+		},
+		
+		getWrappers: function(){
+			return this.wrappers;
 		}
 	},
 	

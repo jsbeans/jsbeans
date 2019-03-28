@@ -54,14 +54,22 @@
                                 case '$gsum': innerOp = 'sum'; break
                                 case '$gcount': innerOp = 'count'; break
                             }
+
                             var subQuery = {};
                             subQuery.$select = {};
-                            subQuery.$select[innerOp] = {};
-                            subQuery.$select[innerOp]['$'+innerOp] = exp;
+                            subQuery.$select[innerOp] = exp;
                             subQuery.$filter = query.$filter && JSB.clone(query.$filter);
                             subQuery.$groupBy = query.$groupBy && JSB.clone(query.$groupBy);
                             copySource(subQuery, query);
-                            return subQuery;
+                            return {
+                                $select: (function(){
+                                    var s = {};
+                                    s[innerOp] = {};
+                                    s[innerOp]['$'+innerOp] = innerOp;
+                                    return s;
+                                })(),
+                                $from: subQuery
+                            };
                     }
                     switch(op){
                         case '$grmaxcount': innerOp = 'count'; break;
@@ -120,7 +128,7 @@
                         for (var f in exp) if(exp[f] != null) {
                             unwrapExpression(exp[f], function(newExp){
                                exp[f] = newExp;
-                           });
+                            });
                         }
                     } else if (JSB.isArray(exp)) {
                         for (var i = 0; i < exp.length; i++) {
