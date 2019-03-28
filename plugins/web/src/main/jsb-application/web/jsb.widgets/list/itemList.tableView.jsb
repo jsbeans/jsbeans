@@ -1,7 +1,7 @@
 {
 	$name:'JSB.Widgets.ItemList.TableView',
 	$parent: 'JSB.Widgets.ItemList.View',
-	$require:['JQuery.UI.Resizable',
+	$require:['jQuery.UI.Resizable',
 	          'css:itemList.tableView.css'],
 	
 	$client: {

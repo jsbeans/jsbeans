@@ -4,29 +4,55 @@
 	$client: {
 		registry: {},
 		registryByType: {},
+		_allFilled: false,
 		
 		$constructor: function(opts){
 			$base(opts);
 		},
 		
-		lookupItems: function(callback){
-			if(Object.keys(this.registry).length > 0){
-				callback.call(this, this.registry);
-				return;
+		lookupItems: function(category, callback){
+			if(JSB.isFunction(category)){
+				callback = category;
+				category = undefined;
 			}
-			this.server().getItems(function(r){
-				$this.registry = r;
-				// fill registryByType
-				for(var cat in $this.registry){
-					var arr = $this.registry[cat];
-					for(var i = 0; i < arr.length; i++){
-						var desc = arr[i];
-						$this.registryByType[desc.jsb] = desc;
-					}
+			if(category){
+				if(this.registry && this.registry[category] && this.registry[category].length > 0){
+					callback.call(this, this.registry[category]);
+					return;
 				}
-				
-				callback.call($this, $this.registry);
-			});
+				this.server().getItems(category, function(r, fail){
+					if(r){
+						$this.registry[category] = r;
+						for(var i = 0; i < r.length; i++){
+							var desc = r[i];
+							$this.registryByType[desc.jsb] = desc;
+						}
+					}
+					
+					callback.call($this, $this.registry[category], fail);
+				});
+			} else {
+				if($this._allFilled){
+					callback.call(this, this.registry);
+					return;
+				}
+				this.server().getItems(function(r, fail){
+					if(r){
+						$this._allFilled = true;
+						$this.registry = r;
+						// fill registryByType
+						for(var cat in $this.registry){
+							var arr = $this.registry[cat];
+							for(var i = 0; i < arr.length; i++){
+								var desc = arr[i];
+								$this.registryByType[desc.jsb] = desc;
+							}
+						}
+					}
+					
+					callback.call($this, $this.registry, fail);
+				});
+			}
 		},
 		
 		lookupItemAttr: function(jsb, attr, callback){
@@ -53,17 +79,33 @@
 		},
 		
 		register: function(jsb){
-			JSB.getLogger().debug('Registered: ' + jsb.$name);
 			var expose = jsb.getDescriptor().$expose;
-			if(!this.registry[expose.category]){
-				this.registry[expose.category] = [];
+			if(!expose || Object.keys(expose).length == 0){
+				return;
 			}
-			var desc = JSB.merge({}, expose, {jsb: jsb.$name});
-			this.registry[expose.category].push(desc);
-			this.registryByType[desc.jsb] = desc;
+			var cats = [];
+			if(JSB.isArray(expose.category)){
+				cats = expose.category;
+			} else if(JSB.isString(expose.category)){
+				cats = [expose.category];
+			} else {
+				throw new Error('Failed to register bean: "' + jsb.getDescriptor().$name + '" due to its category type not expected');
+			}
+			for(var i = 0; i < cats.length; i++){
+				var category = cats[i];
+				if(!this.registry[category]){
+					this.registry[category] = [];
+				}
+				var desc = JSB.merge({}, expose, {jsb: jsb.$name});
+				this.registry[category].push(desc);
+				this.registryByType[desc.jsb] = desc;
+			}
 		},
 		
-		getItems: function(){
+		getItems: function(category){
+			if(category){
+				return this.registry[category];
+			}
 			return this.registry;
 		},
 		

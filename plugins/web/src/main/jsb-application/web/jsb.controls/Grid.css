@@ -1,0 +1,41 @@
+.jsb-grid {
+    height: inherit;
+    width: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.grid-master {
+    height: inherit;
+    overflow: auto;
+}
+
+.grid-top {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    overflow: hidden;
+}
+
+.grid-top > table {
+    background: #edeef0;
+    border-color: #ccc;
+    border-bottom: 1px solid;
+}
+
+.grid-master > table,
+.grid-top > table {
+    table-layout: fixed;
+    width: -moz-fit-content;
+    width: fit-content;
+}
+
+.grid-master > table td,
+.grid-top > table th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.jsb-grid-resizable-helper {
+    border-right: 2px dotted #00F;
+}

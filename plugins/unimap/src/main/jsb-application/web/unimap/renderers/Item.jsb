@@ -1,7 +1,8 @@
 {
 	$name: 'Unimap.Render.Item',
 	$parent: 'Unimap.Render.Basic',
-	$require: ['JSB.Controls.Checkbox', 
+	$require: ['jQuery.UI.Sortable',
+	           'JSB.Controls.Checkbox',
 	           'JSB.Controls.Editor',
 	           'css:Item.css'],
 

@@ -1,7 +1,7 @@
 {
-	$name:'DatePicker',
+	$name: 'DatePicker',
 	$parent: 'JSB.Widgets.Control',
-	$require:['JQuery.UI',
+	$require:['jQuery.UI.Datepicker',
 	          'css:datepicker.css'],
 	$client:{
 		

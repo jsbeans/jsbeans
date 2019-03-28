@@ -11,8 +11,9 @@
 	           'JSB.Widgets.ToolManager',
 	           'JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.Button',
-	           'JQuery.UI.Effects',
-	           'JQuery.UI.Loader',
+	           'jQuery.UI.Effects',
+	           'jQuery.UI.Droppable',
+	           'jQuery.UI.Loader',
 	           'JSB.Web',
 	           'css:Explorer.css'],
 	

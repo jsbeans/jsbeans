@@ -2,7 +2,7 @@
 	$name: 'DataCube.Export.Export',
 	$client: {
 	    $singleton: true,
-	    $require: ['script:htmlToCanvas.js'],
+	    $require: ['HtmlToCanvas'],
 	    
 	    $constructor: function(opts){
 	        $base(opts);
@@ -186,9 +186,9 @@
 	    },
 
 	    downloadImage: function(widget, fileName){
-	        html2canvas(widget).then(function(canvas){
-	            $this.fileDownload(canvas.toDataURL("image/png"), 'png', canvas.toDataURL("image/png"), fileName);
-	        });
+	    	HtmlToCanvas.toCanvas(widget, function(canvas){
+	    		$this.fileDownload(canvas.toDataURL("image/png"), 'png', canvas.toDataURL("image/png"), fileName);
+	    	});
 	    }
 	}
 }

@@ -2,8 +2,7 @@
 	$name: 'DataCube.Editor',
 	$parent: 'JSB.Widgets.Page',
 	$require: [
-	    'JQuery.UI',
-	    'JQuery.UI.Loader',
+	    'jQuery.UI.Loader',
 		'JSB.Widgets.SplitLayoutManager',
 		'JSB.Widgets.ToolBar',
 		'JSB.Widgets.ToolManager',

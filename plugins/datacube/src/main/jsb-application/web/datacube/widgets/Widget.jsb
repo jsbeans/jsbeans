@@ -57,7 +57,7 @@
 
 		$require: ['JSB.Crypt.MD5', 
 		           'DataCube.Export.Export', 
-		           'JQuery.UI.Loader', 
+		           'jQuery.UI.Loader',
 		           'Unimap.Selector',
 		           'Unimap.Repository',
 		           'JSB.Widgets.ToolBar',
@@ -1384,7 +1384,10 @@
 						break;
 					}
 					if(opts.rowCallback){
-						opts.rowCallback.call(this, el);
+						var res = opts.rowCallback.call(this, el);
+						if(res){
+							break;
+						}
 					} else {
 						data.push(el);
 					}

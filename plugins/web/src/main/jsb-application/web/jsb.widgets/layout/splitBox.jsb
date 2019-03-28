@@ -1,7 +1,7 @@
 {
 	$name:'JSB.Widgets.SplitBox',
 	$parent: 'JSB.Widgets.Control',
-	$require:['JQuery.UI.Interactions',
+	$require:['jQuery.UI.Draggable',
 	          'css:splitBox.css'],
 	$client: {
 		$constructor: function(opts){
