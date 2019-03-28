@@ -10,7 +10,10 @@
 			}
 			this.lookupItems(category, function(res){
 				if(!JSB.isArray(res) || res.length == 0){
-					callback.call($this, {});
+					if(callback){
+						callback.call($this, {});
+					}
+					return;
 				}
 				JSB.chain(res, function(desc, c){
 					if(desc.inst){
@@ -26,7 +29,9 @@
 					for(var i = 0; i < actArr.length; i++){
 						actMap[actArr[i].getJsb().getDescriptor().$name] = actArr[i];
 					}
-					callback.call($this, actMap);
+					if(callback){
+						callback.call($this, actMap);
+					}
 				});
 			});
 		}
