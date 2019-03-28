@@ -8,6 +8,7 @@
 		           'DataCube.Controls.FilterSelector',
 		           'DataCube.Widgets.FilterManager',
 		           'DataCube.Widgets.WidgetWrapper',
+		           'JSB.Widgets.MenuBar',
 		           'css:DashboardEditor.css'],
 		
 		entry: null,
@@ -20,8 +21,18 @@
 			
 			this.filterManager = new FilterManager(this);
 			
+			this.header = this.$('<div class="header"></div>');
+			this.append(this.header);
+			
 			this.filterSelector = new FilterSelector(this, this.filterManager);
-			this.append(this.filterSelector);
+			this.header.append(this.filterSelector.getElement());
+			
+			this.menuBar = new MenuBar({
+				category: 'dashboardEditor',
+				cssClass: 'dashboardMenu',
+				context: this
+			});
+			this.header.append(this.menuBar.getElement());
 			
 			
 			this.dashboard = new Dashboard({
@@ -91,8 +102,8 @@
 			this.loadingBack = $this.$('<div class="loadingBack"><div class="message"><div class="icon"></div></div></div>');
 			this.append(this.loadingBack);
 			
-			this.filterSelector.getElement().resize(function(){
-				$this.dashboard.getElement().css('height', 'calc(100% - '+($this.filterSelector.getElement().outerHeight() + 4)+'px)');
+			this.header.resize(function(){
+				$this.dashboard.getElement().css('height', 'calc(100% - '+($this.header.outerHeight() + 4)+'px)');
 			});
 		},
 		
@@ -200,6 +211,10 @@
 		
 		getDashboard: function(){
 			return this.entry;
+		},
+		
+		getWrappers: function(){
+			return this.wrappers;
 		}
 		
 	}
