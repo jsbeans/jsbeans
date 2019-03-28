@@ -129,6 +129,10 @@
 		
 		getDashboard: function(){
 			return this.entry;
+		},
+		
+		getWrappers: function(){
+			return this.wrappers;
 		}
 	},
 	

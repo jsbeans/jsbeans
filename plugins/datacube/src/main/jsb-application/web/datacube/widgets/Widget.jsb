@@ -1348,7 +1348,10 @@
 						break;
 					}
 					if(opts.rowCallback){
-						opts.rowCallback.call(this, el);
+						var res = opts.rowCallback.call(this, el);
+						if(res){
+							break;
+						}
 					} else {
 						data.push(el);
 					}
