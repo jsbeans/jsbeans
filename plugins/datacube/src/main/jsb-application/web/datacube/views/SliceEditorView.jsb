@@ -210,6 +210,7 @@
 
                 $this.updateTextQuery(query);
 
+                $this.grid.clear();
                 //$this.grid.updateData($this.slice, query);
 			});
 		},
