@@ -12,7 +12,7 @@ public class LoopbackProviderIterator {
     /** Функция для вызова из H2 для получения результатов выполнения запроса
      * при вызове SQL выражения "... FROM DATACUBE('callback_uuid')"
      * */
-    public static ResultSet datacube(Connection conn, String uid, Object cond){
+    public static ResultSet datacube(Connection conn, String uid){
         Callable<ResultSet> callback = LoopbackIterators.get(uid);
         try {
             ResultSet rs = callback.call();

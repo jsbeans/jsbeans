@@ -62,6 +62,9 @@
 
 		translatedQueryIterator: function(dcQuery, params){
 		    var translatedQuery = $this.translate(dcQuery, params);
+		    if (!translatedQuery) {
+		        return null;
+		    }
 
             try {
                 this.iterator = null; /// lazy iterator

@@ -1794,6 +1794,7 @@ debugger
         },
 
 		extractSliceDimensions: function(slice, includeRecursive) {
+		    // TODO защитить от рекурсии срезов
 
 		    // TODO move to slice.extractDimensions() + updated cache
 		    var sliceDimensions = {};

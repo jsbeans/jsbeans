@@ -47,8 +47,6 @@
 		},
 
 		execute: function(queryTask){
-debugger;
-
             var query = queryTask.query;
             var cube = queryTask.cube;
 

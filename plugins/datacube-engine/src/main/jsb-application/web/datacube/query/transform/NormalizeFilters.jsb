@@ -28,20 +28,26 @@
                             case '$or':
                                 var $or = [];
                                 for (var i = 0; i < exps[op].length; i++) {
-                                    var newCond = walkMultiFilter(exps[op][i]);
-                                    $or.push(newCond);
+                                    if (!JSB.isEqual(exps[op][i], {})) {
+                                        var newCond = walkMultiFilter(exps[op][i]);
+                                        $or.push(newCond);
+                                    }
                                 }
                                 $and.push({$or: $or});
                                 break;
                             case '$and':
                                 for (var i = 0; i < exps[op].length; i++) {
-                                    var newCond = walkMultiFilter(exps[op][i]);
-                                    $and.push(newCond);
+                                    if (!JSB.isEqual(exps[op][i], {})) {
+                                        var newCond = walkMultiFilter(exps[op][i]);
+                                        $and.push(newCond);
+                                    }
                                 }
                                 break;
                             case '$not':
-                                var newCond = walkMultiFilter(exps[op]);
-                                $and.push({$not: newCond});
+                                if (!JSB.isEqual(exps[op], {})) {
+                                    var newCond = walkMultiFilter(exps[op]);
+                                    $and.push({$not: newCond});
+                                }
                             default:
                                 // $op: [left, right] expression
                                 var cond = {};
