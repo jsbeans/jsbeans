@@ -43,7 +43,7 @@
         			this._wrapper = null;
         		}
         		if(!this._wrapper){
-        			this._wrapper = new WidgetWrapper(wDesc.widgetEntry, this);
+        			this._wrapper = new WidgetWrapper(wDesc.widgetEntry, this, {auto: false});
         			this.append(this._wrapper);
         		}
         		

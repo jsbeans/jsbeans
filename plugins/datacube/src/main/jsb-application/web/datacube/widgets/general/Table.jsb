@@ -1188,7 +1188,8 @@
 				
 				if($this.useAnimation){
 					// fixup new row positions
-					var paneRc = $this.scroll.getPane().find('table.rows').get(0).getBoundingClientRect();
+					var tableElt = $this.scroll.getPane().find('table.rows').get(0);
+					var paneRc = tableElt.getBoundingClientRect();
 					rowsSelData.each(function(rd){
 						var rowRc = this.getBoundingClientRect();
 						var newPos = rowRc.top - paneRc.top;
@@ -2105,7 +2106,7 @@
 			if($this.useTooltipOnHover && d.filter && d.filter.length > 0){
 				JSB.defer(function(){
 					$this.showWidgetTip(d, rowElt);	
-				}, 1000, 'widgetTool_' + $this.getId());
+				}, 600, 'widgetTool_' + $this.getId());
 			}
 			
 			if(!bAnd && !bOr && !bNot && !bMark){

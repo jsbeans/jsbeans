@@ -759,7 +759,6 @@
 
 		getLayerQuery: function(layerName, sourceId){
 			var query = {};
-			
 			if(layerName == 'back'){
 				if(Object.keys($this.contextFilter).length > 0){
 					var contextFilterDesc = $this.translateContextFilter(sourceId);
