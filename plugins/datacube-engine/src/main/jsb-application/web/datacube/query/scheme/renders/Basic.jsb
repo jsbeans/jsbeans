@@ -668,8 +668,10 @@
         * Устанавливает значения по умолчанию (при наличии)
         */
 	    setDefaultValues: function(){
-	        if(this.getDefaultValues()){
-	            this.setValues(this.getDefaultValues());
+	        var defValues = this.getDefaultValues();
+
+	        if(JSB.isDefined(defValues)){
+	            this.setValues(defValues);
 	        }
 	    },
 

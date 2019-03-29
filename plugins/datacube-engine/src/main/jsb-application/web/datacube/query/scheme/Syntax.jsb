@@ -25,8 +25,8 @@
 	    '$dateIntervalOrder', '$timeHour', '$timeMinute', '$timeSecond', '$coalesce',
 	    // преобразование типов
 	    '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toTimestamp', '$toString',
-	    // функции агрегации
-	    '$any', '$first', '$last', '$sum', '$count', '$min', '$max', '$avg', '$array', '$flatArray', '$expandArray',
+	    // группировка
+	    '$any', '$first', '$last', '$sum', '$count', '$min', '$max', '$avg', '$array', '$flatArray', '$expandArray', '$group',
 	    // функции глобальной агрегации
 	    '$gsum', '$gcount', '$gmin', '$gmax', '$gavg', '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 	    // разное
@@ -218,7 +218,15 @@
 	        defaultValues: 10
 	    },
 
-	    //$distinct: {},
+	    offset: {
+	        render: '$singleValue',
+	        displayName: 'Пропустить элементы',
+	        desc: 'Пропуск нескольких первых элементов (строк) результата запроса',
+	        queryElement: true,
+	        replaceable: false,
+	        removable: true,
+	        defaultValues: 0
+	    },
 
 	    $field: {
 	        render: '$field'
@@ -556,7 +564,7 @@
         // aggregation functions
 	    $any: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Любое из',
 	        desc: 'Вернуть любое значение в группе',
 	        defaultValues: {$const: 1}
@@ -564,7 +572,7 @@
 
 	    $first: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Первое из',
 	        desc: 'Вернуть первое значение в группе (если не важен порядок, используйте $any)',
 	        defaultValues: {$const: 1}
@@ -572,7 +580,7 @@
 
 	    $last: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Последнее из',
 	        desc: 'Вернуть последнее значение в группе (если не важен порядок, используйте $any)',
 	        defaultValues: {$const: 1}
@@ -580,7 +588,7 @@
 
 	    $sum: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Сумма',
 	        desc: 'Суммировать значения в группе',
 	        defaultValues: {$const: 1}
@@ -588,7 +596,7 @@
 
 	    $count: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Количество',
 	        desc: 'Вычислить количество элементов в группе',
 	        defaultValues: {$const: 1}
@@ -596,7 +604,7 @@
 
 	    $min: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Минимум',
 	        desc: 'Вернуть минимальное значение в группе',
 	        defaultValues: {$const: 1}
@@ -604,7 +612,7 @@
 
 	    $max: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Максимум',
 	        desc: 'Вернуть максимальное значение в группе',
 	        defaultValues: {$const: 1}
@@ -612,7 +620,7 @@
 
 	    $avg: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Среднее',
 	        desc: 'Вычислить среднее значение в группе (NULL в расчетах не участвует)',
 	        defaultValues: {$const: 1}
@@ -620,7 +628,7 @@
 
 	    $array: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Массив',
 	        desc: 'Поместить все элементы группы в массив',
 	        defaultValues: {$const: 1}
@@ -628,7 +636,7 @@
 
 	    $flatArray: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Склеить массивы',
 	        desc: 'Объединить все массивы группы в один массив',
 	        defaultValues: {$const: 1}
@@ -636,9 +644,17 @@
 
 	    $expandArray: {
 	        render: '$default',
-	        category: 'Функции агрегации',
+	        category: 'Группировка',
 	        displayName: 'Разбить массив',
 	        desc: 'Разложить элементы массива на множество элементов ($array/$flatArray наоборот)',
+	        defaultValues: {$const: 1}
+	    },
+
+	    $group: {
+	        render: '$default',
+	        category: 'Группировка',
+	        displayName: 'Группировка по',
+	        desc: 'Установить выражение идентификатором группы (аналогично копированию выражения в $groupBy)',
 	        defaultValues: {$const: 1}
 	    },
 

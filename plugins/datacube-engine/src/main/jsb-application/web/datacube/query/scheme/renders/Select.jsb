@@ -15,7 +15,7 @@
 	        this.createHeader(false);
 
             var values = this.getValues(),
-                fieldsArr = Object.keys(values).sort();
+                fieldsArr = Object.keys(values);//.sort();
 
             for(var i = 0; i < fieldsArr.length; i++){
                 var render = this.createRender({
