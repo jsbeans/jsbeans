@@ -17,13 +17,13 @@
 			this._masterContainer = this.$('<div class="grid-master"></div>');
 			this.append(this._masterContainer);
 
-			this._masterTable = this.$('<table></table>');
+			this._masterTable = this.$('<table cellspacing="0" cellpadding="0"></table>');
 			this._masterContainer.append(this._masterTable);
 
 			this._topContainer = this.$('<div class="grid-top"></div>');
 			this.append(this._topContainer);
 
-			this._topTable = this.$('<table></table>');
+			this._topTable = this.$('<table cellspacing="0" cellpadding="0"></table>');
 			this._topContainer.append(this._topTable);
 
 		    if(!opts.headerRenderer){
@@ -46,7 +46,7 @@
                     if(scrollTop > yPos && scrollHeight - scrollTop <= 2 * clientHeight) {
                         JSB().defer(function(){
                             $this.options.preloader.call($this, evt);
-                        }, 500, 'jsb-grid.preload|' + $this.getId());
+                        }, 300, 'jsb-grid.preload|' + $this.getId());
                     }
 
                     yPos = scrollTop;
@@ -83,10 +83,10 @@
                 dataType = 'array';
 
             for(var i = 0; i < data.length; i++){ //rows
-                var row = this.$('<tr></tr>');
+                var row = this.$('<tr class="grid-row"></tr>');
 
                 for(var j in data[i]){
-                    var td = this.$('<td></td>');
+                    var td = this.$('<td class="grid-cell"></td>');
 
                     row.append(this.options.renderer(td, data[i][j]));
                 }
@@ -120,7 +120,7 @@
                 masterColGroup = this.$('<colgroup></colgroup>'),
                 topColGroup = this.$('<colgroup></colgroup>'),
                 tableWidth = 0,
-                headerTR = this.$('<tr></tr>'),
+                headerTR = this.$('<tr class="grid-header-row"></tr>'),
                 index = 0;
 
             this._masterTable.prepend(masterColGroup);
@@ -147,7 +147,7 @@
                 masterColGroup.append(masterCol);
                 topColGroup.append(topCol);
 
-                var th = this.$('<th></th>');
+                var th = this.$('<th class="grid-header-col"></th>');
                 headerTR.append(this.options.headerRenderer(th, i));
 
                 (function(masterCol, topCol){

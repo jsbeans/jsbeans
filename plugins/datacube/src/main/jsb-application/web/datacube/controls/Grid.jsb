@@ -21,10 +21,10 @@
             	noDataMessage: opts && opts.noDataMessage || 'Нет данных',
 
             	headerRenderer: function(el, index){
-                    var cssClass = "btnSort upSort";
+                    var cssClass = "btnSort";
 
                     if($this._sort && Object.keys($this._sort.$sort[0])[0] === index){
-                        cssClass = $this._sort.$sort[0][index] === 1 ? "btnSort upSort" : "btnSort downSort";
+                        cssClass += $this._sort.$sort[0][index] === 1 ? " upSort" : " downSort";
                     }
 
                     el.append('<span class="headerName">' + index + '</span>');
@@ -47,6 +47,9 @@
             	}
             });
             this.append(this.table);
+            
+            this.loader = this.$('<div class="loader">Загрузка</div>');
+            this.table.find('.grid-master').append(this.loader);
 
             this.error = new Error();
             this.append(this.error);
@@ -58,6 +61,8 @@
 
             this._eof = false;
             this._sort = undefined;
+            this.removeClass('eof');
+            this.removeClass('hasMore');
 		},
 
 		exportData: function(key, name, callback){
@@ -75,7 +80,12 @@
 		* @param {boolean} [isNeedRefresh] - загрузить данные с самого начала?
 		*/
 		fetch: function(isNeedRefresh){
-		    this.getElement().loader();
+			if(isNeedRefresh){
+				this.getElement().loader();
+				$this.removeClass('hasMore');
+			} else {
+				this.addClass('preloading');	
+			}
 
 		    var curLoadId = this._currentLoadId = JSB.generateUid(),
 		        fetchOpts = {
@@ -89,8 +99,13 @@
 		        if($this._currentLoadId !== curLoadId){
 		            return;
 		        }
+		        
 
-		        $this.getElement().loader('hide');
+		        if(isNeedRefresh){
+		        	$this.getElement().loader('hide');
+		        } else {
+		        	$this.removeClass('preloading');	
+		        }
 
 		        if(fail){
 		            $this.error.show(fail.message);
@@ -99,6 +114,10 @@
 
 		        if(res.eof){
 		            $this._eof = true;
+		            $this.addClass('eof');
+		            $this.removeClass('hasMore');
+		        } else {
+		        	$this.addClass('hasMore');
 		        }
 
 		        if(res.data.length !== 0){
