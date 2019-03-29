@@ -34,24 +34,29 @@
                 }
 				
 				// for content preloader    todo: not fire when scroll up
-				if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad))
+				if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad)) {
 					$this.events.preLoad.call($this, evt);
+                }
 				
 				// maxY
-				if(scrollHeight - scrollTop - clientHeight === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMaxY))
+				if(scrollHeight - scrollTop - clientHeight === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMaxY)) {
 					$this.events.onMaxY.call($this, evt);
+                }
 				
 				// minY
-				if(scrollTop === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMinY))
+				if(scrollTop === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMinY)) {
 					$this.events.onMinY.call($this, evt);
+                }
 				
 				// maxX
-				if(scrollWidth - scrollLeft - clientWidth === 0 & $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMaxX))
+				if(scrollWidth - scrollLeft - clientWidth === 0 & $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMaxX)) {
 					$this.events.onMaxX.call($this, evt);
+                }
 				
 				// minX
-				if(scrollLeft === 0 && $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMinX))
+				if(scrollLeft === 0 && $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMinX)) {
 					$this.events.onMinX.call($this, evt);
+                }
 				
 				$this._oldScroll.x = scrollLeft;
 				$this._oldScroll.y = scrollTop;

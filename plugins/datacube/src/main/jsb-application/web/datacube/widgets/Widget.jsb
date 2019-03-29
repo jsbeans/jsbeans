@@ -57,7 +57,7 @@
 
 		$require: ['JSB.Crypt.MD5', 
 		           'DataCube.Export.Export', 
-		           'JQuery.UI.Loader', 
+		           'jQuery.UI.Loader',
 		           'Unimap.Selector',
 		           'Unimap.Repository',
 		           'JSB.Widgets.ToolBar',

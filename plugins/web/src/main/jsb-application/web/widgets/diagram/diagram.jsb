@@ -2,7 +2,7 @@
 	$name: 'JSB.Widgets.Diagram',
 	$parent: 'JSB.Widgets.Widget',
 	$require: {
-		UiEffects: 'JQuery.UI.Effects',
+		UiEffects: 'jQuery.UI.Effects',
 		Node: 'JSB.Widgets.Diagram.Node',
 		Link: 'JSB.Widgets.Diagram.Link',
 		Joint: 'JSB.Widgets.Diagram.Joint',

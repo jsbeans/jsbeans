@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.CubeDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable', 
+	$require: ['jQuery.UI.Resizable',
 	           'JSB.Widgets.ToolManager', 
 	           'DataCube.Dialogs.CubeMaterializationTool',
 	           //'JSB.Widgets.CheckBox',

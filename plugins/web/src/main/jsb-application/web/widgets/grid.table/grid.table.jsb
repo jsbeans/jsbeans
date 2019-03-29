@@ -2,7 +2,7 @@
 	$name: 'JSB.Widgets.GridTable',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Widgets.ScrollBox', 
-	           'JQuery.UI.Resizable',
+	           'jQuery.UI.Resizable',
 	           'css:grid.table.css'],
 	$client: {
 		$constructor: function(opts){

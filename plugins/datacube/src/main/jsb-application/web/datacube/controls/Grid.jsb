@@ -2,7 +2,7 @@
 	$name: 'DataCube.Controls.Grid',
 	$parent: 'JSB.Widgets.Widget',
 
-	$require: ['Handsontable',
+	$require: ['JSB.Controls.Grid',
 	           'JSB.Controls.Button',
 	           'DataCube.Controls.Error',
 	           'css:Grid.css'],
@@ -17,44 +17,36 @@
 			$base(opts);
 			this.addClass('grid');
 
-            this.table = new Handsontable({
+            this.table = new Grid({
             	noDataMessage: opts && opts.noDataMessage || 'Нет данных',
-                table: {
-                    rowHeaders: false,
-                    readOnly: false,
-                    manualRowMove: false,
-                    rowHeights: 40,
-                    wordWrap: true
-                },
-                callbacks: {
-                    createHeader: function(i, header) {
-                        if(!header) {
-                            return i + 1;
-                        }
 
-                        var cssClass = "btnSort upSort";
+            	headerRenderer: function(el, index){
+                    var cssClass = "btnSort upSort";
 
-                        if($this._sort && Object.keys($this._sort.$sort[0])[0] === header){
-                            cssClass = $this._sort.$sort[0][header] === 1 ? "btnSort upSort" : "btnSort downSort";
-                        }
-
-		                var sortButton = `#dot <div
-                            jsb="JSB.Controls.Button"
-                            class="{{=cssClass}}"
-                            icon=true
-                            onclick="{{=$this.callbackAttr(function(evt){ $this.sortButtonClick(evt, { column: i, header: header }); })}}" >
-                        </div>`;
-
-                        return '<span class="headerName">' + header + '</span>' + sortButton;
-                     },
-                    preLoader: function(rowCount){
-                        if(!$this._eof){
-                            $this.fetch(false, rowCount);
-                        }
+                    if($this._sort && Object.keys($this._sort.$sort[0])[0] === index){
+                        cssClass = $this._sort.$sort[0][index] === 1 ? "btnSort upSort" : "btnSort downSort";
                     }
-                }
+
+                    el.append('<span class="headerName">' + index + '</span>');
+
+                    el.append(new Button({
+                        cssClass: cssClass,
+                        icon: true,
+                        onClick: function(evt){
+                            $this.sortButtonClick(evt.currentTarget, index);
+                        }
+                    }));
+
+                    return el;
+            	},
+
+            	preloader: function(){
+                    if(!$this._eof){
+                        $this.fetch();
+                    }
+            	}
             });
-            this.append($this.table);
+            this.append(this.table);
 
             this.error = new Error();
             this.append(this.error);
@@ -81,9 +73,8 @@
 		* Загружает новые данные
 		*
 		* @param {boolean} [isNeedRefresh] - загрузить данные с самого начала?
-		* @param {integer} [rowCount] - номер строки, с которой нужно добавлять данные
 		*/
-		fetch: function(isNeedRefresh, rowCount){
+		fetch: function(isNeedRefresh){
 		    this.getElement().loader();
 
 		    var curLoadId = this._currentLoadId = JSB.generateUid(),
@@ -106,19 +97,15 @@
 		            return;
 		        }
 
-		        if(res.data.length !== 0){
-		            if(JSB.isDefined(rowCount)){
-		                $this.table.addArray(rowCount, res.data);
-                    } else {
-                        $this.table.loadData(res.data);
-                    }
-		        }
-
 		        if(res.eof){
 		            $this._eof = true;
-		        } else {
-                    if($this.table.getElement().height() >= $this.table.getElement().find('.ht_master.handsontable > div.wtHolder > .wtHider').height()){
-                        $this.fetch(false, $this.table.getRowCount());
+		        }
+
+		        if(res.data.length !== 0){
+		            if(isNeedRefresh){
+		                $this.table.setData(res.data);
+                    } else {
+                        $this.table.addArray(res.data);
                     }
 		        }
 		    });
@@ -133,17 +120,13 @@
 		    this.fetch(true);
 		},
 
-		sortButtonClick: function(evt, obj){
+		sortButtonClick: function(target, field){
 		    this._sort = {$sort:[{}]};
 
-		    if(this.$(evt.target).hasClass('upSort')){
-		        this.$(evt.target).removeClass('upSort').addClass('downSort');
-
-		        this._sort.$sort[0][obj.header] = -1;
+		    if(this.$(target).hasClass('upSort')){
+		        this._sort.$sort[0][field] = -1;
 		    } else {
-		        this.$(evt.target).removeClass('downSort').addClass('upSort');
-
-		        this._sort.$sort[0][obj.header] = 1;
+		        this._sort.$sort[0][field] = 1;
 		    }
 
 		    this.fetch(true);
