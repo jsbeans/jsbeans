@@ -4,7 +4,7 @@
 	
 	$require: ['JSB.Workspace.WorkspaceController', 
 	           'JSB.Widgets.Button',
-	           'JQuery.UI.Effects',
+	           'jQuery.UI.Effects',
 	           'css:BrowserView.css'],
 	           
 	$client: {

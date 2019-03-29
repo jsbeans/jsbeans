@@ -6,7 +6,7 @@
 	           'JSB.Workspace.Navigator',
 	           'JSB.Controls.TabView',
 	           'JSB.Widgets.Button',
-	           'JQuery.UI.Effects'],
+	           'jQuery.UI.Effects'],
 	
 	$sync: {
 		updateCheckInterval: 0

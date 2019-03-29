@@ -70,7 +70,7 @@
 	},
 	
 	$client: {
-		$require: ['JQuery.UI.Loader',
+		$require: ['jQuery.UI.Loader',
 		           'JSB.Widgets.Button',
 		           'JSB.Widgets.PrimitiveEditor',
 		           'JSB.Widgets.ToolManager',
