@@ -41,10 +41,6 @@
 	        this.construct();
 	    },
 
-	    addMenuItem: function(item){
-	        this.addMenu.addItem(item);
-	    },
-
 	    changeValue: function(){
 	        JSB.merge(this.getScope(), this.getDefaultValues());
 
@@ -87,11 +83,7 @@
                     allowReplace = false;
                 }
 
-                var render = this.createRender({
-                    allowReplace: allowReplace,
-                    key: descriptions[i].key,
-                    scope: this.getScope()
-                });
+                var render = this.createItem(descriptions[i].key, allowReplace);
 
                 if(render){
                     this.append(render);
@@ -102,11 +94,7 @@
 	            existElements: this.getScope(),
 	            menuItems: this.resolveMenuItems(),
 	            callback: function(desc){
-                    var render = $this.createRender({
-                        key: desc.key,
-                        scope: $this.getScope(),
-                        queryBean: $this
-                    });
+                    var render = $this.createItem(desc.key);
 
                     if(render){
                         $this.addMenu.before(render);
@@ -132,6 +120,19 @@
             });
 
 	        return header;
+	    },
+
+	    createItem: function(key, allowReplace){
+	        return this.createRender({
+	            allowReplace: allowReplace,
+                key: key,
+                scope: this.getScope(),
+                deleteCallback: function(){
+                    $this.addMenu.addItem(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
+
+                    this.remove();
+                }
+	        });
 	    },
 
 	    getContext: function(){

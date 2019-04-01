@@ -1,11 +1,13 @@
 {
 	$name: 'DataCube.Query.Renders.Sort',
-	$parent: 'DataCube.Query.Renders.QueryElements',
+	$parent: 'DataCube.Query.Renders.Default',
 
 	$alias: '$sort',
 
 	$client: {
 	    $require: ['css:Sort.css'],
+
+	    _isQueryElement: false,
 
 	    $constructor: function(opts){
 	        $base(opts);

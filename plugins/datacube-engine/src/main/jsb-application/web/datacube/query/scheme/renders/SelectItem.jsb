@@ -32,7 +32,7 @@
                     input.change(function(){
                         var newVal = input.val();
 
-                        if(newVal !== curName){
+                        if(newVal !== curName && !input.hasClass('error')){
                             $this.rename(newVal);
                             input.remove();
 
@@ -42,13 +42,25 @@
                                 newName: newVal
                             });
                         }
+
                         $this.$(window).off('click.renameQueryFieldInput');
+                    });
+
+                    input.keyup(function(evt){
+                        var newVal = input.val();
+
+                        if(newVal !== curName && $this.getScope()[newVal]){
+                            input.addClass('error');
+                        } else {
+                            input.removeClass('error');
+                        }
                     });
 
                     $this.$(window).on('click.renameQueryFieldInput', function(){
                         input.remove();
                         $this.$(window).off('click.renameQueryFieldInput');
                     });
+
                     input.click(function(evt){
                         evt.stopPropagation();
                     });

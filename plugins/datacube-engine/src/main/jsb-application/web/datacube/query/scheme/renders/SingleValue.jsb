@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Renders.SingleValue',
-	$parent: 'DataCube.Query.Renders.QueryElements',
+	$parent: 'DataCube.Query.Renders.Default',
 
 	$alias: '$singleValue',
 

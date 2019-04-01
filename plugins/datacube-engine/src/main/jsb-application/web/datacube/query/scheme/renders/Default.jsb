@@ -8,12 +8,22 @@
 	    $require: ['DataCube.Query.Syntax',
 	               'css:Default.css'],
 
+	    _isQueryElement: false,
+
 	    $constructor: function(opts){
 	        $base(opts);
 
 	        this.addClass('defaultRender');
 
-	        this.constructHead();
+	        if(opts.parent.getRenderName() === '$query'){
+	            this._isQueryElement = true;
+
+	            this.createHeader(true);
+
+	            this.addClass('queryElements');
+	        } else {
+	            this.constructHead();
+	        }
 
 	        this.constructValues();
 

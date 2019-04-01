@@ -188,6 +188,7 @@
             input.change(change);
 
             $this.$(window).on('click.changeInput', change);
+
             input.click(function(evt){
                 evt.stopPropagation();
             });
@@ -721,12 +722,13 @@
 
         /**
         * Отображает тултип в заменами для элемента
-        * @param {object} options - объект с опциями для показа тултипа
+        * @param {object} options - объект с опциями показа тултипа
         * @param {jQuery} options.element - элемент jQuery, к которому будут привязан тултип
         * @param {function} options.callback - функция обратного вызова при выборе нового элемента
         */
 	    showTool: function(options){
 	        return this.getController().showTool(JSB.merge({
+	            caller: this,
 	            key: this.getKey()
 	        }, options));
 	    },

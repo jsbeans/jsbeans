@@ -5,7 +5,8 @@
 	$alias: '$select',
 
 	$client: {
-	    $require: ['css:Select.css'],
+	    $require: ['DataCube.Query.Syntax',
+	               'css:Select.css'],
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -36,23 +37,38 @@
             this._addBtn = this.$('<i class="addBtn"></i>');
             this.append(this._addBtn);
             this._addBtn.click(function(){
-                var count = 1,
-                    name = 'Столбец',
-                    newName = name;
+                $this.showTool({
+                    element: $this._addBtn,
+                    key: '$const',
+                    callback: function(desc){
+                        var count = 1,
+                            name = 'Столбец',
+                            newName = name;
 
-                while(values[newName]){
-                    newName = name + '_' + count;
-                    count++;
-                }
+                        if(desc.key === '$field'){
+                            name = desc.value;
+                            newName = desc.value;
+                        }
 
-                $this.addField(newName);
+                        while(values[newName]){
+                            newName = name + '_' + count;
+                            count++;
+                        }
+
+                        $this.addField(newName, desc);
+                    }
+                });
             });
 	    },
 
-	    addField: function(fieldName, hideEvent){
+	    addField: function(fieldName, desc, hideEvent){
 	        var values = this.getValues();
 
-	        values[fieldName] = this.getDefaultValues();
+	        if(desc){
+	            values[fieldName] = Syntax.constructDefaultValues(desc);
+	        } else {
+	            values[fieldName] = this.getDefaultValues();
+	        }
 
             var render = $this.createRender({
                 key: fieldName,
@@ -70,6 +86,7 @@
                 if(!hideEvent){
                     $this.onChange({
                         name: 'addField',
+                        fieldDesc: desc,
                         fieldName: fieldName
                     });
                 }

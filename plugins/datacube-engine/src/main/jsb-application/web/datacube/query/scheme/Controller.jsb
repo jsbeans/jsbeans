@@ -228,7 +228,7 @@
 				    switch(act){
 				        case 'edit':
                             if(opts.editCallback){
-                                opts.editCallback.call($this, clickEvt);
+                                opts.editCallback.call(opts.caller, clickEvt);
                                 return;
                             }
 
@@ -236,7 +236,7 @@
                             break;
                         case 'delete':
                             if(opts.deleteCallback){
-                                opts.deleteCallback.call($this, clickEvt);
+                                opts.deleteCallback.call(opts.caller, clickEvt);
                                 return;
                             }
 

@@ -9,13 +9,13 @@
     padding: 2px 2px 0 2px;
 }
 
-.queryMenuTool > .jsb-button:hover {
-    border: 1px solid #5f75a552;
+.queryMenuTool > .jsb-button {
+    width: 24px;
+    height: 24px;
 }
 
-.queryMenuTool > .jsb-button > .icon {
-    width: 12px;
-    height: 12px;
+.queryMenuTool > .jsb-button:hover {
+    border: 1px solid #5f75a552;
 }
 
 .queryMenuTool > .jsb-button.btnEdit {

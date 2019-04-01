@@ -140,7 +140,7 @@
                 firstRender.subscribeToChanges($this.getId(), function(changeDesc){
                     switch(changeDesc.name){
                         case 'addField':
-                            secondRender.addField(changeDesc.fieldName, true);
+                            secondRender.addField(changeDesc.fieldName, changeDesc.fieldDesc, true);
                             break;
                         case 'renameField':
                             secondRender.renameField(changeDesc.oldName, changeDesc.newName);

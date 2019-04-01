@@ -942,6 +942,24 @@
 	    }
 	},
 
+	constructDefaultValues: function(desc){
+	    var key;
+
+	    if(JSB.isObject(desc)){
+	        key = desc.key;
+	    }
+
+	    if(key === '$field'){
+	        return {
+	            $context: desc.context,
+	            $field: desc.value,
+	            $sourceContext: desc.sourceContext
+	        }
+	    } else {
+	        return this.getScheme(key).defaultValues;
+	    }
+	},
+
     ensureReady: function(callback){
         this.ensureTrigger('ready', callback);
     },

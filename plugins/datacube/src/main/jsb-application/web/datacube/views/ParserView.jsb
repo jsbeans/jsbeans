@@ -21,7 +21,7 @@
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.Button',
                    'JSB.Widgets.TabView',
-                   'Handsontable',
+                   'JSB.Controls.Grid',
                    'css:ParserView.css'
         ],
         
@@ -428,7 +428,7 @@
 				(function(t){
 					var tableCtrl = null;
 					if(!tabs[t]){
-						tableCtrl = new Handsontable({
+						tableCtrl = new Grid({
 							table: {
 			                    rowHeaders: true,
 			                    readOnly: true,
@@ -455,7 +455,7 @@
 					
 					// fill table
 					tableCtrl.ensureInitialized(function(){
-						tableCtrl.loadData(tables[t].rows);	
+						tableCtrl.setData(tables[t].rows);
 					});
 				})(t);
 			}

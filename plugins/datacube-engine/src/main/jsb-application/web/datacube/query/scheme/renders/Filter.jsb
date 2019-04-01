@@ -9,6 +9,8 @@
 	               'DataCube.Query.Controls.AddMenu',
 	               'css:Filter.css'],
 
+	    _isQueryElement: false,
+
 	    $constructor: function(opts){
 	        $base(opts);
 
@@ -44,8 +46,6 @@
 	        });
 	        this.append(this.addMenu);
 	    },
-
-	    _isQueryElement: false,
 
 	    changeValue: function(oldDesc){
 	        // todo
