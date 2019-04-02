@@ -80,10 +80,6 @@
                 select = {};
 
             for(var i in fields){
-                if(selectedFields && !selectedFields[i]){
-                    continue;
-                }
-
                 var fieldName = i;
 
                 if(this.commentDesc.isUseComment){
@@ -92,6 +88,10 @@
                     } else { // string
                         fieldName = fields[i].comment;
                     }
+                }
+
+                if(selectedFields && !selectedFields[fieldName]){
+                    continue;
                 }
 
                 if(useContext){
