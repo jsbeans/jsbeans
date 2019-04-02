@@ -27,7 +27,10 @@
                         cssClass += $this._sort.$sort[0][index] === 1 ? " upSort" : " downSort";
                     }
 
-                    el.append('<span class="headerName">' + index + '</span>');
+                    var titleElt = $this.$('<div class="headerName"></div>');
+                    titleElt.attr('title', index);
+                    titleElt.text(index);
+                    el.append(titleElt);
 
                     el.append(new Button({
                         cssClass: cssClass,

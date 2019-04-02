@@ -144,43 +144,50 @@
 	white-space: nowrap;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid {
+	height: 100%;
+    width: 100%;
+}
+
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col {
 	line-height: 14px;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name {
+	overflow: hidden;
+    text-overflow: ellipsis;
 	font-weight: bold;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="string"] {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="string"] {
 	color: #3e3e3e;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="integer"] {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="integer"] {
 	color: #017e86;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="float"],
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="double"],
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="number"] {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="float"],
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="double"],
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="number"] {
 	color: #004c9c;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="boolean"] {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="boolean"] {
 	color: #007710;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="date"] {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="date"] {
 	color: #92009a;
 }
 
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="object"],
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="array"] {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="object"],
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="array"] {
 	color: #b51c02;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .type {
+.parserView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .type {
 	color: #555;
     font-size: 11px;
 }
