@@ -38,7 +38,7 @@
 
 			        jsb.setChecked(b, true);
 
-			        $this._checkedFields[jsb.getLabel()] = b;
+			        $this._checkedFields[jsb.getOption('key')] = b;
 			    }
 			}
 
