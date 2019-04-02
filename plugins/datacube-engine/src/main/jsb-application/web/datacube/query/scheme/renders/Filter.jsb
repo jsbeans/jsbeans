@@ -138,14 +138,6 @@
 	        });
 
 	        return $base(options, parent);
-	    },
-
-	    remove: function(){
-	        if(this._isQueryElement){
-	            this.getParent().addMenuItem(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
-            }
-
-	        $base();
 	    }
 	}
 }

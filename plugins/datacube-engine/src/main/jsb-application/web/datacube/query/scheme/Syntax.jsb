@@ -139,7 +139,7 @@
 	    },
 
 	    $groupBy: {
-	        render: '$queryElements',
+	        render: '$default',
 	        displayName: 'Группировка',
 	        desc: 'Группировка строк по значениям или выражениям',
 	        multiple: true,
