@@ -114,6 +114,9 @@
         setData: function(data){
             this.clear();
 
+            if(!data || data.length == 0){
+            	return;
+            }
             this.addArray(data);
 
             var firstRow = this._masterTable.find("tr:first-child > td"),
@@ -202,13 +205,21 @@
                 if(JSB.isNull(val)){
                     return 'null';
                 }
-
-                if(JSB.isNumber(val)){
-                    return 'number';
-                }
-
+                
                 if(JSB.isString(val)){
                     return 'string';
+                }
+
+                if(JSB.isInteger(val)){
+                    return 'integer';
+                }
+
+                if(JSB.isDouble(val)){
+                    return 'double';
+                }
+                
+                if(JSB.isNumber(val)){
+                    return 'number';
                 }
 
                 if(JSB.isObject(val)){
@@ -224,7 +235,7 @@
                 }
 
                 if(JSB.isDate(val)){
-                    return 'datetime';
+                    return 'date';
                 }
 
                 return 'undefined';

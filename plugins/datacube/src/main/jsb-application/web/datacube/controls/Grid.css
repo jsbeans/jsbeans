@@ -7,7 +7,9 @@
 }
 
 .jsb-grid .headerName {
-    margin-right: 20px;
+    padding-right: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .jsb-grid .btnSort {
@@ -17,7 +19,7 @@
     padding: 0 !important;
 
 	position: absolute;
-    right: 0;
+    right: 1px;
     top: 50%;
     margin-top: -6px;
 

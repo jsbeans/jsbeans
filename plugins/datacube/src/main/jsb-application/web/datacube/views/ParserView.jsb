@@ -429,22 +429,11 @@
 					var tableCtrl = null;
 					if(!tabs[t]){
 						tableCtrl = new Grid({
-							table: {
-			                    rowHeaders: true,
-			                    readOnly: true,
-			                    manualRowMove: false,
-			                    manualColumnMove: false,
-			                    //colWidths: 300,
-			                    stretchH: 'none'
-			                },
-			                callbacks: {
-			                    createHeader: function(i, header) {
-			                    	if(!header) return i + 1;
-			                    	var type = $this.previewTables[t].columns[header].type;
-			                    	var comment = $this.previewTables[t].columns[header].comment;
-			                    	return '<div class="name" type="'+type+'">' + header + '</div><div class="type">'+type+'</div>';
-			                    },
-			                    preLoader: function(rowCount){}
+			                headerRenderer: function(th, header){
+			                	var type = $this.previewTables[t].columns[header].type;
+		                    	var comment = $this.previewTables[t].columns[header].comment;
+		                    	th.append($this.$('<div class="name" type="'+type+'" title="'+header+'">' + header + '</div><div class="type">'+type+'</div>'));
+		                    	return th;
 			                }
 						});
 						$this.tableTabView.addTab('Таблица: ' + t, tableCtrl, {id:t});
@@ -454,9 +443,7 @@
 					}
 					
 					// fill table
-					tableCtrl.ensureInitialized(function(){
-						tableCtrl.setData(tables[t].rows);
-					});
+					tableCtrl.setData(tables[t].rows);
 				})(t);
 			}
 		},
