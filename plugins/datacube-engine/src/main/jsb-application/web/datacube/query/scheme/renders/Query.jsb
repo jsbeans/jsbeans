@@ -104,6 +104,66 @@
 	            }
 	        });
 	        this.append(this.addMenu);
+
+	        // footer
+	        var footer = this.$('<footer></footer>');
+	        this.append(footer);
+
+	        function createFooterElement(name, hasValue, defVal){
+	            var value = JSB.isDefined($this.getScope()[name]) ? $this.getScope()[name] : defVal;
+
+                var element = $this.$('<div class="footerEl"></div>');
+                footer.append(element);
+
+                var icon = $this.$('<div class="icon"></div>');
+                icon.attr('key', name);
+                element.append(icon);
+
+                if(JSB.isDefined($this.getScope()[name])){
+                    element.addClass('enabled');
+                }
+
+                icon.click(function(){
+                    if(JSB.isDefined($this.getScope()[name])){
+                        element.removeClass('enabled');
+
+                        delete $this.getScope()[name];
+                    } else {
+                        element.addClass('enabled');
+
+                        $this.getScope()[name] = value;
+                    }
+
+                    $this.onChange();
+                });
+
+                if(hasValue){
+                    var valueElement = $this.$('<div class="value">' + value + '</div>');
+                    element.append(valueElement);
+
+                    valueElement.click(function(evt){
+                        evt.stopPropagation();
+
+                        if(!element.hasClass('enabled')){
+                            return;
+                        }
+
+                        $this.createInput(valueElement, 'number', function(newVal){
+                            $this.getScope()[name] = newVal;
+                            value = newVal;
+                        });
+                    })
+                }
+	        }
+
+	        // distinct
+	        createFooterElement('$distinct', false, true);
+
+	        // limit
+	        createFooterElement('$limit', true, 10);
+
+	        // offset
+	        createFooterElement('$offset', true, 0);
 	    },
 
 	    createHeader: function(){
