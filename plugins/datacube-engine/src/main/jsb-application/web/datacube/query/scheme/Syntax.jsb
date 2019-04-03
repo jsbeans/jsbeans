@@ -208,26 +208,6 @@
 	        defaultAddValues: {$expr: {$const: 0}, $type: 1}
 	    },
 
-	    $limit: {
-	        render: '$singleValue',
-	        displayName: 'Лимит элементов',
-	        desc: 'Ограничение количества элементов',
-	        queryElement: true,
-	        replaceable: false,
-	        removable: true,
-	        defaultValues: 10
-	    },
-
-	    offset: {
-	        render: '$singleValue',
-	        displayName: 'Пропустить элементы',
-	        desc: 'Пропуск нескольких первых элементов (строк) результата запроса',
-	        queryElement: true,
-	        replaceable: false,
-	        removable: true,
-	        defaultValues: 0
-	    },
-
 	    $field: {
 	        render: '$field'
 	    },
