@@ -67,7 +67,8 @@
 	        if(desc){
 	            values[fieldName] = Syntax.constructDefaultValues(desc);
 	        } else {
-	            values[fieldName] = this.getDefaultValues();
+                debugger;
+	            //values[fieldName] = this.getDefaultValues();
 	        }
 
             var render = $this.createRender({

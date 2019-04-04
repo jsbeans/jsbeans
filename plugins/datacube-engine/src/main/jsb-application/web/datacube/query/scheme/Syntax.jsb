@@ -936,7 +936,11 @@
 	            $sourceContext: desc.sourceContext
 	        }
 	    } else {
-	        return this.getScheme(key).defaultValues;
+	        var val = {};
+
+	        val[desc.key] = JSB().clone(this.getScheme(key).defaultValues);
+
+	        return val;
 	    }
 	},
 
