@@ -27,15 +27,15 @@
 	        if(this.getParent()){
 	            this.addClass('subQuery');
 
-	            if(!this.options.noHeader){
-	                this.createHeader();
-                }
-
                 if(!this.getScope().$context){
                     this.getScope().$context = this.getController().generateContext();
                 }
 
 	            this.getController().registerContext(this.getContext());
+
+	            if(!this.options.noHeader){
+	                this.createHeader();
+                }
 	        }
 
 	        this.construct();

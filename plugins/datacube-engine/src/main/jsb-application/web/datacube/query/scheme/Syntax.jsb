@@ -1013,11 +1013,14 @@
     * @return {object} схема для указанного ключа или объект со схемами для всех ключей
     */
     getScheme: function (key){
+        /*
         if(key){
             return this.scheme[key];
         }
 
         return this.scheme;
+        */
+        return this.scheme[key];
     },
 
     /**
