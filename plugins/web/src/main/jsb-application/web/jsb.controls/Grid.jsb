@@ -3,7 +3,7 @@
 	$parent: 'JSB.Controls.Control',
 
 	$require: ['JsonView',
-	           'jQuery.UI.Resizable',
+	           'jQuery.UI.Draggable',
 	           'css:Grid.css'],
 
 	$client: {
@@ -23,8 +23,15 @@
 			this._topContainer = this.$('<div class="grid-top"></div>');
 			this.append(this._topContainer);
 
-			this._topTable = this.$('<table cellspacing="0" cellpadding="0"></table>');
-			this._topContainer.append(this._topTable);
+			//if(this.options.colHeader){
+                this._topTable = this.$('<table cellspacing="0" cellpadding="0"></table>');
+                this._topContainer.append(this._topTable);
+			//}
+
+			if(this.options.resizeColumns){
+			    this._colResizeHandleContainer = this.$('<div class="grid-column-resize-handles"></div>');
+			    this.append(this._colResizeHandleContainer);
+			}
 
 		    if(!opts.headerRenderer){
 		        this.options.headerRenderer = function(th, index){
@@ -33,9 +40,16 @@
 		    }
 
 		    this._masterContainer.scroll(function(evt){
+		        evt.stopPropagation();
+
+		        // todo: только при горизонтальном скроле
 		        // header
 		        $this._topContainer.get(0).style.left = -evt.target.scrollLeft + 'px';
 		        $this._topContainer.width($this._masterContainer.get(0).clientWidth + evt.target.scrollLeft);
+
+		        // resize container
+		        $this._colResizeHandleContainer.get(0).style.left = -evt.target.scrollLeft + 'px';
+		        $this._colResizeHandleContainer.width($this._masterContainer.get(0).clientWidth + evt.target.scrollLeft);
 
 		        // preload
 		        if($this.options.preloader){
@@ -53,8 +67,8 @@
                 }
 		    });
 
-		    if(!opts.renderer){
-		        this.options.renderer = function(td, value){
+		    if(!opts.cellRenderer){
+		        this.options.cellRenderer = function(td, value){
 		            return $this._defaultRenderer(td, value);
 		        };
 		    }
@@ -66,13 +80,21 @@
 
         options: {
             // options
+            colHeader: true,
+            columns: null,
             maxColWidth: 300,
             minColWidth: 100,
             noDataMessage: 'Нет данных',
+            resizeColumns: true,
+            //resizeRows: true, todo
+            //rowHeader: true, todo
+            rowClass: null,
 
             // renderers
             headerRenderer: null,
-            renderer: null,
+            // td, value, rowIndex, colIndex, rowData
+            cellRenderer: null,
+            rowRenderer: null,
 
             // callbacks
             preloader: null
@@ -82,13 +104,37 @@
             var newRows = [],
                 dataType = 'array';
 
+            function createCell(row, data, rowIndex, colIndex, rowData){
+                var td = this.$('<td class="grid-cell"></td>');
+
+                td.attr('key', colIndex);
+
+                $this.options.cellRenderer.call($this, td, data, rowIndex, colIndex, rowData);
+
+                row.append(td);
+            }
+
             for(var i = 0; i < data.length; i++){ //rows
                 var row = this.$('<tr class="grid-row"></tr>');
 
-                for(var j in data[i]){
-                    var td = this.$('<td class="grid-cell"></td>');
+                row.addClass(this.options.rowClass);
 
-                    row.append(this.options.renderer(td, data[i][j]));
+                if(this.options.rowRenderer){
+                    this.options.rowRenderer.call(this, row, data[i]);
+                }
+
+                if(this.options.columns){
+                    for(var j = 0; j < this.options.columns.length; j++){
+                        if(JSB.isObject(this.options.columns[j])){
+                            // todo
+                        } else {
+                            createCell(row, data[i][this.options.columns[j]], i, this.options.columns[j], data[i]);
+                        }
+                    }
+                } else {
+                    for(var j in data[i]){  // todo arrays
+                        createCell(row, data[i][j], i, j, data[i]);
+                    }
                 }
 
                 newRows.push(row);
@@ -100,18 +146,35 @@
             } else {
                 this._masterTable.append(newRows);
             }
-
-            if(this.options.preloader && this._masterTable.height() < this.getElement().height()){
-                this.options.preloader.call(this);
-            }
         },
 
         clear: function(){
             this._masterTable.empty();
-            this._topTable.empty();
+
+            //if(this._topTable){
+                this._topTable.empty();
+            //}
+
+            if(this._colResizeHandleContainer){
+                this._colResizeHandleContainer.empty();
+            }
         },
 
         setData: function(data){
+            function resizeColumnHandles(startIndex, widthDifferent, isSum){
+                startIndex = startIndex || 0;
+
+                var resizeHandles = $this._colResizeHandleContainer.children('.col-resize-handle');
+
+                for(var i = startIndex; i < resizeHandles.length; i++){
+                    if(isSum){
+                        resizeHandles[i].style.left = +resizeHandles[i].style.left.replace('px', '') + (i + 1) * widthDifferent + 'px';
+                    } else {
+                        resizeHandles[i].style.left = +resizeHandles[i].style.left.replace('px', '') + widthDifferent + 'px';
+                    }
+                }
+            }
+
             this.clear();
 
             if(!data || data.length == 0){
@@ -123,14 +186,15 @@
                 masterColGroup = this.$('<colgroup></colgroup>'),
                 topColGroup = this.$('<colgroup></colgroup>'),
                 tableWidth = 0,
-                headerTR = this.$('<tr class="grid-header-row"></tr>'),
-                index = 0;
+                headerTR = this.$('<tr class="grid-header-row"></tr>');
 
             this._masterTable.prepend(masterColGroup);
             this._topTable.prepend(topColGroup);
 
-            for(var i in data[0]){
-                var colWidth = this.$(firstRow[index]).width(),
+            for(var i = 0; i < firstRow.length; i++){
+                var col = this.$(firstRow[i]),
+                    colWidth = col.width(),
+                    key = col.attr('key'),
                     style;
 
                 if(colWidth > this.options.maxColWidth){
@@ -141,7 +205,7 @@
                     style = colWidth;
                 }
 
-                var col = '<col key="' + i + '" style="width: ' + style + 'px">',
+                var col = '<col key="' + key + '" style="width: ' + Math.ceil(style) + 'px">',
                     masterCol = this.$(col),
                     topCol = this.$(col);
 
@@ -150,30 +214,50 @@
                 masterColGroup.append(masterCol);
                 topColGroup.append(topCol);
 
-                var th = this.$('<th class="grid-header-col"></th>');
-                headerTR.append(this.options.headerRenderer(th, i));
+                if(this.options.colHeader){
+                    var th = this.$('<th class="grid-header-col"></th>');
 
-                (function(masterCol, topCol){
-                    th.resizable({
-                        handles: "e",
-                        helper: "jsb-grid-resizable-helper",
-                        start: function(evt, ui){
-                            ui.helper.height($this._masterContainer.get(0).clientHeight);
-                        },
-                        stop: function(evt, ui){
-                            masterCol.style.width = ui.size.width + 'px';
-                            topCol.style.width = ui.size.width + 'px';
-                        }
-                    });
-                })(masterCol.get(0), topCol.get(0));
+                    this.options.headerRenderer(th, key)
+
+                    headerTR.append(th);
+                }
+
+                if(this.options.resizeColumns){
+                    var resizeHandle = this.$('<div class="col-resize-handle"></div>');
+                    this._colResizeHandleContainer.append(resizeHandle);
+
+                    resizeHandle.get(0).style.left = tableWidth + 'px';
+
+                    (function(resizeHandle, masterCol, topCol, index){
+                        resizeHandle.draggable({
+                            addClasses: false,
+                            axis: 'x',
+                            classes: {
+                                'ui-draggable-dragging': 'active'
+                            },
+                            stop: function(evt, ui){
+                                var widthDif = ui.position.left - ui.originalPosition.left,
+                                    newColWidth = masterCol.width() + widthDif;
+
+                                masterCol.get(0).style.width = newColWidth + 'px';
+                                topCol.get(0).style.width = newColWidth + 'px';
+
+                                resizeColumnHandles(index + 1, widthDif);
+                            }
+                        });
+                    })(resizeHandle, masterCol, topCol, i);
+                }
             }
 
-            this._topTable.append(headerTR);
+            if(this.options.colHeader){
+                this._topTable.append(headerTR);
+            }
 
+            this._updateSizes();
 
             var masterContainerClientWidth = this._masterContainer.get(0).clientWidth;
             if(this._masterTable.width() < masterContainerClientWidth){
-                var dif = (masterContainerClientWidth - this._masterTable.width()) / Object.keys(data[0]).length;
+                var dif = (masterContainerClientWidth - this._masterTable.width() - (this._masterTable.width() - this._masterTable.innerWidth())) / firstRow.length;
 
                 function increaseCols(cols, dif){
                     for(var i = 0; i < cols.length; i++){
@@ -185,15 +269,17 @@
 
                 increaseCols(masterColGroup.children('col'), dif);
                 increaseCols(topColGroup.children('col'), dif);
+
+                resizeColumnHandles(0, dif, true);
             }
 
-            this._masterTable.get(0).style['margin-top'] = this._topTable.height() + 'px';
+            if(this.options.preloader && this._masterTable.height() < this.getElement().height()){
+                this.options.preloader.call(this);
+            }
         },
 
         _defaultHeaderRenderer: function(th, index){
             th.append(index);
-
-            return th;
         },
 
         _defaultRenderer: function(td, value){
@@ -257,26 +343,21 @@
                 }
 
                 this.$(td).append(jvInst.getElement());
-                /*
-                JSB.lookup('JsonView', function(jvcls){
-                    var jvInst = new jvcls({collapsed:true});
-
-                    if(valueType === 'array' && value.length > $this.options.jsonArrayLimit){
-                        jvInst.setData(value.slice(0, $this.options.jsonArrayLimit));
-                    } else {
-                        jvInst.setData(value);
-                    }
-
-                    $this.$(td).append(jvInst.getElement());
-                });
-                */
             } else if(valueType == 'boolean'){
                 this.$(td).attr('val', value);
             } else {
                 this.$(td).text(String(value));
             }
+        },
 
-            return td;
+        _updateSizes: function(){
+            this._topContainer.width(this._masterContainer.get(0).clientWidth);
+
+            this._masterTable.get(0).style['margin-top'] = this._topTable.height() + 'px';
+
+            this._colResizeHandleContainer.get(0).style['margin-top'] = -this._masterContainer.height() + 'px';
+
+            this._colResizeHandleContainer.children('.col-resize-handle').height(this._masterContainer.get(0).clientHeight);
         }
     }
 }

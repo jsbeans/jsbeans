@@ -1,12 +1,15 @@
 .jsb-grid {
     height: inherit;
-    width: inherit;
+    max-height: inherit;
+    width: 100%;
     position: relative;
     overflow: hidden;
 }
 
+/* grid master */
 .grid-master {
     height: inherit;
+    max-height: inherit;
     overflow: auto;
 }
 
@@ -50,69 +53,9 @@
 	background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjwhRE9DVFlQRSBzdmcgIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICAnaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkJz48c3ZnIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDMyIDMyIiBoZWlnaHQ9IjMycHgiIGlkPSJMYXllcl8xIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMycHgiIHhtbDpzcGFjZT0icHJlc2VydmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPjxwYXRoIGQ9Ik03LjcwMSwxNC4yNzZsOS41ODYtOS41ODVjMC44NzktMC44NzgsMi4zMTctMC44NzgsMy4xOTUsMGwwLjgwMSwwLjhjMC44NzgsMC44NzcsMC44NzgsMi4zMTYsMCwzLjE5NCAgTDEzLjk2OCwxNmw3LjMxNSw3LjMxNWMwLjg3OCwwLjg3OCwwLjg3OCwyLjMxNywwLDMuMTk0bC0wLjgwMSwwLjhjLTAuODc4LDAuODc5LTIuMzE2LDAuODc5LTMuMTk1LDBsLTkuNTg2LTkuNTg3ICBDNy4yMjksMTcuMjUyLDcuMDIsMTYuNjIsNy4wNTQsMTZDNy4wMiwxNS4zOCw3LjIyOSwxNC43NDgsNy43MDEsMTQuMjc2eiIgZmlsbD0iIzUxNTE1MSIvPjwvc3ZnPg==);
 }
 
-
-.grid-top {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    overflow: hidden;
+.grid-master > table {
+    /*min-width: 100%;*/
 }
-
-.grid-top > table {
-    background: #edeef0;
-    border-color: #ccc;
-}
-
-
-.grid-master > table,
-.grid-top > table {
-    table-layout: fixed;
-    width: -moz-fit-content;
-    width: fit-content;
-}
-
-.grid-master > table td.grid-cell,
-.grid-top > table th.grid-header-col {
-    text-overflow: ellipsis;
-	vertical-align: top;
-}
-
-
-.grid-top > table tr.grid-header-row {}
-
-.grid-top > table th.grid-header-col {
-	border-top: 1px solid #fff;
-    border-right: 1px solid #fff;
-    border-bottom: 1px solid #fff;
-    background: #d2e2ec;
-    padding: 2px;
-    border-radius: 3px 3px 0 0;
-    color: #316271;
-    font-size: 11px;
-}
-
-.grid-top > table th.grid-header-col:first-child {
-	border-left: 1px solid #fff;
-}
-
-.grid-top > table th.grid-header-col:last-child {
-	border-right: none;
-}
-
-
-.grid-top > table th.grid-header-col > .ui-resizable-handle {
-	transition: 150ms;
-    opacity: 0.7;
-}
-
-.grid-top > table th.grid-header-col > .ui-resizable-handle:hover {
-	background: #879ead;
-}
-
-.grid-top > table th.grid-header-col > .ui-resizable-handle.ui-resizable-e {
-	right: -4px;
-}
-
 
 .grid-master > table tr.grid-row {}
 
@@ -180,7 +123,88 @@
 
 .grid-master > table td.grid-cell[type="date"] {}
 
+/* grid top */
+.grid-top {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    overflow: hidden;
+}
 
-.jsb-grid-resizable-helper {
-    border-right: 2px dotted #00F;
+.grid-top > table {
+    background: #edeef0;
+    border-color: #ccc;
+}
+
+
+.grid-master > table,
+.grid-top > table {
+    table-layout: fixed;
+    width: 0;
+    /*
+    width: -moz-fit-content;
+    width: fit-content;
+    */
+}
+
+.grid-master > table td.grid-cell,
+.grid-top > table th.grid-header-col {
+    text-overflow: ellipsis;
+	vertical-align: top;
+}
+
+
+.grid-top > table tr.grid-header-row {}
+
+.grid-top > table th.grid-header-col {
+	border-top: 1px solid #fff;
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+    background: #d2e2ec;
+    padding: 2px;
+    border-radius: 3px 3px 0 0;
+    color: #316271;
+    font-size: 11px;
+}
+
+.grid-top > table th.grid-header-col:first-child {
+	border-left: 1px solid #fff;
+}
+
+.grid-top > table th.grid-header-col:last-child {
+	border-right: none;
+}
+
+
+.grid-top > table th.grid-header-col > .ui-resizable-handle {
+	transition: 150ms;
+    opacity: 0.7;
+}
+
+.grid-top > table th.grid-header-col > .ui-resizable-handle:hover {
+	background: #879ead;
+}
+
+.grid-top > table th.grid-header-col > .ui-resizable-handle.ui-resizable-e {
+	right: -4px;
+}
+
+
+.grid-column-resize-handles {
+    position: relative;
+    left: 0;
+}
+
+.grid-column-resize-handles > .col-resize-handle {
+    position: absolute;
+    width: 8px;
+    height: 100%;
+    margin-left: -4px;
+    cursor: e-resize;
+    top: 0;
+}
+
+.grid-column-resize-handles > .col-resize-handle.active {
+    outline: 2px dotted #00F;
+    outline-offset: -5px;
 }
