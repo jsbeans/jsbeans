@@ -276,7 +276,7 @@
     },
 	$client: {
         $require: ['JSB.Widgets.Diagram', 
-                   'JSB.Controls.CheckBox',
+                   'JSB.Controls.Checkbox',
                    'css:GraphWidget.css'],
 
         embeddedBindings: [],
@@ -797,7 +797,7 @@
             this.append(this.legendBtn);
 
             for(var i in this._namesList){
-                var checkBox = new CheckBox({
+                var checkBox = new Checkbox({
                     class: "graphLegendCheckBox",
                     label: i,
                     checked: true,
