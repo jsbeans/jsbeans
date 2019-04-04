@@ -60,6 +60,38 @@
             return resArr;
         }
     },
+    
+    findByInternalId: function(id, values, schemePath){
+        if(!values){
+            values = this._values;
+
+            if(!schemePath){
+                schemePath = this._schemePath;
+            }
+        }
+
+        if(JSB.isString(schemePath)){
+            if(schemePath.length > 0){
+            	var itemsIdx = schemePath.lastIndexOf('items');
+        		if(itemsIdx < 0 || schemePath.length - itemsIdx !== 5){
+        			schemePath += '.items';
+        		}
+            } else {
+                schemePath += 'items';
+            }
+        }
+
+        for(var i = 0; i < values.length; i++){
+        	if(!values[i].items){
+                continue;
+            }
+        	var res = this.getMainSelector().findByInternalId(id, values[i].items, schemePath + '.' + values[i].value + '.items');
+
+            if(res){
+                return res;
+            }
+        }
+    },
 
     findAll: function(){
         var res = this.find(key, values, true);
@@ -71,39 +103,75 @@
         return res;
     },
 
-    findRendersByName: function(name, arr, values){
+    findRendersByName: function(name, arr, values, schemePath){
         if(!arr){
             arr = [];
         }
 
         if(!values){
             values = this._values;
+            
+            if(!schemePath){
+                schemePath = this._schemePath;
+            }
+        }
+        
+        if(JSB.isString(schemePath)){
+            if(schemePath.length > 0){
+            	var itemsIdx = schemePath.lastIndexOf('items');
+        		if(itemsIdx < 0 || schemePath.length - itemsIdx !== 5){
+        			schemePath += '.items';
+        		}
+            } else {
+                schemePath += 'items';
+            }
         }
 
         for(var i = 0; i < values.length; i++){
             if(!values[i].items){
                 continue;
             }
-
-            this.getMainSelector().findRendersByName(name, arr, values[i].items);
+            this.getMainSelector().findRendersByName(name, arr, values[i].items, schemePath + '.' + values[i].value + '.items');
         }
 
         return arr;
     },
     
-    findByType: function(typeName, arr, selOpts){
+    findByType: function(typeName, arr, selOpts, schemePath){
         if(!arr){
             arr = [];
+        }
+        
+        if(!schemePath){
+            schemePath = this._schemePath;
+        }
+        
+        if(schemePath){
+	        var scheme = this.getMainSelector().getScheme(schemePath);
+	        
+	        if(scheme && scheme.optional && selOpts && !selOpts.checked){
+	        	return arr;
+	        }
+        }
+        
+        if(JSB.isString(schemePath)){
+            if(schemePath.length > 0){
+            	var itemsIdx = schemePath.lastIndexOf('items');
+        		if(itemsIdx < 0 || schemePath.length - itemsIdx !== 5){
+        			schemePath += '.items';
+        		}
+            } else {
+                schemePath += 'items';
+            }
         }
 
         var values = (selOpts && selOpts.values) || this._values;
 
         for(var i = 0; i < values.length; i++){
-            if(!values[i].items){
-                continue;
-            }
-
-            this.getMainSelector().findByType(typeName, arr, values[i].items);
+        	if(!values[i].items){
+        		continue;
+        	}
+        	this.getMainSelector().findByType(typeName, arr, values[i].items, schemePath + '.' + values[i].value + '.items');
         }
 
         return arr;
