@@ -25,9 +25,8 @@
 	max-width: 400px;
 }
 
-.addProviderTool > .fieldList > .fields {
-    padding: 3px;
-    max-height: 350px;
+.addProviderTool > .fieldList > .jsb-grid {
+    max-height: 260px;
 }
 
 .addProviderTool > .buttonBar {

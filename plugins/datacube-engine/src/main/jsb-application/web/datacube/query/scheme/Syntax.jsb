@@ -20,7 +20,7 @@
 	    // матеметические операции
 	    '$add', '$sub', '$mul', '$div', '$divz', '$mod', '$sqrt', '$pow2',
 	    // функции
-	    '$greatest', '$least', '$splitString', '$substring', '$trim', '$concat', '$regexpReplace',
+	    '$greatest', '$least', '$splitString', '$substring', '$trim', '$concat', '$concatArray', '$regexpReplace',
 	    '$dateYear', '$dateMonth', '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$dateTotalSeconds',
 	    '$dateIntervalOrder', '$timeHour', '$timeMinute', '$timeSecond', '$coalesce',
 	    // преобразование типов
@@ -358,6 +358,16 @@
 	        desc: 'Упорядоченное соединение строк в одну',
 	        defaultAddValues: {$const: ''},
 	        defaultValues: {$const: ''},
+	        multiple: true
+	    },
+
+	    $concatArray: {
+	        render: '$default',
+	        category: 'Функции',
+	        displayName: 'Сформировать массив',
+	        desc: 'Формирование массива из заданных значений',
+	        defaultAddValues: {$const: 0},
+	        defaultValues: {$const: 0},
 	        multiple: true
 	    },
 

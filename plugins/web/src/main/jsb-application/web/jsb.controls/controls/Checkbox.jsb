@@ -121,6 +121,7 @@
 		    }
 
 			this._label.text(str);
+			this._label.attr('title', str);
 		},
 
 		setLoading: function(b){
