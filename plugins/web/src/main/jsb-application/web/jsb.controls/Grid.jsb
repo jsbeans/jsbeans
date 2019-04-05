@@ -126,7 +126,7 @@
                 } else {
                     if($this._dataScheme.type === 'object') {
                         for(var j in $this._dataScheme.scheme) {
-                            createCell(row, rowData[j], rowIndex, j, rowData);
+                            createCell(row, rowData[$this._dataScheme.scheme[j]], rowIndex, $this._dataScheme.scheme[j], rowData);
                         }
                     } else {
                         // todo arrays
@@ -310,6 +310,8 @@
                 increaseCols(topColGroup.children('col'), dif);
 
                 resizeColumnHandles(0, dif, true);
+
+                this._updateSizes();
             }
 
             if(this.options.preloader && this._masterTable.height() < this.getElement().height()){
