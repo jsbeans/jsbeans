@@ -748,7 +748,12 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                     return 'AVG(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$array':
                 case '$flatArray':
-                    return 'ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
+                    switch($this.vendor) {
+                        case 'ClickHouse':
+                            return 'groupArray(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
+                        default:
+                            return 'ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
+                    }
                 case '$expandArray':
                     return 'UNNEST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
             }
