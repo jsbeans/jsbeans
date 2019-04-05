@@ -21,6 +21,7 @@
 		
 		
 		createTable: function(cName, fields, opts){
+			debugger;
 			var fieldMap = {};
 			var store = this.source.getStore();
 			var connWrap = store.getConnection(true);
@@ -43,6 +44,9 @@
 				if(!schemaMap[schema]){
 					// create new schema
 					var sql = 'create schema "' + schema + '"';
+					if(vendor == 'ClickHouse'){
+						sql = 'create database "' + schema + '"';
+					}
 					JDBC.executeUpdate(connection, sql);
 				}
 				
@@ -113,7 +117,8 @@
 					break;
 				}
 				
-				if(vendor == 'Microsoft SQL Server'){
+				if(vendor == 'Microsoft SQL Server' ||
+					vendor == 'ClickHouse'	){
 					var sql = 'create table "' + schema + '"."' +suggestedName + '" (';
 					var fNameArr = Object.keys(fields);
 					for(var i = 0; i < fNameArr.length; i++){
@@ -128,7 +133,18 @@
 						}
 						sql += '"' + fName + '" ' + jdbcType;
 					}
+					if(vendor == 'ClickHouse'){
+						// create date field
+						if(fNameArr.length > 0){
+							sql += ', ';
+						}
+						sql += '"__date" Date';
+					}
+
 					sql += ')';
+					if(vendor == 'ClickHouse') {
+						sql += ' ENGINE = MergeTree(__date, (__date), 8192)';
+					}
 					JDBC.executeUpdate(connection, sql);
 					
 					var columns = databaseMetaData.getColumns(null, schema, suggestedName, null);
@@ -137,6 +153,9 @@
 						if(fields[columnName]){
 							fieldMap[columnName] = columnName;
 						} else {
+							if(vendor == 'ClickHouse' && columnName == '__date'){
+								continue;
+							}
 							throw new Error('Invalid column name: ' + columnName);
 						}
 					}
@@ -294,6 +313,7 @@
 			var store = this.source.getStore();
 			var connWrap = store.getConnection(true);
 			var connection = connWrap.get();
+			var vendor = JDBC.getDatabaseVendor(connection);
 			var schema = opts && opts.schema || 'public';
 			if(!JSB.isArray(objArr)){
 				objArr = [objArr];
@@ -318,6 +338,13 @@
 						checkSql += '"' + fNameArr[i] + '" = ?'
 						bFirst = false;
 					}
+					if(vendor == 'ClickHouse'){
+						if(!bFirst){
+							sql += ',';
+						}
+						sql += "__date";
+						bFirst = false;
+					}
 					if(bFirst){
 						// no columns added
 						continue;
@@ -335,6 +362,14 @@
 						}
 						sql += '?';
 						values.push(fixupValue(fVal));
+						bFirst = false;
+					}
+					if(vendor == 'ClickHouse'){
+						if(!bFirst){
+							sql += ',';
+						}
+						sql += "?";
+						values.push(new Date());
 						bFirst = false;
 					}
 					sql += ')';
