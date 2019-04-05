@@ -7,6 +7,8 @@
 	           'css:Grid.css'],
 
 	$client: {
+	    _dataScheme: null,
+
 		$constructor: function(opts){
 			$base(opts);
 
@@ -104,40 +106,75 @@
             var newRows = [],
                 dataType = 'array';
 
+            function createRow(rowData, rowIndex) {
+                var row = $this.$('<tr class="grid-row"></tr>');
+
+                row.addClass($this.options.rowClass);
+
+                if($this.options.rowRenderer) {
+                    $this.options.rowRenderer.call($this, row, rowData);
+                }
+
+                if($this.options.columns) {
+                    for(var j = 0; j < $this.options.columns.length; j++) {
+                        if(JSB.isObject($this.options.columns[j])) {
+                            // todo
+                        } else {
+                            createCell(row, rowData[$this.options.columns[j]], rowIndex, $this.options.columns[j], rowData);
+                        }
+                    }
+                } else {
+                    if($this._dataScheme.type === 'object') {
+                        for(var j in $this._dataScheme.scheme) {
+                            createCell(row, rowData[j], rowIndex, j, rowData);
+                        }
+                    } else {
+                        // todo arrays
+                    }
+                }
+
+                newRows.push(row);
+            }
+
             function createCell(row, data, rowIndex, colIndex, rowData){
                 var td = this.$('<td class="grid-cell"></td>');
 
-                td.attr('key', colIndex);
+                td.attr('colKey', colIndex);
 
                 $this.options.cellRenderer.call($this, td, data, rowIndex, colIndex, rowData);
 
                 row.append(td);
             }
 
-            for(var i = 0; i < data.length; i++){ //rows
-                var row = this.$('<tr class="grid-row"></tr>');
-
-                row.addClass(this.options.rowClass);
-
-                if(this.options.rowRenderer){
-                    this.options.rowRenderer.call(this, row, data[i]);
-                }
-
-                if(this.options.columns){
-                    for(var j = 0; j < this.options.columns.length; j++){
-                        if(JSB.isObject(this.options.columns[j])){
-                            // todo
-                        } else {
-                            createCell(row, data[i][this.options.columns[j]], i, this.options.columns[j], data[i]);
-                        }
+            function createDataScheme(data) {
+                if(JSB.isObject(data)) {
+                    $this._dataScheme = {
+                        scheme: Object.keys(data),
+                        type: 'object'
                     }
                 } else {
-                    for(var j in data[i]){  // todo arrays
-                        createCell(row, data[i][j], i, j, data[i]);
+                    $this._dataScheme = {
+                        type: 'array'
                     }
                 }
+            }
 
-                newRows.push(row);
+            if(JSB.isArray(data)) {  // array
+                for(var i = 0; i < data.length; i++) {
+                    if(!this._dataScheme){
+                        createDataScheme(data[i]);
+                    }
+
+                    createRow(data[i], i);
+                }
+            } else {
+                for(var i in data) { // object
+                    if(!this._dataScheme) {
+                        createDataScheme(data[i]);
+                    }
+
+                    createRow(data[i], i);
+                }
             }
 
             if(JSB.isDefined(rowIndex)){
@@ -149,6 +186,8 @@
         },
 
         clear: function(){
+            this._dataScheme = null;
+
             this._masterTable.empty();
 
             //if(this._topTable){
@@ -194,7 +233,7 @@
             for(var i = 0; i < firstRow.length; i++){
                 var col = this.$(firstRow[i]),
                     colWidth = col.width(),
-                    key = col.attr('key'),
+                    colKey = col.attr('colKey'),
                     style;
 
                 if(colWidth > this.options.maxColWidth){
@@ -205,7 +244,7 @@
                     style = colWidth;
                 }
 
-                var col = '<col key="' + key + '" style="width: ' + Math.ceil(style) + 'px">',
+                var col = '<col colKey="' + colKey + '" style="width: ' + Math.ceil(style) + 'px">',
                     masterCol = this.$(col),
                     topCol = this.$(col);
 
@@ -217,7 +256,7 @@
                 if(this.options.colHeader){
                     var th = this.$('<th class="grid-header-col"></th>');
 
-                    this.options.headerRenderer(th, key)
+                    this.options.headerRenderer(th, colKey);
 
                     headerTR.append(th);
                 }
@@ -276,6 +315,10 @@
             if(this.options.preloader && this._masterTable.height() < this.getElement().height()){
                 this.options.preloader.call(this);
             }
+        },
+
+        sort: function(){
+            // todo
         },
 
         _defaultHeaderRenderer: function(th, index){
@@ -351,6 +394,8 @@
         },
 
         _updateSizes: function(){
+            this.getElement().width(this.getElement().width());
+
             this._topContainer.width(this._masterContainer.get(0).clientWidth);
 
             this._masterTable.get(0).style['margin-top'] = this._topTable.height() + 'px';

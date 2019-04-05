@@ -2,8 +2,9 @@
 	$name: 'DataCube.FieldList',
 	$parent: 'JSB.Widgets.Widget',
     $client: {
-        $require: ['JSB.Controls.ScrollBox',
+        $require: ['JSB.Controls.Button',
                    'JSB.Controls.Checkbox',
+                   'JSB.Controls.Grid',
                    'JSB.Workspace.SearchEditor',
                    'css:FieldList.css'],
 
@@ -21,9 +22,48 @@
             });
             this.append(search);
 
-			this.fields = new ScrollBox({
-			    cssClass: 'fields',
-			    xAxisScroll: false
+			this.fields = new Grid({
+			    columns: ['name', 'type'],
+			    cellRenderer: function(td, value, rowIndex, colIndex, rowData) {
+			        if(colIndex === 'name'){
+                        td.append(new Checkbox({
+                            key: rowIndex,
+                            label: value,
+                            onChange: function(b){
+                                $this._checkedFields[this.options.key] = b;
+                            }
+                        }));
+
+                        td.attr('val', value);
+			        } else {
+                        var typeStr;
+
+                        if(JSB.isInstanceOf(value, 'Datacube.Types.Type')){
+                            typeStr = value.getName();
+                        } else if(JSB.isString(value)){
+                            typeStr = value;
+                        } else {
+                            typeStr = 'неизвестный тип';
+                        }
+
+                        td.append(typeStr);
+                        td.attr('val', typeStr);
+			        }
+			    },
+            	headerRenderer: function(el, index){
+                    var titleElt = $this.$('<div class="headerName"></div>');
+                    titleElt.attr('title', index);
+                    titleElt.text(index);
+                    el.append(titleElt);
+
+                    el.append(new Button({
+                        cssClass: 'btnSort',
+                        icon: true,
+                        onClick: function(evt){
+                            $this.sort(evt.currentTarget, index);
+                        }
+                    }));
+            	}
 			});
 			this.append(this.fields);
 
@@ -31,7 +71,7 @@
 			this.append(tools);
 
 			function setCheckedAll(b){
-			    var checkboxes = $this.fields.find('.field > .jsb-checkbox');
+			    var checkboxes = $this.fields.find('.grid-master > table > tr > td > .jsb-checkbox');
 
 			    for(var i = 0; i < checkboxes.length; i++){
 			        var jsb = $this.$(checkboxes[i]).jsb();
@@ -65,10 +105,10 @@
 
         search: function(value){
 		    if(value){
-                this.fields.find('.field[key]:not(:icontains("' + value + '"))').addClass('hidden');
-                this.fields.find('.field[key]:icontains("' + value + '")').removeClass('hidden');
+                this.fields.find('.grid-master > table > tr > td[key="name"]:not(:icontains("' + value + '"))').closest('tr').addClass('hidden');
+                this.fields.find('.grid-master > table > tr > td[key="name"]:icontains("' + value + '")').closest('tr').removeClass('hidden');
             } else {
-                this.fields.find('.field').removeClass('hidden');
+                this.fields.find('.grid-master > table > tr').removeClass('hidden');
             }
         },
 
@@ -76,31 +116,46 @@
             this.fields.clear();
             this._checkedFields = {};
 
-            for(var i in fieldsList){
-                var field = $this.$('<div class="field" key="' + (fieldsList[i].name || i) + '"></div>');
+            this.fields.setData(fieldsList);
 
-                field.append(new Checkbox({
-                    key: i,
-                    label: fieldsList[i].name || i,
-                    onChange: function(b){
-                        $this._checkedFields[this.options.key] = b;
-                    }
-                }));
-                
-                var type = fieldsList[i].type;
-                var typeStr = '';
-                if(JSB.isInstanceOf(type, 'Datacube.Types.Type')){
-                	typeStr = type.getName();
-                } else if(JSB.isString(type)){
-                	typeStr = type;
-                } else {
-                	typeStr = 'неизвестный тип';
+            this.fields.getElement().height(this.fields.find('> .grid-master > table').height());
+        },
+
+        sort: function(target, colName) {
+		    var fields = this.fields.find('.grid-master > table > tr'),
+		        headers = this.fields.find('.grid-top > table > tr > th > .jsb-button'),
+		        direction = 1;
+
+            target = this.$(target);
+
+            if(target.hasClass('upSort')) {
+                headers.removeClass('upSort downSort');
+
+                target.addClass('downSort');
+
+                direction = -1;
+            } else {
+                headers.removeClass('upSort downSort');
+
+                target.removeClass('downSort').addClass('upSort');
+            }
+
+		    fields.sort(function(a, b) {
+		        a = $this.$(a).find('> td[colKey="' + colName + '"]').attr('val');
+		        b = $this.$(b).find('> td[colKey="' + colName + '"]').attr('val');
+
+                if(a > b){
+                    return 1 * direction;
                 }
 
-                field.append('<div class="type">' + typeStr + '</div>');
+                if(a < b){
+                    return -1 * direction;
+                }
 
-                this.fields.append(field);
-            }
+                return 0;
+		    });
+
+		    fields.detach().appendTo(this.fields.find('.grid-master > table'));
         }
     }
 }
