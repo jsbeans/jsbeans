@@ -47,9 +47,9 @@
                             }
                         }
                     },
-                    after: function(){
+                    after: function(query){
                         if (this.getNestedParentQueries().length > 0) {
-                            var type = queryFieldTypeMap.get(query)[Object.keys(query)[0]];
+                            var type = queryFieldTypeMap.get(query)[Object.keys(query.$select)[0]];
                             if (!type) throw new Error('Nested query field type is undefined');
                             this.type = JSB.clone(type);
                         } else {

@@ -40,7 +40,7 @@
                 ) {
                     return updateContext === false
                         ? JSB.clone(view)
-                        : QueryUtils.copyQuery(view, name);
+                        : QueryUtils.copyQuery(view, updateContext);
                 }
                 usedViews.push(view);
                 return null;
@@ -80,24 +80,32 @@
 
             /// embed views
             var usedViews = [];
+            var renameSourceContext = new HashMap();
             Visitors.visitProxy(rootQuery, {
                 query: {
                     before: function(query) {
                         if (JSB.isString(query.$from)) {
-                            var view = embedView.call(this, query.$from);
+                            var context = query.$from + '#' + JSB.generateUid().substr(0,4);
+                            var view = embedView.call(this, query.$from, context);
                             if (view) {
                                 query.$from = view;
                             }
                         }
                         if (query.$join && JSB.isString(query.$join.$left)) {
-                            var view = embedView.call(this, query.$join.$left);
+                            var context = query.$join.$left + '#' + JSB.generateUid().substr(0,4);
+                            var view = embedView.call(this, query.$join.$left, context);
                             if (view) {
+                                if (!renameSourceContext.get(query)) renameSourceContext.put(query, {});
+                                JSB.merge(renameSourceContext.get(query), {oldLeft: query.$join.$left, newLeft:context});
                                 query.$join.$left = view;
                             }
                         }
                         if (query.$join && JSB.isString(query.$join.$right)) {
-                            var view = embedView.call(this, query.$join.$right);
+                            var context = query.$join.$right + '#' + JSB.generateUid().substr(0,4);
+                            var view = embedView.call(this, query.$join.$right, context);
                             if (view) {
+                                if (!renameSourceContext.get(query)) renameSourceContext.put(query, {});
+                                JSB.merge(renameSourceContext.get(query), {oldRight: query.$join.$right, newRight:context});
                                 query.$join.$right = view;
                             }
                         }
@@ -113,6 +121,8 @@
                         }
                     },
                     after: function(query) {
+                        renameSourceContext.remove(query);
+
                         if (query.$views) {
                             for(var name in query.$views) {
                                 if (usedViews.indexOf(query.$views[name]) == -1) {
@@ -121,6 +131,21 @@
                             }
                         }
                     },
+                },
+                field: {
+                    before: function(field, context, sourceContext) {
+
+                        var targetQuery = this.getQuery(context);
+                        if (renameSourceContext.get(targetQuery)) {
+                            var rename = renameSourceContext.get(targetQuery);
+                            if (rename.oldLeft == sourceContext) {
+                                this.getCurrent().$sourceContext = rename.newLeft;
+                            }
+                            if (rename.oldRight == sourceContext) {
+                                this.getCurrent().$sourceContext = rename.newRight;
+                            }
+                        }
+                    }
                 }
             });
             return rootQuery;

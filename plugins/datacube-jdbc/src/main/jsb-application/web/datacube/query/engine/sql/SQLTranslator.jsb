@@ -23,6 +23,7 @@
         _views: {},
         _queryPath: [],
         _loopbackQueries: [],
+        _contextPath: [],
         
         $bootstrap: function(){
         	TranslatorRegistry.register(this);
@@ -110,11 +111,12 @@
 		translateQueryExpression: function(query, asRoot) {
 		    try {
                 $this._queryPath.push(query);
+                $this._contextPath.push({});
                 /// is view
                 if (JSB.isString(query)) {
                     var sourceQuery = $this._getSourceQuery(query, null);
                     return $this._quotedName($this._translateContext(query)) +
-                            ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
+                            ' AS ' + $this._quotedName($this._declareContext(sourceQuery.$context));
                 }
                 if (JSB.isEqual({}, query)) {
                     return "(SELECT null)";
@@ -136,12 +138,15 @@
 
                     var sql = $this._translateLoopbackProvider(query)
                     if (!asRoot) {
-                        sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
+                        sql += ' AS ' + $this._quotedName($this._declareContext(query.$context));
                     }
                     return sql;
                 }
 
                 /// regular query
+                var sqlWith = $this._translatePart('WITH\n', function(){
+                    return $this._translateWith(query);
+                }, '\n');
 
                 var sqlSource = $this._translateSourceQueryExpression(query, asRoot);
 
@@ -155,9 +160,7 @@
                         selectSql += ' AS ' + $this._quotedName(alias);
                     }
                     sql += '('
-                    sql += $this._translatePart('WITH\n', function(){
-                        return $this._translateWith(query);
-                    }, '\n');
+                    sql += sqlWith;
                     sql += 'SELECT ' + (query.$distinct ? 'DISTINCT ' : '') + selectSql + ' FROM ';
                     sql += sqlSource;
                     if ($this._markAfterSource) {
@@ -187,7 +190,7 @@
                     });
                     sql += ')';
                     if (!asRoot) {
-                        sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
+                        sql += ' AS ' + $this._quotedName($this._declareContext(query.$context));
                     }
                 } else {
                     sql += sqlSource;
@@ -199,6 +202,7 @@
 
                 return sql;
             } finally {
+                $this._contextPath.pop();
                 var q = $this._queryPath.pop();
                 QueryUtils.throwError(q == query, 'Invalid query path');
             }
@@ -213,21 +217,31 @@
 ////		    });
 //        },
 
-        _translateContext: function(context) {
-//            var currentQuery = $this._queryPath[$this._queryPath.length-1];
-//            var view = $this._views[context];
-//            if (view) {
-//                return context+'/'+MD5.md5(currentQuery.$context).substring(0,3);
-//            }
-
+        _translateContext: function(context, isForeign) {
+            for(var i = $this._contextPath.length - (isForeign ? 2 : 1); i >= 0; i--) {
+                if ($this._contextPath[i][context]) {
+                    return $this._contextPath[i][context];
+                }
+            }
             return context;
-//            if (!$this._translatedContexts[context]) {
-//                var name = $this._translatedContexts[context] = 'Q'+Object.keys($this._translatedContexts).length;
-//                QueryUtils.logDebug('Query context: {} = {}',name, context);
-//                return name;
-//
-//            }
-//            return $this._translatedContexts[context];
+        },
+
+        _declareViewContext: function(context) {
+            var newContext = context;
+            for(var i = 0; i < $this._contextPath.length; i++) {
+                if ($this._contextPath[i][context]) {
+                    newContext = context + '-' + $this._contextPath.length;
+                }
+            }
+            $this._contextPath[$this._contextPath.length - 1][context] = newContext;
+            return newContext;
+        },
+
+        _declareContext: function(context) {
+            return context;
+        },
+
+        _releaseContext: function(context) {
         },
 
         _isViewQuery: function(query, byContext){
@@ -1006,7 +1020,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
 		    function asView(name){
                 var sqlSource = $this._quotedName($this._translateContext(name));
                 var sourceQuery = $this._getSourceQuery(name, query);
-                sqlSource +=  ' AS ' + $this._quotedName($this._translateContext(sourceQuery.$context));
+                sqlSource +=  ' AS ' + $this._quotedName($this._declareViewContext(sourceQuery.$context));
                 return sqlSource;
 		    }
 
@@ -1024,7 +1038,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                 return $this._translateUnion(query);
             } else if (query.$recursive) {
                 return $this._translateRecursive(query) +
-                        ' AS ' + $this._quotedName($this._translateContext(query.$context));
+                        ' AS ' + $this._quotedName($this._declareContext(query.$context, query));
             } else {
                 QueryUtils.throwError(0, 'Invalid source in query "{}"', query.$context);
             }
@@ -1052,7 +1066,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
 
                 var sqlView = $this.translateQueryExpression(viewQuery, true);
 
-                sql += $this._quotedName($this._translateContext(name));
+                sql += $this._quotedName($this._declareContext(name, query));
                 sql += ' AS ';
                 sql += sqlView;
             }
@@ -1098,7 +1112,7 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
             } else {
                 var sql = $this._printTableName(dataProvider.getTableFullName());
             }
-            sql += ' AS ' + $this._quotedName($this._translateContext(query.$context));
+            sql += ' AS ' + $this._quotedName($this._declareContext(query.$context, query));
             return sql;
 		},
 
@@ -1205,7 +1219,7 @@ debugger
 		        sql += $this.translateQueryExpression(fixedSubQuery, true);
 		    }
 
-		    sql = '(' + sql + ') AS ' + $this._quotedName($this._translateContext(query.$context));
+		    sql = '(' + sql + ') AS ' + $this._quotedName($this._declareContext(query.$context, query));
 		    return sql;
 		},
 
@@ -1366,14 +1380,14 @@ debugger
 
         _translateField: function(field, context, sourceContext, useAlias, callerContext) {
             var sql = $this._translateFieldInternal(field, context, sourceContext, useAlias, callerContext);
-            var query = $this.contextQueries[context];
+//            var query = $this.contextQueries[context];
 //            QueryUtils.logDebug(
 //                    '\t field={}\tcontext={}\tcaller={}\talias={}\tsource={}\tsql={}',
 //                    field, context, callerContext, useAlias,
 //                    query.$from ? '$from' : query.$join ? '$join' : query.$union ? '$union' : query.$provider ? '$provider' : '',
 //                    sql
 ////            );
-//if (sql== '"#0"."ShortName"'
+//if (sql== '"#2-2"."reactAuthorId"'
 //) {
 //    debugger;
 //    $this._translateFieldInternal(field, context, sourceContext, useAlias, callerContext);
@@ -1396,13 +1410,13 @@ debugger
             function translateSourceField(sourceQuery) {
                 if ($this._loopbackQueries.indexOf(sourceQuery) !== -1){
                     /// loopback query
-                    return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);
+                    return $this._quotedName($this._translateContext(sourceQuery.$context, context != callerContext)) + '.' + $this._quotedName(field);
                 }
 
                 if (!$this._isViewQuery(sourceQuery) && /*sourceQuery.$provider && */!QueryUtils.queryHasBody(sourceQuery)) {
                     return $this._translateExpression(sourceQuery.$select[field], sourceQuery);
                 }
-                return $this._quotedName($this._translateContext(sourceQuery.$context)) + '.' + $this._quotedName(field);
+                return $this._quotedName($this._translateContext(sourceQuery.$context, context != callerContext)) + '.' + $this._quotedName(field);
             }
 
             if (targetQuery.$from) {
@@ -1454,17 +1468,17 @@ debugger
                 QueryUtils.throwError(0, 'Undefined field "{}" in "{}"', field, context);
 
             } else if (targetQuery.$union) {
-                return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
+                return $this._quotedName($this._translateContext(context, context != callerContext)) + '.' + $this._quotedName(field);
             } else if (targetQuery.$provider) {
                 var provider = QueryUtils.getQueryDataProvider(targetQuery.$provider, $this.cube);
                 /// is source field (of provider)
                 var providerField = provider.extractFields()[field];
                 if (providerField) {
-                    return $this._quotedName($this._translateContext(context)) + '.' + $this._quotedName(field);
+                    return $this._quotedName($this._translateContext(context, context != callerContext)) + '.' + $this._quotedName(field);
                 }
                 QueryUtils.throwError(0, 'Provider field "{}" is undefined in context', field, context);
             } else if (targetQuery.$recursive) {
-                return $this._quotedName($this._translateContext(context)) + "." + $this._quotedName(field);
+                return $this._quotedName($this._translateContext(context, context != callerContext)) + "." + $this._quotedName(field);
             }
 
             //QueryUtils.throwError(0, 'Undefined source of query with context: {}', context);

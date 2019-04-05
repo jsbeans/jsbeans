@@ -124,7 +124,7 @@
                     start = true;
                 }
                 if (start && $this.path[i] == '$select') {
-                    parents.push($this.path[i-1]);
+                     parents.push($this.path[i-1]);
                 }
             }
             return parents;
