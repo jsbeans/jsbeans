@@ -124,7 +124,6 @@
                     start = true;
                 }
                 if (start && $this.path[i] == '$select') {
-debugger;
                     parents.push($this.path[i-1]);
                 }
             }
@@ -374,16 +373,17 @@ debugger;
         },
 
         visitSelect: function($select) {
-            for(var alias in $select) {
-                $this.visitOutputField(alias, $select[alias]);
-            }
+            $this.visitWithPath('$select',function(){
+                for(var alias in $select) {
+                    $this.visitOutputField(alias, $select[alias]);
+                }
+            });
         },
 
         visitOutputField:function(alias, exp) {
             $this.visitWithPath(alias,function(){
                 $this.visit(exp, {asExpression:true});
             });
-
         },
 
         visitGroupBy: function($groupBy) {
