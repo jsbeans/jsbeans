@@ -157,8 +157,8 @@
 			'ClickHouse': {
                 string: 'String',
                 boolean: 'String',
-                integer: 'Int32',
-                uint: 'UInt32',
+                integer: 'Int64',
+                uint: 'UInt64',
 			    long: 'Int64',
 			    ulong: 'UInt64',
                 float: 'Float32',
@@ -609,6 +609,55 @@
 
             return value;
         },
+        
+        convertToJsonValue: function(value, jdbcTypeNumber){
+            switch (jdbcTypeNumber) {
+                case 0+Types.BIT:
+                case 0+Types.BOOLEAN:
+                    return !!value;
+                case 0+Types.TINYINT:
+                case 0+Types.BIGINT:
+                case 0+Types.SMALLINT:
+                case 0+Types.INTEGER:
+                case 0+Types.REAL:
+                case 0+Types.FLOAT:
+                case 0+Types.DOUBLE:
+                case 0+Types.DECIMAL:
+                case 0+Types.NUMERIC:
+                    return 0.0+value;
+                case 0+Types.VARBINARY:
+                case 0+Types.BINARY:
+                case 0+Types.LONGVARBINARY:
+                case 0+Types.LONGVARCHAR:
+                case 0+Types.CHAR:
+                case 0+Types.VARCHAR:
+                case 0+Types.CLOB:
+                case 0+Types.OTHER:
+                    return ''+value;
+                case 0+Types.DATE:
+                    return new Date(value.getTime());
+                case 0+Types.TIME:
+                    return new Date(value.getTime());
+                case 0+Types.TIMESTAMP:
+                    return new Date(value.getTime());
+                case 0+Types.ARRAY:
+                    if(JSB.isArray(value)) {
+                        var array = [];
+                        for(var i = 0; i < value.length; i++) {
+                            array.push(this.convertToJsonValue(value[i]));
+                        }
+                        return array;
+                    }
+                    throw 'Type error: Expected Array';
+                case 0+Types.NULL:
+                    return null;
+                default:
+                    return value;
+            }
+
+            return value;
+        },
+
 
         _getColumnValue: function(resultSet, i){
         	var valObj = resultSet.getObject(i);
@@ -654,10 +703,16 @@
                     return date;
                 case 0+Types.ARRAY: {
                         var array = [];
+                        var arrDS = resultSet.getArray(i);
+                        var arrRS = arrDS.getArray();
+                        for(var j = 0; j < arrRS.length; j++){
+                        	array.push(this.convertToJsonValue(arrRS[j], arrDS.getBaseType()));
+                        }
+/*                        
                         var arrayRS = resultSet.getArray(i).getResultSet();
                         while(arrayRS.next()) {
                             array.push(this._getColumnValue(arrayRS, 2));
-                        }
+                        }*/
                         return array;
                     }
                 case 0+Types.NULL:

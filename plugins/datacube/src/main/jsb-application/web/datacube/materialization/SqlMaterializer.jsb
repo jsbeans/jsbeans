@@ -21,7 +21,6 @@
 		
 		
 		createTable: function(cName, fields, opts){
-			debugger;
 			var fieldMap = {};
 			var store = this.source.getStore();
 			var connWrap = store.getConnection(true);
@@ -143,7 +142,14 @@
 
 					sql += ')';
 					if(vendor == 'ClickHouse') {
-						sql += ' ENGINE = MergeTree(__date, (__date), 8192)';
+						var pKey = '';
+						for(var i = 0; i < fNameArr.length; i++){
+							if(i > 0){
+								pKey += ', ';
+							}
+							pKey += fNameArr[i];
+						}
+						sql += ' ENGINE = MergeTree(__date, ('+pKey+(pKey.length > 0 ?', ':'')+'__date), 8192)';
 					}
 					JDBC.executeUpdate(connection, sql);
 					

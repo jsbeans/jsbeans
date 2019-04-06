@@ -680,6 +680,9 @@
 			
 			this.scroll = new ScrollBox({
 				onScroll: function(){
+					if(!$this.getElement().is(':visible')){
+						return;
+					}
 					if($this.useTooltipOnHover && $this.widgetTool){
 						$this.widgetTool.close();
 						$this.widgetTool = null;
@@ -688,7 +691,6 @@
 					if( $this.paneHeight - ($this.scrollHeight - scrollY) > 0.3 * $this.scrollHeight){
 						return;
 					}
-					
 					$this.appendRows();
 				}
 			});
@@ -1283,13 +1285,17 @@
 				
 			} else {
 				// check scroll
+				if(!$this.getElement().is(':visible')){
+					this.rowAppending = false;
+					return;
+				}
 				var scrollPos = $this.scroll.getScrollPosition();
 				if(!scrollPos){
 					this.rowAppending = false;
 					return;
 				}
 				var scrollY = scrollPos.y;
-				if( $this.paneHeight - ($this.scrollHeight - scrollY) > 0.3 * $this.scrollHeight){
+				if($this.paneHeight - ($this.scrollHeight - scrollY) > 0.3 * $this.scrollHeight){
 					this.rowAppending = false;
 					return;
 				}

@@ -197,11 +197,17 @@
 
 .grid-column-resize-handles > .col-resize-handle {
     position: absolute;
-    width: 8px;
+    width: 7px;
     height: 100%;
-    margin-left: -4px;
+    margin-left: -5px;
     cursor: e-resize;
     top: 0;
+    
+    transition: background 200ms;
+}
+
+.grid-column-resize-handles > .col-resize-handle:hover {
+	background: #86a0a2a1;
 }
 
 .grid-column-resize-handles > .col-resize-handle.active {
