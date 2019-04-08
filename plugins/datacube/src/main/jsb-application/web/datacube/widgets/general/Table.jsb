@@ -40,6 +40,12 @@
 	                optional: true,
 	                editor: 'none'
 	    	    },
+	    	    preserveScrollPosition: {
+	    	    	render: 'item',
+	                name: 'Сохранять положение прокрутки при обновлении',
+	                optional: true,
+	                editor: 'none'
+	    	    },
 	    	    useAnimation: {
 	    	    	render: 'switch',
 	                name: 'Анимация',
@@ -884,7 +890,7 @@
 			});
 		},
 		
-		drawRows: function(){
+		drawRows: function(bRefresh){
 			function updateColl(d){
 				if($this.useTree){
 					var collEl = $this.$(this);
@@ -1154,8 +1160,8 @@
 						.attr('depth', function(d){return d.depth;})
 						.classed('rowFilter', function(d){return d.filter && d.filter.length > 0;})
 						.classed('expanded', function(d){return d.expanded;})
-						.style('transform', function(d){return $this.useAnimation ? (d.depth > 0 ? 'scale(0,0)':'translate(-'+$this.getElement().width()+'px,0)') : null;})
-						.style('opacity', function(d){return $this.useAnimation ? 0 : null;})
+						.style('transform', function(d){return bRefresh && $this.useAnimation ? (d.depth > 0 ? 'scale(0,0)':'translate(-'+$this.getElement().width()+'px,0)') : null;})
+						.style('opacity', function(d){return bRefresh && $this.useAnimation ? 0 : null;})
 						.on('click',function(d){
 							$this.onRowClick(d, $this.$(this), d3.event);
 						})
@@ -1190,30 +1196,38 @@
 				
 				if($this.useAnimation){
 					// fixup new row positions
-					var tableElt = $this.scroll.getPane().find('table.rows').get(0);
-					var paneRc = tableElt.getBoundingClientRect();
+					var visibleAreaTop = -$this.scroll.getScrollPosition().y;
+					var visibleAreaBottom = visibleAreaTop + $this.scrollHeight;
 					rowsSelData.each(function(rd){
-						var rowRc = this.getBoundingClientRect();
-						var newPos = rowRc.top - paneRc.top;
+						var newPos = this.offsetTop;
 						var dif = rd.vPos - newPos;
-						if(dif != 0){
-							var curSel = d3.select(this);
-							curSel.style('transform', 'translate(0, '+dif+'px)');
-							curSel.transition().duration($this.animationDuration || 800)
-								.style('transform', 'translate(0,0)')
-								.on('end', function(d){
-									d3.select(this).style('transform', null);
-								});
+						if(dif == 0){
+							return;
 						}
-					});
-					
-					newRowsSel.selectAll('tr.row')
-						.transition().duration($this.animationDuration || 800)
-							.style('opacity', 1)
-							.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'})
+						var rowHeight = this.offsetHeight;
+						if((newPos + rowHeight < visibleAreaTop || newPos > visibleAreaBottom) && (rd.vPos + rowHeight < visibleAreaTop || rd.vPos > visibleAreaBottom)){
+							return;
+						}
+						var curSel = d3.select(this);
+						curSel.style('transform', 'translate(0, '+dif+'px)');
+						curSel.transition()
+							.duration($this.animationDuration || 800)
+							.style('transform', 'translate(0,0)')
 							.on('end', function(d){
 								d3.select(this).style('transform', null);
 							});
+					});
+					
+					if(bRefresh){
+						// dont animate when scrolling 
+						newRowsSel.selectAll('tr.row')
+							.transition().duration($this.animationDuration || 800)
+								.style('opacity', 1)
+								.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'})
+								.on('end', function(d){
+									d3.select(this).style('transform', null);
+								});
+					}
 				}
 
 			}
@@ -1221,11 +1235,8 @@
 				
 			if($this.useAnimation){
 				// store row positions before update
-				var paneRc = $this.scroll.getPane().find('table.rows').get(0).getBoundingClientRect();
 				rowsSelData.each(function(rd){
-					var rowRc = this.getBoundingClientRect();
-					var pos = rowRc.top - paneRc.top;
-					rd.vPos = pos;
+					rd.vPos = this.offsetTop;
 				});
 				
 				var removedRowsSel = rowsSelData.exit();
@@ -1272,7 +1283,9 @@
 			var fetchSize = 50;
 			
 			if(bRefresh){
-				if(this.rows.length > fetchSize){
+				if(!this.preserveScrollPosition && !this.useTree){
+					this.scroll.scrollTo(0, 0);
+				} else if(this.rows.length > fetchSize){
 					fetchSize = this.rows.length;
 				}
 				this.rows = [];
@@ -1431,7 +1444,7 @@
 						$this.rows = $this.rows.concat(pRows);
 					}
 					
-					$this.drawRows();
+					$this.drawRows(bRefresh);
 					if($this.useGroupOperations){
 						$this.synchronizeSelection();
 					}
@@ -2721,6 +2734,7 @@
 			this.useTooltipOnHover = this.getContext().find('showRowToolTip').checked();
 			this.usePrefetch = this.getContext().find('usePrefetch').checked();
 			this.useAnimation = this.getContext().find('useAnimation').checked();
+			this.preserveScrollPosition = this.getContext().find('preserveScrollPosition').checked();
 			if(this.useAnimation){
 				this.animationDuration = this.getContext().find('animationDuration').value();
 			}

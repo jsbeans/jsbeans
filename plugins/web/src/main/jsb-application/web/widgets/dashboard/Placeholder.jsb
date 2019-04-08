@@ -2,7 +2,8 @@
 	$name: 'JSB.Widgets.Dashboard.Placeholder',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
-		$require: ['css:Placeholder.css'],
+		$require: ['jQuery.UI.Droppable',
+		           'css:Placeholder.css'],
 		lastAccepted: false,
 		dragUi: false,
 		
