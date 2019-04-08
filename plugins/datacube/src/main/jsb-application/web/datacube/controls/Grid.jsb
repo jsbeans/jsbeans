@@ -68,15 +68,6 @@
             this.removeClass('hasMore');
 		},
 
-		exportData: function(key, name, callback){
-			this.server().doExport(key, name, function(dh, fail){
-				callback.call();
-				if(dh){
-					dh.download();
-				}
-			});
-		},
-
 		/**
 		* Загружает новые данные
 		*
@@ -156,9 +147,7 @@
 	},
 
 	$server: {
-		$require: ['DataCube.Export.ExportManager',
-		           'JSB.Web.Download'],
-
+        // итератор текущего запроса для подгрузки данных
         _dataIterator: null,
 
 	    destroy: function(){
@@ -234,24 +223,6 @@
 	        }
 
 	        return res;
-	    },
-
-	    doExport: function(format, name){
-	    	var fileName = ExportManager.getExportFileName(format, name);
-			var ct = ExportManager.getContentType(format);
-			var mode = ExportManager.getContentMode(format);
-			var encoding = ExportManager.getEncoding(format);
-			var dh = new Download(fileName, {mode: mode, contentType: ct, encoding: encoding}, function(stream){
-				var exporter = ExportManager.createExporter(format, stream, {name: name, file: fileName});
-				// write into download stream
-				try {
-					exporter.iterate($this.exportObj.source.executeQuery($this.exportObj.query, $this.exportObj.queryParams, $this.exportObj.provider));
-				} finally {
-					exporter.destroy();
-				}
-			});
-
-			return dh;
 	    }
 	}
 }

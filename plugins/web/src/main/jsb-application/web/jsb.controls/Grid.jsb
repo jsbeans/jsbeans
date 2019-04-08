@@ -395,6 +395,10 @@
             }
         },
 
+        _setResizeHandle: function(element, opts){
+            //
+        },
+
         _updateSizes: function(){
             this.getElement().width(this.getElement().width());
 

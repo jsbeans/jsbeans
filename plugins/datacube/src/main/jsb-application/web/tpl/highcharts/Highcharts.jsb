@@ -1,7 +1,9 @@
 {
 	$name:'JSB.Tpl.Highcharts',
 	$client:{
-		$require: ['css:css/customHighcharts.css'],
+		$require: ['css:css/highcharts.css',
+		           'css:css/customHighcharts.css'],
+
 		$singleton: true,
 
 		_lang: {

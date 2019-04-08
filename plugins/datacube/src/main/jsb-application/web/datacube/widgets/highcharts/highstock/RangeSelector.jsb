@@ -257,8 +257,8 @@
                 this._schemeOpts = {
                     dateContext: this.getContext().find('xAxis xAxisDate'),
                     dataGrouping: {
-                        dataApproximation: dataGroupingPlotOptionsContext.find('dataApproximation').value(),
-                        dateApproximation: dataGroupingPlotOptionsContext.find('dateApproximation').value(),
+                        dataApproximation: dataGroupingPlotOptionsContext.find('dataApproximation').value(),    // data
+                        dateApproximation: dataGroupingPlotOptionsContext.find('dateApproximation').value(),    // date
                         isGrouped: dataGroupingPlotOptionsContext.checked(),
                         groupBy: groupBy,
                         groupConst: groupConst,
@@ -482,6 +482,8 @@
                 console.log('RangeSelectorChart build chart exception');
                 console.log(ex);
 	        } finally{
+console.log(baseChartOpts);
+debugger;
 	            return baseChartOpts;
 	        }
 	    }

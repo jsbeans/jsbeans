@@ -112,7 +112,7 @@
 	        function createFooterElement(name, hasValue, defVal){
 	            var value = JSB.isDefined($this.getScope()[name]) ? $this.getScope()[name] : defVal;
 
-                var element = $this.$('<div class="footerEl"></div>');
+                var element = $this.$('<div class="footerEl" title="' + name + '"></div>');
                 footer.append(element);
 
                 var icon = $this.$('<div class="icon"></div>');

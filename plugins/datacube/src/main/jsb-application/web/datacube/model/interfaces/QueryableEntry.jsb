@@ -7,14 +7,9 @@
 	},
 
 	$server: {
-		executeQuery: function(opts){
-			throw new Error('QueryableEntry.executeQuery should be overridden');
-		},
-		
-		extractFields: function(opts){
-			throw new Error('QueryableEntry.extractFields should be overridden');
-		},
-		
+		$require: ['DataCube.Export.ExportManager',
+		           'JSB.Web.Download'],
+
 		createQuerySelect: function(selectedFields, useContext, useSourceContext){
             var fields = this.extractFields(),
                 context = this.getFullId(),
@@ -34,6 +29,39 @@
 
             return select;
 	    },
+
+		executeQuery: function(opts){
+			throw new Error('QueryableEntry.executeQuery should be overridden');
+		},
+
+        /**
+        * Экспотирует запрос
+        *
+        * @param {string} format - формат экспорта
+        * @param {string} name - имя файла
+        * @param {Object} [query] - запрос
+        */
+		exportData: function(format, name, query) {
+	    	var fileName = ExportManager.getExportFileName(format, name);
+			var ct = ExportManager.getContentType(format);
+			var mode = ExportManager.getContentMode(format);
+			var encoding = ExportManager.getEncoding(format);
+			var dh = new Download(fileName, {mode: mode, contentType: ct, encoding: encoding}, function(stream) {
+				var exporter = ExportManager.createExporter(format, stream, {name: name, file: fileName});
+				// write into download stream
+				try {
+				    if(query) {
+				        exporter.iterate($this.getQueryableContainer().executeQuery(query, {}, false));
+				    } else {
+					    exporter.iterate($this.executeQuery({ useCache: true }));
+                    }
+				} finally {
+					exporter.destroy();
+				}
+			});
+
+			return dh;
+		},
 		
 		extendQuery: function(query, opts){
 			var preparedQuery = JSB.clone(query);
@@ -104,6 +132,10 @@
             }
             
             return {query: preparedQuery, params: params};
+		},
+
+		extractFields: function(opts){
+			throw new Error('QueryableEntry.extractFields should be overridden');
 		}
 	}
 }

@@ -100,8 +100,13 @@
                             },
                             callback: function(key, item, evt){
                                 exportBtn.getElement().loader();
-                                $this.grid.exportData(key, $this.slice && $this.slice.getName(), function(){
+
+                                $this.slice.server().exportData(key, $this.slice && $this.slice.getName(), $this.textQueryEditor.getData().getValue(), function(dh, error){
                                     exportBtn.getElement().loader('hide');
+
+                                    if(dh){
+                                        dh.download();
+                                    }
                                 });
                             }
                         });

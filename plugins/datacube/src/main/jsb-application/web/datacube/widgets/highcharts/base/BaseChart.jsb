@@ -183,7 +183,6 @@
 	        name: 'Авторская подпись',
             collapsible: true,
             collapsed: true,
-            advancedRender: true,
             items: {
                 enabled: {
                     render: 'item',
@@ -341,7 +340,7 @@
                         ]
                     },
                     valueType: 'string',
-                    defaultValue: '<span style="font-size: 10px">{category}</span><br/><span style="color:{point.color}">●</span> {series.name}: <b>{point.y}</b>'
+                    defaultValue: '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}</b>'
                 },
                 padding: {
                     render: 'item',
@@ -354,7 +353,15 @@
                     name: 'Тень',
                     optional: 'checked',
                     editor: 'none'
+                },
+                /*
+                shared: {
+                    render: 'item',
+                    name: 'Объединить для всех серий',
+                    optional: true,
+                    editor: 'none'
                 }
+                */
             }
 	    },
 
@@ -1172,6 +1179,7 @@
                         footerFormat: null,
                         padding: tooltipContext.find('padding').value(),
                         shadow: tooltipContext.find('shadow').checked(),
+                        //shared: tooltipContext.find('shared').checked(),
                         style: {
                             color: tooltipContext.find('color').value()
                         }
