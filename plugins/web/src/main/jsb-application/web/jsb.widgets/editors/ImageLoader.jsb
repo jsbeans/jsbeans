@@ -16,6 +16,17 @@
 			this.input = this.$('<input type="file" multiple style="display: none;" />');
 			this.append(this.input);
 			
+			if(this.options.width){
+				this.img.css('width', this.options.width);
+			}
+			if(this.options.height){
+				this.img.css('height', this.options.height);
+			}
+			if(this.options.size){
+				this.img.css('max-width', this.options.size);
+				this.img.css('max-height', this.options.size);
+			}
+			
 			if(this.options.value){
 			    this.setData(this.options.value);
 			}

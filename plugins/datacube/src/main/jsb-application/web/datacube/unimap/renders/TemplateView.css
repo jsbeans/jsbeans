@@ -1,0 +1,14 @@
+@CHARSET "UTF-8";
+
+.templateView {}
+
+.templateView > .name {
+	display: inline-block;
+    line-height: 22px;
+    margin-right: 5px;
+}
+
+.templateView > .item {
+    display: inline-block;
+    max-width: 100%;
+}

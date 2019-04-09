@@ -76,7 +76,8 @@
 }
 
 .dataCubeDashboard > .header > .cell.filter {
-	text-align: right;
+	float: left;
+    margin-left: 16px;
 }
 
 
@@ -106,8 +107,19 @@
     box-sizing: border-box;
 }
 
+.dataCubeDashboard > .header > .icon {
+	width: 30px;
+    float: left;
+    padding-top: 0px;
+    margin-right: 2px;
+}
+
 .dataCubeDashboard > ._jsb_dashboard {
-	height: calc(100% - 32px);
+	height: calc(100% - 36px);
+}
+
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_splitbox > ._dwp_splitPane {
+	overflow: visible;
 }
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_splitbox > ._dwp_splitter {
@@ -127,40 +139,54 @@
 	display: none;
 }
 
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer {
+	overflow: visible;
+}
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane {
 	padding: 0 16px;
     background: transparent;
     border: none;
-    z-index: 2;
+    z-index: 200;
     position: absolute;
 	pointer-events: none;
 	overflow: hidden;
-	transition: 300ms;
 	height: 20px;
-	top: -20px;
+	top: 0;
 	opacity: 0;
+	
+	transition: 300ms;
 }
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane:hover {
 	opacity: 1 !important;
 }
 
-.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer:hover > ._dwp_tabview > ._dwp_tabPane {
-	top: 0;
-	opacity: 0.9;
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer:hover:not(.fullScreenMode) > ._dwp_tabview > ._dwp_tabPane {
+	top: -19px;
+	opacity: 1;
+}
+
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer.fullScreenMode:hover > ._dwp_tabview > ._dwp_tabPane {
+	opacity: 1;	
 }
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab {
-	border: 1px solid #949494;
-    border-top: none;
+	border: 1px solid #8897a2;
+	border-bottom: 1px solid #fff;
     padding: 2px 6px;
     min-height: initial;
     float: right;
     font-size: 11px;
     margin: 0 -1px 0 0;
-    border-radius: 0 0 6px 6px;
-    pointer-events: visible;
+    border-radius: 6px 6px 0 0;
+    pointer-events: all;
+}
+
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer.fullScreenMode > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab {
+	border-radius: 0 0 6px 6px;
+	border-top: none;
+    border-bottom: 1px solid #8897a2;
 }
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active {
@@ -201,6 +227,12 @@
 	top: 0 !important;
 	border: 1px solid #cacaca;
     border-radius: 4px;
+    
+    transition: border-color 300ms;
+}
+
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer:hover > ._dwp_tabview > ._dwp_clientPane {
+	border-color: #8897a2;
 }
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_clientPane > ._dwp_clientPaneWrapper {

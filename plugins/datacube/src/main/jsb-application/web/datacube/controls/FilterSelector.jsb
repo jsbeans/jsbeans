@@ -49,19 +49,21 @@
 		updateVisibility: function(){
 			var filterArr = this.filterManager.getFilterArray();
 			if(filterArr.length > 0){
+				this.removeClass('noItems');
 				if(!this.visible){
-					this.getElement().css('height', 28);
+					//this.getElement().css('height', 28);
 					this.visible = true;
 				} else {
 					if(filterArr.length == 1){
-						this.getElement().css('height', 28);
+						//this.getElement().css('height', 28);
 					} else {
-						this.getElement().css('height', '');
+						//this.getElement().css('height', '');
 					}
 				}
 			} else {
 				this.visible = false;
-				this.getElement().css('height', 0);
+				this.addClass('noItems');
+				//this.getElement().css('height', 0);
 			}
 		},
 		
