@@ -106,8 +106,19 @@
                             values.value = val;
 
                             $this.onchange();
-                        },
-                        opts = this._scheme.editorOpts ? JSB.merge(this._scheme.editorOpts, { autofocus: false, value: values.value, onChange: onChangeFunc, onchange: onChangeFunc }) : { value: values.value, onChange: onChangeFunc, onchange: onChangeFunc };
+                        };
+                        
+                        var opts = {
+                            autofocus: false,
+                            value: values.value,
+                            onChange: onChangeFunc,
+                            onchange: onChangeFunc,
+                            unimapRender: this
+                        };
+
+                        if(this._scheme.editorOpts){
+                            opts = JSB.merge(this._scheme.editorOpts, opts);
+                        }
 
                         JSB.lookup(this._scheme.editor, function(cls){
                             var editor = new cls(opts);
