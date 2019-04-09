@@ -945,6 +945,8 @@
 	            $field: desc.value,
 	            $sourceContext: desc.sourceContext
 	        }
+	    } else if(key === '$query') {
+	        return JSB().clone(this.getScheme(key).defaultValues);
 	    } else {
 	        var val = {};
 
