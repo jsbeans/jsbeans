@@ -5,6 +5,12 @@
 	box-sizing: border-box;
 	padding: 0 4px;
 	overflow: hidden;
+	
+	transition: 300ms;
+}
+
+.filterSelector.noItems {
+	transform: scale(0);
 }
 
 .filterSelector.hidden {

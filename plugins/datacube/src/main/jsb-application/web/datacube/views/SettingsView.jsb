@@ -64,7 +64,7 @@
                     }
 
                     $this.widgetSchemeRenderer = new Controller({
-                        context: $this.entry,
+                        context: $this.entry.getId(),
                         scheme: scheme,
                         values: settings
                     });

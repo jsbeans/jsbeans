@@ -18,8 +18,6 @@
 	margin-bottom: 4px;
 	display: inline-block;
     vertical-align: middle;
-    
-    transition: height 300ms;
 }
 
 .dashboardEditor > .header > .dashboardMenu {

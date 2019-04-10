@@ -169,6 +169,19 @@
 				c = this.$(c);
 			}
 			return c;
+		},
+		
+		isContentReady: function(sel){
+			if(!sel){
+				sel = '*[jsb]';
+			}
+			var ctrls = this.find(sel);
+			for(var i = 0; i < ctrls.length; i++){
+				if(!this.$(ctrls[i]).attr('_id')){
+					return false;
+				}
+			}
+			return true;
 		}
 	}
 }
