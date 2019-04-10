@@ -185,11 +185,13 @@
 			
 			var keywords = '';
 			var keywordArr = ctx.find('publication keywords').values();
-			for(var i = 0; i < keywordArr.length; i++){
-				if(keywords.length > 0){
-					keywords += ', ';
+			if(keywordArr && keywordArr.length > 0){
+				for(var i = 0; i < keywordArr.length; i++){
+					if(keywords.length > 0){
+						keywords += ', ';
+					}
+					keywords += keywordArr[i].trim();
 				}
-				keywords += keywordArr[i].trim();
 			}
 			
 			var metaTags = [];
