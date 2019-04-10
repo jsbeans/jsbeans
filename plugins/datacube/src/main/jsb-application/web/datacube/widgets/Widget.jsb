@@ -835,12 +835,17 @@
 		        return;
 		    }
 
-		    var source = selector.binding().source;
-		    
-            if(this.sourceFilterMap && this.sourceFilterMap[source]){
-                return JSB().clone($this.sourceFilterMap[source]);
-            }
-            
+		    var allFilters = this.getFilterManager().getFilters(),
+		        source = selector.binding().source,
+		        filters = {};
+
+		    for(var i in allFilters){
+		        if(allFilters[i].sourceId === source){
+		            filters[i] = allFilters[i];
+		        }
+		    }
+
+		    return filters;
 		},
 
 		getValues: function(){
