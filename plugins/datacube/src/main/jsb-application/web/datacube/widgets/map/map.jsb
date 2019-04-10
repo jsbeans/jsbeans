@@ -882,7 +882,8 @@
                 }
             }
 
-            $base();
+            // localize filters ?
+            //$base();
 
             // advanced filters
             var globalFilters = this.getSourceFilters(this._dataSource),
@@ -926,7 +927,6 @@
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
-                    this.setSourceFilters(this._dataSource, globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -1766,16 +1766,43 @@
                                             return;
                                         }
 
-                                        layer.bindPopup($this._format($this._styles.regions[i].displayContent, index, {y: reg.value}), {closeButton: false, autoPan: false});
+                                        var popup = L.popup({closeButton: false, autoPan: false}),
+                                            deferId = 'JSB.Widgets.Map.closePopup#' + JSB.generateUid();
+
+                                        popup.setContent($this._format($this._styles.regions[i].displayContent, index, {y: reg.value}));
+
+                                        layer.bindPopup(popup);
 
                                         layer.on({
                                             mouseover: function(evt){
                                                 evt.originalEvent.stopPropagation();
-                                                this.openPopup();
+
+                                                JSB.cancelDefer(deferId);
+
+                                                if(!popup.isOpen()){
+                                                    this.openPopup();
+
+                                                    popup.getElement().addEventListener('mouseover', function(evt){
+                                                        evt.stopPropagation();
+
+                                                        JSB.cancelDefer(deferId);
+                                                    });
+
+                                                    popup.getElement().addEventListener('mouseout', function(evt){
+                                                        evt.stopPropagation();
+
+                                                        JSB.defer(function(){
+                                                            layer.closePopup();
+                                                        }, 500, deferId);
+                                                    });
+                                                }
                                             },
                                             mouseout: function(evt){
                                                 evt.originalEvent.stopPropagation();
-                                                this.closePopup();
+
+                                                JSB.defer(function(){
+                                                    layer.closePopup();
+                                                }, 500, deferId);
                                             }
                                         });
                                     }

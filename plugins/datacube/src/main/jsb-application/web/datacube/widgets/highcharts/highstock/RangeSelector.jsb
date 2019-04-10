@@ -482,8 +482,6 @@
                 console.log('RangeSelectorChart build chart exception');
                 console.log(ex);
 	        } finally{
-console.log(baseChartOpts);
-debugger;
 	            return baseChartOpts;
 	        }
 	    }
