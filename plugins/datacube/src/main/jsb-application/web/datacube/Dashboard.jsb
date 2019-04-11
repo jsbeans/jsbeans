@@ -42,7 +42,8 @@
 			this.menuBar = new MenuBar({
 				category: 'dashboardViewer',
 				cssClass: 'dashboardMenu cell',
-				context: this
+				context: this,
+				showItems: true
 			});
 			this.headerElt.append(this.menuBar.getElement());
 			

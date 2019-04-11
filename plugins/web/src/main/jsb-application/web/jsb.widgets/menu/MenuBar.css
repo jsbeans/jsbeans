@@ -4,24 +4,42 @@
 	display: inline-block;
 	font-size: inherit;
 	position: relative;
+	white-space: nowrap;
 }
 
 ._jsb_menuBar > ul.menuItems {
 	display: none;
 	vertical-align: middle;
 	position: relative;
+	list-style: none;
+	margin: 0 2px;
+	background: #fff;
+    border-radius: 4px;
 }
 
 ._jsb_menuBar.showItems.hasItems > ul.menuItems {
 	display: inline-block;
 }
 
-._jsb_menuBar > ul.menuItems > li {}
+._jsb_menuBar > ul.menuItems > li {
+	padding: 0 4px;
+    cursor: pointer;
+    border-radius: 4px;
+	margin: 2px;
+	display: inline-block;
+	
+    transition: 300ms;
+}
+
+._jsb_menuBar > ul.menuItems > li:hover {
+	background: #7fabd2;
+}
 
 ._jsb_menuBar > .btnMenu {
 	vertical-align: middle;
 	display: none;
 	padding: 2px 6px;
+	margin: 0 2px;
 }
 
 ._jsb_menuBar > .btnMenu > ._dwp_icon {

@@ -16,7 +16,8 @@
 		
 		_actions: {},
 		_renderers: {},
-		_items: [],
+		_fixedItems: [],
+		_buttonItems: [],
 		           
 		$constructor: function(opts){
 			$base(opts);
@@ -41,7 +42,7 @@
 					ToolManager.activate({
 						id: '_dwp_droplistTool',
 						cmd: 'show',
-						data: $this._items,
+						data: $this._buttonItems,
 						key: 'actionMenu',
 						target: {
 							selector: $this.menuButton.getElement(),
@@ -55,7 +56,6 @@
 			});
 			this.append(this.menuButton);
 			
-			this.updateButton();
 			this.update();
 		},
 		
@@ -69,47 +69,91 @@
 		},
 		
 		update: function(){
-			if(this.options.showItems) {
-				this.addClass('showItems');
-			}
-
-			if(this.options.showButton) {
-				this.addClass('showButton');
-			}
-			
 			MenuRegistry.lookupActions(this.options.category, function(actMap){
 				$this._actions = actMap;
 				
 				RendererRepository.ensureReady(function(){
-					// construct renderers
-					$this._items = [];
-					for(var actId in $this._actions){
-						var action = $this._actions[actId];
-						var renderer = $this._renderers[actId];
-						if(!renderer){
-							renderer = $this._renderers[actId] = RendererRepository.createRendererFor(action);
-						}
-						$this._items.push({
-							key: actId,
-							element: renderer.getElement()
-						});
-					}
 					$this.updateButton();
+					$this.updateItems();
+					if($this._fixedItems.length > 0 || $this._buttonItems.length > 0){
+						$this.addClass('hasItems');
+						$this.removeClass('noItems');
+					} else {
+						$this.removeClass('hasItems');
+						$this.addClass('noItems');
+					}
 					$this.setTrigger('ready');
 				});
 			});
 		},
 		
-		updateButton: function(){
-			if(Object.keys($this._actions).length > 0){
-				$this.addClass('hasItems');
-				$this.removeClass('noItems');
-				this.menuButton.enable(true);
-				
+		updateItems: function(){
+			this.menuItems.empty();
+			if(!this.options.showItems){
+				this.removeClass('showItems');
+				return;
+			}
+			// collect items to fixed show
+			$this._fixedItems = [];
+			for(var actId in $this._actions){
+				var action = $this._actions[actId];
+				var expose = action.getJsb().getDescriptor().$expose;
+				if(!expose.fixed && $this.options.showButton){
+					continue;
+				}
+				var renderer = $this._renderers[actId];
+				if(!renderer){
+					renderer = $this._renderers[actId] = RendererRepository.createRendererFor(action, {fixed: true});
+				}
+				$this._fixedItems.push({
+					key: actId,
+					element: renderer.getElement()
+				});
+				var itemElt = $this.$('<li class="item"></li>');
+				itemElt.attr('key', actId);
+				itemElt.append(renderer.getElement());
+				$this.menuItems.append(itemElt);
+				itemElt.click(function(evt){
+					var elt = $this.$(evt.currentTarget);
+					var actId = elt.attr('key');
+					$this.executeAction($this._actions[actId], evt);
+				});
+			}
+			
+			if($this._fixedItems.length > 0){
+				this.addClass('showItems');	
 			} else {
-				$this.removeClass('hasItems');
-				$this.addClass('noItems');
-				this.menuButton.enable(false);
+				this.removeClass('showItems');
+			}
+		},
+		
+		updateButton: function(){
+			if(!this.options.showButton){
+				this.removeClass('showButton');
+				return;
+			}
+			$this._buttonItems = [];
+			for(var actId in $this._actions){
+				var action = $this._actions[actId];
+				var expose = action.getJsb().getDescriptor().$expose;
+				if(expose.fixed && $this.options.showItems){
+					continue;
+				}
+				var renderer = $this._renderers[actId];
+				if(!renderer){
+					renderer = $this._renderers[actId] = RendererRepository.createRendererFor(action);
+				}
+				$this._buttonItems.push({
+					key: actId,
+					element: renderer.getElement()
+				});
+			}
+			
+			
+			if(Object.keys($this._buttonItems).length > 0){
+				$this.addClass('showButton');	
+			} else {
+				$this.removeClass('showButton');
 			}
 		},
 		

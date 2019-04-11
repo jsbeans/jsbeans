@@ -37,6 +37,16 @@
 //                this.log.trace('connect(): ', this.options);
 
             var options = this.options;
+            // check for user and password in url
+            var rx = /^(http[s]?)\:\/\/([^\:]+)\:([^@]+)@(.+)$/i;
+            if(rx.test(options.url)){
+            	var m = options.url.match(rx);
+            	var proto = m[1];
+            	options.user = m[2];
+            	options.password = m[3];
+            	options.url = proto + '://' + m[4];
+            }
+            
             var url = new this.URL(options.url)
 
             var proxyHost = options.proxy_host || options.proxyHost || options.proxy && options.proxy.host;
