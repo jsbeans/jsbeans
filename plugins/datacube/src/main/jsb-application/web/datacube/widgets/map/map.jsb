@@ -883,7 +883,7 @@
             }
 
             // localize filters ?
-            //$base();
+            $base();
 
             // advanced filters
             var globalFilters = this.getSourceFilters(this._dataSource),
@@ -927,6 +927,7 @@
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    this.setSourceFilters(this._dataSource, globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -1909,7 +1910,7 @@
                                     (function(marker, filterData){
                                         marker.on('click', function(){
                                             $this.addFilter({
-                                                sourceId: $this._dataSource.source,
+                                                sourceId: $this._dataSource.binding().source,
                                                 type: '$or',
                                                 op: '$eq',
                                                 field: filterData.binding,
@@ -2016,7 +2017,7 @@
                                     (function(marker, filterData){
                                         marker.on('click', function(){
                                             $this.addFilter({
-                                                sourceId: $this._dataSource.source,
+                                                sourceId: $this._dataSource.binding().source,
                                                 type: '$and',
                                                 op: '$eq',
                                                 field: filterData.binding,
@@ -2093,7 +2094,7 @@
             }
 
             var fDesc = {
-                sourceId: this._dataSource.source,
+                sourceId: this._dataSource.binding().source,
                 type: '$or',
                 op: '$eq',
                 field: field,

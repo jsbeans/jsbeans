@@ -1302,6 +1302,7 @@
                 }
 
                 if(isChanged){
+                    this.setSourceFilters(this._dataSource, globalFilters);
                     this._selectRange();
                     return false;
                 }
@@ -1366,6 +1367,7 @@
                     return false;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    this.setSourceFilters(this._dataSource, globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
