@@ -15,6 +15,10 @@
 			
 			this.description = this.$('<div class="description"></div>');
 			this.append(this.description);
+			
+			if(opts && opts.fixed){
+				this.addClass('fixed');
+			}
 
 			this.update();
 		},
@@ -24,6 +28,9 @@
 			var expose = obj.getJsb().getDescriptor().$expose;
 			this.title.text(expose.title);
 			this.description.text(expose.description);
+			if(this.options.fixed){
+				this.attr('title', expose.description);
+			}
 			if(expose.icon){
 				$this.icon.css('background-image', 'url(' + expose.icon + ')');
 			}

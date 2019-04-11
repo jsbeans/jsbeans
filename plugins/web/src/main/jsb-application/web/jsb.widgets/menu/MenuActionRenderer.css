@@ -4,6 +4,10 @@
 	min-height: 32px;
 }
 
+.menuActionRenderer.fixed {
+	min-height: 26px;
+}
+
 .menuActionRenderer > .icon {
 	position: absolute;
 	top: 50%;
@@ -15,11 +19,23 @@
 	margin-top: -16px;
 }
 
+.menuActionRenderer.fixed > .icon {
+	width: 24px;
+    height: 24px;
+	margin-top: -12px;
+}
+
 .menuActionRenderer > .title {
 	font-size: 13px;
     color: #7d3603;
     font-weight: bold;
 	padding-left: 38px;
+}
+
+.menuActionRenderer.fixed > .title {
+	padding-left: 26px;
+    padding-top: 6px;
+	color: #434343;
 }
 
 
@@ -28,4 +44,8 @@
 	font-size: 11px;
     color: #555;
     max-width: 340px;
+}
+
+.menuActionRenderer.fixed > .description {
+	display: none;
 }
