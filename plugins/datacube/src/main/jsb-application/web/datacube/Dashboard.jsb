@@ -187,9 +187,12 @@
 			var ctx = this.dashboardEntry.getSettingsContext();
 			var description = ctx.find('publication description').value();
 			
+			var iconType = null;
 			var icon = ctx.find('publication icon').value();
-			var lastIdx = icon.indexOf(';base64');
-			var iconType = icon.substring(5, lastIdx);
+			if(icon){
+				var lastIdx = icon.indexOf(';base64');
+				iconType = icon.substring(5, lastIdx);
+			}
 			
 			var logo = ctx.find('publication logo').value();
 			

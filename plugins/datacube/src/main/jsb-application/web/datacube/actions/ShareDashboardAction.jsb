@@ -26,6 +26,20 @@
 			var tags = JSB.$('meta[name="keywords"]').attr('content');
 			var logo = JSB.$('meta[property="og:image"]').attr('content');
 
+			function _twitterPrepareTags(){
+				if(!tags || tags.length == 0){
+					return '';
+				}
+				var newTagsStr = '';
+				var tagParts = tags.split(',');
+				for(var i = 0; i < tagParts.length; i++){
+					if(newTagsStr.length > 0){
+						newTagsStr += ', ';
+					}
+					newTagsStr += tagParts[i].trim().toLowerCase().replace(/\s/g, '');
+				}
+				return newTagsStr;
+			}
 			
 			// generate items
 			ToolManager.activate({
@@ -42,7 +56,7 @@
 					key: 'twitter',
 					element: JSB.$('<div data-sharer="twitter">Twitter</div>')
 						.attr('data-title', title)
-						.attr('data-hashtags', tags)
+						.attr('data-hashtags', _twitterPrepareTags())
 						.attr('data-url', url)
 				},{
 					key: 'facebook',
