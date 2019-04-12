@@ -6,6 +6,7 @@
 
 	$client: {
 	    $require: ['JSB.Widgets.RendererRepository',
+	               'jQuery.UI.Droppable',
 	               'css:StylesBinding.css'],
 
 	    construct: function(){

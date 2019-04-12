@@ -137,7 +137,7 @@
             }
 
             function createCell(row, data, rowIndex, colIndex, rowData){
-                var td = this.$('<td class="grid-cell"></td>');
+                var td = $this.$('<td class="grid-cell"></td>');
 
                 td.attr('colKey', colIndex);
 

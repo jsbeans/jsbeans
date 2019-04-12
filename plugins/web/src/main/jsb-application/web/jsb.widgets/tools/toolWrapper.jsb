@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.ToolWrapper',
 	$parent:'JSB.Widgets.Control',
 	$client: {
-		$require: ['css:toolWrapper.css'],
+		$require: ['jQuery.UI.Droppable', 'css:toolWrapper.css'],
 		$constructor: function(toolId, toolMgr, w, opts){
 			var self = this;
 			$base(opts);

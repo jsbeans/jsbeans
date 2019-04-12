@@ -3,6 +3,7 @@
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Widgets.RendererRepository',
 	           'JSB.Widgets.ToolManager',
+	           'jQuery.UI.Droppable',
 	           'css:DatabaseSelector.css'],
 	
 	$client: {

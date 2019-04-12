@@ -7,7 +7,7 @@
 
 		$bootstrap: function(){
 			(function(jQuery){
-			    $.ui = $.ui || {};
+				jQuery.ui = jQuery.ui || {};
 
 				`#include 'droppable.js'`;
 			}).call(null, JSB().$);

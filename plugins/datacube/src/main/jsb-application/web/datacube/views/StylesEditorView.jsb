@@ -12,6 +12,7 @@
 	
 	$client: {
 	    $require: ['Unimap.Controller',
+	               'jQuery.UI.Droppable',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'JSB.Widgets.PrimitiveEditor',

@@ -6,7 +6,7 @@
 
 		$bootstrap: function(){
 			(function(jQuery){
-			    $.ui = $.ui || {};
+				jQuery.ui = jQuery.ui || {};
 
 				`#include 'datepicker.js'`;
 			}).call(null, JSB().$);

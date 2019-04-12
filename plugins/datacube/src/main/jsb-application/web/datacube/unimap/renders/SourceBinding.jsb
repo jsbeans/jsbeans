@@ -6,6 +6,7 @@
 
 	$client: {
 	    $require: ['JSB.Controls.Editor',
+	               'jQuery.UI.Droppable',
 	               'JSB.Widgets.RendererRepository',
 	               'Unimap.Render.DataBindingCache',
 	               'css:SourceBinding.css'],

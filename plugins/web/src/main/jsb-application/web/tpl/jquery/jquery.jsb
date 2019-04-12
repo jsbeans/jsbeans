@@ -37,7 +37,7 @@
 			`#include 'jquery-jsb-3.3.1.js'`;
 
 			//JSB().addLibraryScope('$', window.jQuery.noConflict());
-			JSB().addLibraryScope('$', JSBjQuery);
+			JSB().addLibraryScope('$', JSBjQuery.noConflict());
 
 			// override global variable to bind all plugins to JSB().$
 			var jQuery = JSB().$;

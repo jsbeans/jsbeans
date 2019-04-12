@@ -6,7 +6,7 @@
 
 		$bootstrap: function(){
 			(function(jQuery){
-			    $.ui = $.ui || {};
+				jQuery.ui = jQuery.ui || {};
 
 				`#include 'safe-active-element.js'`;
 			}).call(null, JSB().$);

@@ -8,6 +8,7 @@
 	    _beans: [],
 
 	    $require: ['JSB.Controls.Checkbox',
+	               'jQuery.UI.Droppable',
 	               'DataCube.Renderers.EmbededWidgetRenderer',
 	               'css:EmbeddedWidgetBinding.css'],
 

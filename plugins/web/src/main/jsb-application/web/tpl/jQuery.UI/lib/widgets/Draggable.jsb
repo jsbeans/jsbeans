@@ -7,7 +7,7 @@
 
 		$bootstrap: function(){
 			(function(jQuery){
-			    $.ui = $.ui || {};
+				jQuery.ui = jQuery.ui || {};
 
 				`#include 'draggable.js'`;
 			}).call(null, JSB().$);

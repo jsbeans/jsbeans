@@ -3,6 +3,7 @@
 	$parent: 'JSB.Widgets.Widget',
 	$client: {
 	    $require: ['JSB.Controls.SearchBox',
+	               'jQuery.UI.Droppable',
 	               'JSB.Widgets.Diagram',
 	               'JSB.Widgets.ToolManager',
 	               'DataCube.Dialogs.JoinSettingsTool',

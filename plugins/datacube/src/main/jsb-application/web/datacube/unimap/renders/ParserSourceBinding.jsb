@@ -7,6 +7,7 @@
 
 	$client: {
 	    $require: ['JSB.Widgets.Button', 
+	               'jQuery.UI.Droppable',
 	               'Unimap.Render.DataBindingCache',
 	               'css:ParserSourceBinding.css'],
 
