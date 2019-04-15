@@ -15,7 +15,6 @@
         },
 
 		register: function(queryTask){
-debugger
             var uid = $this.getId() + '/' + JSB.generateUid();
             ClickHouseLoopbackApi.remoteQueries.put(uid, function(offset, limit){
                 if (offset != null) {

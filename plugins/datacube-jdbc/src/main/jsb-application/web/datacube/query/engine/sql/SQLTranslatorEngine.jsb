@@ -52,7 +52,10 @@
                             break;
                     }
 
-                    return translator.translatedQueryIterator(query, params);
+                    var it = translator.translatedQueryIterator(query, params);
+                    if(it) {
+                        return it;
+                    }
                 }
             }
             return null; // has no compatible provider

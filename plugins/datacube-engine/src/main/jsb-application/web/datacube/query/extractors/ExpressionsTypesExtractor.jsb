@@ -28,6 +28,7 @@
                         var fieldTypes = {};
                         queryFieldTypeMap.put(query, fieldTypes);
                         var fields = slice.extractFields();
+                        QueryUtils.throwError(fields[field], 'Slice field "{}" is not defined', field);
                         for(var field in fields) {
                             fieldTypes[field] = {
                                 type: typeName(fields[field].type),
@@ -41,11 +42,12 @@
                     before: function(query){
                         if (queryFieldTypeMap.get(query)) {
                             this.skip = true;
-                        } else {
-                            if(callback) {
-                                callback.call(callback);
-                            }
                         }
+//                        else {
+//                            if(callback) {
+//                                callback.call(callback);
+//                            }
+//                        }
                     },
                     after: function(query){
                         if (this.getNestedParentQueries().length > 0) {
@@ -135,18 +137,30 @@
                         } else if (query.$cube) {
                             var cube = QueryUtils.getQueryCube(query.$cube);
                             var fields = cube.extractFields();
-                            this.type = {
-                                type: typeName(fields[field].type),
-                                nativeType: fields[field].nativeType,
-                            };
+                            if(!fields[field]) {
+                                var type = queryFieldTypeMap.get(query)[field];
+                                QueryUtils.throwError(type, 'Cube field "{}" is not defined', field);
+                                this.type = JSB.clone(type);
+                            } else {
+                                this.type = {
+                                    type: typeName(fields[field].type),
+                                    nativeType: fields[field].nativeType,
+                                };
+                            }
                             return;
                         } else if (query.$provider) {
                             var provider = QueryUtils.getQueryDataProvider(query.$provider);
                             var fields = provider.extractFields();
-                            this.type = {
-                                type: typeName(fields[field].type),
-                                nativeType: fields[field].nativeType,
-                            };
+                            if(!fields[field]) {
+                                var type = queryFieldTypeMap.get(query)[field];
+                                QueryUtils.throwError(type, 'Provider field "{}" is not defined', field);
+                                this.type = JSB.clone(type);
+                            } else {
+                                this.type = {
+                                    type: typeName(fields[field].type),
+                                    //nativeType: fields[field].nativeType, // TODO it is not vendor (for postgre DOUBLE->DOUBLE PRECISION)
+                                };
+                            }
                             return;
                         } else {
                             throw new Error('Unexpected field source');
@@ -214,7 +228,7 @@
                             if (JSB.isDate(exp.$const))    { setType.call(this, DataTypes.date.name); }
                         }
 
-                        if (exp.type || exp.$nativeType) {
+                        if (exp.$type || exp.$nativeType) {
                             setType.call(this, exp.$type, exp.$nativeType);
                         }
 

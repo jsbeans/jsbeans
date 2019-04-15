@@ -157,8 +157,8 @@
 			'ClickHouse': {
                 string: 'String',
                 boolean: 'String',
-                integer: 'Int64',
-                uint: 'UInt64',
+                integer: ['Int32', 'Int64'],
+                uint: ['UInt32', 'UInt64'],
 			    long: 'Int64',
 			    ulong: 'UInt64',
                 float: 'Float32',

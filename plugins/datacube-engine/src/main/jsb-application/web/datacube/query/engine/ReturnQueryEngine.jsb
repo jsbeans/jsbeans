@@ -18,7 +18,7 @@
                     } finally {
                         if (result) {
                             Console.message({
-                                message: 'query.executed',
+                                message: 'query.executed.first_row',
                                 params:{
                                     executor: executor.getId(),
                                     timestamp: Date.now(),

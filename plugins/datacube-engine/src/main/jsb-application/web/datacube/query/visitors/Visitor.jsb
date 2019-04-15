@@ -63,7 +63,7 @@
                     return $this.visitArray(exp);
                 }
 
-                if (flags && flags.asCondition || exp.$and || exp.$or || exp.$not || $this._isCondition()) {
+                if (flags && flags.asCondition || $this._isCondition(exp)) {
                     return $this.visitCondition(exp);
                 }
 
@@ -123,11 +123,53 @@
                 if ($this.path[i] == current) {
                     start = true;
                 }
-                if (start && $this.path[i] == '$select') {
+                if (start && $this.path[i] == '$select' && i > 0) {
                      parents.push($this.path[i-1]);
                 }
             }
             return parents;
+        },
+
+        /** Returns true if current query is nested-query expression*/
+        isNestedQuery: function(){
+            var parents = $this.getNestedParentQueries();
+            var parentQuery = parents.length > 0 ? parents[0] : null;
+            return $this.queryPath.length > 1 && parentQuery == $this.queryPath[$this.queryPath.length-2];
+        },
+
+        isRoot: function() {
+            return $this.queryPath.length == 1;
+        },
+
+        isView: function() {
+            var query = $this.getQuery();
+            for(var i = $this.path.length - 1; i >= 0; i--){
+                var e = $this.path[i];
+                if (start && JSB.isObject(e) && e.$select) {
+                    break;
+                }
+                if (e == query) {
+                    var start = true;
+                }
+                if (start && JSB.isString(e) && !e.startsWith('$')) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        getCaller: function() {
+            var query = $this.getQuery();
+            var exp = $this.getCurrent();
+            if (exp == query) {
+                /// parent query
+                for(var i = $this.path.length - 2; i >= 0; i--){
+                    if ($this.path[i].$select) {
+                        return $this.path[i];
+                    }
+                }
+            }
+            return query;
         },
 
         /**Returns last expression in path (current expression)*/
@@ -167,58 +209,72 @@
             throw new Error('View in undefined: ' + name);
         },
 
-        _isCondition: function(){
-            if ($this.path.length > 1) return false;
-            var prevKey = $this.path[$this.path.length - 1];
-            switch(prevKey) {
-                case '$filter':
-                case '$cond':
-                    return true;
+        _isCondition: function(exp){
+            if ($this.path.length >= 1)  {
+                var prevKey = $this.path[$this.path.length - 1];
+                switch(prevKey) {
+                    case '$filter':
+                    case '$cond':
+                        return true;
+                }
+            }
+            if (JSB.isObject(exp)) {
+                var op = Object.keys(exp)[0];
+                switch(op) {
+                    case '$and':
+                    case '$or':
+                    case '$not':
+                    case '$eq':
+                    case '$ne':
+                    case '$gt':
+                    case '$gte':
+                    case '$lt':
+                    case '$lte':
+                    case '$like':
+                    case '$ilike':
+                    case '$in':
+                    case '$nin':
+                        return true;
+                }
             }
             return false;
         },
 
-        visitWithPath: function(k1,k2,callback) {
+        withPath: function(k1, k2, callback) {
             try {
                 var count = 0;
-                for(var i = 0; i < arguments.length; i++, count++) {
-                    if(JSB.isString(arguments[i])) {
-                        $this.path.push(arguments[i]);
-                    } else {
+                var queryCount = 0;
+                for(var i = 0, len = arguments.length; i < len; i++) {
+                    var v = arguments[i];
+                    if (JSB.isObject(v)) {
+                        if (v.$select) {
+                            queryCount++;
+                            $this.queryPath.push(v);
+                        }
+                        count++;
+                        $this.path.push(v);
+                    } else if (JSB.isFunction(v)) {
                         break;
+                    } else {
+                        count++;
+                        $this.path.push(v);
                     }
                 }
-                var callback = arguments[arguments.length - 1];
+                var callback = arguments[len - 1];
                 callback.call(this);
             } finally{
                 while(count--) {
                     $this.path.pop();
+                }
+                while(queryCount--) {
+                    $this.queryPath.pop();
                 }
             }
         },
 
         visitQuery: function(exp) {
             if(!exp.$select) throw new Error('Invalid query expression, $select is undefined');
-            /// visit sources: $from, $join, $union, $recursive, $cube, $provider
-            if (exp.$from && JSB.isString(exp.$from)) {
-                $this.visitWithPath('$from', function(){
-                    $this.visit(exp.$from, {asQuery: true});
-                });
-            } else if (exp.$from && JSB.isObject(exp.$from)) {
-                $this.visitWithPath('$from', function(){
-                    $this.visit(exp.$from, {});
-                });
-            } else if (exp.$provider) {
-                $this.visitProvider(exp.$provider);
-            } else if (exp.$join) {
-                $this.visitJoin(exp.$join);
-            } else if (exp.$union) {
-                $this.visitUnion(exp.$union);
-            } else if (exp.$recursive) {
-                $this.visitRecursive(exp.$recursive);
-            } else {
-                $this.visitCube(exp.$cube||null);
-            }
+            $this.visitQuerySource(exp);
 
             if (exp.$filter && Object.keys(exp.$filter).length > 0) {
                 $this.visitFilter(exp.$filter);
@@ -243,6 +299,29 @@
             }
         },
 
+        visitQuerySource: function(exp) {
+            /// visit sources: $from, $join, $union, $recursive, $cube, $provider
+            if (exp.$from && JSB.isString(exp.$from)) {
+                $this.withPath('$from', function(){
+                    $this.visit(exp.$from, {asQuery: true});
+                });
+            } else if (exp.$from && JSB.isObject(exp.$from)) {
+                $this.withPath('$from', function(){
+                    $this.visit(exp.$from, {});
+                });
+            } else if (exp.$provider) {
+                $this.visitProvider(exp.$provider);
+            } else if (exp.$join) {
+                $this.visitJoin(exp.$join);
+            } else if (exp.$union) {
+                $this.visitUnion(exp.$union);
+            } else if (exp.$recursive) {
+                $this.visitRecursive(exp.$recursive);
+            } else {
+                $this.visitCube(exp.$cube||null);
+            }
+        },
+
         visitExpression: function(exp) {
             if (JSB.isObject(exp) && exp.hasOwnProperty('$const')) {
                 return $this.visitConst(exp.$const, exp.$type, exp.$nativeType);
@@ -255,6 +334,7 @@
             $this.visitAnyExpression(exp);
         },
 
+
         visitAnyExpression: function(exp) {
 //            var key = this.getExpressionKey();
 //            if ($this.scheme[key]) {
@@ -264,12 +344,40 @@
             if (exp.$count == 1 || exp.$sum == 1) {
                 return;
             }
+            if (exp.$if) {
+                $this.withPath('$if', '$else', function(){
+                    $this.visit(exp.$if.$cond, {asCondition:true});
+                });
+                $this.withPath('$if', '$else', function(){
+                    $this.visit(exp.$if.$then, {asExpression:true});
+                });
+                $this.withPath('$if', '$else', function(){
+                    $this.visit(exp.$if.$else, {asExpression:true});
+                });
+                return;
+            }
             // default visitor
             for(var op in exp) {
-                if (!QuerySyntax.constValueOperators[op]) {
-                    $this.visitWithPath(op, function(){
-                        $this.visit(exp[op], {asExpression:true});
-                    });
+                switch(op) {
+                    case '$cond':
+                    case '$filter':
+                        $this.withPath(op, function(){
+                            $this.visit(exp[op], {asCondition:true});
+                        });
+                        return;
+                }
+                if (op.startsWith('$')) {
+                    if (!QuerySyntax.constValueOperators[op]) {
+                        $this.withPath(op, function(){
+                            $this.visit(exp[op], {asExpression:true});
+                        });
+                    }
+                } else {
+                    /// detect condition `field: {$op: ...}`
+                    var op2 = Object.keys(exp[op])[0];
+                    if (op2.startsWith('$')) {
+                        $this.visitCondition(exp);
+                    }
                 }
             }
         },
@@ -291,7 +399,7 @@
 
         visitArray: function(array) {
             for (var i = 0; i < array.length; i++) {
-                $this.visitWithPath(i, function(){
+                $this.withPath(i, function(){
                     $this.visit(array[i], {asExpression: true});
                 });
             }
@@ -307,7 +415,7 @@
 
 
         visitNamedQuery: function($from) {
-//            $this.visitWithPath($from, function(){
+//            $this.withPath($from, function(){
                 var view = $this.getView($from);
                 $this.visit(view, {asQuery: true});
 //            });
@@ -315,34 +423,32 @@
 
         visitUnion: function($union) {
             for (var i = 0; i < $union.length; i++) {
-                (function(i){
-                    $this.visitWithPath('$union', i, function(){
-                        $this.visit($union[i], {asQuery: true});
-                    });
-                })(i);
+                $this.withPath('$union', i, function(){
+                    $this.visit($union[i], {asQuery: true});
+                });
             }
         },
 
         visitJoin: function($join) {
-            $this.visitWithPath('$join', '$left', function(){
+            $this.withPath('$join', '$left', function(){
                 $this.visit($join.$left, {asQuery: true});
             });
-            $this.visitWithPath('$join', '$right', function(){
+            $this.withPath('$join', '$right', function(){
                 $this.visit($join.$right, {asQuery: true});
             });
-            $this.visitWithPath('$join', '$filter', function(){
+            $this.withPath('$join', '$filter', function(){
                 $this.visit($join.$filter);
             });
         },
 
         visitRecursive: function($recursive) {
-            $this.visitWithPath('$recursive', '$start', function(){
+            $this.withPath('$recursive', '$start', function(){
                  $this.visit($recursive.$start, {asQuery: true});
             });
-            $this.visitWithPath('$recursive', '$joinedNext', function(){
+            $this.withPath('$recursive', '$joinedNext', function(){
                  $this.visit($recursive.$joinedNext, {asQuery: true});
             });
-            $this.visitWithPath('$recursive', '$filter', function(){
+            $this.withPath('$recursive', '$filter', function(){
                  $this.visit($recursive.$filter);
             });
         },
@@ -355,25 +461,25 @@
         },
 
         visitFilter: function($filter) {
-            $this.visitWithPath('$filter', function(){
+            $this.withPath('$filter', function(){
                 $this.visit($filter, {asCondition:true});
             });
         },
 
         visitGlobalFilter: function($globalFilter) {
-            $this.visitWithPath('$globalFilter', function(){
+            $this.withPath('$globalFilter', function(){
                 $this.visit($globalFilter, {asCondition:true});
             });
         },
 
         visitPostFilter: function($postFilter) {
-            $this.visitWithPath('$postFilter', function(){
+            $this.withPath('$postFilter', function(){
                 $this.visit($postFilter, {asCondition:true});
             });
         },
 
         visitSelect: function($select) {
-            $this.visitWithPath('$select',function(){
+            $this.withPath('$select',function(){
                 for(var alias in $select) {
                     $this.visitOutputField(alias, $select[alias]);
                 }
@@ -381,21 +487,23 @@
         },
 
         visitOutputField:function(alias, exp) {
-            $this.visitWithPath(alias,function(){
+            $this.withPath(alias,function(){
                 $this.visit(exp, {asExpression:true});
             });
         },
 
         visitGroupBy: function($groupBy) {
             for (var i = 0; i < $groupBy.length; i++) {
-                $this.visit($groupBy[i], {asExpression:true});
+                $this.withPath('$groupBy', i, function(){
+                    $this.visit($groupBy[i], {asExpression:true});
+                });
             }
         },
 
         visitSort: function($sort) {
             for (var i = 0; i < $sort.length; i++) {
                 var val = $sort[i];
-                $this.visitWithPath('$sort', i, function(){
+                $this.withPath('$sort', i, function(){
                     if (val.$expr && val.$type) {
                         $this.visitSortExpression(val.$expr, val.$type);
                     } else {
@@ -411,26 +519,27 @@
         },
 
         visitCondition: function($filter) {
+
             for(var e in $filter) {
                 if (e === '$or' || e === '$and') {
-                    $this.visitWithPath(e, function(){
+                    $this.withPath(e, function(){
                         for(var i = 0; i < $filter[e].length; i++) {
                             $this.visit($filter[e][i], {asCondition:true});
                         }
                     });
                 } else if (e === '$not'){
-                    $this.visitWithPath(e, function(){
+                    $this.withPath(e, function(){
                         $this.visit($filter[e], {asCondition:true});
                     });
                 } else if (e.startsWith('$')) {
                     var args = $filter[e];
-                    $this.visitWithPath(e, function(){
+                    $this.withPath(e, function(){
                         $this.visit(args[0], {asExpression:true});
                         $this.visit(args[1], {asExpression:true});
                     });
                 } else {
                     var op = Object.keys($filter[e])[0];
-                    $this.visitWithPath(op, function(){
+                    $this.withPath(op, function(){
                         $this.visit(e, {asField:true});
                         $this.visit($filter[e][op], {asExpression:true});
                     });

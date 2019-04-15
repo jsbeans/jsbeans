@@ -148,9 +148,14 @@
                 && !query.$recursive;
         },
 
-        findView: function(name, callerQuery, rootQuery){
+        findView: function(name, callerQuery, rootQuery, isReturnSlices){
             var view;
-            $this.walkQueries(rootQuery, {},
+            $this.walkQueries(rootQuery, {
+                    getExternalView: function(name) {
+                        var slice = $this.getQuerySlice(name);
+                        return slice.getQuery();
+                    },
+                },
                 function(query){
                     if(callerQuery && (query == callerQuery || query.$context == callerQuery.$context)) {
                         // stop and go back
@@ -193,8 +198,8 @@
                 findView: null,
                 rootQuery: null,
                 getExternalView: function(name){
-//                    debugger
-//                    findView.call(this, name);
+                    debugger
+                    findView.call(this, name);
                     $this.throwError(0, 'View "{}" is not defined', name);
                     return null;
                 }

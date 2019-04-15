@@ -75,7 +75,7 @@
                                 $this.iterator = $this.executeQuery(translatedQuery);
                                 var obj = $this.iterator.next();
                                 Console.message({
-                                    message: 'query.executed',
+                                    message: 'query.executed.first_row',
                                     params:{
                                         executor: $this.executor.getId(),
                                         timestamp: Date.now(),

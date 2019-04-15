@@ -183,15 +183,15 @@
 
 		    if(iterator) {
 		        $this.iterators.add(iterator);
-                Console.message({
-                    message: 'query.iterator.created',
-                    params:{
-                        executor: $this.getId(),
-                        timestamp: Date.now(),
-                        iterator: iterator.meta.id,
-                        meta: iterator.meta,
-                    },
-                });
+//                Console.message({
+//                    message: 'query.iterator.created',
+//                    params:{
+//                        executor: $this.getId(),
+//                        timestamp: Date.now(),
+//                        iterator: iterator.meta.id,
+//                        meta: iterator.meta,
+//                    },
+//                });
                 if (iterator.meta.translatedQuery) {
                     Console.message({
                         message: 'query.iterator.translated',
@@ -221,15 +221,15 @@
 
             function sendResult(iterator, error) {
                 if (iterator) {
-                    Console.message({
-                        message: 'query.iterator.result',
-                        params:{
-                            executor: $this.getId(),
-                            timestamp: Date.now(),
-                            iterator: resultIterator.meta.id,
-                            prepareTime: resultIterator.meta.prepareTime,
-                        },
-                    });
+//                    Console.message({
+//                        message: 'query.iterator.ready',
+//                        params:{
+//                            executor: $this.getId(),
+//                            timestamp: Date.now(),
+//                            iterator: resultIterator.meta.id,
+//                            prepareTime: resultIterator.meta.prepareTime,
+//                        },
+//                    });
                 }
 
                 if ($this.callback) {
@@ -322,7 +322,7 @@
                 } finally {
                     if (result) {
                         Console.message({
-                            message: 'query.executed',
+                            message: 'query.executed.first_row',
                             params:{
                                 executor: $this.getId(),
                                 timestamp: Date.now(),

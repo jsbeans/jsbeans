@@ -21,7 +21,7 @@
 
         /** Returns query result objects with ClickHouse JSONEachRow format*/
 		get: function(params){
-debugger;
+//debugger
 			var scope = (function(){return this;}).call(null);
 			var request = scope['__request'];
 			var response = scope['__response'];
@@ -50,6 +50,9 @@ debugger;
                     params: {uid:params.uid, count: count, outputSize: length, limited: length > $this.maxsize }
                 });
                 return;
+            } catch(e) {
+                response && response.setStatus(500, JSB.stringifyError(e).substr(0,100));
+                throw e;
             } finally {
                 it && it.close();
                 oStream && oStream.close();

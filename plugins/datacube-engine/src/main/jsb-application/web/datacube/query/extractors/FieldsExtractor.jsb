@@ -63,7 +63,15 @@
                                 || putAlias();
                         } else if (targetQuery.$join) {
                             if (!sourceContext) {
-                                if (isOutputCandidate) {
+                                var left = this.getQuery(targetQuery.$join.$left);
+                                var right = this.getQuery(targetQuery.$join.$right);
+                                if (left.$select[field]) {
+                                    var sourceQuery = this.getQuery(left);
+                                    putOutput(sourceQuery);
+                                } else if (right.$select[field]) {
+                                    var sourceQuery = this.getQuery(right);
+                                    putOutput(sourceQuery);
+                                } else if (isOutputCandidate) {
                                     putAlias();
                                 } else {
                                     throw new Error('Field "' + field + '" $sourceContext is undefined in $join query "' + context + '"');
