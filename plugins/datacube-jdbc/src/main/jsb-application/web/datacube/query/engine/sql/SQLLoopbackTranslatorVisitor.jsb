@@ -28,7 +28,7 @@
 		},
 
         visitQuery: function(query) {
-            if ($this.isLoopback(query)) {
+            if ($this.isLoopbackGroup(query)) {
                 $this.visitLoopback(query);
             } else {
                 $base(query);
@@ -108,14 +108,16 @@
                     if (inUnion || isRoot) {
                         $this.print('SELECT * FROM');
                     }
-                    return $this.print(desc.sql);
+                    $this.print(desc.sql);
+                    $this.print(' AS');
+                    return $this.printDeclareContext(query.$context);
 
                 default:
                     $this._breakTranslator( 'Unsupported vendor "'+$this.vendor+'" for remote SQL tables');
             }
         },
 
-        isLoopback: function(query){
+        isLoopbackGroup: function(query){
             var providers = QueryUtils.extractProviders(query, $this.cube,
                 function(name){
                     return $this.getQuery(name);

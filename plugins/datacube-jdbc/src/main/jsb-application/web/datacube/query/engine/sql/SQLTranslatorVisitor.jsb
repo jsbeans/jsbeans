@@ -53,7 +53,7 @@
 		},
 
 		getSQL: function(){
-		    return ''+$this.current.sql.toString();
+		    return $this.current.sql ? ''+$this.current.sql.toString() : null;
 		},
 
 		breakTranslator: function(reason){
@@ -233,7 +233,7 @@
                     if ($this.sqlStack[i].aliasPriority) return true;
                 }
             })();
-//if(field == "users") debugger;
+
             var sqlField = $this.printScope(function(){
                 if(aliasPriority && targetQuery.$select[field]) {
                     $this.printQuoted(field);

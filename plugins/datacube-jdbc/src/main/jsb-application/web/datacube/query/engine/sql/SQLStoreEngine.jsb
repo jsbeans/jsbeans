@@ -43,8 +43,7 @@
                                 translator.loopbackProvider = new H2InterpreterLoopbackProvider(cube);
                                 break;
                         }
-                        translator.translate();
-                        var translatedQuery = translator.getSQL();
+                        var translatedQuery = translator.translate();
                         if (translatedQuery) {
                             var it = $this.produceLazyIterator(translatedQuery, params, executor, translator.mainDataProvider);
                             var oldClose = it.close;
