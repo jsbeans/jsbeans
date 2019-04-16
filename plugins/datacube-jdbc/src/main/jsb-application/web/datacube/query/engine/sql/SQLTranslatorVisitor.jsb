@@ -528,7 +528,7 @@
                     });
                     $this.print(' = 0 THEN NULL ELSE (');
                     $this.withPath(op, 0, function(){
-                        $this.visit(exp[op][1], {asExpression: true});
+                        $this.visit(exp[op][0], {asExpression: true});
                     });
                     $this.print(')', '/', '(');
                     $this.withPath(op, 1, function(){
