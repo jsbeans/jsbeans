@@ -298,7 +298,7 @@
                     return;
                 } else if (targetQuery.$provider) {
                     var dataProvider = QueryUtils.getQueryDataProvider(targetQuery.$provider);
-                    $this.printContext(dataProvider.getDescriptor().name, isExternal);
+                    $this.printContext($this.getProviderContext(dataProvider), isExternal);
                     $this.print('.');
                     $this.printQuoted(field);
                     return;
@@ -727,7 +727,8 @@
              var dataProvider = QueryUtils.getQueryDataProvider($provider);
              $this.printTable(dataProvider.getTableFullName());
              $this.print('AS');
-             $this.printDeclareContext(dataProvider.getDescriptor().name);
+             var name = $this.getProviderContext(dataProvider);
+             $this.printDeclareContext(name);
         },
 
         visitFilter: function($filter) {
@@ -921,6 +922,11 @@
             if (space) {
                 $this.current.sql.append(' ');
             }
+		},
+
+		getProviderContext: function(dataProvider) {
+		    var context = dataProvider.getDescriptor().name + $this.getQuery().$context;
+		    return context;
 		},
 
 		printDeclareContext: function(context){
