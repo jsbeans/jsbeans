@@ -78,6 +78,11 @@
 		    if(this.options.data){
 		        this.setData(this.options.data);
 		    }
+
+
+            this.getElement().resize(function(){
+                $this._updateSizes();
+            });
         },
 
         options: {
@@ -400,8 +405,6 @@
         },
 
         _updateSizes: function(){
-            this.getElement().width(this.getElement().width());
-
             this._topContainer.width(this._masterContainer.get(0).clientWidth);
 
             this._masterTable.get(0).style['margin-top'] = this._topTable.height() + 'px';
