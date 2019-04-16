@@ -956,14 +956,15 @@
                         }
                     }
                 }
+                var current = this.sqlStack[i] || $this.current;
             } else {
-                i = $this.sqlStack.length - 1;
+                var current = $this.sqlStack[$this.sqlStack.length - 1] || $this.current;
             }
 
-		    if (!$this.sqlStack[i].contexts) {
-		        $this.sqlStack[i].contexts = {};
+		    if (!current.contexts) {
+		        current.contexts = {};
 		    }
-		    $this.sqlStack[i].contexts[context] = printContext;
+		    current.contexts[context] = printContext;
 		    $this.printQuoted(printContext);
         },
 
