@@ -45,7 +45,7 @@
                         }
                         var translatedQuery = translator.translate();
                         if (translatedQuery) {
-                            var it = $this.produceLazyIterator(translatedQuery, params, executor, translator.mainDataProvider);
+                            var it = $this.produceLazyIterator(query, translatedQuery, params, executor, translator.mainDataProvider);
                             var oldClose = it.close;
                             it.close = function(){
                                 translator && translator.destroy();

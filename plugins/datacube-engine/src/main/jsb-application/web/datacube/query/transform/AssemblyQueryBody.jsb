@@ -81,6 +81,9 @@
 		        },
 		        function _enter(query) {
 		            queryStack.push(query);
+		            if (!query.$context)  {
+		                query.$context = 'ASSEMBLY##'+JSB.generateUid().substr(0,4);
+		            }
                     //
                     var usedDimensions = $this._collectUsedDimensions(queryStack);
                     JSB.merge(allUsedDimensions, usedDimensions);

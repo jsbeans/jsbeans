@@ -12,10 +12,8 @@
 		    'java:java.util.HashMap',
         ],
 
-        $deprecated: 'код устарел относительно текущей версии движка',
-
         /**
-        * Вставляет в запрос тела вьюх, удаляя $views - только простые запросы
+        * Вставляет в запрос тела вьюх согласно конфигу
         */
 		transform: function(rootQuery, cube, arg){
 		    var config = JSB.merge({
@@ -47,7 +45,7 @@
 		    }
 
             /// collect views usages count
-            if (config.embedSingleUsedViews) {
+            if (config.embedSingleUsedViews && !config.embedAll) {
                 var viewCount = new HashMap();
                 Visitors.visitProxy(rootQuery, {
                     query: {

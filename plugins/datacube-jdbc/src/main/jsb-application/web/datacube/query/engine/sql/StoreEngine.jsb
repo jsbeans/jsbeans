@@ -10,7 +10,7 @@
 		    'DataCube.Query.Console',
         ],
 
-		produceLazyIterator: function(translatedQuery, params, executor, mainProvider){
+		produceLazyIterator: function(translatorInputQuery, translatedQuery, params, executor, mainProvider){
 		    var vendor = mainProvider.getStore().getVendor();
 		    var iterator = null;
             var it = {
@@ -46,7 +46,7 @@
                     vendor: vendor,
                     params: params,
                     translatorName: $this.getJsb().$name,
-                    translatorInputQuery: $this.dcQuery,
+                    translatorInputQuery: translatorInputQuery,
                     translatedQuery: '\n'+translatedQuery,
                 }
             };

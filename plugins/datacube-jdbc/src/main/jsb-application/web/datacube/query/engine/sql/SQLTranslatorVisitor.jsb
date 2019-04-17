@@ -72,6 +72,9 @@
 		},
 
         visitQuery: function(query) {
+            if (!query.$context)  {
+                query.$context = '##'+JSB.generateUid().substr(0,4);
+            }
             var sqlQuery = $this.printScope(function(){
                 var hasBody = QueryUtils.queryHasBody(query);
                 var isRoot = $this.isRoot();
