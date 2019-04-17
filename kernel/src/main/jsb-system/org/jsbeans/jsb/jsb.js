@@ -1253,6 +1253,10 @@ if(!(function(){return this;}).call(null).JSB){
 			
 		},
 		
+		isError: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Error]";
+		},
+		
 		isArray: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Array]";
 		},
@@ -5836,7 +5840,7 @@ JSB({
 		},
 		
 		_prepareObj: function(obj){
-			if($jsb.isObject(obj)){
+			if($jsb.isObject(obj) || $jsb.isError(obj)){
 				if(obj.message){
 					// prepare message
 					var msg = '';
