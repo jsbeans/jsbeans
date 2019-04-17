@@ -258,7 +258,7 @@
 	        }
 
 	        function createDefault(text){
-                var source = this.$('<div>' + text + '</div>');
+                var source = $this.$('<div>' + text + '</div>');
 
                 if(isEditable){
                     appendElement.click(function(){
