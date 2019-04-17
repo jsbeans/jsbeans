@@ -94,53 +94,41 @@
 
 	        var item = this.$('<div class="item"></div>');
 
+            var onChangeFunc = function(val){
+                $this.getSchemeController().updateCommonFields($this.getKey(), $this._scheme.commonField, val, values.value);
+
+                values.value = val;
+
+                $this.onchange();
+            };
+
+            var editorOpts = {
+                autofocus: false,
+                value: values.value,
+                onChange: onChangeFunc,
+                onchange: onChangeFunc,
+                unimapRender: this
+            };
+
 	        if(this._scheme.editor){
                 switch(this._scheme.editor){
                     case 'none':
                         this.addClass('noEditor');
                         return;
                     default:
-                        var onChangeFunc = function(val){
-                            $this.getSchemeController().updateCommonFields($this.getKey(), $this._scheme.commonField, val, values.value);
-
-                            values.value = val;
-
-                            $this.onchange();
-                        };
-                        
-                        var opts = {
-                            autofocus: false,
-                            value: values.value,
-                            onChange: onChangeFunc,
-                            onchange: onChangeFunc,
-                            unimapRender: this
-                        };
-
                         if(this._scheme.editorOpts){
-                            opts = JSB.merge(this._scheme.editorOpts, opts);
+                            editorOpts = JSB.merge(this._scheme.editorOpts, editorOpts);
                         }
 
                         JSB.lookup(this._scheme.editor, function(cls){
-                            var editor = new cls(opts);
+                            var editor = new cls(editorOpts);
                             item.prepend(editor.getElement());
 
                             $this._editors.push(editor);
                         });
                 }
             } else {
-                var editor = new Editor({
-                    type: this._scheme.editorOpts && this._scheme.editorOpts.type,
-                    value: values.value,
-                    onchange: function(){
-                        var newValue = this.getValue();
-
-                        $this.getSchemeController().updateCommonFields($this.getKey(), $this._scheme.commonField, newValue, values.value);
-
-                        values.value = newValue;
-
-                        $this.onchange();
-                    }
-                });
+                var editor = new Editor(editorOpts);
                 item.append(editor.getElement());
 
                 $this._editors.push(editor);
