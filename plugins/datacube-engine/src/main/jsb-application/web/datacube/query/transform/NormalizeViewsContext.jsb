@@ -8,6 +8,7 @@
 		    'DataCube.Query.Transforms.QueryTransformer'
         ],
 
+        /** приведение контекстов и названий в $views к равенству */
 		transform: function(dcQuery, cube){
             var count = 0;
 		    QueryUtils.walkQueries(dcQuery, {getExternalView:function(){return {};}}, null, function(query){

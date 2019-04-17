@@ -1,11 +1,11 @@
 {
-	$name: 'DataCube.HttpServerNode',
+	$name: 'DataCube.HttpServiceNode',
 	$parent: 'JSB.Workspace.EntryNode',
 	$client: {
-		$require: ['css:HttpServerNode.css'],
+		$require: ['css:HttpServiceNode.css'],
 		$constructor: function(opts){
 			$base(opts);
-			this.addClass('httpServerNode');
+			this.addClass('httpServiceNode');
 			
 			this.append(`#dot
 				<div class="status"></div>
@@ -26,7 +26,7 @@
 				this.find('.status').empty().text(status);
 				return;
 			}
-			this.find('.status').empty().append('Сервисов: <span class="count">0</span>');
+			this.find('.status').empty().append('Методов: <span class="count">0</span>');
 			
 /*			
 			var details = $this.getTargetEntry().getDetails();

@@ -91,6 +91,12 @@
 		    var engineConfig = $this.getEngineConfig(name);
 		    var engine = $this.getEngine(name,engineConfig);
 
+		    if (engineConfig.passiveMode && $this.iterators.size() > 0) {
+		        /// если у блока пассивный режим и уже есть итератор, то блок не выполнять
+		        $this.submitResult(null);
+		        return;
+		    }
+
 		    if(!engine.acceptable(name, $this, queryTask)) {
 		        // skip not acceptable
 		        return;

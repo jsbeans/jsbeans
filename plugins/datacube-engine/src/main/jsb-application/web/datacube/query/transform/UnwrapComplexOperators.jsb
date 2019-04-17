@@ -56,12 +56,14 @@
                             }
 
                             var subQuery = {};
+                            subQuery.$context = 'GLOB##'+JSB.generateUid().substr(0,4);
                             subQuery.$select = {};
                             subQuery.$select[innerOp] = exp;
                             subQuery.$filter = query.$filter && JSB.clone(query.$filter);
                             subQuery.$groupBy = query.$groupBy && JSB.clone(query.$groupBy);
                             copySource(subQuery, query);
                             return {
+                                $context: 'GLOB##'+JSB.generateUid().substr(0,4),
                                 $select: (function(){
                                     var s = {};
                                     s[innerOp] = {};
@@ -82,6 +84,7 @@
                             throw new Error('Unknown operator ' + op);
                     }
                     return {
+                        $context: 'GLOB##'+JSB.generateUid().substr(0,4),
                         $select: (function(){
                             var sel = {};
                             switch(op){
@@ -100,6 +103,7 @@
                         })(),
                         $from: (function(){
                             var subQuery = {};
+                            subQuery.$context = 'GLOB##'+JSB.generateUid().substr(0,4);
                             subQuery.$select = {};
                             subQuery.$select[innerOp] = {};
                             if (innerOp == 'value') {

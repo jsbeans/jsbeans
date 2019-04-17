@@ -12,7 +12,7 @@
 
         extractedTypes: function(rootQuery, callback){
             function typeName(type) {
-                return JSB.isString(type) ? type : type.name;
+                return JSB.isString(type) || !type ? type : type.name;
             }
 
             var queryFieldTypeMap = new HashMap();
@@ -28,7 +28,6 @@
                         var fieldTypes = {};
                         queryFieldTypeMap.put(query, fieldTypes);
                         var fields = slice.extractFields();
-                        QueryUtils.throwError(fields[field], 'Slice field "{}" is not defined', field);
                         for(var field in fields) {
                             fieldTypes[field] = {
                                 type: typeName(fields[field].type),

@@ -380,8 +380,15 @@
 			if(!desc.it){
 				desc.it = $this.cube.executeQuery(desc.query, desc.params, desc.provider);
 				desc.lastUpdated = Date.now();
+				if(!desc.it){
+					debugger;
+					throw new Error('Failed to execute query');
+				}
 				// do skip
 				for(var i = 0; i < position; i++){
+					if(!desc.it){
+						debugger;
+					}
 					var el = desc.it.next();
 					if(!el){
 						desc.complete = true;

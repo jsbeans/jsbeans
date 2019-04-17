@@ -86,7 +86,7 @@
 
 		_typeMap: {
             'JDBC': {
-                string:  ['VARCHAR', 'NVARCHAR'],
+                string:  ['VARCHAR', 'LONGVARCHAR', 'NVARCHAR'],
                 boolean: ['BIT', 'BOOLEAN'],
                 integer: ['TINYINT', 'SMALLINT', 'INTEGER'],
                 uint:    ['TINYINT', 'SMALLINT', 'INTEGER'],
