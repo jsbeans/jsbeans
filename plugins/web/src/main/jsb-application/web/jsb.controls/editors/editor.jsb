@@ -114,6 +114,10 @@
             this.editor.attr('disabled', !bool);
 	    },
 
+	    focus: function() {
+	        this.editor.focus();
+	    },
+
 	    isValFromDatalist: function(){
 	        return this._dataList.indexOf(this.editor.val()) > -1;
 	    },

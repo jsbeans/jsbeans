@@ -1,7 +1,24 @@
-.addMenu {
+.viewEditor {
+    height: 100%;
+}
+
+.viewEditor > .viewContainer {
+    height: calc(100% - 35px);
+}
+
+.viewEditor > .viewContainer > .viewItem {
+    width: 100%;
+    padding: 0;
+}
+
+.viewEditor > .viewContainer > .viewItem > .header > h1 {
+    margin-left: 5px;
+}
+
+.viewEditor > .addBtn {
     display: block;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     box-shadow: 0 0 0 1px rgba(1, 62, 17, 0.5);
     background-color: #88bd69 !important;
     padding: 2px;
@@ -14,6 +31,6 @@
     cursor: pointer;
 }
 
-.addMenu:hover {
+.viewEditor > .addBtn:hover {
     background-color: #fff;
 }

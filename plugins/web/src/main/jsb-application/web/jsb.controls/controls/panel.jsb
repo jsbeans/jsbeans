@@ -31,8 +31,6 @@
 
                 this.elements.buttons.titleEditBtn.click(function(evt){
                     evt.stopPropagation();
-                    $this.elements.title.find('span').addClass('hidden');
-                    $this.elements.buttons.titleEditBtn.addClass('hidden');
                     $this.editTitle();
                 });
             }
@@ -154,45 +152,66 @@
             }
         },
 
-        editTitle: function(){
+        editTitle: function() {
+            function edit(editor) {
+                var oldVal = $this.options.title,
+                    newVal = editor.getValue();
+
+                function validTrue(){
+                    $this.options.title = newVal;
+
+                    destroyEditor();
+
+                    if(JSB.isFunction($this.options.onTitleEdited)){
+                        $this.options.onTitleEdited.call($this, newVal, oldVal);
+                    }
+                }
+
+                function destroyEditor() {
+                    editor.destroy();
+                    $this.$(window).off('click.panelTitleEdit_' + $this.getId());
+                }
+
+                if(oldVal === newVal) {
+                    destroyEditor();
+                    return;
+                }
+
+                if(JSB.isFunction($this.options.titleValidateFunction)){
+                    if($this.options.titleValidateFunction(newVal)){
+                        validTrue();
+                    } else {
+                        editor.getElement().focus();
+                        editor.addClass('notValid');
+                    }
+
+                    return;
+                }
+
+                validTrue();
+            }
+
             var editor = new Editor({
                 value: this.options.title,
                 onenterpressed: function(val){
-                    function validTrue(){
-                        $this.options.title = val;
-
-                        $this.elements.title.find('span').removeClass('hidden').text(val);
-                        $this.elements.buttons.titleEditBtn.removeClass('hidden');
-
-                        editor.destroy();
-
-                        if(JSB.isFunction($this.options.onTitleEdited)){
-                            $this.options.onTitleEdited.call($this, val);
-                        }
-                    }
-
-                    if(JSB.isFunction($this.options.titleValidateFunction)){
-                        if($this.options.titleValidateFunction(val)){
-                            validTrue();
-                        } else {
-                            editor.getElement().focus();
-                            editor.addClass('notValid');
-                        }
-
-                        return;
-                    }
-
-                    validTrue();
+                    edit(editor);
                 },
                 onfocusout: function(val){
-                    $this.elements.title.find('span').removeClass('hidden');//.text(val);
-                    $this.elements.buttons.titleEditBtn.removeClass('hidden');
-
-                    editor.destroy();
+                    edit(editor);
                 }
             });
 
-            this.elements.header.append(editor.getElement());
+            this.elements.title.append(editor);
+
+            $this.$(window).on('click.panelTitleEdit_' + this.getId(), function() {
+                edit(editor);
+            });
+
+            editor.getElement().click(function(evt){
+                evt.stopPropagation();
+            });
+
+            editor.focus();
         },
 
         setContent: function(content){

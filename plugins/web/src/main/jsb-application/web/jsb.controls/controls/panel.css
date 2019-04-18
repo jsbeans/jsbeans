@@ -25,10 +25,22 @@
 }
 
 .jsb-panel > .header > h1 {
+    position: relative;
     font-size: 18px;
     font-weight: 400;
     margin: 5px 0 6px;
     display: inline-block;
+}
+
+.jsb-panel > .header > h1 > input {
+    position: absolute;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    border: 2px solid #e6e9ed;
+    border-radius: 3px;
+    font-size: 0.8em;
+    padding: 2px 4px;
 }
 
 .jsb-panel > .header > h1.collapsible {

@@ -12,6 +12,8 @@
 	
 	$require: ['JSB.Widgets.SplitBox',
 	           'DataCube.Controls.Grid',
+	           'DataCube.Query.Controls.ViewEditor',
+	           'JSB.Widgets.TabView',
 	           'JSB.Controls.ScrollBox',
 	           'JSB.Widgets.PrimitiveEditor', 
 	           'JSB.Widgets.Button',
@@ -137,6 +139,12 @@
                 }
             });
             scrollBox.append(this.editor);
+
+            var tabView = new TabView({
+				allowCloseTab: false,
+				allowNewTab: false
+            });
+            vSplitBox.addToPane(1, tabView);
 			
 			this.textQueryEditor = new MultiEditor({
 				valueType: "org.jsbeans.types.JsonObject",
@@ -154,7 +162,12 @@
 					}, 600, 'textQueryChanged_' + $this.getId());
 				}
 			});
-			vSplitBox.addToPane(1, this.textQueryEditor);
+			tabView.addTab('Текстовый вид', this.textQueryEditor, {id:'textQuery'});
+
+			this.viewEditor = new ViewEditor({
+			    schemeController: this.editor
+			});
+			tabView.addTab('Именованные подзапросы', this.viewEditor, {id:'views'});
 			
 			// add grid view
 			this.grid = new Grid({
@@ -211,6 +224,12 @@
                     data: data,
                     slice: $this.slice,
                     values: query
+                });
+
+                $this.viewEditor.refresh({
+                    data: data,
+                    slice: $this.slice,
+                    query: query
                 });
 
                 $this.updateTextQuery(query);

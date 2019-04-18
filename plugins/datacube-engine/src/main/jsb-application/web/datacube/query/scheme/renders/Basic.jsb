@@ -219,14 +219,20 @@
 	            }));
 	        }
 
-	        for(var i in renderOpts.scope){
-	            if(i === '$context' || i === '$sourceContext'){
-	                continue;
-	            }
+	        if(JSB.isObject(renderOpts.scope)) {
+    	        for(var i in renderOpts.scope){
+    	            if(i === '$context' || i === '$sourceContext'){
+    	                continue;
+    	            }
 
-	            return this.createRender(JSB.merge(renderOpts, {
-	                key: i
-	            }));
+    	            return this.createRender(JSB.merge(renderOpts, {
+    	                key: i
+    	            }));
+    	        }
+	        } else if(JSB.isString(renderOpts.scope)) { // views
+                return this.createRender(JSB.merge(renderOpts, {
+                    key: '$text'
+                }));
 	        }
 	    },
 
@@ -417,6 +423,10 @@
         */
 	    getValues: function(){
 	        return this._scope[this.getKey()];
+	    },
+
+	    getViews: function() {
+	        return this.getParent().getViews();
 	    },
 
 	    hideMenu: function(){
