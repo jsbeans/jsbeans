@@ -419,7 +419,7 @@
                     return simple('(ARRAY_AGG(', '))[1]');
                 case '$last':
                     var lastVal = $this.printScope(function(){
-                        $base();
+                        $base(exp);
                     });
                     return $this.print('(ARRAY_AGG','(', lastVal, ')', ')[ARRAY_LENGTH(ARRAY_AGG','(',lastVal, ')', ',1)]');
                 case '$count':
@@ -820,11 +820,11 @@
                                 break;
                             case '$ne':
                                 if(args[0] === null || args[0].$const === null) {
-                                    $this.print(arg1, 'IS NULL');
+                                    $this.print(arg1, 'IS NOT NULL');
                                 } else if(args[1] === null || args[1].$const === null) {
-                                    $this.print(arg0, ' IS NULL');
+                                    $this.print(arg0, ' IS NOT NULL');
                                 } else {
-                                    $this.print(arg0, ' =', arg1);
+                                    $this.print(arg0, ' !=', arg1);
                                 }
                                 break;
                             case '$gt':
