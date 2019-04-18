@@ -141,6 +141,35 @@
             return $this.queryPath.length == 1;
         },
 
+        isCallerJoinedNext: function(){
+            var caller = $this.getCaller();
+            var isJoinedNext;
+            for(var i = $this.path.length - 1; i >=0; i--) {
+                if (isJoinedNext === false && $this.path[i] == '$joinedNext') {
+                    isJoinedNext = true;
+                    break;
+                }
+                if ($this.path[i] == caller) {
+                    isJoinedNext = false;
+                }
+            }
+            return isJoinedNext || false;
+        },
+
+        isHasPath: function(a1,a2,a3){
+            /// $this.isHasPath('$recursive', '$filter');
+            LOOP:
+            for(var i = $this.path.length - 1; i >= arguments.length - 1; i--) {
+                for(var j = 0, len = arguments.length; j < len; j++) {
+                    if(arguments[j] != $this.path[i-len-1+j]) {
+                        continue LOOP;
+                    }
+                }
+                return true;
+            }
+            return false;
+        },
+
         isView: function() {
             var query = $this.getQuery();
             for(var i = $this.path.length - 1; i >= 0; i--){

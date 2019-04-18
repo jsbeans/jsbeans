@@ -255,6 +255,15 @@
                         });
                     }
                 }
+
+                if (!$this._fixJoinedNext && targetQuery == query && $this.isCallerJoinedNext() && $this.isHasPath('$recursive', '$filter')) {
+                    /// fix recursive joinedNext parent field
+                    $this._fixJoinedNext = true;
+                    $this.visit(targetQuery.$select[field], {asExpression:true});
+                    delete $this._fixJoinedNext;
+                    return;
+                }
+
                 if (targetQuery.$from) {
                     var sourceQuery = $this.getQuery(targetQuery.$from);
                     if (sourceQuery.$select[field]) {
@@ -315,6 +324,7 @@
                 }
 
                 if(targetQuery.$select[field]) {
+debugger
                     $this.printField(field, false, true);
                     return;
                 }
