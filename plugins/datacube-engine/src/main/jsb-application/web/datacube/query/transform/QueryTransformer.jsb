@@ -64,7 +64,7 @@
                     if (!dcQuery) throw new Error('Failed transform ' + transformer.getJsb().$name);
                 }
                 if ($this.stat) {
-                    var ss = $this.stat['TOTAL PIPES'] = $this.stat['TOTAL PIPES'] || {};
+                    var ss = $this.stat['TOTAL PIPES:' + transformers.length] = $this.stat['TOTAL PIPES:' + transformers.length] || {};
                     ss.total = (ss.total||0) + totalTime;
                     ss.count = (ss.count||0) + 1;
                     ss.avg = ss.total / ss.count;

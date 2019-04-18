@@ -24,6 +24,7 @@
             };
             $this.indentation = 0;
             $this.duplicatedContexts = {};
+            $this.renameContexts = {}; // or null for disable
 		    $this.printedQueries = new HashMap();
             $this.BreakError = 'BREAK TRANSLATOR: ';
 		},
@@ -120,7 +121,7 @@
                     $this.printNewLineIndent();
                     $this.print('JOIN');
                     var caller = $this.getCaller();
-                    $this.printQuoted(caller.$context, true);
+                    $this.printOriginalContext(caller.$context, true);
                     QueryUtils.throwError(caller.$recursive, 'Invalid $recursive/$joinedNext');
                     $this.printNewLineIndent();
                     $this.print('ON');
@@ -176,7 +177,7 @@
 		        $this.indentInc();
 		        for(var name in query.$views) {
 		            $this.printNewLineIndent();
-		            $this.printQuoted(name, true);
+		            $this.printOriginalContext(name, true);
 		            $this.print('AS');
 		            $this.withPath(name, function(){
                         $this.visit(query.$views[name], {asQuery: true});
@@ -211,7 +212,7 @@
                 $this.printNewLineIndent();
                 $base(alias, exp);
                 $this.print(' AS');
-                $this.printQuoted(alias);
+                $this.printDeclareField(alias);
             });
             $this.current.select.push(sqlFieldExpr);
         },
@@ -239,20 +240,30 @@
 
             var sqlField = $this.printScope(function(){
                 if(aliasPriority && targetQuery.$select[field]) {
-                    $this.printQuoted(field);
+                    /// print as alias
+                    $this.printField(field, false, true);
                     return;
                 }
                 function printSourceField(sourceQuery){
                     if ($this.printedQueries.get(sourceQuery)) {
                         $this.printContext(sourceQuery.$context, isExternal);
                         $this.print('.');
-                        $this.printQuoted(field);
+                        $this.printField(field);
                     } else {
                         $this.withPath('$from', sourceQuery, '$select', field, function(){
                             $this.visit(sourceQuery.$select[field], {asExpression:true});
                         });
                     }
                 }
+
+                if (!$this._fixJoinedNext && targetQuery == query && $this.isCallerJoinedNext() && $this.isHasPath('$recursive', '$filter')) {
+                    /// fix recursive joinedNext parent field
+                    $this._fixJoinedNext = true;
+                    $this.visit(targetQuery.$select[field], {asExpression:true});
+                    delete $this._fixJoinedNext;
+                    return;
+                }
+
                 if (targetQuery.$from) {
                     var sourceQuery = $this.getQuery(targetQuery.$from);
                     if (sourceQuery.$select[field]) {
@@ -297,23 +308,24 @@
                 } else if (targetQuery.$union) {
                     $this.printContext(targetQuery.$context, isExternal);
                     $this.print('.');
-                    $this.printQuoted(field);
+                    $this.printField(field);
                     return;
                 } else if (targetQuery.$provider) {
                     var dataProvider = QueryUtils.getQueryDataProvider(targetQuery.$provider);
                     $this.printContext($this.getProviderContext(dataProvider), isExternal);
                     $this.print('.');
-                    $this.printQuoted(field);
+                    $this.printField(field, true, false);
                     return;
                 } else if (targetQuery.$recursive) {
                     $this.printContext(targetQuery.$context, isExternal);
                     $this.print('.');
-                    $this.printQuoted(field);
+                    $this.printField(field);
                     return;
                 }
 
                 if(targetQuery.$select[field]) {
-                    $this.printQuoted(field);
+debugger
+                    $this.printField(field, false, true);
                     return;
                 }
                 QueryUtils.throwError('Invalid field ', JSON.stringify($this.getCurrent()));
@@ -417,7 +429,7 @@
                     return simple('(ARRAY_AGG(', '))[1]');
                 case '$last':
                     var lastVal = $this.printScope(function(){
-                        $base();
+                        $base(exp);
                     });
                     return $this.print('(ARRAY_AGG','(', lastVal, ')', ')[ARRAY_LENGTH(ARRAY_AGG','(',lastVal, ')', ',1)]');
                 case '$count':
@@ -620,7 +632,7 @@
         },
 
         visitNamedQuery: function($from) {
-            $this.printQuoted($from, true);
+            $this.printOriginalContext($from, true);
             $this.print('AS');
             $this.printDeclareContext($from);
             /// skip enter views
@@ -675,7 +687,7 @@
                 $this.indentDec();
             $this.printNewLineIndent();
             $this.print(') AS');
-            $this.printQuoted($this.getQuery().$context, true);
+            $this.printOriginalContext($this.getQuery().$context, true);
         },
 
         visitJoin: function($join) {
@@ -701,7 +713,7 @@
                 $this.indentInc();
                 $this.printNewLineIndent();
                 $this.print('WITH RECURSIVE');
-                $this.printQuoted(query.$context, true);
+                $this.printOriginalContext(query.$context, true);
                 $this.print('AS', '(');
                     $this.indentInc();
                     $this.printNewLineIndent();
@@ -719,11 +731,11 @@
                 $this.print(')');
                 $this.printNewLineIndent();
                 $this.print('SELECT * FROM');
-                $this.printQuoted(query.$context, true);
+                $this.printOriginalContext(query.$context, true);
                 $this.indentDec();
             $this.printNewLineIndent();
             $this.print(') AS');
-            $this.printQuoted(query.$context, true);
+            $this.printOriginalContext(query.$context, true);
         },
 
         visitProvider: function($provider) {
@@ -818,11 +830,11 @@
                                 break;
                             case '$ne':
                                 if(args[0] === null || args[0].$const === null) {
-                                    $this.print(arg1, 'IS NULL');
+                                    $this.print(arg1, 'IS NOT NULL');
                                 } else if(args[1] === null || args[1].$const === null) {
-                                    $this.print(arg0, ' IS NULL');
+                                    $this.print(arg0, ' IS NOT NULL');
                                 } else {
-                                    $this.print(arg0, ' =', arg1);
+                                    $this.print(arg0, ' !=', arg1);
                                 }
                                 break;
                             case '$gt':
@@ -917,22 +929,24 @@
 
         /** print methods */
 
-		printQuoted: function(value, space){
-            if (value.indexOf('"') != -1) {
-                value = value.replace(new RegExp('"', 'g'), '""');
-            }
-            $this.current.sql.append('"').append(value).append('"');
-            if (space) {
-                $this.current.sql.append(' ');
-            }
-		},
-
 		getProviderContext: function(dataProvider) {
 		    var context = dataProvider.getDescriptor().name + $this.getQuery().$context;
 		    return context;
 		},
 
+		renameContext: function(context){
+		    if ($this.renameContexts && context.length > 3) {
+		        if($this.renameContexts[context]) {
+		            context = $this.renameContexts[context];
+		        } else {
+		            context = $this.renameContexts[context] = '#' + (Object.keys($this.renameContexts).length+1);
+		        }
+		    }
+		    return context;
+		},
+
 		printDeclareContext: function(context){
+		    context = $this.renameContext(context);
 		    /// В случае, если в цепочке вызовов используются повторные названия контекстов,
 		    /// то производится переименование.
 		    ///  случае цепочки вызова источников, контексты надо сохранять на уровне первого запроса
@@ -977,7 +991,14 @@
 		    $this.printQuoted(printContext);
         },
 
+		printOriginalContext: function(context, space){
+		    context = $this.renameContext(context);
+		    $this.printQuoted(context, space);
+		},
+
 		printContext: function(context, isExternal){
+		    context = $this.renameContext(context);
+
 		    var printContext = context;
 		    for(var i = $this.sqlStack.length - 1; i >= 0; i --) {
 		        if ($this.sqlStack[i].contexts && $this.sqlStack[i].contexts[context]) {
@@ -990,6 +1011,14 @@
 		        }
 		    }
 		    $this.printQuoted(printContext);
+        },
+
+        printDeclareField: function(field) {
+            $this.printQuoted(field);
+        },
+
+        printField: function(field, isProvider, isAlias) {
+            $this.printQuoted(field);
         },
 
         printTable: function(tableName){
@@ -1052,6 +1081,16 @@
 		    scope.call($this);
 		    var sql = $this.printEnd();
 		    return sql;
+		},
+
+		printQuoted: function(value, space){
+            if (value.indexOf('"') != -1) {
+                value = value.replace(new RegExp('"', 'g'), '""');
+            }
+            $this.current.sql.append('"').append(value).append('"');
+            if (space) {
+                $this.current.sql.append(' ');
+            }
 		},
 
 		print: function(s1, s2){
