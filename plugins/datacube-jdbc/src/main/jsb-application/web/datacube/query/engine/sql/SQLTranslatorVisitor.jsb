@@ -30,10 +30,6 @@
 		},
 
 		translate: function(){
-		    ExpressionsTypesExtractor.extractedTypes($this.query, function(queryFieldsTypes, expressionsTypes){
-		        $this.queryFieldsTypes = queryFieldsTypes;
-		        $this.expressionsTypes = expressionsTypes;
-		    });
 		    try {
                 $this.visit($this.query);
                 return $this.getSQL();
@@ -50,6 +46,8 @@
 		    $this.current = null;
 		    $this.sqlStack = null;
 		    $this.sourceQuery = null;
+		    $this.queryFieldsTypes = null;
+		    $this.expressionsTypes = null;
 		    $base();
 		},
 
@@ -63,11 +61,23 @@
 		},
 
 		getOutputFieldType: function(alias, query) {
+		    if (!$this.queryFieldsTypes || !$this.expressionsTypes) {
+                ExpressionsTypesExtractor.extractedTypes($this.query, function(queryFieldsTypes, expressionsTypes){
+                    $this.queryFieldsTypes = queryFieldsTypes;
+                    $this.expressionsTypes = expressionsTypes;
+                });
+		    }
 		    var  type = $this.queryFieldsTypes.get(query)[alias];
             return type;
         },
 
 		getType: function(exp) {
+		    if (!$this.queryFieldsTypes || !$this.expressionsTypes) {
+                ExpressionsTypesExtractor.extractedTypes($this.query, function(queryFieldsTypes, expressionsTypes){
+                    $this.queryFieldsTypes = queryFieldsTypes;
+                    $this.expressionsTypes = expressionsTypes;
+                });
+		    }
 		    var  type = $this.expressionsTypes.get(exp);
             return type;
 		},

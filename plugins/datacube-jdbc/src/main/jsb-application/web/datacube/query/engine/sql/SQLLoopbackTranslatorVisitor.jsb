@@ -62,9 +62,11 @@
                     /// prepare translated sql
                     var clickhouseColumns = '';
                     for(var alias in subQuery.$select) {
-                        var nativeType = QueryUtils.extractNativeType(subQuery.$select[alias], subQuery, $this.cube);
-                        var type = DataTypes.fromAny(nativeType);
-                        var jdbcType = DataTypes.toVendor($this.vendor, type);
+                        var type = $this.getType(query.$select[alias]);
+                        var jdbcType = type.nativeType || DataTypes.toVendor($this.vendor, type.type);
+//                        var nativeType = QueryUtils.extractNativeType(subQuery.$select[alias], subQuery, $this.cube);
+//                        var type = DataTypes.fromAny(nativeType);
+//                        var jdbcType = DataTypes.toVendor($this.vendor, type);
                         if (clickhouseColumns.length > 0) {
                             clickhouseColumns += ', ';
                         }
