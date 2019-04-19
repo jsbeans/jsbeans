@@ -246,7 +246,7 @@
                             continue;
                         }
 
-                        if(!oldLinks[id]){
+                        if(!oldLinks[id] && this.editor.getSliceNode(id)){
                             oldLinks[id] = this.editor.createLink(fromType, {
                                 sourceConnector: this.leftConnector,
                                 targetConnector: this.editor.getSliceNode(id).rightConnector

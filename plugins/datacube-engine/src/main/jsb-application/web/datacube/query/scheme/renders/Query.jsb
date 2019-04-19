@@ -204,7 +204,7 @@
 	    },
 
 	    getViews: function() {
-	        return this.getScope().$views;
+	        return this.getScope().$views || {};
 	    },
 
 	    isAllowChangeSource: function(){

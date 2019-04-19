@@ -299,6 +299,12 @@
 
                     if(views[value]) {
                         appendElement.append('<div class="viewElement">' + value + '</div>');
+
+                        if(isEditable) {
+                            appendElement.click(function() {
+                                click(value);
+                            });
+                        }
                     } else {
                         this.server().getEntry(value, function(res, fail){
                             var source = RendererRepository.createRendererFor(res);

@@ -81,6 +81,9 @@
 
 	    refresh: function(opts) {
 	        this._sliceOpts = opts;
+	        this._viewsDescs = {};
+
+	        this.viewContainer.clear();
 
 	        if(opts.query && opts.query.$views) {
 	            for(var i in opts.query.$views) {

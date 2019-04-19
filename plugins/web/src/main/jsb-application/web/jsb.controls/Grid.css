@@ -214,3 +214,21 @@
     outline: 2px dotted #00F;
     outline-offset: -5px;
 }
+
+.jsb-grid > .noDataMessage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+}
+
+.jsb-grid > .noDataMessage > .msg {
+    text-align: center;
+    font-size: 2em;
+    color: darkgrey;
+    top: 50%;
+    position: relative;
+    margin-top: -15px;
+}

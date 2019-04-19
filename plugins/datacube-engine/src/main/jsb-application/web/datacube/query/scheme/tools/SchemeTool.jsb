@@ -193,6 +193,12 @@
             }
 
             if(allowCategories.indexOf(this._VIEWS_NAME) > -1 || allowItems.indexOf('$views') > -1 && extendCategories['$views'] && Object.keys(extendCategories['$views']).length > 0) {
+                if(allowCategories.indexOf(this._VIEWS_NAME) == -1) {
+                    allowCategories.push(this._VIEWS_NAME);
+                }
+
+                this.itemList.clearCategory(this._VIEWS_NAME);
+
                 for(var i in extendCategories['$views']) {
                     $this.itemList.addItem({
                         item: i,
