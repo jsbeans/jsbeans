@@ -154,20 +154,22 @@
                         throw 'Invalid visitor method ' + m;
                     }
                     var option = $this._getMethodOption(m);
-                    var func = $this[m];
-                    $this[m] = function (){
-                        if ($this.options[option] && $this.options[option].before) {
-                            $this.options[option].before.apply($this, arguments);
-                        }
-                        if ($this.skip) {
-                            delete $this.skip;
-                        } else {
-                            func.apply($this, arguments);
-                        }
-                        if ($this.options[option] && $this.options[option].after) {
-                            $this.options[option].after.apply($this, arguments);
-                        }
-                    };
+                    if ($this.options[option]) {
+                        var func = $this[m];
+                        $this[m] = function (){
+                            if ($this.options[option].before) {
+                                $this.options[option].before.apply($this, arguments);
+                            }
+                            if ($this.skip) {
+                                delete $this.skip;
+                            } else {
+                                func.apply($this, arguments);
+                            }
+                            if ($this.options[option].after) {
+                                $this.options[option].after.apply($this, arguments);
+                            }
+                        };
+                    }
                 })(methods[i]);
             }
         },

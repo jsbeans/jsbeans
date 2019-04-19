@@ -24,6 +24,7 @@
 		    var config = $this.getLocalConfig(name);
 		    var providers = queryTask.providers || QueryUtils.extractProviders(query, cube);
 
+		    var times = [];
             for(var  i = 0; i < providers.length; i++) {
                 var vendor = providers[i].getStore().getVendor();
                 if (config.inMemory ||
@@ -31,6 +32,7 @@
                     (config.vendor == vendor || config.excludeVendors && config.excludeVendors.indexOf(vendor) == -1)
                 ){
                     try {
+                        times.push(Date.now());
                         var translator = new SQLLoopbackTranslatorVisitor(query, params, cube, executor);
                         translator.vendor = config.inMemory ? config.vendor : vendor;
                         translator.mainDataProvider = config.inMemory ? $this.getInMemoryDataProvider() : providers[i];
@@ -51,6 +53,13 @@
                                 translator && translator.destroy();
                                 oldClose.call(this);
                             };
+                            it.meta.translateTimes = (function(){
+                                for(var i=0,len=times.length;i<len-1;i++) {
+                                    times[i] = (times[i+1] - times[i])/1000;
+                                }
+                                times[len-1] = (Date.now() - times[len-1])/1000;
+                                return times;
+                            })();
                             return it;
                         } else {
                             translator.destroy();

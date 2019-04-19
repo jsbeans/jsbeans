@@ -320,6 +320,10 @@
                 result.translatedQuery = iterator.meta.translatedQuery;
                 result.translatorInputQuery = iterator.meta.translatorInputQuery;
                 result.prepareTime = iterator.meta.prepareTime;
+                result.meta = iterator.meta;
+                delete iterator.meta.translatedQuery;
+                delete iterator.meta.translatorInputQuery;
+                delete iterator.meta.prepareTime;
             }
             /// вместо объекта с данными вернуть анализ
             iterator.next = function() {
