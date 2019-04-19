@@ -202,6 +202,8 @@
             if(this._colResizeHandleContainer){
                 this._colResizeHandleContainer.empty();
             }
+
+            this.showNoDataMsg(false);
         },
 
         setData: function(data){
@@ -221,9 +223,11 @@
 
             this.clear();
 
-            if(!data || data.length == 0){
+            if(!data || data.length == 0) {
+                this.showNoDataMsg(true);
             	return;
             }
+
             this.addArray(data);
 
             var firstRow = this._masterTable.find("tr:first-child > td"),
@@ -321,6 +325,19 @@
 
             if(this.options.preloader && this._masterTable.height() < this.getElement().height()){
                 this.options.preloader.call(this);
+            }
+        },
+
+        showNoDataMsg: function(isShow) {
+            if(!this._noDataMessage) {
+                this._noDataMessage = this.$('<div class="noDataMessage hidden"><div class="msg">' + this.options.noDataMessage + '</div></div>');
+                this.append(this._noDataMessage);
+            }
+
+            if(isShow) {
+                this._noDataMessage.removeClass('hidden');
+            } else {
+                this._noDataMessage.addClass('hidden');
             }
         },
 

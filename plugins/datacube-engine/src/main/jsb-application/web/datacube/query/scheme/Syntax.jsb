@@ -30,7 +30,7 @@
 	    // функции глобальной агрегации
 	    '$gsum', '$gcount', '$gmin', '$gmax', '$gavg', '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 	    // разное
-	    '$const', '$distinct', '$query', '$if',
+	    '$const', '$distinct', '$query', '$if', '$views',
 	    // логика
 	    '$and', '$or', '$not',
 	    // сравнения
@@ -947,6 +947,8 @@
 	        }
 	    } else if(key === '$query') {
 	        return JSB().clone(this.getScheme(key).defaultValues);
+	    } else if(key.indexOf('$views') === 0) {
+	        return desc.item;
 	    } else {
 	        var val = {};
 
@@ -967,7 +969,7 @@
     * @return {array} массив ключей для замены
     */
 	getReplacements: function(key, parentKey){
-	    if(this.getScheme(key).replacements){
+	    if(this.getScheme(key) && this.getScheme(key).replacements){
 	        key = this.getScheme(key).replacements;
 	    } else {
 	        key = '$default';

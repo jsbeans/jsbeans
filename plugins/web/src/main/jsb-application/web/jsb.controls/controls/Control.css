@@ -37,6 +37,6 @@
     color: #cacaca;
 }
 
-.hidden {
+.jsb-control .hidden {
     display: none !important;
 }

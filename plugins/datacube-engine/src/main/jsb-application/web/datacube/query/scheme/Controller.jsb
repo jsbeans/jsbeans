@@ -12,8 +12,10 @@
 	    _contextMap: {},
 	    _data: {},
 	    _dataId: null,
+	    _extendCategories: {},
 	    _menu: null,
 	    _query: null,
+	    _queryRender: null,
 	    _rendersMap: {},
 	    _slice: null,
 
@@ -36,6 +38,45 @@
 
 	    options: {
 	        onChange: undefined
+	    },
+
+	    addExtendCategoryItem: function(catName, values, name, isAddToSlice) {
+	        if(!this._extendCategories[catName]) {
+	            this._extendCategories[catName] = {};
+	        }
+
+	        if(!this._query[catName]) {
+	            this._query[catName] = {};
+	        }
+
+	        this._extendCategories[catName][name] = values;
+
+	        if(isAddToSlice) {
+	            this._query[catName][name] = values;
+	            this.onChange();
+	        }
+	    },
+
+	    changeExtendCategoryItem: function(catName, values, oldName, newName) {
+	        if(!this._extendCategories[catName] || !this._extendCategories[catName][oldName]) {
+	            return;
+	        }
+
+	        if(values) {
+	            this._extendCategories[catName][oldName] = values;
+
+	            this._query[catName][oldName] = values;
+	        }
+
+	        if(newName) {
+	            this._extendCategories[catName][newName] = this._extendCategories[catName][oldName];
+	            delete this._extendCategories[catName][oldName];
+
+	            this._query[catName][newName] = this._query[catName][oldName];
+	            delete this._query[catName][oldName];
+	        }
+
+	        this.onChange();
 	    },
 
 	    clear: function(){
@@ -61,8 +102,12 @@
 
             var scheme = Syntax.getScheme(options.key);
 
-            if(!options.renderName && !scheme){
-                return;
+            if(!options.renderName && !scheme) {
+                if(JSB.isString(options.scope)) {
+                    options.renderName = '$text';
+                } else {
+                    return;
+                }
             }
 
             var render = RenderRepository.createRender(JSB.merge(options, {
@@ -113,7 +158,7 @@
         },
 
         getQuery: function(){
-            return this._query.getScope();
+            return this._queryRender.getScope();
         },
 
         getRenderById: function(id){
@@ -124,8 +169,8 @@
             return this._slice;
         },
 
-        getValues: function(){
-            return this._values;
+        getValues: function() {
+            return this._query;
         },
 
         hideMenu: function(){
@@ -145,8 +190,8 @@
             this.getElement().loader();
 
             this.ensureComponentsInitialized(function(){
-                if($this._query){
-                    $this._query.destroy();
+                if($this._queryRender){
+                    $this._queryRender.destroy();
                 }
 
                 $this._contextMap = {};
@@ -172,8 +217,18 @@
 
                 if(query){
                     $this.append(query);
-                    $this._values = opts.values;
-                    $this._query = query;
+                    $this._query = opts.values;
+                    $this._queryRender = query;
+                }
+
+                if($this._query.$views) {
+                    for(var i in $this._query.$views) {
+                        $this.addExtendCategoryItem('$views', $this._query.$views[i], i);
+                    }
+                }
+
+                if($this._query.$params) {
+                    //
                 }
 
                 this.getElement().loader('hide');
@@ -261,6 +316,7 @@
 				data: JSB.merge(opts, {
 				    data: this.getData(),
 				    dataId: this.getDataId(),
+				    extendCategories: this._extendCategories,
 				    sliceId: this.getSlice().getFullId()
 				}),
 				scope: null,

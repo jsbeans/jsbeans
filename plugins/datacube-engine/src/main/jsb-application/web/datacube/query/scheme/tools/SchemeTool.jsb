@@ -31,6 +31,7 @@
 
 		_SOURCE_FIELDS_NAME: 'Поля источника',
 		_OUTPUT_FIELDS_NAME: 'Поля среза',
+		_VIEWS_NAME: 'Именованные подзапросы',
 
 		$constructor: function(){
 		    $base();
@@ -52,6 +53,8 @@
                         itemElement.append('<div class="fieldName cubeFieldIcon sliceField">' + itemDesc.item + '</div>');
                     }
 
+                } else if(itemDesc.category === $this._VIEWS_NAME) {
+                    itemElement.append('<div class="key">' + itemDesc.item + '</div>');
                 } else {
                     itemElement.append('<div class="key">' + itemDesc.key + '</div><div class="desc">' + itemDesc.desc + '</div>');
                 }
@@ -76,6 +79,7 @@
 		update: function(){
 		    var caller = this.getData('caller'),
 		        dataId = this.getData('dataId'),
+		        extendCategories = this.getData('extendCategories'),
 		        key = this.getData('key'),
 		        showSlices = this.getData('showSlices');
 
@@ -105,11 +109,12 @@
 
             if(key === '$source'){
                 allowCategories.push('Срезы');
+                allowCategories.push(this._VIEWS_NAME);
             } else {
                 allowItems = Syntax.getReplacements(key, caller && caller.getParent().getKey());
             }
 
-            if(allowItems.indexOf('$field') > -1){
+            if(allowItems.indexOf('$field') > -1) {
                 var context = caller.getContext();
 
                 var allowOutputFields = caller.isAllowOutputFields(),
@@ -183,6 +188,23 @@
                                 searchId: fields[i].$field
                             });
                         }
+                    });
+                }
+            }
+
+            if(allowCategories.indexOf(this._VIEWS_NAME) > -1 || allowItems.indexOf('$views') > -1 && extendCategories['$views'] && Object.keys(extendCategories['$views']).length > 0) {
+                if(allowCategories.indexOf(this._VIEWS_NAME) == -1) {
+                    allowCategories.push(this._VIEWS_NAME);
+                }
+
+                this.itemList.clearCategory(this._VIEWS_NAME);
+
+                for(var i in extendCategories['$views']) {
+                    $this.itemList.addItem({
+                        item: i,
+                        key: '$views' + '|' + i,
+                        category: $this._VIEWS_NAME,
+                        searchId: i
                     });
                 }
             }

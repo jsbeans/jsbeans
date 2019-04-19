@@ -203,6 +203,10 @@
 	        return Object.keys(this.getScope().$select).sort();
 	    },
 
+	    getViews: function() {
+	        return this.getScope().$views || {};
+	    },
+
 	    isAllowChangeSource: function(){
 	        return JSB.isDefined(this.options.allowChangeSource) ? this.options.allowChangeSource : true;
 	    },

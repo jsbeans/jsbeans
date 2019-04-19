@@ -56,6 +56,9 @@
                 switch(newSourceType){
                     case 'slice':
                         val = source.getFullId();
+                        break;
+                    case 'view':
+                        val = source.item;
                 }
 
                 $this.setValues(val, Number(item.attr('idx')));
@@ -252,6 +255,13 @@
                                     changeCallback.call($this, 'slice', slice);
                                 }
                                 break;
+                            case 'Именованные подзапросы':
+                                appendElement.empty().append('<div class="viewElement">' + desc.item + '</div>');
+
+                                if(changeCallback){
+                                    changeCallback.call($this, 'view', desc);
+                                }
+                                break;
                         }
                     }
 	            });
@@ -284,17 +294,29 @@
 	            case 'object':  // query
 	                createDefault('Независимый срез');
 	                break;
-                case 'string':  // slice/provider id
-                    this.server().getEntry(value, function(res, fail){
-                        var source = RendererRepository.createRendererFor(res);
-                        appendElement.append(source);
+                case 'string':  // slice/provider id || view
+                    var views = this.getViews();
 
-                        if(isEditable){
-                            appendElement.click(function(){
-                                click(appendElement.children().jsb().getObject().getFullId());
+                    if(views[value]) {
+                        appendElement.append('<div class="viewElement">' + value + '</div>');
+
+                        if(isEditable) {
+                            appendElement.click(function() {
+                                click(value);
                             });
                         }
-                    });
+                    } else {
+                        this.server().getEntry(value, function(res, fail){
+                            var source = RendererRepository.createRendererFor(res);
+                            appendElement.append(source);
+
+                            if(isEditable){
+                                appendElement.click(function(){
+                                    click(appendElement.children().jsb().getObject().getFullId());
+                                });
+                            }
+                        });
+                    }
                     break;
                 default:
                     createDefault('Источник не задан');
@@ -359,7 +381,7 @@
 	        } else {
 	            $base(val);
             }
-	    },
+	    }
     },
 
     $server: {
