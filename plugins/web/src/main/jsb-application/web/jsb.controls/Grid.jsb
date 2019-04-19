@@ -207,20 +207,6 @@
         },
 
         setData: function(data){
-            function resizeColumnHandles(startIndex, widthDifferent, isSum){
-                startIndex = startIndex || 0;
-
-                var resizeHandles = $this._colResizeHandleContainer.children('.col-resize-handle');
-
-                for(var i = startIndex; i < resizeHandles.length; i++){
-                    if(isSum){
-                        resizeHandles[i].style.left = +resizeHandles[i].style.left.replace('px', '') + (i + 1) * widthDifferent + 'px';
-                    } else {
-                        resizeHandles[i].style.left = +resizeHandles[i].style.left.replace('px', '') + widthDifferent + 'px';
-                    }
-                }
-            }
-
             this.clear();
 
             if(!data || data.length == 0) {
@@ -290,7 +276,7 @@
                                 masterCol.get(0).style.width = newColWidth + 'px';
                                 topCol.get(0).style.width = newColWidth + 'px';
 
-                                resizeColumnHandles(index + 1, widthDif);
+                                $this._resizeColumnHandles(index + 1, widthDif);
                             }
                         });
                     })(resizeHandle, masterCol, topCol, i);
@@ -302,26 +288,6 @@
             }
 
             this._updateSizes();
-
-            var masterContainerClientWidth = this._masterContainer.get(0).clientWidth;
-            if(this._masterTable.width() < masterContainerClientWidth){
-                var dif = (masterContainerClientWidth - this._masterTable.width() - (this._masterTable.width() - this._masterTable.innerWidth())) / firstRow.length;
-
-                function increaseCols(cols, dif){
-                    for(var i = 0; i < cols.length; i++){
-                        var col = $this.$(cols[i]);
-
-                        col.width(col.width() + dif);
-                    }
-                }
-
-                increaseCols(masterColGroup.children('col'), dif);
-                increaseCols(topColGroup.children('col'), dif);
-
-                resizeColumnHandles(0, dif, true);
-
-                this._updateSizes();
-            }
 
             if(this.options.preloader && this._masterTable.height() < this.getElement().height()){
                 this.options.preloader.call(this);
@@ -417,6 +383,20 @@
             }
         },
 
+        _resizeColumnHandles: function(startIndex, widthDifferent, isSum) {
+            startIndex = startIndex || 0;
+
+            var resizeHandles = $this._colResizeHandleContainer.children('.col-resize-handle');
+
+            for(var i = startIndex; i < resizeHandles.length; i++){
+                if(isSum){
+                    resizeHandles[i].style.left = +resizeHandles[i].style.left.replace('px', '') + (i + 1) * widthDifferent + 'px';
+                } else {
+                    resizeHandles[i].style.left = +resizeHandles[i].style.left.replace('px', '') + widthDifferent + 'px';
+                }
+            }
+        },
+
         _setResizeHandle: function(element, opts){
             //
         },
@@ -429,6 +409,26 @@
             this._colResizeHandleContainer.get(0).style['margin-top'] = -this._masterContainer.height() + 'px';
 
             this._colResizeHandleContainer.children('.col-resize-handle').height(this._masterContainer.get(0).clientHeight);
+
+            var masterContainerClientWidth = this._masterContainer.get(0).clientWidth,
+                masterTableCols = this._masterTable.find('colgroup > col');
+
+            if(this._masterTable.width() < masterContainerClientWidth){
+                var dif = (masterContainerClientWidth - this._masterTable.width() - (this._masterTable.width() - this._masterTable.innerWidth())) / masterTableCols.length;
+
+                function increaseCols(cols, dif){
+                    for(var i = 0; i < cols.length; i++){
+                        var col = $this.$(cols[i]);
+
+                        col.width(col.width() + dif);
+                    }
+                }
+
+                increaseCols(masterTableCols, dif);
+                increaseCols(this._topTable.find('colgroup > col'), dif);
+
+                this._resizeColumnHandles(0, dif, true);
+            }
         }
     }
 }
