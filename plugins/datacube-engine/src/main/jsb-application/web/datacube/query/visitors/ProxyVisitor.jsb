@@ -31,7 +31,10 @@
 
             $this.proxyWrapped([
                 'visitQuery',
+                'visitQuerySource',
                 'visitExpression',
+                'visitAnyExpression',
+                'visitFieldExpression',
                 'visitField',
                 'visitOutputField',
                 'visitArray',
@@ -62,91 +65,6 @@
             }
         },
 
-        visitQuery: function(exp) {
-            $base(exp);
-        },
-
-        visitExpression: function(exp) {
-            $base(exp);
-        },
-
-        visitField: function(field, context) {
-            $base(field, context);
-        },
-
-        visitOutputField:function(alias, exp) {
-            $base(alias, exp);
-        },
-
-        visitArray: function(array) {
-            $base(array);
-        },
-
-        visitConst: function(value, type, nativeType) {
-            $base(value, type, nativeType);
-        },
-
-        visitParam: function(name) {
-            $base(name);
-        },
-
-        visitNamedQuery: function($from) {
-            $base($from);
-        },
-
-        visitUnion: function($union) {
-             $base($union);
-        },
-
-        visitJoin: function($join) {
-             $base($join);
-        },
-
-        visitRecursive: function($recursive) {
-             $base($recursive);
-        },
-
-        visitProvider: function($provider) {
-             $base($provider);
-        },
-
-        visitCube: function($cube) {
-             $base($cube);
-        },
-
-        visitFilter: function($filter) {
-            $base($filter);
-        },
-
-        visitGlobalFilter: function($globalFilter) {
-            $base($globalFilter);
-        },
-
-        visitPostFilter: function($postFilter) {
-            $base($postFilter);
-        },
-
-        visitSelect: function($select) {
-            $base($select);
-        },
-
-        visitGroupBy: function($groupBy) {
-            $base($groupBy);
-        },
-
-        visitSort: function($sort) {
-            $base($sort);
-        },
-
-        visitSortExpression: function(expr, type){
-            $base(expr, type);
-        },
-
-        visitCondition: function($filter) {
-            $base($filter);
-        },
-
-
         proxyWrapped: function(methods) {
             for(var i = 0; i < methods.length; i++) {
                 (function(m){
@@ -155,18 +73,20 @@
                     }
                     var option = $this._getMethodOption(m);
                     if ($this.options[option]) {
+                        var before = $this.options[option].before;
+                        var after = $this.options[option].after;
                         var func = $this[m];
                         $this[m] = function (){
-                            if ($this.options[option].before) {
-                                $this.options[option].before.apply($this, arguments);
+                            if (before) {
+                                before.apply($this, arguments);
                             }
                             if ($this.skip) {
                                 delete $this.skip;
                             } else {
                                 func.apply($this, arguments);
                             }
-                            if ($this.options[option].after) {
-                                $this.options[option].after.apply($this, arguments);
+                            if (after) {
+                                after.apply($this, arguments);
                             }
                         };
                     }

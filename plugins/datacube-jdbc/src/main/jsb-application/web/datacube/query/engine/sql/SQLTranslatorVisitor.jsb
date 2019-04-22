@@ -193,7 +193,7 @@
                         $this.visit(query.$views[name], {asQuery: true});
                     });
                     if (--size > 0) {
-                        $this.print(',\n');
+                        $this.print(',');
                     }
 		        }
                 $this.indentDec();
@@ -651,7 +651,7 @@ debugger
         visitUnion: function($union) {
             var fields = {};
             for (var i = 0; i < $union.length; i++) {
-                var union = $union[i];
+                var union = $this.getQuery($union[i]);
                 for(var alias in union.$select) {
                     var type = $this.getOutputFieldType(alias, union);
                     var e = {
@@ -675,7 +675,7 @@ debugger
             $this.print('(');
                 $this.indentInc();
                 for (var i = 0; i < $union.length; i++) {
-                    var union = $union[i];
+                    var union = $this.getQuery($union[i]);
                     var oldSelect = union.$select;
                     /// prepare ordered fully fields
                     union.$select = {};
