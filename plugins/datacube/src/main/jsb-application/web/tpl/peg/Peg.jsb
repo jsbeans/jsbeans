@@ -97,7 +97,19 @@
 		return this.peg.generate.apply(this.peg, arguments);
 	},
 	
+	parse: function(parser, source, opts){
+		if(JSB.isString(source)){
+			return this.parseText(parser, source);
+		} else if(JSB.isInstanceOf(source, 'JSB.IO.TextStream')){
+			return this.parseStream(parser, source, opts);
+		}
+	},
+	
 	parseStream: function(parser, stream, opts){
 		return parser.parse(new (this.StringBuffer)(stream, opts));
+	},
+	
+	parseText: function(parser, text){
+		return parser.parse(text);
 	}
 }

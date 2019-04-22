@@ -2,10 +2,85 @@
 	$name: 'DataCube.Model.HttpService',
 	$parent: 'DataCube.Model.QueryableContainer',
 	
+	$scheme: {
+		server: {
+			render: 'group',
+			name: 'Настройки соединения',
+			items: {
+				address: {
+					render: 'item',
+					name: 'Адрес сервера',
+					require: true,
+					editorOpts: {
+						placeholder: 'http://my.server.com:8888/api'
+					}
+				},
+				auth: {
+					render: 'group',
+					name: 'Использовать авторизацию',
+					optional: true,
+					items: {
+						user: {
+							render: 'item',
+							name: 'Имя пользователя'
+						},
+						password: {
+							render: 'item',
+							name: 'Пароль',
+							editorOpts: {
+								type: 'password'
+							}
+						}
+					}
+				},
+				proxy: {
+					render: 'select',
+					name: 'Прокси',
+					items: {
+						noProxy: {
+							render: 'item',
+							name: 'не использовать',
+							editor: 'none'
+						},
+						httpProxy: {
+							render: 'group',
+							name: 'HTTP',
+							items: {
+								
+							}
+						},
+						socksProxy: {
+							render: 'group',
+							name: 'SOCKS',
+							items: {
+								
+							}
+						}
+					}
+				}
+				
+			}
+		}
+	},
+	
+	methodCount: 0,
+	serviceAddr: null,
+	
+	getMethodCount: function(){
+		return this.methodCount;
+	},
+	
+	getServiceAddress: function(){
+		return this.serviceAddr;
+	},
+	
 	$server: {
-		$require: ['JSB.Workspace.WorkspaceController'],
+		$require: ['JSB.Workspace.WorkspaceController',
+		           'DataCube.Model.HttpMethod',
+		           'JSB.Store.StoreManager'],
 		
-		settings: null,
+		methods: {},
+		loaded: false,
 		
 		
 		$bootstrap: function(){
@@ -24,19 +99,120 @@
 
 		$constructor: function(id, workspace){
 			$base(id, workspace);
-			this.settings = this.property('settings');
+			
+			if(this.property('methods')){
+				this.methodCount = this.property('methods');
+			}
+			if(this.property('address')){
+				this.serviceAddr = this.property('address');
+			}
 		},
 		
-		getSettings: function(){
-			return this.settings;
+		load: function(){
+			if(this.loaded){
+				return;
+			}
+			this.lock('_load');
+			try {
+				if(this.loaded){
+					return;
+				}
+				
+				// load concepts from children
+				this.lock('_methods');
+				var chMap = this.getChildren();
+				for(var chId in chMap){
+					var chObj = chMap[chId];
+					if(JSB.isInstanceOf(chObj, 'DataCube.Model.HttpMethod')){
+						this.methods[chId] = chObj;
+					}
+				}
+				this.unlock('_methods');
+				
+				this.loaded = true;
+			} finally {
+				this.unlock('_load');
+			}
 		},
 		
+		store: function(){
+			// do nothing for a while
+		},
 		
-		updateSettings: function(settings){
-			this.settings = settings;
-			this.property('settings', this.settings);
-			this.getWorkspace().store();
-		}
+		onChangeSettings: function(){
+			this.serviceAddr = this.getSettingsContext().find('server address').value().trim();
+			this.property('address', this.serviceAddr || null);
+			this.store();
+		},
 		
+		getStore: function(){
+			return StoreManager.getStore({
+				name: 'HttpServiceStore',
+				type: 'DataCube.Store.HttpServiceStore'
+			});
+		},
+		
+		createHttpMethod: function(){
+			this.load();
+			
+			this.lock('_methods');
+			try {
+				// generate concept name map
+				var cnMap = {};
+				for(var cId in this.methods){
+					cnMap[this.methods[cId].getName()] = true;
+				}
+				var cName = null;
+				for(var cnt = 1; ; cnt++){
+					cName = 'mtd' + cnt;
+					if(!cnMap[cName]){
+						break;
+					}
+				}
+				
+				var cId = JSB.generateUid();
+				var method = new HttpMethod(cId, this.getWorkspace(), this, cName);
+	
+				this.methods[cId] = method;
+				this.methodCount = Object.keys(this.methods).length;
+				this.property('methods', this.methodCount);
+				
+				this.addChildEntry(method);
+			} finally {
+				this.unlock('_methods');
+			}
+			
+			this.publish('DataCube.Model.HttpService.changed', {action: 'httpMethodAdded', method: method}, {session: true});
+			this.store();
+			this.doSync();
+			
+			return method;
+		},
+		
+		removeHttpMethod: function(mtdId, fromEntry){
+			this.load();
+			var bRemoved = false;
+			if(this.methods[mtdId]){
+				this.lock('_methods');
+				try {
+					if(this.methods[mtdId]){
+						if(!fromEntry){
+							this.methods[mtdId].remove();
+						}
+						delete this.methods[mtdId];	
+						this.methodCount = Object.keys(this.methods).length;
+						this.property('methods', this.methodCount);
+						bRemoved = true;
+					}
+				} finally {
+					this.unlock('_methods');
+				}
+				if(bRemoved){
+					this.publish('DataCube.Model.HttpService.changed', {action: 'httpMethodRemoved', methodId: mtdId}, {session: true});
+					this.store();
+					this.doSync();
+				}
+			}
+		},
 	}
 }

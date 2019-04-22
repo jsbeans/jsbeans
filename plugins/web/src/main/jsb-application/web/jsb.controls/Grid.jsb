@@ -378,6 +378,7 @@
                 this.$(td).append(jvInst.getElement());
             } else if(valueType == 'boolean'){
                 this.$(td).attr('val', value);
+                this.$(td).text(String(value));
             } else {
                 this.$(td).text(String(value));
             }

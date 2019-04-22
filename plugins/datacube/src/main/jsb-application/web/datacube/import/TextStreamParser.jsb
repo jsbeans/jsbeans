@@ -43,36 +43,65 @@
 	
 	$server: {
 		stream: null,
+		text: null,
 		
-		$constructor: function(entry, values){
-			$base(entry, values);
+		$constructor: function(source, values){
+			$base(source, values);
+			this.stream = this.setupSourceStream();
+			if(!this.stream){
+				if(JSB.isString(source)){
+					this.text = source;
+				} else {
+					throw new Error('Invalid input source');
+				}
+			}
+		},
+		
+		setupSourceStream: function(){
 			var charset = this.getContext().find('encoding').value();
-			this.stream = entry.read({
-				stream: true,
-				binary: false,
-				charset: charset
-			});
+			var source = this.getSource();
+			if(JSB.isInstanceOf(source, 'JSB.Workspace.FileEntry')){
+				return source.read({
+					stream: true,
+					binary: false,
+					charset: charset
+				});
+			} else if(JSB.isString(source)){
+				// generate stream from string
+				return null;
+			} else if(JSB.isInstanceOf(source, 'JSB.IO.TextStream')){
+				return this.getSource();
+			}
 		},
 		
 		destroy: function(){
-			this.stream.close();
+			if(this.stream){
+				this.stream.close();
+			}
 			$base();
 		},
 		
 		getSourcePreview: function(){
 			var charset = this.getContext().find('encoding').value();
-			var stream = this.getEntry().read({
-				stream: true,
-				binary: false,
-				charset: charset
-			});
+			var stream = this.setupSourceStream();
+			var text = null;
+			if(!stream){
+				var source = this.getSource();
+				if(JSB.isString(source)){
+					text = source;
+				} else {
+					throw new Error('Invalid input source');
+				}
+			}
 			var lines = [];
 			try {
-				var data = stream.read(131062);
+				var data = text || stream.read(131062);
 				lines = data.split(/\n/i);
 				lines = lines.slice(0, 100);
 			} finally {
-				stream.close();
+				if(stream){
+					stream.close();
+				}
 			}
 			return lines;
 		}

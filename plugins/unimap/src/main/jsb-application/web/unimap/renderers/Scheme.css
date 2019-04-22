@@ -1,0 +1,28 @@
+.schemeRender {
+}
+
+.schemeRender > .name {
+	min-width: 120px;
+    display: inline-block;
+    line-height: 22px;
+    font-size: 15px;
+    color: #73879C;
+    margin-right: 5px;
+}
+
+
+.schemeRender > .item {
+	height: 26px;
+    background: rgba(24, 108, 138, 0.2);
+    border: 1px dotted rgba(2, 47, 78, 0.2);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 15px;
+    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.schemeRender > .item > * {
+    vertical-align: middle;
+}

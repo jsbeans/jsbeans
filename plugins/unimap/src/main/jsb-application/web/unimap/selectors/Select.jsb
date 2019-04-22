@@ -28,13 +28,28 @@
         }
     },
 
-    find: function(key, values, isFindAll){
+    find: function(key, values, isFindAll, schemePath){
         var main = false,
             resArr = [];
 
         if(!values){
             main = true;
             values = this._values;
+            
+            if(!schemePath){
+                schemePath = this._schemePath;
+            }
+        }
+        
+        if(JSB.isString(schemePath)){
+            if(schemePath.length > 0){
+            	var itemsIdx = schemePath.lastIndexOf('items');
+        		if(itemsIdx < 0 || schemePath.length - itemsIdx !== 5){
+        			schemePath += '.items';
+        		}
+            } else {
+                schemePath += 'items';
+            }
         }
 
         for(var i = 0; i < values.length; i++){
@@ -42,7 +57,7 @@
                 continue;
             }
 
-            var res = this.getMainSelector().find(key, values[i].items);
+            var res = this.getMainSelector().find(key, values[i].items, isFindAll, schemePath + '.' + values[i].value + '.items');
             if(res){
                 if(isFindAll){
                     resArr.push(res);

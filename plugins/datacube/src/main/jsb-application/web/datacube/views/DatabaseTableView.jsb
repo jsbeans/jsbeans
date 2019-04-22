@@ -3,7 +3,7 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$expose: {
-		priority: 1,
+		priority: 0.5,
 		acceptNode: ['DataCube.DatabaseTableNode'],
 		acceptEntry: ['DataCube.Model.QueryableEntry'],
 		caption: 'Таблица',

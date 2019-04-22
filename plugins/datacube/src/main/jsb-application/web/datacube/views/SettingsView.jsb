@@ -50,7 +50,7 @@
 	        		return;
 	        	}
 	        	$this.refresh();
-	        })
+	        });
 		},
 
 		refresh: function(){

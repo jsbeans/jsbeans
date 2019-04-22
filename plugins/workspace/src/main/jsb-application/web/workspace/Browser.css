@@ -7,7 +7,8 @@
 .workspaceBrowser > .jsb-tabview > .tabPane > li {
     font-size: 16px;
 	margin-top: -1px;
-    margin-left: -1px;
+	margin-left: 1px !important;
+    margin-right: 1px !important;
     padding: 6px 10px 0 14px;
     min-width: 20px;
 }

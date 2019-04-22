@@ -394,6 +394,7 @@
 		},
 		
 		entry: null,
+		source: null,
 		context: null,
 		cancelFlag: false,
 		
@@ -425,10 +426,14 @@
 			'array': 6
 		},
 		
-		$constructor: function(entry, values){
+		$constructor: function(source, values){
 			$base();
-			this.entry = entry;
+			this.source = source;
 			this.values = values;
+			
+			if(JSB.isInstanceOf(this.source, 'JSB.Workspace.Entry')){
+				this.entry = this.source;
+			}
 			
 			this.lastProgress = -1;
 			
@@ -438,7 +443,7 @@
 			});
 			
 			this.subscribe('ParserManager.cancel', function(sender, msg, entry){
-				if($this.entry != entry){
+				if($this.source != source){
 					return;
 				}
 				$this.cancelFlag = true;
@@ -489,6 +494,10 @@
 		
 		getEntry: function(){
 			return this.entry;
+		},
+		
+		getSource: function(){
+			return this.source;
 		},
 		
 		getValues: function(){
@@ -1230,7 +1239,11 @@
 			var tableGroup = this.getContext().find('tablesSettings');
 			tableGroup.removeAllValues();
 			var tableSel = tableGroup.addValue();
-			var tName = this.getEntry().getName().replace(/\./g, '_');
+			var sourceName = 'Table';
+			if(this.getEntry() && this.getEntry().getName()){
+				sourceName = this.getEntry().getName();
+			}
+			var tName = sourceName.replace(/\./g, '_');
 			tableSel.setName(tName);
 						
 			var colGroup = tableSel.find('columns');

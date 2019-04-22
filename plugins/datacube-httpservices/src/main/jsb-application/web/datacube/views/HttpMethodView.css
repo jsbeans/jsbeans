@@ -1,0 +1,360 @@
+@CHARSET "UTF-8";
+
+.httpMethodView {
+	background: -webkit-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+	background: -moz-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: -o-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: -ms-linear-gradient(top, #fff 0%, #fbfbfb 10%);
+    background: linear-gradient(top, #fff 0%, #fbfbfb 10%);
+}
+
+.httpMethodView * {
+    box-sizing: border-box;
+}
+
+.httpMethodView .titleBlock {
+    width: 100%;
+    padding: 5px 5px 0 5px;
+    border-bottom: 1px solid lightgray;
+}
+
+.httpMethodView .titleBlock > .serviceUrl {
+	font-size: 16px;
+    font-family: monospace;
+    color: #5c7ba0;
+    font-weight: bold;
+	display: inline-block;
+    vertical-align: middle;
+    margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+.httpMethodView .titleBlock ._dwp_primitiveEditor input{
+    display: block;
+    width: 100%;
+	font-family: monospace;
+    font-size: 16px;
+    padding: 1px 3px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+}
+
+.httpMethodView .titleBlock ._dwp_button {
+    float: right;
+    color: #fff;
+    border-radius: 3px;
+    padding: 3px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+.httpMethodView .titleBlock ._dwp_primitiveEditor {
+	width: 400px;
+    max-width: calc(100% - 270px);
+	display: inline-block;
+    vertical-align: middle;
+    margin-top: 1px;
+    margin-bottom: 1px;
+	margin-right: 2px;
+}
+
+.httpMethodView .titleBlock ._dwp_button.btnOk {
+    background: #169F85;
+    border-color: #398439;
+}
+
+.httpMethodView .titleBlock ._dwp_button.btnOk:hover {
+    background: #218838;
+    border-color: #1e7e34;
+}
+
+.httpMethodView .titleBlock ._dwp_button.btnUpdate {
+    background: #868e96;
+    border-color: #868e96;
+}
+
+.httpMethodView .titleBlock ._dwp_button.btnUpdate:hover {
+    background: #727b84;
+    border-color: #6c757d;
+}
+
+.httpMethodView .titleBlock ._dwp_button > ._dwp_icon,
+.httpMethodView .titleBlock ._dwp_button > ._dwp_separator {
+    display: none;
+}
+
+/* message */
+div.ajaxloader[key="parser"] > div.ajaxloaderInfo {
+    border-radius: 16px;
+    padding: 10px 16px;
+    background: #ececdd;
+}
+
+div.ajaxloader[key="parser"] > div.ajaxloaderInfo > .content {
+	text-align: center;
+}
+
+div.ajaxloader[key="parser"] > div.ajaxloaderInfo > .content > .title {
+	text-align: left;
+	color: #776f35;
+    font-size: 15px;
+	margin-bottom: 8px;
+}
+
+div.ajaxloader[key="parser"] > div.ajaxloaderInfo > .content > .btnCancel {
+	width: initial !important;
+    padding: 3px 6px !important;
+}
+
+
+/* stages */
+
+.httpMethodView > .titleBlock > ._dwp_tabview.stage {
+    width: auto;
+    margin-top: 4px;
+}
+
+.httpMethodView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane {
+	background: transparent;
+	padding: 0;
+    border: none;
+	position: relative;
+}
+
+.httpMethodView > .titleBlock > ._dwp_tabview.stage > ._dwp_clientPane {
+	display: none;
+}
+
+.httpMethodView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane > ._dwp_tab {
+	margin: 0 2px;
+    padding: 5px 14px 5px 10px;
+    height: 29px;
+}
+
+.httpMethodView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane > ._dwp_tab.active {
+	background: #fbfbfb;
+    border-bottom: none;
+}
+
+.httpMethodView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText {
+	text-shadow: none;
+}
+
+.httpMethodView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText > span {
+	display: inline-block;
+    background: #d37531;
+    padding: 0 4px;
+    margin-right: 4px;
+    border-radius: 10px;
+    text-shadow: none;
+    color: #fff;
+    font-size: 13px;
+}
+
+
+/* buttons */
+
+.httpMethodView .buttonBar {
+	text-align: center;
+	padding: 0 0 10px 0;
+}
+
+.httpMethodView .buttonBar > ._dwp_button {
+	display: none;
+	
+    color: #fff;
+    border-radius: 3px;
+    padding: 3px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    margin-left: 5px;
+    border-color: transparent;
+}
+
+.httpMethodView[stage="request"] .buttonBar > .btnRequest {
+	display: inline-block;
+	background: #5c7ea0;
+}
+
+.httpMethodView[stage="request"] .buttonBar > .btnRequest:hover {
+	background: #3d668e;
+}
+
+
+.httpMethodView[stage="analysis"] .buttonBar > .btnAnalyze {
+	display: inline-block;
+	background: #868e96;
+}
+
+.httpMethodView[stage="analysis"] .buttonBar > .btnAnalyze:hover {
+	background: #727b84;
+}
+
+.httpMethodView[stage="tables"] .buttonBar > .btnPreview {
+	display: inline-block;
+	background: #868e96;
+}
+
+.httpMethodView[stage="tables"] .buttonBar > .btnPreview:hover {
+	background: #727b84;
+}
+
+
+
+/* scheme */
+
+.httpMethodView .scheme [key="structure"] {
+	display: none;
+}
+
+.httpMethodView .scheme > [key="request"],
+.httpMethodView .scheme > [key="useParser"] > .item,
+.httpMethodView .scheme > [key="useParser"] > .jsb-checkbox,
+.httpMethodView .scheme > [key="parserSettings"],
+.httpMethodView .scheme > [key="analyzer"],
+.httpMethodView .scheme > [key="previewSettings"],
+.httpMethodView .scheme > [key="tablesSettings"]
+{
+	display: none;
+}
+
+.httpMethodView[stage="request"] .scheme > [key="request"] {
+	display: block;
+}
+
+.httpMethodView[stage="analysis"] .scheme > [key="useParser"] > .item,
+.httpMethodView[stage="analysis"] .scheme > [key="useParser"] > .jsb-checkbox {
+	display: inline-block;
+}
+
+.httpMethodView[stage="analysis"] .scheme > [key="parserSettings"],
+.httpMethodView[stage="analysis"] .scheme > [key="analyzer"] {
+	display: block;
+}
+
+.httpMethodView[stage="tables"] .scheme > [key="previewSettings"],
+.httpMethodView[stage="tables"] .scheme > [key="tablesSettings"] {
+	display: block;
+}
+
+
+
+.httpMethodView > ._dwp_splitbox {
+	height: calc(100% - 64px);
+}
+
+.httpMethodView > ._dwp_splitbox > ._dwp_splitPane {
+}
+
+.httpMethodView .schemeScroll,
+.httpMethodView .previewBlock {
+	width: 100%;
+    height: 100%;
+}
+
+.httpMethodView .schemeScroll {
+    padding: 4px;
+}
+
+.httpMethodView .previewBlock {
+	box-sizing: border-box;
+    padding: 3px;
+}
+
+.httpMethodView .savedMessage {
+    position: absolute;
+    top: calc(50% - 21px);
+    left: calc(50% - 100px);
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    width: 200px;
+    height: 42px;
+    text-align: center;
+    user-select: none;
+    cursor: default;
+    z-index: 10000;
+}
+
+.httpMethodView .warningBlock {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fff9db;
+    font-size: 14px;
+}
+
+.httpMethodView .warningBlock > p {
+
+}
+
+.httpMethodView .warningBlock > p > b {
+
+}
+
+
+/* preview */
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid {
+	height: 100%;
+    width: 100%;
+}
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col {
+	line-height: 14px;
+}
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name {
+	overflow: hidden;
+    text-overflow: ellipsis;
+	font-weight: bold;
+}
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="string"] {
+	color: #3e3e3e;
+}
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="integer"] {
+	color: #017e86;
+}
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="float"],
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="double"],
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="number"] {
+	color: #004c9c;
+}
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="boolean"] {
+	color: #007710;
+}
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="date"] {
+	color: #92009a;
+}
+
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="object"],
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .name[type="array"] {
+	color: #b51c02;
+}
+
+.httpMethodView .tablesView > ._dwp_clientPane .jsb-grid .grid-header-col > .type {
+	color: #555;
+    font-size: 11px;
+	font-weight: normal;
+}

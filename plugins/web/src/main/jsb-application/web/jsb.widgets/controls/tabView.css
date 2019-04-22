@@ -72,7 +72,7 @@
 
 ._dwp_tabview._dwp_tabTop > ._dwp_tabPane > li._dwp_tab {
 	border-radius: 6px 6px 0 0;
-	padding: 3px 8px 3px 6px;
+	padding: 3px 8px;
 	vertical-align: bottom;
 	border-bottom: 1px solid #BEBEBE;
 	top: 1px;
@@ -85,7 +85,7 @@
 
 ._dwp_tabview._dwp_tabBottom > ._dwp_tabPane > li._dwp_tab {
 	border-radius: 0 0 6px 6px;
-	padding: 3px 8px 3px 6px;
+	padding: 3px 8px;
 	vertical-align: top;
 	border-top: 1px solid #BEBEBE;
 	top: -1px;
@@ -116,7 +116,7 @@
 }
 
 
-._dwp_tabview > ._dwp_tabPane > li._dwp_tab:hover {
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab:not(.disabled):hover {
 /*
 	background: -webkit-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
 	background: -moz-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
@@ -127,6 +127,7 @@
     background: #fff;
 }
 
+/*
 ._dwp_tabview > ._dwp_tabPane > li._dwp_tab.disabled:hover {
 	background: -webkit-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
 	background: -moz-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
@@ -134,7 +135,7 @@
 	background: -o-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
 	background: -ms-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
 }
-
+*/
 
 ._dwp_tabview > ._dwp_tabPane > li._dwp_tab > ._dwp_icon {
 	display: inline-block;

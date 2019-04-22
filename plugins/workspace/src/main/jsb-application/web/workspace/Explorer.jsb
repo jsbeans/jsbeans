@@ -1022,12 +1022,17 @@
 			
 			
 			var nodeCls = JSB.get(nodeType).getClass();
-			node = new nodeCls({
-				descriptor: itemDesc,
-				allowOpen: viewInfo && viewInfo.length > 0,
-				allowEdit: JSB.isDefined(nodeInfo.rename) ? nodeInfo.rename : JSB.isDefined(nodeInfo.create) ? nodeInfo.create: true,
-				allowShare: JSB.isDefined(nodeInfo.share) ? nodeInfo.share: true
-			});
+			if(treeNodeOpts.useNode){
+				node = treeNodeOpts.useNode;
+				node.descriptor = itemDesc;
+			} else {
+				node = new nodeCls({
+					descriptor: itemDesc,
+					allowOpen: viewInfo && viewInfo.length > 0,
+					allowEdit: JSB.isDefined(nodeInfo.rename) ? nodeInfo.rename : JSB.isDefined(nodeInfo.create) ? nodeInfo.create: true,
+					allowShare: JSB.isDefined(nodeInfo.share) ? nodeInfo.share: true
+				});
+			}
 			this.wTreeMap[itemDesc.entry.getId()] = {
                 id: itemDesc.entry.getId(),
                 key: key,
@@ -1105,90 +1110,90 @@
 				}, parent);
 			}
 			node.treeNode = curTreeNode;
-			
-			if(JSB.isInstanceOf(node, 'JSB.Workspace.FolderNode')){
-				this.installDropContainer(node);
-				this.installUploadContainer(node);
-			}
-			
-			if(node.options.allowOpen){
-				node.getElement().dblclick(function(){
-					$this.publish('JSB.Workspace.nodeOpen', node);
+			if(!treeNodeOpts.useNode){
+				if(JSB.isInstanceOf(node, 'JSB.Workspace.FolderNode')){
+					this.installDropContainer(node);
+					this.installUploadContainer(node);
+				}
+				
+				if(node.options.allowOpen){
+					node.getElement().dblclick(function(){
+						$this.publish('JSB.Workspace.nodeOpen', node);
+					});
+				}
+				
+				node.getElement().draggable({
+					start: function(evt, ui){
+						$this.tree.setOption('allowHover', false);
+						evt.originalEvent.preventDefault();
+						evt.stopPropagation();
+					},
+					helper: function(evt, ui){
+						var selected = $this.tree.getSelected();
+						if(!selected){
+							selected = [];
+						}
+						if(!JSB().isArray(selected)){
+							selected = [selected];
+						}
+						var bFound = false;
+						for(var i in selected){
+							if(selected[i].key == key){
+								bFound = true;
+								break;
+							}
+						}
+						if(!bFound){
+							selected = [$this.tree.get(key)];
+						}
+						
+						this.draggingItems = selected;
+						
+						// create drag container
+						var helper = $this.$('<div class="dragHelper workspaceItems"></div>');
+						
+						function prepareNodeForDragging(node){
+							if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
+								return RendererRepository.createRendererFor(node.getTargetEntry()).getElement();
+							} else {
+								return node.getElement().clone();
+							}
+						}
+						
+						if(selected.length <= 3){
+							for(var i = 0; i < selected.length; i++ ){
+								helper.append($this.$('<div class="dragItem"></div>').append(prepareNodeForDragging(selected[i].obj)));
+							}	
+						} else {
+							for(var i = 0; i < Math.min(selected.length, 2); i++ ){
+								helper.append($this.$('<div class="dragItem"></div>').append(prepareNodeForDragging(selected[i].obj)));
+							}
+							if(selected.length > 2){
+								var suffix = '';
+								var odd = selected.length - 2;
+								var dd = odd % 10;
+								var dd2 = odd % 100;
+								if( dd == 0 || (dd >= 5 && dd <= 9) || (dd2 >= 11 && dd2 <= 19)){
+									suffix = 'ов';
+								} else if(dd >= 2 && dd <= 4) {
+									suffix = 'а';
+								}
+								helper.append($this.$('<div class="odd">... и еще <em>'+(selected.length - 2)+'</em> элемент' + suffix + '</div>'));
+							}
+						}
+						
+						return helper.get(0);
+					},
+					stop: function(evt, ui){
+						$this.tree.setOption('allowHover', true);
+					},
+					revert: false,
+					scroll: false,
+					zIndex: 100000,
+					distance: 30,
+					appendTo: 'body'
 				});
 			}
-			
-			node.getElement().draggable({
-				start: function(evt, ui){
-					$this.tree.setOption('allowHover', false);
-					evt.originalEvent.preventDefault();
-					evt.stopPropagation();
-				},
-				helper: function(evt, ui){
-					var selected = $this.tree.getSelected();
-					if(!selected){
-						selected = [];
-					}
-					if(!JSB().isArray(selected)){
-						selected = [selected];
-					}
-					var bFound = false;
-					for(var i in selected){
-						if(selected[i].key == key){
-							bFound = true;
-							break;
-						}
-					}
-					if(!bFound){
-						selected = [$this.tree.get(key)];
-					}
-					
-					this.draggingItems = selected;
-					
-					// create drag container
-					var helper = $this.$('<div class="dragHelper workspaceItems"></div>');
-					
-					function prepareNodeForDragging(node){
-						if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
-							return RendererRepository.createRendererFor(node.getTargetEntry()).getElement();
-						} else {
-							return node.getElement().clone();
-						}
-					}
-					
-					if(selected.length <= 3){
-						for(var i = 0; i < selected.length; i++ ){
-							helper.append($this.$('<div class="dragItem"></div>').append(prepareNodeForDragging(selected[i].obj)));
-						}	
-					} else {
-						for(var i = 0; i < Math.min(selected.length, 2); i++ ){
-							helper.append($this.$('<div class="dragItem"></div>').append(prepareNodeForDragging(selected[i].obj)));
-						}
-						if(selected.length > 2){
-							var suffix = '';
-							var odd = selected.length - 2;
-							var dd = odd % 10;
-							var dd2 = odd % 100;
-							if( dd == 0 || (dd >= 5 && dd <= 9) || (dd2 >= 11 && dd2 <= 19)){
-								suffix = 'ов';
-							} else if(dd >= 2 && dd <= 4) {
-								suffix = 'а';
-							}
-							helper.append($this.$('<div class="odd">... и еще <em>'+(selected.length - 2)+'</em> элемент' + suffix + '</div>'));
-						}
-					}
-					
-					return helper.get(0);
-				},
-				stop: function(evt, ui){
-					$this.tree.setOption('allowHover', true);
-				},
-				revert: false,
-				scroll: false,
-				zIndex: 100000,
-				distance: 30,
-				appendTo: 'body'
-			});
-			
 			if(itemDesc.children && Object.keys(itemDesc.children).length > 0){
 				var chArr = Object.keys(itemDesc.children);
 				chArr.sort(function(a, b){
@@ -1328,8 +1333,8 @@
 					this.addTreeItem({
 						entry: pEntry,
 						name: pEntry.getName(),
-						hasEntryChildren: pEntry.getChildCount() > 0
-					}, pKey, true, {collapsed:true});
+						hasEntryChildren: pEntry.getChildCount() > 0,
+					}, pKey, true, {collapsed:true, useNode: treeNode});
 					return;
 				}
 			}

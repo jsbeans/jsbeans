@@ -17,13 +17,14 @@
 	
 	$require: ['DataCube.ParserManager'],
 	$server: {
-		$require: ['Peg', 'JSB.IO.FileSystem'],
+		$require: ['Peg'],
 		
 		$bootstrap: function(){
 			ParserManager.registerParser(this, {
 				name: 'JSON',
 				accepts: function(entry){
-					return JSB.isInstanceOf(entry, 'DataCube.Model.JsonFile');
+					return JSB.isInstanceOf(entry, 'DataCube.Model.JsonFile')
+						|| JSB.isInstanceOf(entry, 'DataCube.Model.HttpMethod');
 				}
 			});
 		},
@@ -199,7 +200,7 @@
 		
 		execute: function(){
 			var parser = Peg.generate(this.jsonGrammar);
-			Peg.parseStream(parser, this.stream, {
+			Peg.parse(parser, this.text || this.stream, {
 				onProgress: function(position, available){
 					var total = $this.getFileSize();
 					//position = total - available;

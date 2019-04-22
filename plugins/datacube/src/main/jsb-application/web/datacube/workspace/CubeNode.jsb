@@ -52,7 +52,9 @@
                 }
 
                 if(sender === $this){
-					$this.explorer.publish('JSB.Workspace.nodeOpen', node);
+                	$this.explorer.expandNode($this.treeNode.key, function(){
+                		$this.explorer.publish('JSB.Workspace.nodeOpen', node);	
+                	});
                 }
             });
 

@@ -6,6 +6,10 @@
     margin-top: 4px;
 }
 
+.selectRender.optional:not(.checked) > .innerScheme {
+    display: none;
+}
+
 .itemRender > .multipleContainer > .multipleItem > .jsb-select,
 .itemRender > .item > .jsb-select,
 .itemRender > .jsb-select {

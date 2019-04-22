@@ -1054,7 +1054,7 @@
 			// columns
 			var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
 			
-			if($this.rowsDrawn === 0){ // updating after refresh
+/*			if($this.rowsDrawn === 0){ // updating after refresh */
 				rowsSelDataColData.order();
 				
 				rowsSelDataColData
@@ -1071,7 +1071,7 @@
 					var cell = coll.select('div.cell');
 					updateCell.call(cell.node(), d)
 				});
-			}
+/*			} */
 			
 			rowsSelDataColData.exit()
 				.each(function(d){
@@ -1445,6 +1445,7 @@
 					}
 					
 					$this.drawRows(bRefresh);
+					
 					if($this.useGroupOperations){
 						$this.synchronizeSelection();
 					}
