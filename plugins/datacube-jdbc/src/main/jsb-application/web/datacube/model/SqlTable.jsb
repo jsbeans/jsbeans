@@ -12,7 +12,8 @@
                     render: 'select',
                     name: 'Поле комментария',
                     loadOptions: function(callback){
-                        this.server().getCommentFields(function(res, fail){
+                    	var entry = JSB.getInstance(this.getContext());
+                    	entry.server().getCommentFields(function(res, fail){
                             if(fail){
                                 // todo: error
                                 return;
