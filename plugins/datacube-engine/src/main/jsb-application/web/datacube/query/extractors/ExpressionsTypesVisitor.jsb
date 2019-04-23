@@ -175,7 +175,7 @@
             } else {
                 throw new Error('Unexpected field source');
             }
-            this.type = this.copyType($this.queryFieldTypeMap.get(sourceQuery)[field]);
+            this.type = this.copyType($this.queryFieldTypeMap.get(sourceQuery)[field] || $this.queryFieldTypeMap.get(query)[field]);
         },
 
         visitExpression: function(exp) {
