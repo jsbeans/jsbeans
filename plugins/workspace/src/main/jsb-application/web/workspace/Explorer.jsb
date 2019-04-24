@@ -1022,7 +1022,7 @@
 			
 			
 			var nodeCls = JSB.get(nodeType).getClass();
-			if(treeNodeOpts.useNode){
+			if(treeNodeOpts && treeNodeOpts.useNode){
 				node = treeNodeOpts.useNode;
 				node.descriptor = itemDesc;
 			} else {
@@ -1110,7 +1110,7 @@
 				}, parent);
 			}
 			node.treeNode = curTreeNode;
-			if(!treeNodeOpts.useNode){
+			if(!treeNodeOpts || !treeNodeOpts.useNode){
 				if(JSB.isInstanceOf(node, 'JSB.Workspace.FolderNode')){
 					this.installDropContainer(node);
 					this.installUploadContainer(node);
