@@ -319,6 +319,13 @@ if(!(function(){return this;}).call(null).JSB){
 			return this.$_path;
 		},
 		
+		getBasePathFile: function(){
+			if(this.$_pathFile == null || this.$_pathFile == undefined){
+				return '';
+			}
+			return this.$_pathFile;
+		},
+		
 		getFullPath: function(){
 			return this.getRepository().get(this.$name).cfg.$_fullPath;
 		},

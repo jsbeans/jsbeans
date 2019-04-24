@@ -116,15 +116,17 @@
 						var dashboardEntry = JSB.getInstance(this.getContext());
 						var wid = dashboardEntry.getWorkspace().getId();
 						var eid = dashboardEntry.getId();
-						var jsbPath = JSB.getProvider().getServerBase() + 'datacube/Dashboard.jsb?wsid=' + wid + '&did=' + eid;
-						this.find('.editor').jsb().setData(jsbPath);
-						this.find('.btnOpenNewWindow').jsb().on({
-							click: function(){
-								var url = self.find('.editor').jsb().getData().getValue();
-								var win = window.open(url, '_blank');
-								win.focus();
-							}
-						})
+						dashboardEntry.server().getPagePath(function(path){
+							var jsbPath = JSB.getProvider().getServerBase() + path + '?wsid=' + wid + '&did=' + eid;
+							self.find('.editor').jsb().setData(jsbPath);
+							self.find('.btnOpenNewWindow').jsb().on({
+								click: function(){
+									var url = self.find('.editor').jsb().getData().getValue();
+									var win = window.open(url, '_blank');
+									win.focus();
+								}
+							});
+						});
 					}
 				}
 			}
@@ -548,6 +550,13 @@
 		getWrappers: function(){
 			$this.load();
 			return $this.wrappers;
+		},
+		
+		getPagePath: function(){
+			var dashboardPageJsb = Config.get('datacube.dashboard.jsb');
+			var jsb = JSB.get(dashboardPageJsb);
+			var path = jsb.getBasePathFile();
+			return path;
 		}
 	}
 }

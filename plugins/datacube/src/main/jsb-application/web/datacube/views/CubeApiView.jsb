@@ -16,7 +16,7 @@
 		           'JsonView', 
 		           'JSB.Widgets.ScrollBox', 
 		           'JSB.Widgets.MultiEditor',
-		           'css:../Editor.css',
+		           'css:../Datacube.css',
 		           'css:CubeApiView.css'],
 		ready: false,
 		ignoreHandlers: false,

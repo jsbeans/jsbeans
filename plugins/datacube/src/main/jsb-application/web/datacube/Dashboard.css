@@ -1,6 +1,6 @@
 @CHARSET "UTF-8";
 
-@import "Editor.css";
+@import "Datacube.css";
 
 .dataCubeDashboard {
 	background: url(images/background.png);
