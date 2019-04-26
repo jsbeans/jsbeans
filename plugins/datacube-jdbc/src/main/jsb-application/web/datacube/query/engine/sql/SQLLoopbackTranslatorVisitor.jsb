@@ -58,6 +58,50 @@
             };
 
             switch($this.vendor) {
+                case 'PostgreSQL':
+//            SELECT a,b,c
+//            FROM http_get('http://127.0.0.1:9999/datacube/query/engine/Postgres/PostgresLoopbackApi.jsb?uid=123&test=true') http
+//            CROSS JOIN LATERAL json_to_recordset(http.content::json) AS X(a int, b text, c text)
+                    /** URL 'Datacube.Query.Engine.Postgres.PostgresLoopbackApi' */
+                    var serverUrl = Kernel.serverUrl();
+                    desc.uid = $this.loopbackProvider.register(queryTask);
+                    desc.sql = "http_get('"+serverUrl+"/datacube/query/engine/Postgres/PostgresLoopbackApi.jsb?uid=" + desc.uid + "')";
+                    $this.print('(');
+                        $this.indentInc();
+                        $this.printNewLineIndent();
+                        $this.print('SELECT');
+                            var count = 0;
+                            // print fields sql and drop nulls
+                            for(var alias in subQuery.$select) {
+                                if (count++ > 0) $this.print(',');
+                                if (subQuery.$select[alias].$const === null) {
+                                    $this.visit(subQuery.$select[alias]);
+                                    $this.print('AS');
+                                    $this.printQuoted(alias);
+                                    delete subQuery.$select[alias];
+                                } else {
+                                    $this.printQuoted(alias);
+                                }
+                            }
+                        $this.printNewLineIndent();
+                        $this.print('FROM', desc.sql, 'http');
+                        $this.printNewLineIndent();
+                        $this.print('CROSS JOIN LATERAL', 'json_to_recordset(http.content::json) AS X(');
+                            var count = 0;
+                            for(var alias in subQuery.$select) {
+                                if (count++ > 0) $this.print(',');
+                                var type = $this.getType(query.$select[alias]);
+                                var jdbcType = type.nativeType || DataTypes.toVendor($this.vendor, type.type);
+                                $this.printQuoted(alias);
+                                $this.print(' ', jdbcType);
+                            }
+                        $this.print(')');
+                        $this.indentDec();
+                    $this.printNewLineIndent();
+                    $this.print(')');
+                    $this.print(' AS');
+                    $this.printDeclareContext(query.$context);
+                    return;
                 case 'ClickHouse':
                     /// prepare translated sql
                     var clickhouseColumns = '';
@@ -100,8 +144,8 @@
                     $this.printNewLineIndent();
                     $this.print(')');
                     $this.print(' AS');
-                    return $this.printDeclareContext(query.$context);
-
+                    $this.printDeclareContext(query.$context);
+                    return;
                 case 'H2' :
                     desc.uid = $this.loopbackProvider.register(queryTask);
                     desc.sql = "datacube('"+desc.uid+"')";
@@ -153,8 +197,8 @@
                     }
                 }
             }
-            if (!subQuery.$limit && Config.get('datacube.query.engine.loopbackQuery.limit')) {
-                var limit = 0+Config.get('datacube.query.engine.loopbackQuery.limit')
+            if (!subQuery.$limit && Config.get('datacube.query.engine.loopback.limit')) {
+                var limit = 0+Config.get('datacube.query.engine.loopback.limit')
                 if (limit > 0) {
                     subQuery.$limit = limit;
                 }

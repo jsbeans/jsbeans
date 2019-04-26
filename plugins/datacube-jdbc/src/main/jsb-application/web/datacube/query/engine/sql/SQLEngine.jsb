@@ -1,6 +1,6 @@
 {
-	$name: 'DataCube.Query.Engine.SQL.SQLStoreEngine',
-	$parent: 'DataCube.Query.Engine.SQL.StoreEngine',
+	$name: 'DataCube.Query.Engine.SQL.SQLEngine',
+	$parent: 'DataCube.Query.Engine.LazyBaseEngine',
 
 	$singleton: true,
 
@@ -8,6 +8,7 @@
 		$require: [
 		    'JSB.Store.Sql.SQLStore',
 		    'DataCube.Query.Visitors.SQLLoopbackTranslatorVisitor',
+		    'DataCube.Query.Engine.Postgres.PostgresLoopbackProvider',
 		    'DataCube.Query.Engine.ClickHouse.ClickHouseLoopbackProvider',
 		    'DataCube.Query.Engine.H2Interpreter.H2InterpreterLoopbackProvider',
 		    'DataCube.Query.QueryUtils',
@@ -22,6 +23,7 @@
 		    var cube = queryTask.cube;
 		    var params = queryTask.params;
 		    var config = $this.getLocalConfig(name);
+
 		    var providers = queryTask.providers || QueryUtils.extractProviders(query, cube);
 
 		    var times = [];
@@ -38,6 +40,9 @@
                         translator.mainDataProvider = config.inMemory ? $this.getInMemoryDataProvider() : providers[i];
                         translator.engineConfig = config;
                         switch (translator.vendor) {
+                            case 'PostgreSQL':
+                                translator.loopbackProvider = new PostgresLoopbackProvider(cube);
+                                break;
                             case 'ClickHouse':
                                 translator.loopbackProvider = new ClickHouseLoopbackProvider(cube);
                                 break;

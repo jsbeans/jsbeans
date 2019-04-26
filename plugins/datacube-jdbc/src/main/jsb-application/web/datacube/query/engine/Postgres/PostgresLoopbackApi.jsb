@@ -1,5 +1,5 @@
 {
-	$name:'Datacube.Query.Engine.ClickHouse.ClickHouseLoopbackApi',
+	$name:'Datacube.Query.Engine.Postgres.PostgresLoopbackApi',
 	$parent: 'Datacube.Query.Engine.Postgres.Loopback.LoopbackApi',
 
 	$http: true,
@@ -11,14 +11,18 @@
         ],
 
         $constructor: function(){
-            $base('clickhouse');
+            $base('postgresql');
         },
 
 		writeOutput: function(it, out, params) {
             var count = 0;
             var length = 0;
+            out.write('[\n');
             for(var obj = it.next(); !!obj; ++count) {
-                var str = JSON.stringify(obj) + '\n';
+                if (length != 0) {
+                    out.write(',\n');
+                }
+                var str = JSON.stringify(obj);
                 length += str.length;
                 out.write(str);
                 if (length > $this.maxsize) {
@@ -26,8 +30,9 @@
                 }
                 obj = it.next();
             }
+            out.write('\n]');
             Console.message({
-                message: 'query.loopback.clickhouse.returned',
+                message: 'query.loopback.postgresql.returned',
                 params: {uid:params.uid, count: count, outputSize: length, limited: length > $this.maxsize }
             });
 		},

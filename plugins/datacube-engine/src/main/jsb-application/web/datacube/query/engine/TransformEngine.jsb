@@ -34,6 +34,7 @@
                 executor.executeEngine(next, {
                     cube: cube,
                     query: JSB.clone(result.query),
+                    providers: QueryUtils.extractProviders(result.query, cube),
                     params: params,
                 });
             }

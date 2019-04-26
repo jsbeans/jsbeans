@@ -328,8 +328,8 @@ QueryUtils.findView(view, callerQuery, $this.dcQuery);
                     function _leave(query){
                     }
                 );
-                if (!subQuery.$limit && Config.get('datacube.query.engine.loopbackQuery.limit')) {
-                    var limit = 0+Config.get('datacube.query.engine.loopbackQuery.limit')
+                if (!subQuery.$limit && Config.get('datacube.query.engine.loopback.limit')) {
+                    var limit = 0+Config.get('datacube.query.engine.loopback.limit')
                     if (limit > 0) {
                         subQuery.$limit = limit;
                     }

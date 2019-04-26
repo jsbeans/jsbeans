@@ -15,7 +15,7 @@
 		    var query = queryTask.query;
 		    var cube = queryTask.cube;
 		    var config = $this.getLocalConfig(name);
-		    var providers = queryTask.providers = QueryUtils.extractProviders(query, cube);
+		    var providers = queryTask.providers || QueryUtils.extractProviders(query, cube);
 
 		    // all - mongo
 		    if (providers.length == 0) {

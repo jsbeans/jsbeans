@@ -17,7 +17,7 @@
 		    var query = queryTask.query;
 		    var cube = queryTask.cube;
 		    var config = $this.getLocalConfig(name);
-		    var providers = queryTask.providers = QueryUtils.extractProviders(query, cube);
+		    var providers = queryTask.providers = queryTask.providers || QueryUtils.extractProviders(query, cube);
             for(var  i = 0; i < providers.length; i++) {
                 if(providers[i].getStore() instanceof SQLStore
                         && config.vendor == providers[i].getStore().getVendor())
@@ -34,7 +34,6 @@
 		    var params = queryTask.params;
 		    var config = $this.getLocalConfig(name);
 		    var providers = queryTask.providers || QueryUtils.extractProviders(query, cube);
-
             for(var  i = 0; i < providers.length; i++) {
                 if(providers[i].getStore() instanceof SQLStore
                         && config.vendor == providers[i].getStore().getVendor())

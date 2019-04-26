@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Engine.SQL.InMemoryEngine',
-	$parent: 'DataCube.Query.Engine.SQL.SQLStoreEngine',
+	$parent: 'DataCube.Query.Engine.SQL.SQLEngine',
 
 	$singleton: true,
 

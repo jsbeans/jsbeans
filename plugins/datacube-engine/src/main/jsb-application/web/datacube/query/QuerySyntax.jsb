@@ -1574,6 +1574,66 @@
 		            dcQuery.$select[alias] = newExp;
 		        });
 		    }
-		}
+		},
+
+
+		initNewSyntax: function(){
+
+		    /** Префиксы:
+		        # - ссылка на дескриптор
+		        $ - имя поля/выражения в запросе
+		        $$ - элемент схемы
+		    */
+
+		    var syntax = {
+		        TableQuery : {
+		            $$name: 'TableQuery',
+		            $$type: 'object',
+
+                    $$: {
+                        $$values: [
+                            {$from :  '#SourceEmpty'},
+                            {$from :  '#NamedQuery'},
+                            {$from :  '#TableQuery'},
+                            {$join :  '#Join'},
+                            {$union : '#Union'},
+                            {$cube :  '#Cube'},
+                        ],
+                        $default: {$cube :  '#Cube'},
+                    },
+
+		            $filter: '#Filter',
+		            $groupBy: '#GroupBy',
+		            $sort: '#Sort',
+		            $offset: '#Offset',
+		            $limit: '#limit',
+
+		            $select: '#Select',
+                    $distinct: '#QueryDistinct',
+
+                    $postFilter: '#PostFilter',
+                    $cubeFilter: '#CubeFilter',
+		        },
+
+		        QueryDistinct: {
+                    $$name: 'QueryDistinct',
+                    $$type: 'boolean',
+                    $$defaultValue: false,
+                },
+
+		        Select: {
+                    $$name: 'Select',
+                    $$type: 'object',
+
+                    $$key:   '#OutputField',
+                    $$value: '#Expression',
+                    $$multi: true,
+                },
+
+		        Expression: ['#QueryValueExpression', '#AggregateExpression', '#ValueExpression'],
+
+		        /// ...
+		    };
+		},
 	}
 }

@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Engine.SQL.StoreEngine',
+	$name: 'DataCube.Query.Engine.LazyBaseEngine',
 	$parent: 'DataCube.Query.Engine.Engine',
 
 	$singleton: true,
@@ -11,6 +11,7 @@
         ],
 
 		produceLazyIterator: function(translatorInputQuery, translatedQuery, params, executor, mainProvider){
+		    var translatedQuery = translatedQuery || translatorInputQuery;
 		    var vendor = mainProvider.getStore().getVendor();
 		    var iterator = null;
             var it = {
@@ -53,8 +54,9 @@
             return it;
 		},
 
-		executeQuery: function(translatedQuery, mainProvider){
+		executeQuery: function(translatedQuery, params, mainProvider){
 		    QueryUtils.throwError(0, 'Not implemented: StoreEngine.executeQuery()');
+		    /// return iterator;
         },
 	}
 }
