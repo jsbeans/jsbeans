@@ -1,0 +1,7 @@
+@CHARSET "UTF-8";
+
+._jsb_tooltip {
+	padding: 8px 10px;
+	min-width: 300px;
+	max-width: 400px;
+}

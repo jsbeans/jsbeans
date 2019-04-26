@@ -3,6 +3,8 @@
 	$parent: 'JSB.Widgets.Tool',
 	
 	$client: {
+		$require: ['css:toolTip.css'],
+		
 		$bootstrap: function(){
 			// register tooltip
 			var self = this;
@@ -14,7 +16,8 @@
 						exclusive: 'tooltip',
 						modal: false,
 						hideByOuterClick: true,
-						hideInterval: 3000,
+						hideByEsc: true,
+						hideInterval: 0,
 					}
 				});
 			});
@@ -23,6 +26,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
+			this.addClass('_jsb_tooltip');
 			this.construct();
 		},
 		

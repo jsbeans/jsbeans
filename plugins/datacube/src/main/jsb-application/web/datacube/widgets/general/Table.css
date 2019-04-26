@@ -2,6 +2,14 @@
 
 .tableWidget {}
 
+/* global */
+
+._jsb_tooltip[key="tableHeaderTip"] {
+	padding: 8px 10px;
+	min-width: 300px;
+	max-width: 400px;
+}
+
 /* header */
 
 .tableWidget > table.header,
@@ -34,7 +42,7 @@
     color: #316271;
     text-shadow: 1px 1px #ebeff3;
     font-weight: bold;
-    border-radius: 3px;
+    border-radius: 4px 4px 0 0;
     
 	display: table-cell;
 }
@@ -193,11 +201,15 @@
 }
 
 .tableWidget > table.status > tfoot > tr > td.col:first-child {
-	border-radius: 3px 0 0 3px;
+	border-radius: 0 0 0 4px;
 }
 
 .tableWidget > table.status > tfoot > tr > td.col:last-child {
-	border-radius: 0 3px 3px 0;
+	border-radius: 0 0 4px 0;
+}
+
+.tableWidget > table.status > tfoot > tr > td.col:first-child:last-child {
+	border-radius: 0 0 4px 4px;
 }
 
 .tableWidget.hasBorder > table.status > tfoot > tr > td.col:last-child {
@@ -277,12 +289,20 @@
 	transition: background-color 100ms;
 }
 
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row:not(.highlight):not(.select):nth-child(odd) > td.col {
+	background-color: #f4f9fb;
+}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.back:not(.main):not(.highlight):not(.select):nth-child(odd) > td.col {
+	background-color: #f4f9fb1c;
+}
+
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row:not(.highlight):not(.select):nth-child(even) > td.col {
-	background-color: #d3e6f24f;
+	background-color: #e7f0f5;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.back:not(.main):not(.highlight):not(.select):nth-child(even) > td.col {
-	background-color: #d3e6f21c;
+	background-color: #e7f0f51c;
 }
 
 
@@ -468,8 +488,8 @@
 /* border */
 
 .tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col {
-	border-right: 1px dotted #d0d0d0;
-	border-bottom: 1px dotted #d0d0d0;
+	border-right: 1px solid #fff;
+	border-bottom: 1px solid #fff;
 }
 
 .tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col:last-child {

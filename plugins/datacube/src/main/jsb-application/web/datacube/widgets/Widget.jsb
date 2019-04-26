@@ -902,7 +902,9 @@
 		},
 
 		ready: function(){
-		    this.updateDispatcher.ready();
+			if(this.updateDispatcher){
+				this.updateDispatcher.ready();
+			}
 		},
 
 		refresh: function(opts){

@@ -273,6 +273,22 @@
                     render: 'item',
                     name: 'Название'
 	            },
+                colTip: {
+                	render: 'item',
+                	name: 'Показывать описание во всплывающей подсказке',
+                	optional: true,
+                	editor: 'JSB.Widgets.MultiEditor',
+                	editorOpts: {
+                        valueType: 'org.jsbeans.types.Html'
+                    },
+                    value: `<!-- Произвольный HTML -->
+<div>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris 
+nisi ut aliquip ex ea commodo consequat.
+</div>`
+                },
 	            view: {
 	                render: 'select',
 	                name: 'Отображение ячейки',
@@ -649,6 +665,7 @@
 		           'DataCube.Controls.FilterEntry',
 		           'JSB.Utils.Formatter',
 		           'DataCube.Widgets.WidgetTool',
+		           'JSB.Widgets.Tooltip',
 		           'JSB.Widgets.ToolManager',
 		           'css:Table.css'],
 		
@@ -2214,7 +2231,7 @@
 						callback: function(){
 							
 						}
-					})
+					});
 				});
 				
 			}
@@ -2405,6 +2422,44 @@
 				var rowsBody = headerTable.select('thead').select('tr');
 				var colData = rowsBody.selectAll('th.col').data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
 				
+				function updateTooltipHandles(wrapper, elt, d){
+					elt.off('mouseover.tooltip');
+					elt.off('mouseout.tooltip');
+					
+					var toolMtx = 'headerTip.' + $this.getId();
+					
+					if(d.tooltip){
+						elt.on({
+							'mouseover.tooltip': function(evt){
+								JSB.defer(function(){
+									$this.headerTool = ToolManager.activate({
+										key: 'tableHeaderTip',
+										id: '_dwp_standardTooltip',
+										cmd: 'show',
+										data: d.tooltip,
+										scope: $this.getElement(),
+										target: {
+											selector: elt,
+										},
+										constraints: [{
+											selector: wrapper,
+											weight: 10.0
+										}]
+									});
+								}, 600, toolMtx);
+							},
+							'mouseout.tooltip': function(evt){
+								JSB.cancelDefer(toolMtx);
+								if($this.headerTool){
+									$this.headerTool.close();
+									$this.headerTool = null;
+								}
+							}
+						});
+						elt.removeAttr('title');
+					}
+				}
+				
 				function updateHeaderItem(d, bAppend){
 					var elt = $this.$(this);
 					
@@ -2412,10 +2467,14 @@
 					if(hWrapper.length == 0){
 						hWrapper = $this.$('<div class="hWrapper"></div>');
 						elt.append(hWrapper);
-						hWrapper.append($this.$('<div class="text"></div>').text(d.title).attr('title',d.title));
+						var textElt = $this.$('<div class="text"></div>').text(d.title).attr('title',d.title);
+						hWrapper.append(textElt);
+						
 					} else {
 						elt.find('> .hWrapper > .text').text(d.title).attr('title', d.title);
 					}
+					
+					updateTooltipHandles(elt, hWrapper.find('> .text'), d);
 					
 					// sort
 					function _updateSortOrder(order){
@@ -2860,6 +2919,7 @@
 					contextFilterField: null,
 					contextFilterFixed: false,
 					contextFilterValue: '',
+					tooltip: gArr[i].find('colTip').checked() ? gArr[i].find('colTip').value() : null,
 					cellSpan: gArr[i].find('cellSpan').checked()
 				};
 				
