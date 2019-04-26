@@ -1,6 +1,6 @@
 {
-	$name: 'DataCube.Query.Engine.TransformEngine',
-	$parent: 'DataCube.Query.Engine.Engine',
+	$name: 'DataCube.Query.Engine.TransformInterpreter',
+	$parent: 'DataCube.Query.Engine.Interpreter',
 
 	$singleton: true,
 

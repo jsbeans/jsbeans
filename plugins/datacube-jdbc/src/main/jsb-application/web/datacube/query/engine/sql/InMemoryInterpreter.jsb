@@ -1,6 +1,6 @@
 {
-	$name: 'DataCube.Query.Engine.SQL.InMemoryEngine',
-	$parent: 'DataCube.Query.Engine.SQL.SQLEngine',
+	$name: 'DataCube.Query.Engine.SQL.InMemoryInterpreter',
+	$parent: 'DataCube.Query.Engine.SQL.SQLInterpreter',
 
 	$singleton: true,
 
@@ -12,7 +12,7 @@
         ],
 
 		getLocalConfig: function(name) {
-		    var engine = Config.get('datacube.query.engines.' + name);
+		    var engine = Config.get('datacube.query.engine.interpreters.' + name);
 		    QueryUtils.throwError(engine, 'Undefined config for engine "{}"', name);
 		    return JSB.merge({}, engine, {
 		        inMemory: true,

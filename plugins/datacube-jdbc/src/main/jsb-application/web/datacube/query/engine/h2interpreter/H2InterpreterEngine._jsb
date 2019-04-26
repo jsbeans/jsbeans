@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Engine.H2Interpreter.H2InterpreterEngine',
-	$parent: 'DataCube.Query.Engine.Engine',
+	$parent: 'DataCube.Query.Engine.Interpreter',
 
 	$singleton: true,
 

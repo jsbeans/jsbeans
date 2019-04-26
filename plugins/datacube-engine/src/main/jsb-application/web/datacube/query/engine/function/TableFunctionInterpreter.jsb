@@ -1,6 +1,6 @@
 {
-	$name: 'DataCube.Query.Engine.Function.FunctionEngine',
-	$parent: 'DataCube.Query.Engine.LazyBaseEngine',
+	$name: 'DataCube.Query.Engine.Function.TableFunctionInterpreter',
+	$parent: 'DataCube.Query.Engine.LazyBaseInterpreter',
 
 	$singleton: true,
 

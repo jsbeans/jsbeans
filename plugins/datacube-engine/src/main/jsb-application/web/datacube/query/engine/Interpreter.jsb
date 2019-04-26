@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Engine.Engine',
+	$name: 'DataCube.Query.Engine.Interpreter',
 
 	$server: {
 		$require: [
@@ -15,7 +15,7 @@
 		},
 
 		getLocalConfig: function(name) {
-		    var engine = Config.get('datacube.query.engines.' + name);
+		    var engine = Config.get('datacube.query.engine.interpreters.' + name);
 		    QueryUtils.throwError(engine, 'Undefined config for engine "{}"', name);
 		    return engine;
 		},
