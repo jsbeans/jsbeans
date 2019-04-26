@@ -4,6 +4,7 @@
 
 	$server: {
 		$require: [
+		    'Datacube.Query.Engine.ClickHouse.ClickHouseLoopbackApi',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Console',
 		    'DataCube.Query.Query',
@@ -21,15 +22,28 @@
         ],
 
         $constructor: function(cube){
-            $base(cube, LoopbackProviderIterator.LoopbackIterators);
+            $this.cube = cube;
         },
 
-		produceCallback: function(queryTask){
-		    return new Callable(){
-                call: function(){
-                       return $this.execute(queryTask);
-                }
-            };
+		register: function(queryTask){
+            var uid = $this.getId() + '/' + JSB.generateUid();
+		    LoopbackProviderIterator.LoopbackIterators.put(uid, new Callable(){
+		        call: function(){
+                    return $this.execute(queryTask);
+		        }
+		    });
+
+            Console.message({
+                message: 'query.loopback.prepared',
+                params: {
+                     timestamp: Date.now(),
+                     type: $this.getJsb().$name,
+                     uid: uid,
+                     query: queryTask.query,
+                     limit : queryTask.query.limit,
+                },
+            });
+            return uid;
 		},
 
 		execute: function(queryTask){
@@ -90,6 +104,16 @@
 		    }
 
             return resultSet;
+		},
+
+		destroy: function() {
+            for(var it = LoopbackProviderIterator.LoopbackIterators.entrySet().iterator(); it.hasNext();) {
+                var entry = it.next();
+                if (entry.getKey().startsWith($this.getId())) {
+                    it.remove();
+                }
+            }
+		    $base();
 		},
 	}
 }

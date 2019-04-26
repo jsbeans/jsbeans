@@ -3,7 +3,7 @@
 
 	$server: {
 		$require: [
-		    'DataCube.Query.Engine.Engine',
+		    'DataCube.Query.Engine.Interpreter',
 		    'DataCube.Query.Console',
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
@@ -296,7 +296,7 @@
 		},
 
 		getEngineConfig: function(name){
-		    var engine = Config.get('datacube.query.engines.' + name);
+		    var engine = Config.get('datacube.query.engine.interpreters.' + name);
 		    QueryUtils.throwError(engine, 'Unknown query engine configuration "{}"', name);
 		    return engine;
 		},

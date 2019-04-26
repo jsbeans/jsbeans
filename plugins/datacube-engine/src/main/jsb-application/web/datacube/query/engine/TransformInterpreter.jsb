@@ -1,6 +1,6 @@
 {
-	$name: 'DataCube.Query.Engine.TransformEngine',
-	$parent: 'DataCube.Query.Engine.Engine',
+	$name: 'DataCube.Query.Engine.TransformInterpreter',
+	$parent: 'DataCube.Query.Engine.Interpreter',
 
 	$singleton: true,
 
@@ -34,6 +34,7 @@
                 executor.executeEngine(next, {
                     cube: cube,
                     query: JSB.clone(result.query),
+                    providers: QueryUtils.extractProviders(result.query, cube),
                     params: params,
                 });
             }

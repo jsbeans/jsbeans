@@ -1,6 +1,6 @@
 {
-	$name: 'DataCube.Query.Engine.Mongo.MongoTranslatorEngine',
-	$parent: 'DataCube.Query.Engine.Engine',
+	$name: 'DataCube.Query.Engine.Mongo.MongoTranslatorInterpreter',
+	$parent: 'DataCube.Query.Engine.Interpreter',
 
 	$singleton: true,
 
@@ -15,7 +15,7 @@
 		    var query = queryTask.query;
 		    var cube = queryTask.cube;
 		    var config = $this.getLocalConfig(name);
-		    var providers = queryTask.providers = QueryUtils.extractProviders(query, cube);
+		    var providers = queryTask.providers || QueryUtils.extractProviders(query, cube);
 
 		    // all - mongo
 		    if (providers.length == 0) {

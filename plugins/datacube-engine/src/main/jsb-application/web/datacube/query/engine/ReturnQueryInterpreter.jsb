@@ -1,6 +1,6 @@
 {
-	$name: 'DataCube.Query.Engine.ReturnQueryEngine',
-	$parent: 'DataCube.Query.Engine.Engine',
+	$name: 'DataCube.Query.Engine.ReturnQueryInterpreter',
+	$parent: 'DataCube.Query.Engine.Interpreter',
 
 	$singleton: true,
 
