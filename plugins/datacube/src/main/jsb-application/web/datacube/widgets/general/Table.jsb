@@ -990,7 +990,9 @@
 						cellEl.empty().append(widget.getElement());
 						cellEl.attr('widget', widget.getId());
 					}
-					widget.refresh();
+					JSB.defer(function(){
+						widget.refresh();
+					}, 0);
 				} else {
 					var val = null;
 					var mainVal = d.value.main;
@@ -1008,20 +1010,21 @@
 					}
 					
 					var fVal = val;
-					if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
+					if($this.colDesc[d.colIdx].format && JSB.isNumber(val)){
 						fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
 					}
 					cellEl.text(fVal !== null ? fVal : '');
 					cellEl.attr('title', val);
 					
-					if(cellEl.attr('widget')){
-						cellEl.removeAttr('widget');
-					}
-					
 					// destroy previously created widget
 					if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+						if(cellEl.attr('widget')){
+							cellEl.removeAttr('widget');
+						}
 						var widget = $this.widgetMap[d.rowKey][d.column];
-						widget.destroy();
+						JSB.defer(function(){
+							widget.destroy();	
+						},0);
 						delete $this.widgetMap[d.rowKey][d.column];
 						if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
 							delete $this.widgetMap[d.rowKey];
@@ -1381,7 +1384,10 @@
 								} else {
 									var WidgetCls = $this.colDesc[j].widget.cls;
 									if(WidgetCls){
-										var widget = new WidgetCls();
+										var widget = new WidgetCls({
+											noUpdateDispatcher: true,
+											noSelection: true
+										});
 										widget.setWrapper($this.getWrapper(), { values: row[j].value });
 										if(!$this.widgetMap[key]){
 											$this.widgetMap[key] = {};

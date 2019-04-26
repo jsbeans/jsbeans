@@ -87,101 +87,105 @@
                 }
 		    }
 		    
-		    var UpdateDispatcher = function(){
-		        var status = 'ready',
-		            needRefresh = false,
-		            refreshOpts;
-
-		        this.addTask = function(opts){
-		            if(status === 'ready'){
-		                status = 'refreshing';
-		                $this.onRefresh(opts);
-		            } else {
-		                refreshOpts = opts;
-		                needRefresh = true;
-		            }
-		        }
-
-		        this.isNeedRefresh = function(){
-		            return needRefresh;
-		        }
-
-		        this.ready = function(){
-		            if(needRefresh){
-		                needRefresh = false;
-		                $this.onRefresh(refreshOpts);
-		            } else {
-		                status = 'ready';
-		            }
-		        }
-            }
-		    
-		    this.updateDispatcher = new UpdateDispatcher();
-		    
-		    function Selection(){
-		    	this.selMap = {};
-		    	this.lastKey = null;
+		    if(!opts || !opts.noUpdateDispatcher){
+			    var UpdateDispatcher = function(){
+			        var status = 'ready',
+			            needRefresh = false,
+			            refreshOpts;
+	
+			        this.addTask = function(opts){
+			            if(status === 'ready'){
+			                status = 'refreshing';
+			                $this.onRefresh(opts);
+			            } else {
+			                refreshOpts = opts;
+			                needRefresh = true;
+			            }
+			        }
+	
+			        this.isNeedRefresh = function(){
+			            return needRefresh;
+			        }
+	
+			        this.ready = function(){
+			            if(needRefresh){
+			                needRefresh = false;
+			                $this.onRefresh(refreshOpts);
+			            } else {
+			                status = 'ready';
+			            }
+			        }
+	            }
+			    
+			    this.updateDispatcher = new UpdateDispatcher();
 		    }
-		    Selection.prototype = {
-		    	clear: function(){
-		    		if(!this.selMap || Object.keys(this.selMap).length == 0){
-		    			return;
-		    		}
-		    		this.selMap = {};
-		    		this.lastKey = null;
-		    		$this.showToolbar(false);
-		    		$this.publish('DataCube.Widgets.Widget.selection', {type:'clear'});
-		    	},
-		    	
-		    	add: function(key, desc){
-		    		this.selMap[key] = desc;
-		    		this.lastKey = key;
-		    		$this.showToolbar(true);
-		    		$this.publish('DataCube.Widgets.Widget.selection', {type:'add', item: key, params: desc});
-		    	},
-		    	
-		    	remove: function(key){
-		    		if(!this.isSelected(key)){
-		    			return;
-		    		}
-		    		delete this.selMap[key];
-		    		if(this.lastKey == key){
-		    			this.lastKey = null;
-		    		}
-		    		if(this.count() == 0){
-		    			$this.showToolbar(false);
-		    		}
-		    		$this.publish('DataCube.Widgets.Widget.selection', {type:'remove', item: key});
-		    	},
-		    	
-		    	count: function(){
-		    		return Object.keys(this.selMap).length;
-		    	},
-		    	
-		    	isSelected: function(key){
-		    		return this.selMap[key];
-		    	},
-		    	
-		    	getLastSelectedKey: function(){
-		    		return this.lastKey;
-		    	},
-		    	
-		    	get: function(key){
-		    		return this.selMap[key];
-		    	},
-		    	
-		    	keys: function(){
-		    		return Object.keys(this.selMap);
-		    	},
-		    	
-		    	each: function(callback){
-		    		for(var key in this.selMap){
-		    			callback.call(this, key, this.selMap[key]);
-		    		}
-		    	}
-		    };
-
-		    this.selection = new Selection();
+		    
+		    if(!opts || !opts.noSelection){
+			    function Selection(){
+			    	this.selMap = {};
+			    	this.lastKey = null;
+			    }
+			    Selection.prototype = {
+			    	clear: function(){
+			    		if(!this.selMap || Object.keys(this.selMap).length == 0){
+			    			return;
+			    		}
+			    		this.selMap = {};
+			    		this.lastKey = null;
+			    		$this.showToolbar(false);
+			    		$this.publish('DataCube.Widgets.Widget.selection', {type:'clear'});
+			    	},
+			    	
+			    	add: function(key, desc){
+			    		this.selMap[key] = desc;
+			    		this.lastKey = key;
+			    		$this.showToolbar(true);
+			    		$this.publish('DataCube.Widgets.Widget.selection', {type:'add', item: key, params: desc});
+			    	},
+			    	
+			    	remove: function(key){
+			    		if(!this.isSelected(key)){
+			    			return;
+			    		}
+			    		delete this.selMap[key];
+			    		if(this.lastKey == key){
+			    			this.lastKey = null;
+			    		}
+			    		if(this.count() == 0){
+			    			$this.showToolbar(false);
+			    		}
+			    		$this.publish('DataCube.Widgets.Widget.selection', {type:'remove', item: key});
+			    	},
+			    	
+			    	count: function(){
+			    		return Object.keys(this.selMap).length;
+			    	},
+			    	
+			    	isSelected: function(key){
+			    		return this.selMap[key];
+			    	},
+			    	
+			    	getLastSelectedKey: function(){
+			    		return this.lastKey;
+			    	},
+			    	
+			    	get: function(key){
+			    		return this.selMap[key];
+			    	},
+			    	
+			    	keys: function(){
+			    		return Object.keys(this.selMap);
+			    	},
+			    	
+			    	each: function(callback){
+			    		for(var key in this.selMap){
+			    			callback.call(this, key, this.selMap[key]);
+			    		}
+			    	}
+			    };
+	
+			    this.selection = new Selection();
+		    }
 
 		    // ensure all selectors for unimap ready
 		    Repository.ensureInitialized(function(){
@@ -902,7 +906,11 @@
 		},
 
 		refresh: function(opts){
-		    this.updateDispatcher.addTask(opts);
+			if(this.updateDispatcher){
+				this.updateDispatcher.addTask(opts);
+			} else {
+				this.onRefresh(opts);
+			}
 		},
 
 		onRefresh: function(opts){
@@ -968,10 +976,10 @@
             });
 		},
 
-		setWrapper: function(w, valuesOpts, sourceDesc){
+		setWrapper: function(w, valuesOpts){
 			this.wrapper = w;
 			this.widgetEntry = w.getWidgetEntry();
-			this.updateValues(valuesOpts, sourceDesc);
+			this.updateValues(valuesOpts);
 		},
 
 		updateValues: function(opts, readyCallback){
@@ -981,11 +989,11 @@
 
 			// todo
 			this.sources = opts.sources;
-
+/*
             if(readyCallback){
                 readyCallback.call($this);
             }
-
+*/
 			if(opts.sources){
 				this.sources = opts.sources;
 				

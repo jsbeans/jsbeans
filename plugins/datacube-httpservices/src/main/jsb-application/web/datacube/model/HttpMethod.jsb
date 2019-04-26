@@ -481,7 +481,7 @@
 				};
 			}
 			
-			var tablesDesc = $this.proceedParserTranformations(opts, ctx, responseItems);
+			var tablesDesc = $this.proceedParserTranformations(opts, ctx, responseItems, true);
 			if(Object.keys(tablesDesc).length == 0){
 				throw new Error('Unable to parse response');
 			}
@@ -594,13 +594,20 @@
 			return fInfo;
 		},
 		
-		proceedParserTranformations: function(opts, ctx, items){
+		proceedParserTranformations: function(opts, ctx, items, bPreviewMode){
 			var bodyStr = items[0].result;
 			var parserSel = ctx.find('useParser parser');
 			var parserJsb = parserSel.scheme().jsb;
+			var parserScheme = parserSel.scheme().scheme;
 			var parserValues = parserSel.getSchemeValues();
+			var parserCtx = new Selector({
+				values: parserValues,
+				scheme: parserScheme
+			});
 			var tables = {};
 			var tableStats = {};
+			var maxRows = parserCtx.find('previewRowCount').value() || 50;
+			var restrictCellLength = parserCtx.find('restrictCellLength').checked() ? parserCtx.find('restrictCellLength').value() : 0;
 			var pInst = ParserManager.createParser(bodyStr, parserJsb, parserValues);
 			try {
 				pInst.parse(function(tableDesc, rowData){
@@ -646,16 +653,35 @@
 						tStatDesc.created = true;
 					}
 					
+					if(bPreviewMode && restrictCellLength){
+						for(var c in rowData){
+							if(JSB.isString(rowData[c]) && rowData[c].length > restrictCellLength){
+								rowData[c] = rowData[c].substr(0, restrictCellLength) + '...';
+							}
+						}
+					}
 					
 					// update rows
 					tDesc.rows.push(rowData);
+					if(bPreviewMode && maxRows && tDesc.rows.length >= maxRows){
+						throw 'Break';
+					}
 				});
 				
-				return tables;
-				
+			} catch(e) {
+				if(e != 'Break'){
+					throw e;
+				}
 			} finally {
-				pInst.destroy();
+				if(pInst){
+					pInst.destroy();
+				}
+				if(parserCtx){
+					parserCtx.destroy();
+				}
 			}
+			
+			return tables;
 		},
 		
 		loadResponseData: function(){
