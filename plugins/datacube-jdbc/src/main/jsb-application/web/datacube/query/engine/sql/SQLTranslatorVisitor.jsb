@@ -940,7 +940,7 @@ debugger
         /** print methods */
 
 		getProviderContext: function(dataProvider) {
-		    var context = dataProvider.getDescriptor().name + $this.getQuery().$context;
+		    var context = dataProvider.getName() + $this.getQuery().$context;
 		    return context;
 		},
 
