@@ -433,10 +433,35 @@ debugger
                 $this.print(')');
             }
 
+            function over(over){
+                throw new JSB.Error('Not implemented');
+                $this.print('(');
+                    $this.indentInc();
+                    $this.printNewLineIndent();
+                    $this.withPath(op, '$over', function(){
+                        $this.visit(exp.$value, {asExpression: true});
+                    });
+                    $this.printNewLineIndent();
+                    $this.print('OVER', '(');
+                    $this.printNewLineIndent();
+                        // TODO print $groupBy
+                        $this.printNewLineIndent();
+                        $this.print('ORDER BY');
+                        // TODO print
+                        $this.indentDec();
+                    $this.printNewLineIndent();
+                    $this.print(')');
+                    $this.indentDec();
+                $this.printNewLineIndent();
+                $this.print(')');
+            }
+
             // aggregate operators
             switch(op) {
                 case '$distinct':
                     return simple('DISTINCT(', ')');
+                case '$over':
+                    return over(exp[op]);
                 case '$any':
                     return simple('MIN(', ')');
                 case '$corr':
@@ -779,6 +804,18 @@ debugger
         },
 
         visitCondition: function(exp) {
+            function likeAsCaseInsensitive(like){
+                var ilike = '';
+                for(var i=0,len=like.length; i < len; i++) {
+                    if(/[\wа-яёА-ЯЁ]/.test(like[i])) {
+                        ilike += '[' + like[i].toLowerCase() + like[i].toUpperCase() + ']';
+                    } else {
+                        ilike += like[i];
+                    }
+                }
+                return ilike;
+            }
+
             // TODO $this.current.whereOrHaving
             var printed = false;
             if (exp.$not) {
@@ -883,6 +920,9 @@ debugger
                                         break;
                                    case 'ClickHouse':
                                         $this.print('lowerUTF8(', arg0, ') LIKE', 'lowerUTF8(', arg1, ')');
+                                        break;
+                                   case 'SQLServer':
+                                        $this.print(arg0, ' LIKE', likeAsCaseInsensitive(''+arg1));
                                         break;
                                    default:
                                        $this.print(arg0, ' ILIKE', arg1);
