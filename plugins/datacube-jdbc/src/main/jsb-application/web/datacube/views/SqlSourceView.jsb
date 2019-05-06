@@ -40,6 +40,9 @@
 							<div class="icon"></div>
 							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Пароль" password="true"
 								onchange="{{=this.callbackAttr(function(val){$this.updateButtons()})}}"></div>
+
+							<div jsb="JSB.Controls.Checkbox" placeholder="Пароль" label="Показать пароль"
+								onchange="{{=this.callbackAttr(function(bVal) { var editor = $this.find('.password > .editor > input'); if(bVal) {editor.attr('type', 'text');} else {editor.attr('type', 'password');} })}}"></div>
 						</div>
 						
 						<div class="option buttons">
