@@ -1329,6 +1329,10 @@
 
         extractProviders: function(query, defaultCube, getQuery) {
 //if(MD5.md5(query) == '1441a7909c087dbbe7ce59881b9df8b9') debugger;
+            var getQuery = getQuery || function(name) {
+                var slice = $this.getQuerySlice(name, defaultCube, true);
+                return slice ? slice.getQuery() : null;
+            };
             var providers = [];
             $this.walkQueries(query, { getExternalView: getQuery }, null, function(q) {
                 if (q.$provider) {
