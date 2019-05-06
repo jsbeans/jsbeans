@@ -114,9 +114,15 @@
 
                 if ($this.current.printBody) {
                     $this.print('SELECT');
-                    if (query.$limit && query.$limit >= 0 && $this.vendor == 'MSSQL') {
-                        $this.printNewLineIndent();
-                        $this.print('TOP', query.$limit);
+                    if ($this.vendor == 'SQLServer') {
+                        if (query.$limit && query.$limit >= 0) {
+                            $this.printNewLineIndent();
+                            $this.print('TOP', query.$limit);
+                        } else if (query.$sort && Object.keys(query.$sort).length > 0) {
+                            /// for issue "The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
+                            $this.printNewLineIndent();
+                            $this.print('TOP 100 PERCENT');
+                        }
                     }
                     $this.print($this.current.select);
                 }
@@ -161,7 +167,7 @@
                     $this.printNewLineIndent();
                     $this.print('OFFSET', query.$offset);
                 }
-                if (query.$limit && query.$limit >= 0 && $this.vendor != 'MSSQL') {
+                if (query.$limit && query.$limit >= 0 && $this.vendor != 'SQLServer') {
                     $this.printNewLineIndent();
                     $this.print('LIMIT', query.$limit);
                 }
@@ -436,8 +442,10 @@ debugger
                 case '$corr':
                     return nFunction('CORR(', ',', ')');
                 case '$first':
+                    throw QueryUtils.throwError($this.vendor != 'SQLServer', 'Aggregate functions $first/$last is not supported in {}, use $any instead', $this.vendor);
                     return simple('(ARRAY_AGG(', '))[1]');
                 case '$last':
+                    throw QueryUtils.throwError($this.vendor != 'SQLServer', 'Aggregate functions $first/$last is not supported in {}, use $any instead', $this.vendor);
                     var lastVal = $this.printScope(function(){
                         $base(exp);
                     });
