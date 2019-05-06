@@ -116,12 +116,10 @@
                     $this.print('SELECT');
                     if ($this.vendor == 'SQLServer') {
                         if (query.$limit && query.$limit >= 0) {
-                            $this.printNewLineIndent();
                             $this.print('TOP', query.$limit);
                         } else if (query.$sort && Object.keys(query.$sort).length > 0) {
                             /// for issue "The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
-                            $this.printNewLineIndent();
-                            $this.print('TOP 100 PERCENT');
+                            $this.print('TOP 2147483647');
                         }
                     }
                     $this.print($this.current.select);
@@ -918,9 +916,9 @@ debugger
                                    case 'PostgreSQL':
                                         $this.print(arg0, ' ~~*', arg1);
                                         break;
-                                   case 'ClickHouse':
-                                        $this.print('lowerUTF8(', arg0, ') LIKE', 'lowerUTF8(', arg1, ')');
-                                        break;
+//                                   case 'ClickHouse':
+//                                        $this.print('lowerUTF8(', arg0, ') LIKE', 'lowerUTF8(', arg1, ')');
+//                                        break;
                                    case 'SQLServer':
                                         $this.print(arg0, ' LIKE', likeAsCaseInsensitive(''+arg1));
                                         break;
