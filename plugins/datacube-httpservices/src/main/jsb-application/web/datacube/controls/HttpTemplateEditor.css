@@ -1,0 +1,52 @@
+.httpTemplateEditor {
+
+}
+
+.httpTemplateEditor > .container {
+	position: relative;
+	padding: 12px 4px 2px 4px;
+    border-radius: 6px;
+    margin: 2px 0;
+    background: #ececec;
+}
+
+
+.httpTemplateEditor > .container.template {}
+
+.httpTemplateEditor > .container.template:before {
+	content: 'Шаблон';
+	position: absolute;
+    left: 1px;
+    top: 0;
+    font-size: 11px;
+    background: #d8d8d8;
+    border-radius: 6px 0 6px 6px;
+    padding: 0 4px;
+    font-style: italic;
+    color: #555;
+}
+
+.httpTemplateEditor > .container.template > .prefix {
+	font-family: monospace;
+    font-weight: bold;
+}
+
+.httpTemplateEditor > .container.template > ._dwp_primitiveEditor {
+	min-width: 300px;
+}
+
+
+.httpTemplateEditor > .container.result {}
+
+.httpTemplateEditor > .container.result:before {
+	content: 'Пример';
+	position: absolute;
+    left: 1px;
+    top: 0;
+    font-size: 11px;
+    background: #d8d8d8;
+    border-radius: 6px 0 6px 6px;
+    padding: 0 4px;
+    font-style: italic;
+    color: #555;
+}

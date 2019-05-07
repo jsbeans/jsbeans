@@ -7,20 +7,6 @@
 			render: 'group',
 			name: 'Запрос',
 			items: {
-				method: {
-					render: 'select',
-					name: 'Метод',
-					items: {
-						mtdGet: {
-							render: 'item',
-							name: 'GET'
-						},
-						mtdPost: {
-							render: 'item',
-							name: 'POST'
-						}
-					}
-				},
 				params: {
 					render: 'group',
 					name: 'Параметры',
@@ -55,7 +41,8 @@
 						},
 						pValue: {
 							render: 'item',
-							name: 'Значение по умолчанию'
+							name: 'Значение по умолчанию',
+							commonField: 'pValue'
 						},
 						pUseInRequest: {
 							render: 'item',
@@ -64,7 +51,32 @@
 							editor: 'none'
 						}
 					}
-				}
+				},
+				url: {
+					render: 'item',
+					name: 'URL',
+					editor: 'DataCube.Controls.HttpTemplateEditor',
+					editorOpts: {
+						prefix: '',
+						paramNameCommonField: 'pName',
+						paramValueCommonField: 'pValue'
+					}
+				},
+				method: {
+					render: 'select',
+					name: 'Метод',
+					items: {
+						mtdGet: {
+							render: 'item',
+							name: 'GET'
+						},
+						mtdPost: {
+							render: 'item',
+							name: 'POST'
+						}
+					}
+				},
+
 			}
 		},
 		useParser: {
@@ -194,6 +206,13 @@
 					}
 				};
 			}
+			
+			var serviceUrl = this.getHttpService().getServiceAddress().trim();
+            if(serviceUrl[serviceUrl.length -1] != '/'){
+            	serviceUrl += '/';
+            }
+            
+			scheme.request.items.url.editorOpts.prefix = serviceUrl;
 			return scheme;
 		},
 		
@@ -710,14 +729,14 @@
 		storeValues: function(desc){
 			this.setName(desc.name);
 			this.applySettings(desc.values);
-			
+/*			
 			try {
 				var rDesc = this.executePreviewStage();
 				if(rDesc.cols){
 					this.property('fields', rDesc.cols);
 				}
 			} catch(e){}
-			
+*/			
 			
 		},
 		

@@ -33,7 +33,7 @@
             this.titleBlock = this.$('<div class="titleBlock"></div>');
             this.append(this.titleBlock);
             
-            this.serviceUrlBlock = this.$('<span class="serviceUrl"></span>');
+            this.serviceUrlBlock = this.$('<span class="namePrefix">Название метода: </span>');
             this.titleBlock.append(this.serviceUrlBlock);
 
             this.titleEditor = new PrimitiveEditor();
@@ -193,12 +193,13 @@
 	                $this.schemeScroll.getElement().loader('hide');
 				});
 			});	
-            
+            /*
             var serviceUrl = this.entry.getHttpService().getServiceAddress().trim();
             if(serviceUrl[serviceUrl.length -1] != '/'){
             	serviceUrl += '/';
             }
             this.serviceUrlBlock.text(serviceUrl);
+            */
             this.titleEditor.setData(this.entry.getName());
 		},
 		

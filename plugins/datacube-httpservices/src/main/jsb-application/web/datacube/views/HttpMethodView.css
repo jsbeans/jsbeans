@@ -18,15 +18,10 @@
     border-bottom: 1px solid lightgray;
 }
 
-.httpMethodView .titleBlock > .serviceUrl {
-	font-size: 16px;
-    font-family: monospace;
-    color: #5c7ba0;
-    font-weight: bold;
-	display: inline-block;
+.httpMethodView .titleBlock > .namePrefix {
+	color: #236777;
+    font-size: 16px;
     vertical-align: middle;
-    margin-top: 3px;
-	margin-bottom: 3px;
 }
 
 .httpMethodView .titleBlock ._dwp_primitiveEditor input{
