@@ -414,6 +414,7 @@
 		dataStack: [],
 		dataTopArray: null,
 		
+		recordsEmitted: 0,
 		
 		deep: 0,
 		typeOrder: {
@@ -519,6 +520,9 @@
 				}
 			} else if(this.mode == 1){
 				if(this.dataScope != this.dataTopArray){
+					if(!this.dataScope && this.recordsEmitted == 0){
+						this.emitTables();
+					}
 					return;
 				}
 				this.emitTables();
@@ -926,6 +930,7 @@
 			if(this.rowCollback){
 				this.rowCollback.call(this, tableDesc, record);
 			}
+			this.recordsEmitted++;
 		},
 		
 		translateField: function(field){
@@ -1259,6 +1264,7 @@
 		parse: function(rowCallback){
 			this.mode = 1; // parse mode
 			this.rowCollback = rowCallback;
+			this.recordsEmitted = 0;
 			
 			var BindingSelector = function(){
 				this.nested = {};

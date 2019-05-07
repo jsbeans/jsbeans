@@ -4,9 +4,9 @@
 
 .httpTemplateEditor > .container {
 	position: relative;
-	padding: 12px 4px 2px 4px;
+	padding: 14px 4px 2px 4px;
     border-radius: 6px;
-    margin: 2px 0;
+    margin: 4px 0;
     background: #ececec;
 }
 
@@ -36,7 +36,11 @@
 }
 
 
-.httpTemplateEditor > .container.result {}
+.httpTemplateEditor > .container.result {
+	background: #ece1c6;
+    color: #715319;
+	font-weight: bold;
+}
 
 .httpTemplateEditor > .container.result:before {
 	content: 'Пример';
@@ -44,9 +48,10 @@
     left: 1px;
     top: 0;
     font-size: 11px;
-    background: #d8d8d8;
+    background: #d0c5ac;
     border-radius: 6px 0 6px 6px;
     padding: 0 4px;
     font-style: italic;
-    color: #555;
+    color: #6b5431;
+	font-weight: normal;
 }

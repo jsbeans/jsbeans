@@ -42,7 +42,6 @@
 						pValue: {
 							render: 'item',
 							name: 'Значение по умолчанию',
-							commonField: 'pValue'
 						},
 						pUseInRequest: {
 							render: 'item',
@@ -58,8 +57,8 @@
 					editor: 'DataCube.Controls.HttpTemplateEditor',
 					editorOpts: {
 						prefix: '',
-						paramNameCommonField: 'pName',
-						paramValueCommonField: 'pValue'
+						paramNameKey: 'pName',
+						paramValueKey: 'pValue'
 					}
 				},
 				method: {
@@ -71,8 +70,20 @@
 							name: 'GET'
 						},
 						mtdPost: {
-							render: 'item',
-							name: 'POST'
+							render: 'group',
+							name: 'POST',
+							items: {
+								postBody: {
+									render: 'item',
+									name: 'Тело',
+									editor: 'DataCube.Controls.HttpTemplateEditor',
+									editorOpts: {
+										multiline: true,
+										paramNameKey: 'pName',
+										paramValueKey: 'pValue'
+									}
+								}
+							}
 						}
 					}
 				},
@@ -131,6 +142,7 @@
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'DataCube.ParserManager',
 		           'Unimap.Selector',
+		           'DataCube.HttpTemplate',
 		           'JSB.Net.Http'],
 		
 		$bootstrap: function(){
@@ -251,7 +263,6 @@
 			if(url[url.length -1] != '/'){
 				url += '/';
 			}
-			url += opts.name || this.getName();
 			var method = 'GET';
 			if(ctx.find('request method').value() == 'mtdPost'){
 				method = 'POST';
@@ -293,22 +304,23 @@
 					}
 				}
 			}
-			if(method == 'GET'){
-				var bFirst = true;
-				for(var pName in params){
-					if(bFirst){
-						url += '?';		
-					} else {
-						url += '&';
-					}
-					var bFirst = false;
-					url += pName + '=' + encodeURIComponent(params[pName]); 
-				}
+			
+			var pattern = HttpTemplate.execute(ctx.find('request url').value(), params);
+			url += pattern;
+			
+			var postParams = null;
+			if(method == 'POST'){
+				// prepare POST params
+				postParams = HttpTemplate.execute(ctx.find('request postBody').value(), params);
+				try {
+					postParams = eval('(' + postParams + ')');
+				} catch(e){}
 			}
+			
 			var httpOpts = {connectTimeout:600000, socketTimeout: 600000};
 			// TODO: enhance httpOpts
 			
-			return this._processResult(Http.request(method, url, method == 'GET' ? null : params, httpOpts), ctx, params, opts);
+			return this._processResult(Http.request(method, encodeURI(url), postParams, httpOpts), ctx, params, opts);
 		},
 		
 		_processResult: function(result, ctx, params, opts){
@@ -396,8 +408,8 @@
 				this.property('hasResponse', true);
 				
 				this.storeValues({
-					name: opts.name || this.getName(),
-					values: opts.settings || this.getSettings()
+					name: opts && opts.name || this.getName(),
+					values: opts && opts.settings || this.getSettings()
 				});
 
 				return items;
