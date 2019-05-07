@@ -187,6 +187,10 @@
             return this._schemeController.findRenderByKey(key);
         },
 
+        findRendersByKey: function(key){
+            return this._schemeController.findRendersByKey(key);
+        },
+
         getData: function(){
             return this._schemeController.getData();
         },
