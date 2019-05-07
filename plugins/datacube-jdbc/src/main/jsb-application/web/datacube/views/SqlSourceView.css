@@ -38,6 +38,15 @@
 	font-size: 14px;
 }
 
+.sqlSourceView div[jsb="JSB.Widgets.GroupBox"] .option.password > * {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.sqlSourceView div[jsb="JSB.Widgets.GroupBox"] .option.password > .jsb-checkbox {
+    padding: 0;
+}
+
 .sqlSourceView div[jsb="JSB.Widgets.GroupBox"] .option > .message {
 	display: none;
 	margin-left: 10px;

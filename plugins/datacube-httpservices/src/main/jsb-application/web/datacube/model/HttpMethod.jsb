@@ -14,7 +14,7 @@
 					items: {
 						pName: {
 							render: 'item',
-							name: 'Навзание',
+							name: 'Название',
 							commonField: 'pName'
 						},
 						pType: {
