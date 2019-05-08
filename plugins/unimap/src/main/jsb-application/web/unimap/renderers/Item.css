@@ -34,18 +34,25 @@
     width: initial;
 }
 
+/* icons */
+
 .itemRender > .name > i,
 .itemRender > .jsb-checkbox > .caption > i {
+	vertical-align: middle;
     margin-left: 5px;
-}
-
-.itemRender > .jsb-checkbox > .check-elem > .check-helper {
-    width: calc(100% - 20px);
+    transition: 300ms;
 }
 
 .itemRender > .name > i.desc,
 .itemRender > .jsb-checkbox > .caption > i.desc {
-    color: #0035ff82;
+    color: #1b3288;
+    opacity: 0.5;
+    font-size: 13px;
+}
+
+.itemRender > .name > i.desc:hover,
+.itemRender > .jsb-checkbox > .caption > i.desc:hover {
+	opacity: 1;
 }
 
 .itemRender > .name > i.warn,
@@ -56,6 +63,13 @@
 .itemRender > .name > .err,
 .itemRender > .jsb-checkbox > .caption > i.err {
     color: #721c24;
+}
+
+
+/* */
+
+.itemRender > .jsb-checkbox > .check-elem > .check-helper {
+    width: calc(100% - 20px);
 }
 
 .itemRender > .item {

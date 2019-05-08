@@ -36,3 +36,29 @@
     border-top: 1px dotted #d6d4d4;
     margin-top: 4px;
 }
+
+
+.switchRender > .jsb-switch > i {
+	vertical-align: middle;
+    margin-left: 5px;
+    transition: 300ms;
+}
+
+.switchRender > .jsb-switch > i.desc {
+    color: #1b3288;
+    opacity: 0.5;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.switchRender > .jsb-switch > i.desc:hover {
+	opacity: 1;
+}
+
+.switchRender > .jsb-switch > i.warn {
+    color: #fab005;
+}
+
+.switchRender > .jsb-switch > i.err {
+    color: #721c24;
+}

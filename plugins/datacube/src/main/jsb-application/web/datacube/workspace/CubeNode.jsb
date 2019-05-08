@@ -41,6 +41,9 @@
 			});
 
             this.subscribe('Datacube.CubeNode.createSlice', function(sender, msg, slice){
+            	if(slice.getParentId() != $this.getTargetEntry().getId()){
+					return;
+				}
                 var node = $this.explorer.getEntryNode(slice);
 
                 if(!node){

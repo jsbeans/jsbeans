@@ -48,11 +48,15 @@
 }
 
 .jsb-panel > .header > h1 > i {
-    font-size: 0.7em;
-    color: inherit;
-    vertical-align: middle;
-    margin-bottom: 0.3em;
+	color: #1b3288;
     margin-left: 5px;
+    opacity: 0.5;
+    font-size: 13px;
+    transition: 300ms;
+}
+
+.jsb-panel > .header > h1 > i:hover {
+	opacity: 1;
 }
 
 .jsb-panel > .header > .jsb-editor {

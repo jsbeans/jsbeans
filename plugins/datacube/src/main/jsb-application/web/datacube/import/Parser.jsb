@@ -12,15 +12,27 @@
 		analyzer: {
 			render: 'group',
 	        name: 'Анализатор',
+	        description: `
+	        	<h3>Анализатор</h3>
+	        	<p>Позволяет извлечь структуру входных данных для последующего автоматического формирования состава выходных таблиц.</p>
+	        `,
 	        items: {
 	        	useHeuristics: {
 	        		render: 'switch',
 	        		name: 'Использовать эвристику при извлечении структуры',
+	        		description: `
+			        	<h3>Эвристический анализ</h3>
+			        	<p>Позволяет сократить время анализа путем преждевременного его останова при достижении структуры данных такого состояния, при котором дальнейший анализ не оказывает на нее никакого влияния.</p>
+			        `,
 	        		optional: 'checked',
 	        		items: {
 	        			heuricticRecords: {
 		        			render: 'item',
 			        		name: 'Количество записей для анализа',
+			        		description: `
+					        	<h3>Минимальное количество записей</h3>
+					        	<p>Минимальное количество записей, необходимое для выявления достаточности структуры данных</p>
+					        `,
 			        		value: 30,
 			        		valueType: 'number'
 	        			}
@@ -39,12 +51,18 @@
 	        	previewRowCount: {
 	        		render: 'item',
 	        		name: 'Количество записей в таблице',
+	        		description: `
+			        	<p>Максимальное количество строк в таблицах, формируемых для предварительного просмотра</p>
+			        `,
 	        		value: 50,
 	        		valueType: 'number'
 	        	},
 	        	restrictCellLength: {
 	        		render: 'item',
 	        		name: 'Ограничить длину строк',
+	        		description: `
+			        	<p>Максимальное количество символов в строковых колонках таблиц, формируемых для предварительного просмотра</p>
+			        `,
 	        		value: 150,
 	        		valueType: 'number',
 	        		optional: 'checked'
@@ -56,6 +74,9 @@
 			render: 'group',
 	        name: 'Таблицы',
 	        sortable: false,
+	        description: `
+	        	<p>Определение структуры выходных таблиц</p>
+	        `,
 	        
 	        multiple: {
                 createDefault: false,
@@ -83,18 +104,24 @@
                                     linkTo: 'structure'
     							},
 	        					columnAlias: {
-                                    name: 'Столбец',
-        							render: 'item'
+        							render: 'item',
+                                    name: 'Столбец'
     							},
     							mandatory: {
     								render: 'item',
     								editor: 'none',
     								name: 'Обязательное поле',
+    								description: `
+    									<p>Ключевые столбцы выходной таблицы, значения которых должны быть определены (пропуск не допускается). В случае отсутствия значения в данном столбце - строка с данными не попадает в выходную таблицу.</p>
+    								`,
     								optional: true
     							},
     							columnComment: {
-    								name: 'Вставить комментарий',
         							render: 'item',
+    								name: 'Вставить комментарий',
+        							description: `
+										<p>Добавить комментарий к столбцу SQL-таблицы</p>
+									`,
         							optional: true
     							},
 	        					transforms: {
@@ -103,6 +130,9 @@
 	        						collapsible: false,
 	        						optional: true,
 	        						name: 'Выполнить преобразование данных',
+	        						description: `
+										<p>Выполнить цепочку преобразований данных перед попаданием их в выходную таблицу</p>
+									`,
 	        						items: {
 	        							transform: {
 	        								render: 'select',
@@ -188,6 +218,9 @@
 	    	        									hashColumns: {
 	    	        										render: 'group',
 	    	        										name: 'Дополнительные поля',
+	    	        										description: `
+				    											<p>Вычислить хэш на основе значений текущего и дополнительного полей</p>
+				    										`,
 	    	        										multiple: true,
 	    	        										collapsable: false,
 	    	        										sortable: true,
@@ -209,6 +242,9 @@
 	    	        								items: {
 	    	        									splitDelimiter: {
 	    	        										name: 'Разделитель',
+	    	        										description: `
+				    											<p>Разделить строку на несколько строк при помощи задаваемого разделителя и представить результат в виде массива</p>
+				    										`,
 	    	        										render: 'item',
 	    	        										value: ','
 	    	        									},
@@ -307,11 +343,17 @@
 	        	useBatch: {
 		        	render: 'group',
 			        name: 'Использовать пакетную загрузку файлов',
+			        description: `
+						<p>Выполнить импорт нескольких файлов с текущими настройками</p>
+					`,
 			        optional: true,
 			        items: {
 			        	batchFolder: {
     						render: 'entryBinding',
     						name: 'Папка',
+    						description: `
+	    						<p>Выполнить импорт всех файлов внутри указанной папки</p>
+	    					`,
     						accept: 'JSB.Workspace.FolderEntry',
     						emptyText: 'Перетащите сюда папку'
     					},
