@@ -263,14 +263,23 @@ public class HttpHelper {
     }
 
     public static void streamWriteString(OutputStream outputStream, String data, String encoding) throws IOException {
+    	OutputStreamWriter writer = new OutputStreamWriter(outputStream, encoding);
+    	try {
+    		writer.write(data);
+    		writer.flush();
+    	} finally {
+    		 //writer.close();
+    	}
+/*    	
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, encoding));
+        
         try {
             writer.write(data);
             writer.flush();
             outputStream.flush();
         }finally {
             //writer.close();
-        }
+        }*/
     }
 
     public static void streamWriteBytes(OutputStream outputStream, byte[] data) throws IOException {

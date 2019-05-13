@@ -12,6 +12,7 @@
 	
 	$client: {
 	    $require: ['Unimap.Controller',
+	               'JSB.Widgets.ToolManager',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
@@ -274,7 +275,25 @@
 		        this.updateValidation();
 		    }
 		    
-		    this.server().executeRequestStage(this.entry, this.titleEditor.getData().getValue(), this.widgetSchemeRenderer.getValues());
+		    this.server().executeRequestStage(this.entry, this.titleEditor.getData().getValue(), this.widgetSchemeRenderer.getValues(), function(res, fail){
+		    	if(fail){
+		    		var elt = $this.requestBtn.getElement();
+		    		if(elt.is(':visible')){
+			    		ToolManager.showMessage({
+							icon: 'error',
+							text: fail && fail.message || 'При запросе к сервису возникла ошибка (нет ответа от сервиса)',
+							buttons: [{text: 'Закрыть', value: true}],
+							target: {
+								selector: elt
+							},
+							constraints: [{
+								weight: 10.0,
+								selector: elt
+							}]
+						});
+		    		}
+		    	}
+		    });
 		},
 		
 		executeAnalyzeStage: function(){
@@ -374,18 +393,18 @@
 					
 					$this.enableStage('request', true);
 					$this.enableStage('analysis', info.hasResponse);
-					$this.enableStage('tables', info.hasStructure);
+					$this.enableStage('tables', info.hasResponse && info.hasStructure);
 					
 					if(info.hasResponse){
 						$this.switchStage('analysis');
 					}
-					if(info.hasStructure){
+					if(info.hasResponse && info.hasStructure){
 						$this.switchStage('tables');
 					}
 				}
 				
 				$this.updateResponsePreview(info.hasResponse);
-				$this.updateResultPreview(info.hasStructure);
+				$this.updateResultPreview(info.hasResponse && info.hasStructure);
 			});
 		},
 		

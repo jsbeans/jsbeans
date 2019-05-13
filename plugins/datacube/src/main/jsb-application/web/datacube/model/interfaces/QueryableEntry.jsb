@@ -136,6 +136,10 @@
 
 		extractFields: function(opts){
 			throw new Error('QueryableEntry.extractFields should be overridden');
+		},
+		
+		extractParams: function(opts){
+			throw new Error('QueryableEntry.extractParams should be overridden');
 		}
 	}
 }

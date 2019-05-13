@@ -28,8 +28,9 @@
             delimiter: '\n',
             responseType: 'string', // HttpHelper.ResultType: string, bytes, base64, json
             requestProperties: {
-                Accept: 'Accept", "*/*',
-                "User-Agent": "Wget/1.12"
+                "Accept": "*/*",
+                "User-Agent": "Wget/1.12",
+                "Content-Type": "application/x-www-form-urlencoded"
             },
         },
 

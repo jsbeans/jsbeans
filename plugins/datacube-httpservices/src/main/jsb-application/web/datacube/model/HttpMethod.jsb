@@ -335,30 +335,43 @@
 			url += pattern;
 			
 			var postParams = null;
+			var props = {};
 			if(method == 'POST'){
 				// prepare POST params
 				postParams = HttpTemplate.execute(ctx.find('request postBody').value(), params);
 				try {
 					postParams = eval('(' + postParams + ')');
+					props['Content-Type'] = 'application/json';
+					postParams = JSON.stringify(postParams);
 				} catch(e){}
 			}
 			
-			var httpOpts = {connectTimeout:600000, socketTimeout: 600000};
+			var httpOpts = {connectTimeout:600000, socketTimeout: 600000, requestProperties: props};
 			// TODO: enhance httpOpts
-			
-			return this._processResult(Http.request(method, encodeURI(url), postParams, httpOpts), ctx, params, opts);
+			var result = {
+				body: null,
+				responseCode: null,
+				responseMessage: null,
+				error: null,
+			};
+			try {
+				result = Http.request(method, encodeURI(url), postParams, httpOpts);
+			} catch(e){
+				result.error = e.message;
+			}
+			return this._processResult(result, ctx, params, opts);
 		},
 		
 		_processResult: function(result, ctx, params, opts){
-			if(result.responseCode != 200){
-				throw new Error(result.responseMessage);
-			}
 			// prepare initial result
 			var items = [{
-				result: '' + result.body,
+				result: result.body ? '' + result.body : null,
+				code: result.responseCode ? 0+result.responseCode : null,
+				message: result.responseMessage ? ''+result.responseMessage : null,
+				error: result.error ? ''+result.error : null
 			}];
 			
-			if(!opts.disableParser){
+			if(result.body && !opts.disableParser){
 				var tablesDesc = $this.proceedParserTranformations(opts, ctx, items);
 				if(Object.keys(tablesDesc).length == 0){
 					throw new Error('Unable to parse response');
@@ -368,7 +381,7 @@
 				var tDesc = tablesDesc[tName];
 				items = tDesc.rows;
 			}
-			
+/*			
 			// inject parameters into result
 			for(var i = 0; i < items.length; i++){
 				var el = items[i];
@@ -376,7 +389,7 @@
 					el[pName] = params[pName];
 				}
 			}
-			
+*/			
 			if(opts.respondRows){
 				return items;
 			}
@@ -522,7 +535,7 @@
 				ctx = this.getSettingsContext();
 			}
 			
-			if(!ctx.find('useParser').checked()){
+			if(!ctx.find('useParser').checked() || !responseItems || !responseItems[0] || !responseItems[0].result){
 				var colsInfo = this.generateColumnsTypeInfo({
 					includeServiceFields: true,
 					settings: opts && opts.settings
@@ -531,7 +544,18 @@
 					name: 'result',
 					type: 'string'
 				};
-				
+				colsInfo.code = {
+					name: 'code',
+					type: 'integer'
+				};
+				colsInfo.error = {
+					name: 'error',
+					type: 'string'
+				};
+				colsInfo.message = {
+					name: 'message',
+					type: 'string'
+				};
 				return {
 					cols: colsInfo,
 					rows: responseItems
@@ -559,6 +583,7 @@
 				}
 			}
 			var rows = tDesc.rows;
+/*			
 			for(var i = 0; i < rows.length; i++){
 				var row = rows[i];
 				for(var rName in responseItems[0]){
@@ -567,7 +592,7 @@
 					}
 					row[rName] = responseItems[0][rName];
 				}
-			}
+			}*/
 			
 			return {
 				cols: cols,
@@ -584,6 +609,7 @@
 			}
 			
 			var fInfo = {};
+/*			
 			if(opts.includeServiceFields){
 				// iterate over service fields
 				var pSelArr = ctx.find('request params').values();
@@ -610,6 +636,7 @@
 					fInfo[pObj.name] = pObj;
 				}
 			}
+*/			
 			
 			if(opts.includeResultTable){
 				var tName = opts.includeResultTable;
@@ -760,6 +787,40 @@
 			return this.property('fields') || {};
 		},
 		
+		extractParams: function(){
+			if(!this.property('params')){
+				var ctx = this.getSettingsContext();
+				
+				var params = {};
+				var pSelArr = ctx.find('request params').values();
+				for(var i = 0; i < pSelArr.length; i++){
+					var pSel = pSelArr[i];
+					var pName = pSel.find('pName').value().trim();
+					var pType = 'string';
+					switch(pSel.find('pType').value()){
+					case 'ctString':
+						pType = 'string';
+						break;
+					case 'ctInteger':
+						pType = 'integer';
+						break;
+					case 'ctFloat':
+						pType = 'double';
+						break;
+					case 'ctBoolean':
+						pType = 'boolean';
+						break;
+					}
+					params[pName] = {
+						name: pName,
+						type: pType
+					};
+				}
+				this.property('params', params);
+			}
+			return this.property('params') || {};
+		},
+		
 		getStore: function(){
 			return this.getHttpService().getStore();
 		},
@@ -767,6 +828,8 @@
 		storeValues: function(desc){
 			this.setName(desc.name);
 			this.applySettings(desc.values);
+			this.property('fields', null);
+			this.property('params', null);
 /*			
 			try {
 				var rDesc = this.executePreviewStage();
