@@ -3,6 +3,7 @@
 	$client:{
 		$singleton: true,
 		$require: ['JQuery',
+		           'jQuery.UI.JS.Widget',
 		           'jQuery.UI.JS.Plugin'],
 
 		$bootstrap: function(){
