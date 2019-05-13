@@ -3,6 +3,7 @@
 	$parent: 'JSB.Controls.Control',
 	$require: ['Unimap.Controller',
 	           'Unimap.Repository',
+	           'JSB.Widgets.ToolManager',
 	           'css:Basic.css'],
 
     $alias: 'basic',
@@ -55,11 +56,42 @@
             if(!name || !this._scheme.description){
                 return;
             }
-
+/*
             var description = this.$('<div class="description hidden">' + this._scheme.description + '</div>');
             name.append(description);
-
-            name.append(this.createMsgIcon(description, 'desc fas fa-question-circle'));
+*/
+            var icon = this.$('<i class="desc fas fa-question-circle" aria-hidden="true"></i>');
+            name.append(icon);
+            var mtx = 'unimap.description.tooltip';
+            icon.on({
+            	mouseover: function(){
+            		JSB.defer(function(){
+            			$this.infoTip = ToolManager.activate({
+							key: 'unimapInfoTip',
+							id: '_dwp_standardTooltip',
+							cmd: 'show',
+							data: $this._scheme.description,
+							scope: null,
+							target: {
+								selector: icon,
+							},
+							constraints: [{
+								selector: $this.getElement(),
+								weight: 10.0
+							}]
+						});
+            		}, 100, mtx);
+            	},
+            	mouseout: function(){
+            		JSB.cancelDefer(mtx);
+            		if($this.infoTip){
+            			$this.infoTip.close();
+            			$this.infoTip = null;
+            		}
+            	}
+            });
+            
+//            name.append(this.createMsgIcon(this._scheme.description, 'desc fas fa-question-circle'));
         },
 
         createErrorDesc: function(name){

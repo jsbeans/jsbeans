@@ -144,6 +144,7 @@
 	        this._dataList = [];
 	        this._cubeFieldList = [];
 	        this._bindingsInfo = {};
+	        this.updateId = JSB.generateUid();
 
 	        if(!this._values.values || !this._values.values[0]){
 	            return;

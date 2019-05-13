@@ -251,6 +251,7 @@
 
 ._dwp_droplistTool[key="createMenu"] {
 	max-height: 400px;
+	background: #fff;
 }
 
 ._dwp_droplistTool[key="createMenu"] .menuSeparator {

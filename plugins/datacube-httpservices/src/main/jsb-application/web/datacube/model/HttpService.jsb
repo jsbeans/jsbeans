@@ -10,6 +10,10 @@
 				address: {
 					render: 'item',
 					name: 'Адрес сервера',
+					description: `
+						<h3>Адрес сервера</h3>
+						<p>Неизменная часть URL-запроса к HTTP-методам удаленного сервиса</p>
+					`,
 					require: true,
 					editorOpts: {
 						placeholder: 'http://my.server.com:8888/api'

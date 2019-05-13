@@ -31,6 +31,9 @@
 			});
 			
 			this.subscribe('DataCube.HttpServiceNode.createHttpMethod', function(sender, msg, mtd){
+				if(mtd.getParentId() != $this.getTargetEntry().getId()){
+					return;
+				}
                 var node = $this.explorer.getEntryNode(mtd);
 
                 if(!node){

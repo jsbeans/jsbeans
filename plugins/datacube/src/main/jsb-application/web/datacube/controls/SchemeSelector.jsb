@@ -61,6 +61,7 @@
 				DataBindingCache.put(this.context, sourceKey, 'SchemeSelectorItems', nItems);
 				DataBindingCache.put(this.context, sourceKey, 'SchemeSelectorMap', $this.schemeMap);
 			}
+			
 			return $base(nItems);
 		},
 		

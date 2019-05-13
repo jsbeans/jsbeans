@@ -148,6 +148,7 @@
 	        this._fields = [];
 	        this._dataList = [];
 	        this._bindingsInfo = {};
+	        this.updateId = JSB.generateUid();
 
 	        if(!this._values.values || !this._values.values[0]){
 	            return;
@@ -400,6 +401,7 @@
 		    if(needResolve){
 		        this.resolveLinkedFields();
 		    }
+		    this.updateId = JSB.generateUid();
 		    this.onchange();
 		},
 
