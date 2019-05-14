@@ -160,6 +160,8 @@
                 function validTrue(){
                     $this.options.title = newVal;
 
+                    $this.setTitle(newVal);
+
                     destroyEditor();
 
                     if(JSB.isFunction($this.options.onTitleEdited)){

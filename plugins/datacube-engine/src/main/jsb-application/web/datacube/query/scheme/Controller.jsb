@@ -12,7 +12,6 @@
 	    _contextMap: {},
 	    _data: {},
 	    _dataId: null,
-	    _extendCategories: {},
 	    _menu: null,
 	    _query: null,
 	    _queryRender: null,
@@ -38,45 +37,6 @@
 
 	    options: {
 	        onChange: undefined
-	    },
-
-	    addExtendCategoryItem: function(catName, values, name, isAddToSlice) {
-	        if(!this._extendCategories[catName]) {
-	            this._extendCategories[catName] = {};
-	        }
-
-	        if(!this._query[catName]) {
-	            this._query[catName] = {};
-	        }
-
-	        this._extendCategories[catName][name] = values;
-
-	        if(isAddToSlice) {
-	            this._query[catName][name] = values;
-	            this.onChange();
-	        }
-	    },
-
-	    changeExtendCategoryItem: function(catName, values, oldName, newName) {
-	        if(!this._extendCategories[catName] || !this._extendCategories[catName][oldName]) {
-	            return;
-	        }
-
-	        if(values) {
-	            this._extendCategories[catName][oldName] = values;
-
-	            this._query[catName][oldName] = values;
-	        }
-
-	        if(newName) {
-	            this._extendCategories[catName][newName] = this._extendCategories[catName][oldName];
-	            delete this._extendCategories[catName][oldName];
-
-	            this._query[catName][newName] = this._query[catName][oldName];
-	            delete this._query[catName][oldName];
-	        }
-
-	        this.onChange();
 	    },
 
 	    clear: function(){
@@ -221,14 +181,42 @@
                     $this._queryRender = query;
                 }
 
-                if($this._query.$views) {
-                    for(var i in $this._query.$views) {
-                        $this.addExtendCategoryItem('$views', $this._query.$views[i], i);
-                    }
-                }
+                if($this.options.extendControllers) {
+                    for(var i in $this.options.extendControllers) {
+                        $this.options.extendControllers[i].refresh({
+                            data: $this.getData(),
+                            slice: $this.getSlice(),
+                            query: $this.getQuery(),
+                            onChange: function(type, options) {
+                                var query = $this.getQuery();
 
-                if($this._query.$params) {
-                    //
+                                switch(type) {
+                                    case 'add':
+                                        if(!query[i]) {
+                                            query[i] = {};
+                                        }
+
+                                        query[i][options.name] = options.values;
+                                        break;
+                                    case 'change':
+                                        query[i][options.name] = options.values;
+                                        break;
+                                    case 'rename':
+                                        var oldValues = query[i][options.oldName];
+
+                                        query[i][options.newName] = oldValues;
+
+                                        delete query[i][options.oldName];
+                                        break;
+                                    case 'remove':
+                                        delete query[i][options.name];
+                                        break;
+                                }
+
+                                $this.onChange();
+                            }
+                        });
+                    }
                 }
 
                 this.getElement().loader('hide');
@@ -309,14 +297,14 @@
 			});
         },
 
-        showTool: function(opts){
+        showTool: function(opts) {
 			ToolManager.activate({
 				id: 'querySchemeTool',
 				cmd: 'show',
 				data: JSB.merge(opts, {
 				    data: this.getData(),
 				    dataId: this.getDataId(),
-				    extendCategories: this._extendCategories,
+				    extendControllers: this.options.extendControllers,
 				    sliceId: this.getSlice().getFullId()
 				}),
 				scope: null,
