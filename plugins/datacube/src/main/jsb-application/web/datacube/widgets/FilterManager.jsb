@@ -13,7 +13,7 @@
 			this.owner = owner;
 			this.subscribe('DataCube.Model.Cube.updateCubeFields', {session: true}, function(sender, msg, params){
 				if($this.cubeFieldMap[sender.getId()]){
-                    $this.cubeFieldMap[sender.getId()] = params.fields;
+                    $this.cubeFieldMap[sender.getId()] = params.fieldMap;
                 }
 			});
 		},

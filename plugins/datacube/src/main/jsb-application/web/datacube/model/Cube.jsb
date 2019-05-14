@@ -161,6 +161,8 @@
 
 		addDimension: function(field){
 		    this.fields[field].isDimension = true;
+		    
+		    this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.extractFields(true), fieldMap:this.extractFields() }, {session: true});
 
 		    this.store();
 		},
@@ -335,6 +337,8 @@
 		    for(var i = 0; i < fields.length; i++){
 		        this.fields[fields[i]].isDimension = false;
 		    }
+		    
+		    this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.extractFields(true), fieldMap:this.extractFields() }, {session: true});
 
 		    this.store();
 		},
@@ -365,7 +369,7 @@
 
 			this.sliceCount = Object.keys(this.slices).length;
 
-			this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.extractFields(true) }, {session: true});
+			this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.extractFields(true), fieldMap:this.extractFields() }, {session: true});
 
 			this.store();
 		},
@@ -521,7 +525,7 @@
                     }
                 }
 
-                this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.extractFields(true) }, {session: true});
+                this.publish('DataCube.Model.Cube.updateCubeFields', { dimensions: this.getDimensions(), fields: this.extractFields(true), fieldMap:this.extractFields() }, {session: true});
 
                 if(!noStore){
                     this.store();

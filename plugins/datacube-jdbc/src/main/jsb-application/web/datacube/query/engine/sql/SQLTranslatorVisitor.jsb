@@ -916,9 +916,9 @@ debugger
                                    case 'PostgreSQL':
                                         $this.print(arg0, ' ~~*', arg1);
                                         break;
-//                                   case 'ClickHouse':
-//                                        $this.print('lowerUTF8(', arg0, ') LIKE', 'lowerUTF8(', arg1, ')');
-//                                        break;
+                                   case 'ClickHouse':
+                                        $this.print('lowerUTF8(', arg0, ') LIKE ', 'lowerUTF8(', arg1, ')');
+                                        break;
                                    case 'SQLServer':
                                         $this.print(arg0, ' LIKE', likeAsCaseInsensitive(''+arg1));
                                         break;
