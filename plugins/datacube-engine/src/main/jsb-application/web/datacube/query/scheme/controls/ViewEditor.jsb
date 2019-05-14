@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Controls.ViewEditor',
+	$name: 'DataCube.Query.Controls.ViewsEditor',
 	$parent: 'JSB.Controls.Control',
 
 	$client: {
@@ -10,7 +10,7 @@
 	               'JSB.Controls.Panel',
 	               'css:ViewEditor.css'],
 
-        _sliceOpts: {},
+        _controllerOptions: {},
         _viewsDescs: {},
 
 	    $constructor: function(opts) {
@@ -34,18 +34,41 @@
 	    createView: function(values, viewName) {
             viewName = viewName || Helper.createName($this._viewsDescs, 'Именованный подзапрос');
 
-            var isAddToController = false;
+            var isNew = false;
 
             if(!values) {
-                values = Syntax.constructDefaultValues({key: '$query'});
+                values = Syntax.constructDefaultValues({key: '$query'}).$query;
 
-                isAddToController = true;
+                isNew = true;
             }
+
+            var controller = new SchemeController({
+                data: this._controllerOptions.data,
+                slice: this._controllerOptions.slice,
+                values: values,
+                onChange: function() {
+                    this.onChange('change', {
+                        name: viewName,
+                        values: values
+                    });
+                }
+            });
 
             var view = new Panel({
                 cssClass: 'viewItem',
+                closeBtn: true,
                 title: viewName,
                 titleEditBtn: true,
+                onCloseBtnClick: function() {
+                    controller.destroy();
+                    view.destroy();
+
+                    delete $this._viewsDescs[viewName];
+
+                    $this.onChange('remove', {
+                        name: viewName
+                    });
+                },
                 titleValidateFunction: function(val) {
                     if($this._viewsDescs[val]) {
                         return false;
@@ -54,7 +77,11 @@
                     }
                 },
                 onTitleEdited: function(val, oldVal) {
-                    $this.options.schemeController.changeExtendCategoryItem('$views', null, oldVal, val);
+                    $this.onChange('rename', {
+                        oldName: oldVal,
+                        newName: val
+                    });
+
                     viewName = val;
                     $this._viewsDescs[val] = $this._viewsDescs[oldVal];
                     delete $this._viewsDescs[oldVal];
@@ -62,25 +89,28 @@
             });
             this.viewContainer.append(view);
 
-            var controller = new SchemeController({
-                data: this._sliceOpts.data,
-                slice: this._sliceOpts.slice,
-                values: values,
-                onChange: function() {
-                    $this.options.schemeController.changeExtendCategoryItem('$views', controller.getValues(), viewName);
-                }
-            });
             view.appendContent(controller);
 
             $this._viewsDescs[viewName] = controller;
 
-            if(isAddToController) {
-                this.options.schemeController.addExtendCategoryItem('$views', values, viewName, true);
+            if(isNew) {
+                this.onChange('add', {
+                    name: viewName,
+                    values: values
+                });
             }
 	    },
 
+	    extract: function() {
+	        return Object.keys(this._viewsDescs);
+	    },
+
+	    onChange: function(type, options) {
+	        this._controllerOptions.onChange.call(this, type, options);
+	    },
+
 	    refresh: function(opts) {
-	        this._sliceOpts = opts;
+	        this._controllerOptions = opts;
 	        this._viewsDescs = {};
 
 	        this.viewContainer.clear();

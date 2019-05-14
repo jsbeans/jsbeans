@@ -7,7 +7,6 @@
 	               'JSB.Widgets.RendererRepository',
 	               'DataCube.Query.ItemList',
 	               'DataCube.Query.Syntax',
-	               'DataCube.Query.Extractors.ExtractUtils',
 	               'css:SchemeTool.css'],
 
 		$bootstrap: function(){
@@ -29,15 +28,16 @@
 
 		_dataId: null,
 
-		_SOURCE_FIELDS_NAME: 'Поля источника',
-		_OUTPUT_FIELDS_NAME: 'Поля среза',
-		_VIEWS_NAME: 'Именованные подзапросы',
+		_SLICES_NAME: '$slices',
+		_SOURCE_FIELDS_NAME: '$sourceFields',
+		_OUTPUT_FIELDS_NAME: '$outputFields',
+		_VIEWS_NAME: '$views',
 
 		$constructor: function(){
 		    $base();
 
             function itemRender(itemElement, itemDesc){
-                if(itemDesc.category === 'Срезы'){
+                if(itemDesc.category === $this._SLICES_NAME){
                     itemElement.append(RendererRepository.createRendererFor(itemDesc.item));
                 } else if(itemDesc.category === $this._SOURCE_FIELDS_NAME || itemDesc.category === $this._OUTPUT_FIELDS_NAME){
 
@@ -61,6 +61,7 @@
             }
 
 		    this.itemList = new ItemList({
+		        categories: Syntax.getCategories(),
 		        items: Syntax.getToolItems(),
 		        itemRender: itemRender,
 		        onSelect: function(desc){
@@ -79,134 +80,49 @@
 		update: function(){
 		    var caller = this.getData('caller'),
 		        dataId = this.getData('dataId'),
-		        extendCategories = this.getData('extendCategories'),
+		        extendControllers = this.getData('extendControllers'),
 		        key = this.getData('key'),
-		        showSlices = this.getData('showSlices');
+		        showSlices = this.getData('showSlices'),
 
-		    // fill slices
-		    if(this._dataId !== dataId){
-		        this._dataId = dataId;
+		        replacements = Syntax.getReplacements(key, caller && caller.getParent().getKey());
 
-		        this.itemList.clearCategory('Срезы');
+            var allowItems = replacements.items || [],
+                allowCategories = replacements.categories || [],
+                isNewData = false;
 
-		        var data = this.getData('data'),
-		            sliceId = this.getData('sliceId');
+            this.itemList.showAll();
 
-		        for(var i in data.cubeSlices){
-		            if(i !== sliceId){
-		                this.itemList.addItem({
-		                    item: data.cubeSlices[i],
-		                    key: i,
-		                    category: 'Срезы',
-		                    searchId: data.cubeSlices[i].getName()
-		                });
-                    }
-		        }
+            if(dataId !== this._dataId) {
+                isNewData = true;
+
+                this._dataId = dataId;
             }
 
-            var allowItems = [],
-                allowCategories = [];
-
-            if(key === '$source'){
-                allowCategories.push('Срезы');
-                allowCategories.push(this._VIEWS_NAME);
-            } else {
-                allowItems = Syntax.getReplacements(key, caller && caller.getParent().getKey());
-            }
-
-            if(allowItems.indexOf('$field') > -1) {
-                var context = caller.getContext();
-
-                var allowOutputFields = caller.isAllowOutputFields(),
-                    allowSourceFields = caller.isAllowSourceFields();
-
-                if(allowOutputFields){
-                    allowCategories.push(this._OUTPUT_FIELDS_NAME);
-
-                    this.itemList.clearCategory(this._OUTPUT_FIELDS_NAME);
-
-                    var fields = caller.getOutputFields();
-
-                    for(var i = 0; i < fields.length; i++){
-                        if(true){   // i !== key
-                            this.itemList.addItem({
-                                context: context,
-                                item: fields[i],
-                                key: 'curSlice' + '|' + fields[i],
-                                category: this._OUTPUT_FIELDS_NAME,
-                                searchId: fields[i]
-                            });
-                        }
-                    }
-                }
-
-                if(allowSourceFields){
-                    allowCategories.push(this._SOURCE_FIELDS_NAME);
-
-                    this.itemList.clearCategory(this._SOURCE_FIELDS_NAME);
-
-                    ExtractUtils.server().extractAllowedFields(caller.getQuery(), context, function(fields, fail){
-                        if(fail){
-                            throw new Error('Ошибка при загрузке доступных полей источников');
+            for(var i = 0; i < allowCategories.length; i++) {
+                (function(category) {
+                    Syntax.fillCategory(category, {
+                        data: $this.getData('data'),
+                        extendControllers: extendControllers,
+                        isNewData: isNewData,
+                        render: caller
+                    }, function(result) {
+                        if(result.notUpdate) {
+                            return;
                         }
 
-                        var cubeSlices = caller.getData('cubeSlices'),
-                            curContext;
+                        if(result.categoryItems.length > 0) {
+                            var context = caller.getContext();
 
-                        for(var i = 0; i < fields.length; i++){
-                            if(JSB.isDefined(fields[i].$sourceContext)){
-                                if(curContext !== fields[i].$sourceContext){
-                                    curContext = fields[i].$sourceContext;
+                            $this.itemList.clearCategory(category);
 
-                                    $this.itemList.addItem({
-                                        allowSelect: false,
-                                        isHeader: true,
-                                        item: cubeSlices[curContext],
-                                        key: curContext,
-                                        category: $this._SOURCE_FIELDS_NAME
-                                    });
-                                }
-                            } else if(fields[i].$context !== curContext){
-                                curContext = fields[i].$context;
-
-                                $this.itemList.addItem({
-                                    allowSelect: false,
-                                    isHeader: true,
-                                    item: curContext,
-                                    key: curContext,
-                                    category: $this._SOURCE_FIELDS_NAME
-                                });
+                            for(var j = 0; j < result.categoryItems.length; j++) {
+                                $this.itemList.addItem(result.categoryItems[j]);
                             }
-
-                            $this.itemList.addItem({
-                                item: fields[i].$field,
-                                key: curContext + '|' + fields[i].$field,
-                                category: $this._SOURCE_FIELDS_NAME,
-
-                                context: fields[i].$context,
-                                sourceContext: fields[i].$sourceContext,
-                                searchId: fields[i].$field
-                            });
+                        } else {
+                            $this.itemList.hideCategory(category, true);
                         }
                     });
-                }
-            }
-
-            if(allowCategories.indexOf(this._VIEWS_NAME) > -1 || allowItems.indexOf('$views') > -1 && extendCategories['$views'] && Object.keys(extendCategories['$views']).length > 0) {
-                if(allowCategories.indexOf(this._VIEWS_NAME) == -1) {
-                    allowCategories.push(this._VIEWS_NAME);
-                }
-
-                this.itemList.clearCategory(this._VIEWS_NAME);
-
-                for(var i in extendCategories['$views']) {
-                    $this.itemList.addItem({
-                        item: i,
-                        key: '$views' + '|' + i,
-                        category: $this._VIEWS_NAME,
-                        searchId: i
-                    });
-                }
+                })(allowCategories[i]);
             }
 
             this.itemList.allowItems(allowItems, allowCategories);
