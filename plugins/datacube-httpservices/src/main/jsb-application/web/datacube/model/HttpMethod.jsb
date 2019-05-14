@@ -55,6 +55,32 @@
 								<h3>Значение по умолчанию</h3>
 								<p>Используется при отладки взаимодействия с удаленным сервисом на начальном этапе, когда требуется получить с сервиса тестовую выборку.</p>
 							`
+						},
+						pUseInPaging: {
+							render: 'group',
+							name: 'Использовать для пейджинга',
+							optional: true,
+							description: `
+								<h3>Параметр для пейджинга</h3>
+								<p>Сообщить движку, что при помощи этого параметра можно управлять пейджингом</p>
+							`,
+							items: {
+								pPagingRole: {
+									render: 'select',
+									name: 'Роль',
+									items: {
+										pRoleOffset: {
+											render: 'item',
+											name: 'Пропустить строки (offset)'
+										},
+										pRoleLimit: {
+											render: 'item',
+											name: 'Ограничить выдачу (limit)'
+										}
+
+									}
+								}
+							}
 						}
 					}
 				},
@@ -796,6 +822,7 @@
 				for(var i = 0; i < pSelArr.length; i++){
 					var pSel = pSelArr[i];
 					var pName = pSel.find('pName').value().trim();
+					var pValue = pSel.find('pValue').value();
 					var pType = 'string';
 					switch(pSel.find('pType').value()){
 					case 'ctString':
@@ -803,18 +830,36 @@
 						break;
 					case 'ctInteger':
 						pType = 'integer';
+						pValue = parseInt(pValue);
 						break;
 					case 'ctFloat':
 						pType = 'double';
+						pValue = parseFloat(pValue);
 						break;
 					case 'ctBoolean':
 						pType = 'boolean';
+						if(pValue == 'true'){
+							pValue = true;
+						} else {
+							pValue = false;
+						}
 						break;
 					}
 					params[pName] = {
 						name: pName,
-						type: pType
+						type: pType,
+						defaultValue: pValue
 					};
+					if(pSel.find('pUseInPaging').checked()){
+						switch(pSel.find('pPagingRole').value()){
+						case 'pRoleOffset':
+							params[pName].pagingOffset = true;
+							break;
+						case 'pRoleLimit':
+							params[pName].pagingLimit = true;
+							break;
+						}
+					}
 				}
 				this.property('params', params);
 			}
