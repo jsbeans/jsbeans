@@ -134,6 +134,7 @@
 		_updateClient: function(values){
 			if(!$this._values || !JSB.isEqual($this._values, values)){
 				$this._values = values;
+				$this.publish('DataCube.Model.Widget.valuesUpdated', values);
 				
 				if($this._context){
 					// renew context
