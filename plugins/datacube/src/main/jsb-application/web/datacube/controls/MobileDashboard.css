@@ -1,0 +1,53 @@
+@CHARSET "UTF-8";
+
+.mobileDashboard {
+	position: relative;
+}
+
+.mobileDashboard > .header {
+	width: 100%;
+	overflow: hidden;
+	position: relative;
+	background: #fff;
+	padding: 4px 0 2px;
+    border-radius: 6px 6px 0 0;
+}
+
+.mobileDashboard > .header > .pane {
+	overflow: hidden;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.mobileDashboard > .header > .pane > .headerEntry {
+	display: inline-block;
+	padding: 0 2px;
+    margin: 0 4px;
+    font-size: 13px;
+    color: #4c4c4c;
+}
+
+.mobileDashboard > .header > .pane > .headerEntry.active {
+	border-bottom: 2px solid #3378a0;
+	color: #1a4058;
+}
+
+.mobileDashboard > .container {
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+	position: relative;
+}
+
+.mobileDashboard > .container > .pane {
+	overflow: hidden;
+	white-space: nowrap;
+	height: 100%;
+}
+
+.mobileDashboard > .container > .pane > .widgetPlaceholder {
+	display: inline-block;
+	background: #fff;
+	overflow: hidden;
+}
+

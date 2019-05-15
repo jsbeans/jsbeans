@@ -9,13 +9,17 @@
 	
 	$client: {
 		$require: ['JSB.Widgets.Dashboard.Dashboard',
+		           'DataCube.Controls.MobileDashboard',
 		           'DataCube.Controls.FilterSelector',
 		           'DataCube.Widgets.FilterManager',
 		           'DataCube.Widgets.WidgetWrapper',
 		           'JSB.Widgets.MenuBar',
+		           'JSB.Widgets.TabView',
 		           'css:Dashboard.css'],
 		           
 		entry: null,
+		layoutData: null,
+		layoutType: null,
 		           
 		$constructor: function(opts){
 			$base(opts);
@@ -47,23 +51,40 @@
 			});
 			this.headerElt.append(this.menuBar.getElement());
 			
-			this.dashboard = new Dashboard({
+			this.dashboardLayout = new TabView({
+				showTabs: false
+			});
+			this.dashboardLayout.addClass('dashboardLayout');
+			this.append(this.dashboardLayout);
+			
+			this.desktopDashboard = new Dashboard({
 				emptyText: '',
 			});
-			this.append(this.dashboard);
+			this.desktopDashboardTab = this.dashboardLayout.addTab('desktop', this.desktopDashboard);
+			
+			this.mobileDashboard = new MobileDashboard();
+			this.mobileDashboardTab = this.dashboardLayout.addTab('mobile', this.mobileDashboard);
 			
 			this.loadingBack = $this.$('<div class="loadingBack"><div class="message"><div class="icon"></div></div></div>');
 			this.append(this.loadingBack);
 			
 			this.headerElt.resize(function(){
-				$this.dashboard.getElement().css('height', 'calc(100% - '+($this.headerElt.outerHeight() + 4)+'px)');
+				$this.dashboardLayout.getElement().css('height', 'calc(100% - '+($this.headerElt.outerHeight() + 4)+'px)');
 			});
+			
+			this.dashboardLayout.getElement().resize(function(){
+				JSB.defer(function(){
+					$this.updateLayout();	
+				}, 300, 'updateLayout.' + $this.getId());
+			});
+			
 			
 			if(!opts.embedded){
 				this.server().getEntry(function(e){
 					$this.setCurrentEntry(e);
 				});
 			}
+			
 		},
 		
 		setCurrentEntry: function(entry){
@@ -113,13 +134,12 @@
 					
 					performLayout(layout);
 				}
-				var desc = {
+				$this.layoutData = {
 					layout: layout,
 					widgets: $this.wrappers
 				};
-				$this.ignoreHandlers = true;
-				$this.dashboard.setLayout(desc);
-				$this.ignoreHandlers = false;
+				
+				$this.updateLayout();
 				
 				JSB.chain(Object.keys($this.wrappers), function(wId, callback){
 					$this.wrappers[wId].ensureWidgetInitialized(callback);
@@ -127,6 +147,41 @@
 					$this.removeClass('loading');
 				});
 			});
+		},
+		
+		updateLayout: function(){
+			if(!this.layoutData){
+				return;
+			}
+			var layoutWidth = this.dashboardLayout.getElement().width();
+			var layoutHeight = this.dashboardLayout.getElement().height();
+			if(layoutWidth >= layoutHeight){
+				$this.attr('orientation', 'horizontal');
+			} else {
+				$this.attr('orientation', 'vertical');
+			}
+			if(layoutWidth > layoutHeight && layoutWidth >= 900){
+				// desktop layout
+				if($this.layoutType == 'desktop'){
+					return;
+				}
+				JSB.getLogger().debug('desktop layout');
+				$this.desktopDashboard.setLayout($this.layoutData);
+				$this.dashboardLayout.switchTab($this.desktopDashboardTab);
+				$this.layoutType = 'desktop';
+				
+			} else {
+				// mobile layout
+				if($this.layoutType == 'mobile'){
+					return;
+				}
+				JSB.getLogger().debug('mobile layout');
+				$this.mobileDashboard.setLayout($this.layoutData);
+				$this.dashboardLayout.switchTab($this.mobileDashboardTab);
+				$this.layoutType = 'mobile';
+			}
+			$this.attr('layout', $this.layoutType);
+			
 		},
 		
 		getFilterSelector: function(){
@@ -296,7 +351,7 @@
 					<title>{{=$this.dashboardEntry.getName()}}</title>
 					
 					<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-					<meta name="viewport" content="width=1024, user-scalable=no" />
+					<meta name="viewport" content="width=device-width, user-scalable=no" />
 					
 					{{? description && description.length > 0}}
 					<meta name="description" content="{{=description}}" />
