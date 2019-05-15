@@ -52,7 +52,7 @@
 
 .mobileDashboard > .header > .pane > .headerEntry {
 	display: inline-block;
-	padding: 4px 10px;
+	padding: 6px 10px;
     font-size: 13px;
     color: #4c4c4c;
 }
@@ -80,5 +80,6 @@
 	display: inline-block;
 	background: #fff;
 	overflow: hidden;
+	white-space: normal;
 }
 

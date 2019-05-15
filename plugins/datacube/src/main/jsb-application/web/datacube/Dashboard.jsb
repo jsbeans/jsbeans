@@ -105,7 +105,7 @@
 				$this.wrappers = {};
 				var wWrappers = {};
 				for(var wId in dashboardDesc.wrappers){
-					var wWrapper = new WidgetWrapper(dashboardDesc.wrappers[wId], $this, {viewMode: true});
+					var wWrapper = new WidgetWrapper(dashboardDesc.wrappers[wId], $this, {viewMode: true, auto:false});
 					wWrappers[wId] = wWrapper;
 					$this.wrappers[wWrapper.getId()] = wWrapper;
 				}
@@ -165,7 +165,11 @@
 				if($this.layoutType == 'desktop'){
 					return;
 				}
-				JSB.getLogger().debug('desktop layout');
+				// enable auto mode to all widgets
+				for(var wId in $this.layoutData.widgets){
+					$this.layoutData.widgets[wId].setAuto(true);
+				}
+
 				$this.desktopDashboard.setLayout($this.layoutData);
 				$this.dashboardLayout.switchTab($this.desktopDashboardTab);
 				$this.layoutType = 'desktop';
@@ -175,7 +179,11 @@
 				if($this.layoutType == 'mobile'){
 					return;
 				}
-				JSB.getLogger().debug('mobile layout');
+				// disable auto mode to all widgets
+				for(var wId in $this.layoutData.widgets){
+					$this.layoutData.widgets[wId].setAuto(false);
+				}
+
 				$this.mobileDashboard.setLayout($this.layoutData);
 				$this.dashboardLayout.switchTab($this.mobileDashboardTab);
 				$this.layoutType = 'mobile';

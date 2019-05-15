@@ -5,6 +5,8 @@
 		$require: ['script:../../tpl/iscroll/iscroll.js',
 		           'css:MobileDashboard.css'],
 		
+		widgets: [],
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('mobileDashboard');
@@ -58,11 +60,13 @@
 			var containerHeight = this.container.height();
 			var paneWidth = 0;
 			var idx = 0;
+			this.widgets = [];
 			for(var wId in layoutDesc.widgets){
 				var widget = layoutDesc.widgets[wId];
 				if(widget.getWidgetEntry().isUnused()){
 					continue;
 				}
+				this.widgets[idx] = widget;
 				var widgetPlaceholder = $this.$('<div class="widgetPlaceholder"></div>');
 				this.pane.append(widgetPlaceholder);
 				widgetPlaceholder.css({
@@ -105,6 +109,9 @@
 		},
 		
 		activateWidget: function(idx){
+			for(var i = 0; i < this.widgets.length; i++){
+				this.widgets[i].setAuto(i==idx);
+			}
 			var headerEntry = this.headerPane.find('.headerEntry[idx="'+idx+'"]');
 			this.headerPane.find('.headerEntry').removeClass('active');
 			headerEntry.addClass('active');

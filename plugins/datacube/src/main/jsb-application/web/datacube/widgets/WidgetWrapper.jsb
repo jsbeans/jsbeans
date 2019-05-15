@@ -89,6 +89,7 @@
 		filterManager: null,
 		filterSelector: null,
 		_drilldownPanel: null,
+		lastRefreshOpts: null,
 		
 		options: {
 			auto: true
@@ -165,8 +166,12 @@
 					return;
 				}
 
+				if(!$this.options.auto){
+					$this.lastRefreshOpts = opts;
+					return;
+				}
 				$this.currentWidget.ensureInitialized(function(){
-			    	 $this.currentWidget.refresh(opts);
+					$this.currentWidget.refresh(opts);
 				});
 			});
 
@@ -185,6 +190,23 @@
 
 			if(opts && opts.showSettings){
 			    this.publish('JSB.Workspace.Entry.open', $this.widgetEntry);
+			}
+		},
+		
+		setAuto: function(bAuto){
+			if(bAuto){
+				if(this.options.auto){
+					return;
+				}
+				this.options.auto = true;
+				if($this.currentWidget && (!$this.currentWidget.isInitiallyRefreshed() || $this.lastRefreshOpts)){
+					$this.currentWidget.ensureInitialized(function(){
+						$this.currentWidget.refresh($this.lastRefreshOpts || {});
+						$this.lastRefreshOpts = null;
+					});
+				}
+			} else {
+				this.options.auto = false;
 			}
 		},
 		
@@ -350,7 +372,7 @@
 
 			$base();
 		},
-
+		
 		ensureWidgetInitialized: function(callback){
 		    this.ensureTrigger('_widgetInitialized', callback);
 		},

@@ -54,6 +54,7 @@
 			hover: false
 		},
 		rowKeyColumns: [],
+		initialRefresh: false,
 
 		$require: ['JSB.Crypt.MD5', 
 		           'DataCube.Export.Export', 
@@ -906,8 +907,13 @@
 				this.updateDispatcher.ready();
 			}
 		},
+		
+		isInitiallyRefreshed: function(){
+			return this.initialRefresh;
+		},
 
 		refresh: function(opts){
+			this.initialRefresh = true;
 			if(this.updateDispatcher){
 				this.updateDispatcher.addTask(opts);
 			} else {
