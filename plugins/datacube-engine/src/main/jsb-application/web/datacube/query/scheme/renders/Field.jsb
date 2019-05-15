@@ -24,7 +24,7 @@
                 element: this.getElement(),
                 wrap: true,
                 editToolCallback: function(desc){
-                    if(desc.category === 'Поля источника' || desc.category === 'Поля среза'){
+                    if(desc.key === '$field'){
                         var newVal = {
                                 $field: desc.item
                             };
