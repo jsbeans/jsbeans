@@ -98,6 +98,10 @@
             };
 
             if(itemDesc.category){
+                if(!this._categoriesList[itemDesc.category]) {
+                    this.addCategory(itemDesc.category, itemDesc.category, true);
+                }
+
                 this._categoriesList[itemDesc.category].itemsList.append(el);
                 this._categoriesList[itemDesc.category].items[itemDesc.key] = this._itemList[itemDesc.key];
             } else {
