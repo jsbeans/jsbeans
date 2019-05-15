@@ -1019,11 +1019,14 @@ nisi ut aliquip ex ea commodo consequat.
 					if(JSB.isDefined(mainVal)){
 						val = mainVal;
 					} else if(JSB.isDefined(backVal)){
+						val = backVal;
+/*						
 						if(JSB.isNumber(backVal)){
 							val = 0;
 						} else {
 							val = backVal;
 						}
+*/						
 					}
 					
 					var fVal = val;
@@ -1864,6 +1867,13 @@ nisi ut aliquip ex ea commodo consequat.
 					$this.getSelection().add(d.key, $this.constructRowSelection(d.key));
 				}
 			} else {
+				if($this.useTooltipOnHover){
+					JSB.cancelDefer('widgetTool_' + $this.getId());
+					if($this.widgetTool){
+						$this.widgetTool.close();
+						$this.widgetTool = null;
+					}
+				}
 				if(this.useFilterOnClick && d.filter && d.filter.length > 0){
 					// remove all filters with
 					var filters = this.getFilters();
@@ -2209,6 +2219,7 @@ nisi ut aliquip ex ea commodo consequat.
 				$this.getWrapper().server().getWidgetEntry(widgetDesc.widgetWsid, widgetDesc.widgetWid, function(wEntry){
 					if($this.widgetTool){
 						$this.widgetTool.close();
+						$this.widgetTool = null;
 					}
 					$this.widgetTool = ToolManager.activate({
 						id: 'widgetTool',

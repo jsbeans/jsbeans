@@ -9,27 +9,58 @@
 	overflow: hidden;
 	position: relative;
 	background: #fff;
-	padding: 4px 0 2px;
     border-radius: 6px 6px 0 0;
+}
+
+.mobileDashboard > .header:before {
+	content: '';
+	position: absolute;
+	width: 6px;
+	height: 100%;
+	left: 0;
+	top: 0;
+	z-index: 1;
+	background: -webkit-linear-gradient(left, #ffffff 0%, #ffffff00 100%);
+	background: -moz-linear-gradient(left, #ffffff 0%, #ffffff00 100%);
+    background: linear-gradient(left, #ffffff 0%, #ffffff00 100%);
+	background: -o-linear-gradient(left, #ffffff 0%, #ffffff00 100%);
+	background: -ms-linear-gradient(left, #ffffff 0%, #ffffff00 100%);
+}
+
+.mobileDashboard > .header:after {
+	content: '';
+	position: absolute;
+	width: 6px;
+	height: 100%;
+	right: 0;
+	top: 0;
+	z-index: 1;
+	background: -webkit-linear-gradient(left, #ffffff00 0%, #ffffff 100%);
+	background: -moz-linear-gradient(left, #ffffff00 0%, #ffffff 100%);
+    background: linear-gradient(left, #ffffff00 0%, #ffffff 100%);
+	background: -o-linear-gradient(left, #ffffff00 0%, #ffffff 100%);
+	background: -ms-linear-gradient(left, #ffffff00 0%, #ffffff 100%);
 }
 
 .mobileDashboard > .header > .pane {
 	overflow: hidden;
 	white-space: nowrap;
 	display: inline-block;
+	vertical-align: top;
+	padding: 0 6px;
 }
 
 .mobileDashboard > .header > .pane > .headerEntry {
 	display: inline-block;
-	padding: 0 2px;
-    margin: 0 4px;
+	padding: 4px 10px;
     font-size: 13px;
     color: #4c4c4c;
 }
 
 .mobileDashboard > .header > .pane > .headerEntry.active {
-	border-bottom: 2px solid #3378a0;
-	color: #1a4058;
+	color: #ffffff;
+    background: #3378a0;
+    border-radius: 6px 6px 0 0;
 }
 
 .mobileDashboard > .container {

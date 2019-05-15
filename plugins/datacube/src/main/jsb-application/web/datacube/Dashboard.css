@@ -97,6 +97,10 @@
     box-shadow: 0 0 1px rgba(0,0,0,0.5);
 }
 
+.dataCubeDashboard[layout="mobile"] > .header > .cell > .filterSelector.noItems {
+	display: none;
+}
+
 .dataCubeDashboard > .header > .title {
     float: left;
     color: #666;

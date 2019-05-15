@@ -351,7 +351,7 @@
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.back:not(.main) > td.col > div.cell {
-	opacity: 0.6;
+	opacity: 0.5;
 }
 
 /* useGroup */

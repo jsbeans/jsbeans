@@ -192,11 +192,13 @@
 				var splitPos = 0, nextPos = 0;
 				if( i < vPanes.length - 1){
 					if( this.options.type == 'vertical' ){
-						splitPos = vSplitters[i].position().left;
-						nextPos = vSplitters[i].position().left + vSplitters[i].outerWidth(); 
+						var sLeftPos = vSplitters[i].position().left;
+						splitPos = sLeftPos;
+						nextPos = sLeftPos + vSplitters[i].outerWidth(); 
 					} else {
-						splitPos = vSplitters[i].position().top;
-						nextPos = vSplitters[i].position().top + vSplitters[i].outerHeight();
+						var sTopPos = vSplitters[i].position().top;
+						splitPos = sTopPos;
+						nextPos = sTopPos + vSplitters[i].outerHeight();
 					}
 					splittersPos[i] = splitPos;
 				} else {
@@ -215,8 +217,8 @@
 				if(this.options.type == 'vertical'){
 					var nw = splitPos - curPos;
 					paneElt.css({
-						left: curPos,
-						width: nw
+						left: Math.round(curPos),
+						width: Math.round(nw)
 					});
 					if(paneElt.width() && paneElt.width() != nw ){
 						// fixup splitter
@@ -230,7 +232,7 @@
 								$this.splitterPositions[i-1] = spos / elt.width();
 								splitter.css({left: ''+ ppos + '%'})
 								paneElt.css({
-									left: splitter.position().left + splitter.outerWidth()
+									left: Math.round(splitter.position().left) + splitter.outerWidth()
 								});
 							}
 						} else {
@@ -250,8 +252,8 @@
 				} else {
 					var nh = splitPos - curPos;
 					paneElt.css({
-						top: curPos,
-						height: nh
+						top: Math.round(curPos),
+						height: Math.round(nh)
 					});
 					if(paneElt.height() && paneElt.height() != nh ){
 						// fixup splitter
@@ -265,7 +267,7 @@
 								$this.splitterPositions[i-1] = spos / elt.height();
 								splitter.css({top: ''+ ppos + '%'})
 								paneElt.css({
-									top: splitter.position().top + splitter.outerHeight()
+									top: Math.round(splitter.position().top) + splitter.outerHeight()
 								});
 							}
 						} else {

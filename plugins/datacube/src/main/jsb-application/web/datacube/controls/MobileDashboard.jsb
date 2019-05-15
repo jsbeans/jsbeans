@@ -85,7 +85,10 @@
 			this.pane.css('width', paneWidth);
 			this.widgetScroll.refresh();
 			this.headerScroll.refresh();
-			this.activateWidget(0);
+			JSB.defer(function(){
+				$this.activateWidget(0);	
+			}, 0);
+			
 		},
 		
 		updateSizes: function(){
@@ -106,6 +109,7 @@
 			this.headerPane.find('.headerEntry').removeClass('active');
 			headerEntry.addClass('active');
 			this.widgetScroll.goToPage(idx, 0, 400, IScroll.utils.ease.quadratic);
+			this.headerScroll.scrollToElement(headerEntry.get(0), 400, true, 0, IScroll.utils.ease.quadratic);
 		}
 	}
 }
