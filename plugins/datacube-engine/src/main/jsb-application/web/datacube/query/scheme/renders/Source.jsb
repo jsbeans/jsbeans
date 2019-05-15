@@ -14,7 +14,7 @@
             this.addClass('sourceRender');
 
             // create header
-            var header = this.$('<header>' + this.getScheme().category + ': ' + this.getScheme().displayName + '</header>');
+            var header = this.$('<header>Источник запроса: ' + this.getScheme().displayName + '</header>'); //this.getScheme().category
             this.append(header);
 
             this.installMenuEvents({ element: header });

@@ -275,10 +275,13 @@
 			$base();
 
             this.categoriesFillFunctions.$sourceFields = function(options, callback) {
-                var render = options.render;
+                var render = options.render,
+                    result = {
+                        categoryItems: []
+                    };
 
                 if(!render.isAllowSourceFields()) {
-                    callback.call(null, []);
+                    callback.call(null, result);
                     return;
                 }
 
@@ -288,10 +291,7 @@
                     }
 
                     var cubeSlices = render.getData('cubeSlices'),
-                        curContext,
-                        result = {
-                            categoryItems: []
-                        };
+                        curContext;
 
                     for(var i = 0; i < sourceFields.length; i++) {
                         if(JSB.isDefined(sourceFields[i].$sourceContext)){
