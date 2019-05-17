@@ -1,0 +1,6 @@
+@CHARSET "UTF-8";
+
+.workspaceItem {
+	min-height: 14px;
+	position: relative;
+}

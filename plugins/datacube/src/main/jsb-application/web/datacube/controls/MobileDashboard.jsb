@@ -90,7 +90,7 @@
 			this.widgetScroll.refresh();
 			this.headerScroll.refresh();
 			JSB.defer(function(){
-				$this.activateWidget(0);	
+				$this.activateWidget(0);
 			}, 0);
 			
 		},
