@@ -53,7 +53,7 @@
 		    this.append(this._itemsDesc);
 
 		    this._textOpts = new Editor({
-		        onchange: function(val){
+		        onChange: function(val){
 		            $this.selected.key = val;
 		            $this.selected.value = '"' + val + '"';
 		        }

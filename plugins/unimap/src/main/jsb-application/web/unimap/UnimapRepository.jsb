@@ -89,16 +89,18 @@
 	        $base();
 
 			JSB.onLoad(function(){
-				if(this.isSubclassOf('Unimap.Render.Basic') && JSB.isDefined(this.$alias)){
-					$this.register('render', this.$name, this.$alias);
+			    var desc = this.getDescriptor();
+
+				if(this.isSubclassOf('Unimap.Render.Basic') && JSB.isDefined(desc.$alias)){
+					$this.register('render', desc.$name, desc.$alias);
 
 					if(this.$selector){
-					    $this.register('selector', this.$selector, this.$alias);
+					    $this.register('selector', desc.$selector, desc.$alias);
 					}
 				}
 
-				if(this.isSubclassOf('Unimap.Selectors.Basic') && JSB.isDefined(this.$alias)){
-					$this.register('selector', this.$name, this.$alias);
+				if(this.isSubclassOf('Unimap.Selectors.Basic') && JSB.isDefined(desc.$alias)){
+					$this.register('selector', desc.$name, desc.$alias);
 				}
 			});
 	    },

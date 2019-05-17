@@ -15,10 +15,10 @@
             this.addClass('jsb-panel');
 
             this.elements.header = this.$('<div class="header"></div>');
-            this.append(this.elements.header);
+            this.getElement().append(this.elements.header);
 
             this.elements.content = this.$('<div class="content"></div>');
-            this.append(this.elements.content);
+            this.getElement().append(this.elements.content);
 
             if(this.options.title){
                 this.elements.title = this.$('<h1><span>' + this.options.title + '</span></h1>');
@@ -99,8 +99,6 @@
             }
         },
 
-        
-
         options: {
             // options
             collapsed: false,
@@ -144,76 +142,43 @@
             return this.elements.buttons[key];
         },
 
-        appendContent: function(content){
-            if(JSB.isInstanceOf(content, 'JSB.Controls.Control') || JSB.isInstanceOf(content, 'JSB.Widgets.Control')){
-                this.elements.content.append(content.getElement());
-            } else {
-                this.elements.content.append(content);
-            }
+        append: function(content) {
+            this.elements.content.append(content);
         },
 
         editTitle: function() {
-            function edit(editor) {
-                var oldVal = $this.options.title,
-                    newVal = editor.getValue();
-
-                function validTrue(){
-                    $this.options.title = newVal;
-
-                    $this.setTitle(newVal);
-
-                    destroyEditor();
-
-                    if(JSB.isFunction($this.options.onTitleEdited)){
-                        $this.options.onTitleEdited.call($this, newVal, oldVal);
-                    }
-                }
-
-                function destroyEditor() {
-                    editor.destroy();
-                    $this.$(window).off('click.panelTitleEdit_' + $this.getId());
-                }
-
-                if(oldVal === newVal) {
-                    destroyEditor();
-                    return;
-                }
-
-                if(JSB.isFunction($this.options.titleValidateFunction)){
-                    if($this.options.titleValidateFunction(newVal)){
-                        validTrue();
-                    } else {
-                        editor.getElement().focus();
-                        editor.addClass('notValid');
-                    }
-
-                    return;
-                }
-
-                validTrue();
-            }
-
             var editor = new Editor({
-                value: this.options.title,
-                onenterpressed: function(val){
-                    edit(editor);
+                value: this.getTitle(),
+                validator: function(newVal, oldVal) {
+                    if(JSB.isFunction($this.options.titleValidateFunction)) {
+                        return $this.options.titleValidateFunction(newVal);
+                    }
                 },
-                onfocusout: function(val){
-                    edit(editor);
+                onEditComplete: function(isValid, newVal) {
+                    if(isValid) {
+                        var oldVal = $this.options.title;
+
+                        editor.destroy();
+
+                        if(oldVal !== newVal) {
+                            $this.setTitle(newVal);
+
+                            if(JSB.isFunction($this.options.onTitleEdited)){
+                                $this.options.onTitleEdited.call($this, newVal, oldVal);
+                            }
+                        }
+                    }
                 }
             });
-
             this.elements.title.append(editor);
 
-            $this.$(window).on('click.panelTitleEdit_' + this.getId(), function() {
-                edit(editor);
-            });
-
-            editor.getElement().click(function(evt){
+            editor.getElement().click(function(evt) {
                 evt.stopPropagation();
             });
+        },
 
-            editor.focus();
+        getTitle: function() {
+            return this.elements.title.find('span').text();
         },
 
         setContent: function(content){

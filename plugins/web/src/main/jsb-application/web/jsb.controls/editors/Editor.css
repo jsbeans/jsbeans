@@ -1,0 +1,25 @@
+.jsb-editor {
+    display: inline-block;
+}
+
+.jsb-editor > label {
+    display: inline-block;
+    width: 100px;
+}
+
+.jsb-editor > label + input {
+    width: calc(100% - 100px);
+}
+
+.jsb-editor > input {
+    border: 2px solid #e6e9ed;
+    border-radius: 3px;
+    font-size: 0.8em;
+    padding: 2px 4px;
+    width: 100%;
+    height: 100%;
+}
+
+.jsb-editor > input.invalid {
+    border: 2px solid red;
+}
