@@ -61,6 +61,19 @@
 			}
 	    },
 
+	    /*
+	    * @param {object} options - опции редактора
+	    *
+	    * @param {string} options.dummyColor - цвет неактивной ячейки
+	    *
+	    * @param {[][]} options.positions - элементы расположения
+	    * @param {string} [options.positions.color] - цвет ячейки
+	    * @param {string|jQuery|HTMLElement|JSBElement} [options.positions.content] - содержимое ячейки
+	    * @param {boolean} [options.positions.dummy] - ячейка активна?
+	    * @param {string} options.positions.key - ключ ячейки. Является значением
+	    *
+	    * @param {string} options.value - ключ изначально выбранной ячейки
+	    */
 	    options: {
 	        positions: null,
 	        value: null
@@ -72,44 +85,61 @@
 	        }
 	    },
 
-	    setPositions: function(positions){
+	    setPositions: function(positions) {
 	        this.dropDown.empty();
 	        this._positions = {};
 
-	        if(!JSB.isArray(positions)){
+	        if(!JSB.isArray(positions)) {
 	            positions = [positions];
 	        }
 
-	        for(var i = 0; i < positions.length; i++){
-	            if(!JSB.isArray(positions[i])){
+	        for(var i = 0; i < positions.length; i++) {
+	            if(!JSB.isArray(positions[i])) {
 	                positions[i] = [positions[i]];
 	            }
 
-	            var str = this.$('<div class="string"></div>');
+	            var str = this.$('<div class="string"></div>'),
+	                cellWidth = 100 / positions[i].length + '%';
 
-	            for(var j = 0; j < positions[i].length; j++){
-	                if(JSB.isDefined(positions[i][j])){
-                        var el = this.$('<div></div>');
+	            for(var j = 0; j < positions[i].length; j++) {
+                    var el = this.$('<div></div>');
+                    str.append(el);
 
-                        el.css('width', 100 / positions[i].length + '%');
+                    el.css('width', cellWidth);
 
-                        (function(i, j){
-                            el.click(function(){
-                                $this.dropDown.addClass('hidden');
-                                $this.$(document).off('click.comboEditor_closeDD');
-                                $this.setValue(positions[i][j].key);
-                            });
-                        })(i, j)
+                    this._positions[positions[i][j].key] = JSB.merge({}, positions[i][j], {
+                        element: el
+                    });
 
-                        this._positions[positions[i][j].key] = {
-                            name: positions[i][j].name,
-                            element: el
+                    if(positions[i][j].color) {
+                        el.css('background-color', positions[i][j].color);
+                    }
+
+                    if(positions[i][j].content) {
+                        el.append(positions[i][j].content);
+                    }
+
+                    if(positions[i][j].dummy) {
+                        if(positions[i][j].color) {
+                            // already installed
+                        } else if(this.options.dummyColor) {
+                            el.css('background-color', this.options.dummyColor);
+                        } else {
+                            el.css('background-color', '#555');
                         }
-	                } else {
-	                    var el = this.$('<div class="empty"></div>');
-	                }
 
-	                str.append(el);
+                        el.addClass('dummy');
+
+                        continue;
+                    }
+
+                    (function(i, j){
+                        el.click(function(){
+                            $this.dropDown.addClass('hidden');
+                            $this.$(document).off('click.comboEditor_closeDD');
+                            $this.setValue(positions[i][j].key);
+                        });
+                    })(i, j);
 	            }
 
 	            this.dropDown.append(str);

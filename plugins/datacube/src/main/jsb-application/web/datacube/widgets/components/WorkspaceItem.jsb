@@ -41,10 +41,11 @@
         			name: 'Расположение',
         			editor: 'JSB.Controls.Positioner',
                     editorOpts: {
+                        dummyColor: '#555',
                         positions: [
-                            [ { key: 'topleft', dummy:true, color:'#555' }, {key: 'top', name: 'Сверху'}, { key: 'topright', dummy:true, color:'#555'}],
+                            [ { key: 'topleft', dummy:true }, {key: 'top', name: 'Сверху'}, { key: 'topright', dummy:true }],
                             [ { key: 'left', name: 'Слева' }, {key: 'center', dummy:true, color:'#55f'}, { key: 'right', name: 'Справа'}],
-                            [ { key: 'bottomleft', dummy:true, color:'#555' }, {key: 'bottom', name: 'Снизу'}, { key: 'bottomright', dummy:true, color:'#555'}]
+                            [ { key: 'bottomleft', dummy:true }, {key: 'bottom', name: 'Снизу'}, { key: 'bottomright', dummy:true }]
                         ]
                     },
                     value: 'right'
