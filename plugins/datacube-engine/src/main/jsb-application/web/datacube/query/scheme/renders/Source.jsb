@@ -246,7 +246,7 @@
 	                selectedId: selectedId,
 	                callback:function(desc){
                         switch(desc.category){
-                            case 'Срезы':
+                            case '$slices':
                                 var slice = desc.item;
 
                                 appendElement.empty().append(RendererRepository.createRendererFor(slice));
@@ -255,7 +255,7 @@
                                     changeCallback.call($this, 'slice', slice);
                                 }
                                 break;
-                            case 'Именованные подзапросы':
+                            case '$views':
                                 appendElement.empty().append('<div class="viewElement">' + desc.item + '</div>');
 
                                 if(changeCallback){
