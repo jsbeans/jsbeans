@@ -87,6 +87,10 @@
 	            values = {};
 	            this._values.values.push(values);
 
+	            if(this._scheme.value) {
+	                values.value = this._scheme.value;
+	            }
+
 	            if(!itemIndex){
 	                itemIndex = this._values.values.length - 1;
 	            }
@@ -106,7 +110,6 @@
                 autofocus: false,
                 value: values.value,
                 onChange: onChangeFunc,
-                onchange: onChangeFunc,
                 unimapRender: this
             };
 

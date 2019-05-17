@@ -83,7 +83,7 @@
     background: darkgrey;
 }
 
-.jsb-positioner > .dropDown > .string > div:hover {
+.jsb-positioner > .dropDown > .string > div:not(.dummy):hover {
     background: rgba(220, 220, 220, 0.45);
     border: 1px solid rgb(158, 158, 158);
 }
