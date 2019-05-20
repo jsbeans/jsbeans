@@ -154,7 +154,7 @@
                         return $this.options.titleValidateFunction(newVal);
                     }
                 },
-                onEditComplete: function(isValid, newVal) {
+                onEditComplete: function(newVal, isValid) {
                     if(isValid) {
                         var oldVal = $this.options.title;
 

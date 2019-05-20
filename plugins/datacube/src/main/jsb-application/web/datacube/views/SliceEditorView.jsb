@@ -162,15 +162,15 @@
 			    schemeController: this.editor
 			});
 			tabView.addTab('Именованные подзапросы', this.viewsEditor, {id:'views'});
-/*
+
 			this.paramsEditor = new ParamsEditor({
 			    schemeController: this.editor
 			});
 			tabView.addTab('Параметры', this.paramsEditor, {id:'params'});
-*/
+
             this.editor = new SchemeController({
                 extendControllers: {
-                    //$params: this.paramsEditor,
+                    $params: this.paramsEditor,
                     $views: this.viewsEditor
                 },
                 onChange: function(){

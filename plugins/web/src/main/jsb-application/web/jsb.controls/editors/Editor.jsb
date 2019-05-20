@@ -3,6 +3,8 @@
 	$parent: 'JSB.Controls.Control',
 	$client: {
 		$require: ['css:Editor.css'],
+
+		_startEditValue: undefined,
 	    _types: ['text', 'password', 'color', 'search', 'number'],
 	    _value: null,
 
@@ -30,15 +32,15 @@
                 this.setReadonly(this.options.readonly);
             }
 
-            if(this.options.placeholder) {
+            if(JSB.isDefined(this.options.placeholder)) {
                 this.setPlaceholder(this.options.placeholder);
             }
 
-            if(this.options.defaultValue) {
+            if(JSB.isDefined(this.options.defaultValue)) {
                 this.setDefaultValue(this.options.defaultValue);
             }
 
-            if(this.options.value) {
+            if(JSB.isDefined(this.options.value)) {
                 this.setValue(this.options.value);
             }
 
@@ -75,24 +77,23 @@
             function onEditComplete() {
                 JSB.cancelDefer('jsb-editor.keyUp' + $this.getId());
 
-                if(JSB.isFunction($this.options.onEditComplete)) {
-                    $this.options.onEditComplete.call($this, !$this._editor.hasClass('invalid'), $this.getValue());
+                if($this._startEditValue !== $this._value && JSB.isFunction($this.options.onEditComplete)) {
+                    $this.options.onEditComplete.call($this, $this.getValue(), !$this._editor.hasClass('invalid'));
                 }
+
+                $this._startEditValue = undefined;
             }
-
-            function onFocusLose() {
-                validate();
-                onEditComplete();
-
-                $this.$(window).off('click.closeEditor_' + $this.getId());
-            }
-
+// todo: изменение числа стрелками. Наверное нужно отслеживать через onchange
             this._editor.keyup(function(evt) {
                 if(evt.keyCode === 13) {
                     validate();
 
                     onEditComplete();
                 } else {
+                    if(!JSB.isDefined) {
+                        $this._startEditValue = $this._value;
+                    }
+
                     JSB.defer(function(){
                         if(validate()) {
                             onChange();
@@ -101,19 +102,14 @@
                 }
             });
 
-            this._editor.focusin(function(evt) {
-                $this.$(window).on('click.closeEditor_' + $this.getId(), onFocusLose);
-            });
-
             this._editor.focusout(function() {
-                onFocusLose();
+                validate();
+                onEditComplete();
             });
 
             this._editor.click(function(evt) {
                 evt.stopPropagation();
             });
-
-            $this.$(window).on('click.closeEditor_' + $this.getId(), onFocusLose);
 	    },
 
 	    options: {
@@ -125,9 +121,9 @@
 	        value: null,
 
 	        // number attributes
-	        min: 0,
-	        max: 100,
-	        step: 1,
+	        min: undefined,
+	        max: undefined,
+	        step: undefined,
 	        //
 
 	        validator: null,
@@ -166,8 +162,19 @@
 	        this._editor.focus();
 	    },
 
+	    getType: function() {
+	        return this._editor.attr('type');
+	    },
+
 	    getValue: function() {
-	        return this._editor.val();
+	        var val = this._editor.val();
+
+	        switch(this.getType()) {
+	            case 'number':
+	                return Number(val);
+                default:
+                    return val;
+	        }
 	    },
 
 	    setDefaultValue: function(defaultValue) {

@@ -10,13 +10,29 @@
 
 	        this.addClass('textValue');
 
-	        this.append(this.getScope());
+	        this.createValue();
 
             this.installMenuEvents({
                 element: this.getElement(),
                 edit: true,
                 wrap: true
             });
+	    },
+
+	    createValue: function() {
+	        this.append(this.getScope());
+	    },
+
+	    changeValue: function() {
+	        var value = this.getValues();
+
+	        this.getParent().setValues(value);
+
+	        this.setScope(value)
+	    },
+
+	    setScope: function(scope) {
+	        this._scope = scope;
 	    }
 	}
 }

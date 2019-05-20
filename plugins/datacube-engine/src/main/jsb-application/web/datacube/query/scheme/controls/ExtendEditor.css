@@ -1,21 +1,21 @@
-.viewEditor {
+.extendEditor {
     height: 100%;
 }
 
-.viewEditor > .viewContainer {
+.extendEditor > .container {
     height: calc(100% - 35px);
 }
 
-.viewEditor > .viewContainer > .viewItem {
+.extendEditor > .container > .item {
     width: 100%;
     padding: 0;
 }
 
-.viewEditor > .viewContainer > .viewItem > .header > h1 {
+.extendEditor > .container > .item > .header > h1 {
     margin-left: 5px;
 }
 
-.viewEditor > .addBtn {
+.extendEditor > .addBtn {
     display: block;
     width: 20px;
     height: 20px;
@@ -31,6 +31,6 @@
     cursor: pointer;
 }
 
-.viewEditor > .addBtn:hover {
+.extendEditor > .addBtn:hover {
     background-color: #fff;
 }

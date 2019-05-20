@@ -21,7 +21,7 @@
 	    },
 	    $default: {
 	        categories: ['$sourceFields', '$outputFields', '$mathOperators', '$functions', '$typeConversion', '$group', '$globalAggregation',
-	                     '$other', '$comparison', '$logic']
+	                     '$other', '$comparison', '$logic', '$params', '$views']
 	    },
 	    $filter: {
 	        categories: ['$comparison', '$logic']
@@ -56,6 +56,9 @@
 	    $querySource: {
 	        displayName: 'Источник запроса'
 	    },
+	    $params: {
+	        displayName: 'Параметры'
+	    },
 	    $slices: {
 	        displayName: 'Срезы'
 	    },
@@ -70,11 +73,11 @@
 	    }
 	},
 
-	constructDefaultValues: function(desc){
+	constructDefaultValues: function(desc) {
 	    var key;
 
 	    if(JSB.isObject(desc)){
-	        key = desc.key;
+	        key = desc.schemeKey || desc.key;
 	    }
 
 	    var scheme = this.getScheme(key);
@@ -204,77 +207,146 @@
     },
 
 	$client: {
-	    $require: ['DataCube.Query.Extractors.ExtractUtils'],
+	    $require: ['DataCube.Query.Extractors.ExtractUtils',
+	               'JSB.Widgets.RendererRepository'],
 
-        categoriesFillFunctions: {
-            $outputFields: function(options, callback) {
-                var render = options.render,
-                    result = {
+        categoriesFunctions: {
+            $outputFields: {
+                fill: function(options, callback) {
+                    var render = options.render,
+                        result = {
+                            categoryItems: []
+                        };
+
+                    if(!render.isAllowOutputFields()) {
+                        result.categoryItems = [];
+                        callback.call(null, result);
+                        return;
+                    }
+
+                    var context = render.getContext(),
+                        outputFields = render.getOutputFields();
+
+                    for(var i = 0; i < outputFields.length; i++) {
+                        result.categoryItems.push({
+                            context: context,
+                            item: outputFields[i],
+                            key: '$outputFields' + '|' + outputFields[i],
+                            schemeKey: '$field',
+                            searchId: outputFields[i],
+                            value: outputFields[i]
+                        });
+                    }
+
+                    callback.call(null, result);
+                }
+            },
+
+            $params: {
+                render: function(itemDesc) {
+                    return '<div class="key">' + itemDesc.name + '</div><div class="desc">' + itemDesc.item.$type + '</div>';
+                }
+            },
+
+            $slices: {
+                fill: function(options, callback) {
+                    var result = {
                         categoryItems: []
                     };
 
-                if(!render.isAllowOutputFields()) {
-                    result.categoryItems = [];
-                    callback.call(null, result);
-                    return;
-                }
+                    var data = options.data;
 
-                var context = render.getContext(),
-                    outputFields = render.getOutputFields();
-
-                for(var i = 0; i < outputFields.length; i++) {
-                    result.categoryItems.push({
-                        context: context,
-                        item: outputFields[i],
-                        key: '$outputFields' + '|' + outputFields[i],
-                        category: '$outputFields',
-                        searchId: outputFields[i]
-                    });
-                }
-
-                callback.call(null, result);
-            },
-
-            $slices: function(options, callback) {
-                var result = {
-                    categoryItems: []
-                };
-
-    		    if(options.isNewData){
-    		        var data = options.data;
-
-    		        for(var i in data.cubeSlices){
+                    for(var i in data.cubeSlices){
                         result.categoryItems.push({
                             item: data.cubeSlices[i],
                             key: i,
-                            category: '$slices',
+                            schemeKey: '$slices',
                             searchId: data.cubeSlices[i].getName()
                         });
-    		        }
-                } else {
-                    result.notUpdate = true;
-                }
+                    }
 
-                callback.call(null, result);
+                    callback.call(null, result);
+                }
             },
 
-            $views: function(options, callback) {
-                var result = {
-                        categoryItems: []
-                    };
+            $sourceFields: {},
 
-                if(options.extendControllers && options.extendControllers['$views']) {
-                    result.categoryItems = options.extendControllers['$views'].extract();
+            $views: {
+                fill: function(options, callback) {
+                    var result = {
+                            categoryItems: []
+                        };
+
+                    if(options.extendControllers && options.extendControllers['$views']) {
+                        var viewsNames = options.extendControllers['$views'].extract();
+
+                        for(var i = 0; i < viewsNames.length; i++) {
+                            result.categoryItems.push({
+                                item: viewsNames[i],
+                                key: viewsNames[i],
+                                schemeKey: '$view',
+                                value: viewsNames[i]
+                            });
+                        }
+                    }
+
+                    callback.call(null, result);
+                },
+                render: function(itemDesc) {
+                    return '<div class="key">' + itemDesc.item + '</div>';
                 }
-
-                callback.call(null, result);
             }
         },
 
 		$constructor: function(){
 			$base();
 
-            this.categoriesFillFunctions.$sourceFields = function(options, callback) {
+			this.categoriesFunctions.$outputFields.render = function(itemDesc) {
+                if(itemDesc.isHeader) {
+                    if(JSB.isInstanceOf(itemDesc.item, 'DataCube.Model.Slice')) {
+                        return RendererRepository.createRendererFor(itemDesc.item);
+                    } else {
+                        return '<div class="contextName">Подзапрос ' + itemDesc.item + '</div>';
+                    }
+                } else {
+                    return '<div class="fieldName cubeFieldIcon sliceField">' + itemDesc.item + '</div>';
+                }
+			};
+
+            this.categoriesFunctions.$params.fill = function(options, callback) {
+                var context = options.render.getContext(),
+                    query = options.render.getQuery(),
+                    result = {
+                        categoryItems: []
+                    };
+
+                ExtractUtils.server().extractAllowedParams(query, context, function(params, fail) {
+                    if(fail){
+                        throw new Error('Ошибка при загрузке доступных полей источников');
+                    }
+
+	                var regexp = /\{(.*?)\}/;
+
+                    for(var i in params) {
+                        result.categoryItems.push({
+                            item: params[i],
+                            key: i,
+                            name: i.match(regexp)[1],
+                            schemeKey: '$param',
+                            searchId: i,
+                            value: i
+                        });
+                    }
+
+                    callback.call(null, result);
+                });
+            },
+
+            this.categoriesFunctions.$slices.render = function(itemDesc) {
+                return RendererRepository.createRendererFor(itemDesc.item);
+            };
+
+            this.categoriesFunctions.$sourceFields.fill = function(options, callback) {
                 var render = options.render,
                     result = {
                         categoryItems: []
@@ -302,8 +374,7 @@
                                     allowSelect: false,
                                     isHeader: true,
                                     item: cubeSlices[curContext],
-                                    key: curContext,
-                                    category: '$sourceFields'
+                                    key: curContext
                                 });
                             }
                         } else if(sourceFields[i].$context !== curContext){
@@ -313,24 +384,28 @@
                                 allowSelect: false,
                                 isHeader: true,
                                 item: curContext,
-                                key: curContext,
-                                category: '$sourceFields'
+                                key: curContext
                             });
                         }
 
                         result.categoryItems.push({
                             item: sourceFields[i].$field,
                             key: curContext + '|' + sourceFields[i].$field,
-                            category: '$sourceFields',
 
                             context: sourceFields[i].$context,
                             sourceContext: sourceFields[i].$sourceContext,
-                            searchId: sourceFields[i].$field
+                            schemeKey: '$field',
+                            searchId: sourceFields[i].$field,
+                            value: sourceFields[i].$field
                         });
                     }
 
                     callback.call(null, result);
                 });
+            }
+
+            this.categoriesFunctions.$sourceFields.render = function(itemDesc) {
+                return this.categoriesFunctions.$outputFields.render(itemDesc);
             }
 
 			this.doSync();
@@ -344,9 +419,17 @@
 			});
 		},
 
+		createRender: function(itemDesc) {
+		    var catName = itemDesc.category;
+
+            if(this.categoriesFunctions[catName] && this.categoriesFunctions[catName].render) {
+                return this.categoriesFunctions[catName].render(itemDesc);
+            }
+		},
+
         fillCategory: function(catName, options, callback) {
-            if(this.categoriesFillFunctions[catName]) {
-                this.categoriesFillFunctions[catName](options, callback);
+            if(this.categoriesFunctions[catName] && this.categoriesFunctions[catName].fill) {
+                this.categoriesFunctions[catName].fill(options, callback);
             }
         }
 	},
@@ -538,9 +621,17 @@
                 }
             },
 
-            $views: {
+            $view: {
+                render: '$text',
                 defaultValuesConstructor: function(desc) {
                     return desc.item;
+                }
+            },
+
+            $param: {
+                render: '$param',
+                defaultValuesConstructor: function(desc) {
+                    return desc.value;
                 }
             },
 
@@ -1287,7 +1378,7 @@
 
                     this.schemeCategories[this.scheme[i].category].items.push(i);
 
-                    this._toolItems.push(JSB.merge({}, this.scheme[i], {key: i, searchId: i + '|' + this.scheme[i].displayName}));
+                    this._toolItems.push(JSB.merge({}, this.scheme[i], {key: i, schemeKey: i, searchId: i + '|' + this.scheme[i].displayName}));
                 }
 
                 // collect source keys
@@ -1323,7 +1414,7 @@
 		        objectGenerator: objectGenerator
 		    };
 
-            this._toolItems.push(JSB.merge({}, this.scheme[definition.name], {key: definition.name, searchId: definition.name + '|' + definition.displayName}));
+            this._toolItems.push(JSB.merge({}, this.scheme[definition.name], {key: definition.name, schemeKey: definition.name, searchId: definition.name + '|' + definition.displayName}));
 
             if(!this._replacements.$default.items) {
                 this._replacements.$default.items = [];

@@ -11,7 +11,6 @@
 	$client: {
 	    _contextMap: {},
 	    _data: {},
-	    _dataId: null,
 	    _menu: null,
 	    _query: null,
 	    _queryRender: null,
@@ -64,7 +63,13 @@
 
             if(!options.renderName && !scheme) {
                 if(JSB.isString(options.scope)) {
-                    options.renderName = '$text';
+                    var regexp = /\{(.*?)\}/;
+
+                    if(options.scope.match(regexp)) {    // param
+                        options.renderName = '$param';
+                    } else {    // view
+                        options.renderName = '$text';
+                    }
                 } else {
                     return;
                 }
@@ -111,10 +116,6 @@
             }
 
             return this._data;
-        },
-
-        getDataId: function(){
-            return this._dataId;
         },
 
         getQuery: function(){
@@ -192,24 +193,24 @@
 
                                 switch(type) {
                                     case 'add':
-                                        if(!query[i]) {
-                                            query[i] = {};
+                                        if(!query[options.alias]) {
+                                            query[options.alias] = {};
                                         }
 
-                                        query[i][options.name] = options.values;
+                                        query[options.alias][options.name] = options.values;
                                         break;
                                     case 'change':
-                                        query[i][options.name] = options.values;
+                                        query[options.alias][options.name] = options.values;
                                         break;
                                     case 'rename':
-                                        var oldValues = query[i][options.oldName];
+                                        var oldValues = query[options.alias][options.oldName];
 
-                                        query[i][options.newName] = oldValues;
+                                        query[options.alias][options.newName] = oldValues;
 
-                                        delete query[i][options.oldName];
+                                        delete query[options.alias][options.oldName];
                                         break;
                                     case 'remove':
-                                        delete query[i][options.name];
+                                        delete query[options.alias][options.name];
                                         break;
                                 }
 
@@ -242,8 +243,6 @@
 
         setData: function(data){
             this._data = data;
-
-            this._dataId = JSB.generateUid();
         },
 
         showMenu: function(opts){
@@ -303,7 +302,6 @@
 				cmd: 'show',
 				data: JSB.merge(opts, {
 				    data: this.getData(),
-				    dataId: this.getDataId(),
 				    extendControllers: this.options.extendControllers,
 				    sliceId: this.getSlice().getFullId()
 				}),
@@ -316,7 +314,7 @@
                     if(opts.editToolCallback){
                         opts.editToolCallback.call($this, desc);
                     } else {
-                        opts.caller.changeTo(desc.key, desc.value, desc, opts);
+                        opts.caller.changeTo(desc.schemeKey, desc.value, desc, opts);
                     }
 				}
 			});
