@@ -105,7 +105,7 @@
                     var el = this.$('<div></div>');
                     str.append(el);
 
-                    el.css('width', cellWidth);
+                    el.css('width', 'calc('+cellWidth+' - 2px)');
 
                     this._positions[positions[i][j].key] = JSB.merge({}, positions[i][j], {
                         element: el
@@ -124,9 +124,9 @@
                             // already installed
                         } else if(this.options.dummyColor) {
                             el.css('background-color', this.options.dummyColor);
-                        } else {
+                        } /*else {
                             el.css('background-color', '#555');
-                        }
+                        }*/
 
                         el.addClass('dummy');
 

@@ -8,7 +8,7 @@
 			var self = this;
 			opts = opts || {};
 			opts.editable = false;
-			$base(entry, opts);
+			$base(entry, JSB.merge(opts,{customIcon:true}));
 			this.addClass('sqlTableRenderer');
 			entry.ensureSynchronized(function(){
 				var e = $this.getEntry();

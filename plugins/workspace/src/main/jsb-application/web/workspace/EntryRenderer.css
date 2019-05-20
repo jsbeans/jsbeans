@@ -1,6 +1,7 @@
 @CHARSET "UTF-8";
 
 .entryRenderer {
+	text-align: left;
 }
 
 .entryRenderer > .icon {
@@ -40,4 +41,19 @@
 .entryRenderer > ._dwp_primitiveEditor > input {
 	font-size: 11px;
     padding-left: 2px;
+}
+
+.entryRenderer.showParent > .title {
+	max-width: 60%;
+}
+
+.entryRenderer.showParent > .leftParen {
+	margin-left: 2px;
+}
+
+.entryRenderer.showParent > .leftParen,
+.entryRenderer.showParent > .rightParen,
+.entryRenderer.showParent > .entryRenderer {
+	display: inline-block;
+	vertical-align: middle;
 }
