@@ -12,6 +12,7 @@
             render: 'sourceBinding',
             name: 'Источник данных'
         },
+        
         workspaceId: {
         	render: 'dataBinding',
             name: 'Идентификатор проекта',
@@ -24,19 +25,46 @@
             linkTo: 'dataSource',
             require: true,
         },
-        iconSize: {
-        	render: 'item',
-        	name: 'Размер пиктограммы',
-        	valueType: 'number',
-        	require: true,
-            value: 100
-        },
+        
         title: {
         	render: 'group',
-        	name: 'Отображать название элемента',
-        	optional: 'checked',
+        	name: 'Название элемента',
         	items: {
-        		titlePosition: {
+        		
+        		titleCss: {
+                    render: 'switch',
+                    name: 'Использовать CSS-стиль названия',
+                    items: {
+                        cssValue: {
+                            render: 'item',
+                            name: 'CSS-стиль',
+                            editor: 'JSB.Widgets.MultiEditor',
+                            editorOpts: {
+                                valueType: 'org.jsbeans.types.Css'
+                            },
+                            value: `/* Заполните объект CSS значениями */
+{
+    font-family: 'arial';
+}`
+                        }
+                    }
+
+                }
+        	}
+        },
+        
+        thumb: {
+        	render: 'group',
+        	name: 'Пиктограмма',
+        	items: {
+        		iconSize: {
+                	render: 'item',
+                	name: 'Размер пиктограммы',
+                	valueType: 'number',
+                	require: true,
+                    value: 50
+                },
+                iconPosition: {
         			render: 'item',
         			name: 'Расположение',
         			editor: 'JSB.Controls.Positioner',
@@ -48,19 +76,39 @@
                         ]
                     },
                     value: 'right'
-        		}
+        		},
+                iconCss: {
+                    render: 'switch',
+                    name: 'Использовать CSS-стиль пиктограммы',
+                    items: {
+                        cssValue: {
+                            render: 'item',
+                            name: 'CSS-стиль',
+                            editor: 'JSB.Widgets.MultiEditor',
+                            editorOpts: {
+                                valueType: 'org.jsbeans.types.Css'
+                            },
+                            value: `/* Заполните объект CSS значениями */
+{
+    border-radius: '4px';
+}`
+                        }
+                    }
+
+                }
         	}
-        }
+        },
+
 	},
 	$client: {
-		$require: ['JSB.Utils.Formatter',
+		$require: ['JSB.Widgets.RendererRepository',
 		           'css:WorkspaceItem.css'],
 		
 		$constructor: function(opts){
 			$base(opts);
 			
 			this.addClass('workspaceItem');
-			
+/*			
 			this.container = $this.$('<div class="container"></div>');
 			this.append(this.container);
 			
@@ -69,7 +117,7 @@
 			
 			this.title = this.$('<div class="title"></div>');
 			this.container.append(this.title);
-			
+*/			
 			$this.setInitialized();
 		},
 
@@ -85,12 +133,23 @@
 
 			$base();
 			
+			function prepareCss(cssText){
+				if(cssText.indexOf('{') >= 0){
+					var m = cssText.match(/\{([^\}]*)\}/i);
+					if(m && m.length > 1){
+						cssText = m[1];
+					}
+				}
+				return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
+			}
+			
 			var options = {
 				wIdSel: this.getContext().find('workspaceId'),
 				eIdSel: this.getContext().find('entryId'),
 				size: this.getContext().find('iconSize').value(),
-				hasTitle: this.getContext().find('title').checked(),
-				titlePosition: this.getContext().find('titlePosition').value()
+				iconPosition: this.getContext().find('iconPosition').value(),
+				titleCss: this.getContext().find('titleCss').checked() ? prepareCss(this.getContext().find('titleCss cssValue').value()) : null,
+				iconCss: this.getContext().find('iconCss').checked() ? prepareCss(this.getContext().find('iconCss cssValue').value()) : null
 			};
 
             this.fetch(dataSource, {batchSize: 1}, function(data, fail){
@@ -101,13 +160,8 @@
 
                 var wId = options.wIdSel.value();
     			var eId = options.eIdSel.value();
-    			$this.thumb.attr('width', options.size);
-    			if(options.hasTitle){
-    				$this.container.attr('position', options.titlePosition);
-    				$this.container.addClass('hasTitle');
-    			} else {
-    				$this.container.removeClass('hasTitle');
-    			}
+    			
+    			$this.getElement().attr('iconposition', options.iconPosition);
     			$this.server().getEntryInfo(wId, eId, function(entryInfo, fail){
     				$this.drawEntry(entryInfo, options)
     			});
@@ -122,9 +176,27 @@
 				return;
 			}
 			
-			// draw existed entry
-			if(options.hasTitle){
-				
+			var expose = entryInfo.entry.getJsb().getDescriptor().$expose;
+			var thumb = entryInfo.thumb;
+			var desc = entryInfo.description || expose.description;
+			var title = entryInfo.entry.getName();
+			
+			if(!this.renderer){
+				$this.getElement().empty();
+				this.renderer = RendererRepository.createRendererFor(entryInfo.entry, {});
+				this.append(this.renderer);
+			}
+			
+			this.renderer.find('> .icon').css({
+				width: options.size,
+				height: options.size,
+				'min-width': options.size,
+				'min-height': options.size
+			});
+			this.renderer.find('> .title').attr('style', options.titleCss);
+			
+			if(thumb){
+				this.renderer.find('> .icon').css('background-image', 'url(' + thumb + ')');
 			}
 		}
 	},
@@ -133,8 +205,22 @@
 		$require: ['JSB.Workspace.WorkspaceController'],
 		
 		getEntryInfo: function(wid, eid){
-			var entry = WorkspaceController.getEntry(wid, eid);
+			var info = {
+				entry: WorkspaceController.getEntry(wid, eid),
+				description: null,
+				thumb: null
+			};
+			if(JSB.isInstanceOf(info.entry, 'DataCube.Model.Dashboard')){
+				var ctx = info.entry.getSettingsContext();
+				info.description = ctx.find('publication description').value();
+				info.thumb = ctx.find('publication logo').value();
+			} else if(JSB.isInstanceOf(info.entry, 'DataCube.Model.Widget')){
+				var ctx = info.entry.getContext();
+				info.description = ctx.find('common description').value();
+				info.thumb = ctx.find('common icon').value();
+			}
 			
+			return info;
 		}
 	}
 }

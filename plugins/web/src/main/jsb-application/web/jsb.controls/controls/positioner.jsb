@@ -163,8 +163,8 @@
 
 	        this.currentVal.empty().append(this._positions[value].name);
 
-	        if(!hEvt && JSB.isFunction(this.options.onchange)){
-	            this.options.onchange.call(this, this._value.key);
+	        if(!hEvt && JSB.isFunction(this.options.onChange)){
+	            this.options.onChange.call(this, this._value.key);
 	        }
 	    }
 	}
