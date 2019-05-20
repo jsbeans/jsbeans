@@ -158,7 +158,7 @@
         */
         extractUsedParams: function(rootQuery, includeSubSlices){
             var usedParams = {};
-            var params = {};
+            var declaredParams = {};
             Visitors.visitProxy(rootQuery, {
                 getUndefinedView: function(name) {
                     if (includeSubSlices) {
@@ -170,17 +170,33 @@
                 },
                 query: {
                     after: function(query){
-                        JSB.merge(true, params, query.$params);
+                        if (query.$provider) {
+                            var provider = QueryUtils.getQueryDataProvider(query.$provider, null);
+                            var extractedParams = provider.extractParams();
+                            var providerParams = {};
+                            for(var param in extractedParams) {
+                                var name = !param.startsWith('${') ? '${' + param + '}' : param;
+                                providerParams[name] = {
+                                    $type: extractedParams[param].type,
+                                    $defaultValue: extractedParams[param].defaultValue,
+                                };
+                            }
+                            JSB.merge(true, declaredParams, providerParams);
+                        }
+
+                        JSB.merge(true, declaredParams, query.$params);
                     }
                 },
                 param: {
                     before: function(param) {
-                        if(!usedParams[param]) usedParams[param] = {used:0};
-                        usedParams[param] += 1;
+                        if(!usedParams.hasOwnProperty(param)) usedParams[param] = {
+                            $type: DataTypes.null,
+                            $defaultValue: null
+                        };
                     }
                 }
             });
-            JSB.merge(true, usedParams, params);
+            JSB.merge(usedParams, declaredParams);
             return usedParams;
         },
 

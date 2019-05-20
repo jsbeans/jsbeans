@@ -34,6 +34,10 @@
 			throw new Error('QueryableEntry.executeQuery should be overridden');
 		},
 
+		isQuerySupport: function(){
+		    return false;
+		},
+
         /**
         * Экспотирует запрос
         *

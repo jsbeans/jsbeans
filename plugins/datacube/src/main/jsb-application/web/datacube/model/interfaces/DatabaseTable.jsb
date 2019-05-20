@@ -53,6 +53,10 @@
 			return $this.getQueryableContainer().executeQuery(extendedQueryDesc.query, extendedQueryDesc.params);
 	    },
 
+		isQuerySupport: function(){
+		    return true;
+		},
+
 		extractFields: function(){
 		    throw new Error('Method "extractFields" should be overridden');
 		},
