@@ -32,15 +32,10 @@
     display: inline-block;
 }
 
-.jsb-panel > .header > h1 > input {
+.jsb-panel > .header > h1 > .jsb-editor {
     position: absolute;
     left: 0;
-    height: 100%;
-    width: 100%;
-    border: 2px solid #e6e9ed;
-    border-radius: 3px;
-    font-size: 0.8em;
-    padding: 2px 4px;
+    right: 0;
 }
 
 .jsb-panel > .header > h1.collapsible {

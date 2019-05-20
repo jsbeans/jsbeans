@@ -107,7 +107,7 @@
 
 	                $this.onchange();
 	            });
-	            this.group.appendContent(this.multipleBtn);
+	            this.group.append(this.multipleBtn);
 	        }
 
             if(Object.keys(this._scheme.items).length === 1 &&
@@ -247,7 +247,7 @@
 
                     var render = this.createRender(k, this._scheme.items[k], values[k])
                     if(render){
-                        this.group.appendContent(render);
+                        this.group.append(render);
                     }
                 }
 	        }

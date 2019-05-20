@@ -126,6 +126,13 @@
 		        },
 		        function _leave(query){
 		            queryStack.pop();
+		            if (query.$provider) {
+		                var provider = QueryUtils.getQueryDataProvider(query.$provider, cube, false);
+		                if(!provider.isQuerySupport() && QueryUtils.queryHasBody(query)) {
+		                    /// если провайдер не поддерживает запрос - обернуть
+		                    $this._wrapProvider(query);
+		                }
+		            }
                 }
             );
 
@@ -141,6 +148,23 @@
 		    var bestSlice = $this._selectTheEasiestSlice(matchedSlices, cube);
 		    QueryUtils.throwError(bestSlice, 'Slice not found fo cube source and fields');
 		    return bestSlice;
+		},
+
+		_wrapProvider: function(query) {
+            query.$from = {
+                $context: 'Wrapped##'+query.$context,
+                $select: (function(){
+                    var select = {};
+                    var usedFields = QueryUtils.extractInputFields(query);
+                    for (var i = 0; i < usedFields.length; i++) {
+                        var f = usedFields[i].$field || usedFields[i];
+                        select[f] = {$field: f};
+                    }
+                    return select;
+                })(),
+                $provider: query.$provider
+            };
+            delete query.$provider;
 		},
 
 		_filterUnionTargetFields: function(usedSliceFields, slice) {

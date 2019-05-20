@@ -358,7 +358,7 @@
             switch(this._scheme.options && this._scheme.options.editor){
                 case 'input':
                     var editor = new Editor({
-                        onchange: function(){
+                        onChange: function(){
                             values.value = this.getValue();
                         }
                     });

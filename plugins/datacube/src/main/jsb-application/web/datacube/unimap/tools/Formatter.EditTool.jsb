@@ -47,7 +47,7 @@
 
             var decimalsLabel = this.$('<label class="label decimalsLabel">Число знаков после запятой</label>');
             this._decimals = new Editor({
-                onchange: function(val){
+                onChange: function(val){
                     $this.desc.decimals = val;
                 }
             });
@@ -62,7 +62,7 @@
             */
             var dateLabel = this.$('<label class="label dateLabel">Формат даты</label>');
 		    this._date = new Editor({
-		        onchange: function(val){
+		        onChange: function(val){
 		            $this.desc.dateFormat = val;
 		        }
 		    });
@@ -73,7 +73,7 @@
 		    this.append(this._textBlock);
 
 		    this._text = new Editor({
-		        onchange: function(val){
+		        onChange: function(val){
 		            $this.desc.key = val;
 		            $this.desc.value = '"' + val + '"';
 		        }

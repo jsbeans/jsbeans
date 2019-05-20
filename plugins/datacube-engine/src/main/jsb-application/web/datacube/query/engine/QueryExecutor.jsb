@@ -3,6 +3,7 @@
 
 	$server: {
 		$require: [
+		    'DataCube.Query.Extractors.ExtractUtils',
 		    'DataCube.Query.Engine.Interpreter',
 		    'DataCube.Query.Console',
 		    'DataCube.Query.QuerySyntax',
@@ -21,13 +22,20 @@
             $this.cube = queryTask.cube;
 		    $this.query = JSB.clone(queryTask.query);
 		    $this.callback = queryTask.callback;
-		    $this.params = queryTask.params || {};
 		    $this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
 		    $this.pool = new ConcurrentHashMap();
 		    $this.iterators = new ConcurrentLinkedDeque();
 		    $this.result = new AtomicReference();
 		    $this.startedTimestamp = Date.now();
 		    $this.resultReturned = false;
+		    $this.params = {};
+
+            /// rename fields  name->${name}
+		    for(var param in queryTask.params) {
+		        var name = param.startsWith('${') ? param.substr(2, param.length - 3) : param;
+		        $this.params['${' + name + '}'] = queryTask.params[param];
+		    }
+
 		},
 
 		execute: function(){
@@ -50,6 +58,14 @@
                         inputQuery: $this.queryTask.query,
                         startEngine: $this.queryTask.startEngine,
                     };
+                }
+
+                /// extract default prams from query
+                var queryParams = ExtractUtils.extractUsedParams($this.queryTask.query, true);
+                for(var param in queryParams) {
+                    if (!$this.params.hasOwnProperty(param)) {
+                        $this.params[param] = queryParams[param].$defaultValue;
+                    }
                 }
 
                 $this.executeEngine(startEngine, {

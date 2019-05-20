@@ -354,7 +354,7 @@
 
 		    var values = [];
 		    var types = [];
-		    var sql = parametrizedSQL.replace(/\$\{(.*?)\}/g, function(str, param){
+		    var sql = parametrizedSQL.replace(/(\$\{.*?\})/g, function(str, param){
                 var sqlIdx = values.length+1;
 
                 values.push(getValue(param, sqlIdx));

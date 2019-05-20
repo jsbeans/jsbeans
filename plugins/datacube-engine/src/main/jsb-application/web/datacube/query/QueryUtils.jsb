@@ -1541,22 +1541,31 @@
             return extractType(exp);
         },
 
-        queryHasBody: function(query) {
-		    if (query.$filter && Object.keys(query.$filter).length > 0){
+        queryHasBody: function(query, exclude) {
+            var exclude = exclude || [];
+		    if (query.$filter && Object.keys(query.$filter).length > 0 && exclude.indexOf('$filter') == -1){
 		        if (Object.keys(query.$filter).length != 1 || !query.$filter.$and || query.$filter.$and.length > 0) {
 		            return true;
                 }
 		    }
 
-		    if (query.$groupBy && query.$groupBy.length > 0) {
+		    if (query.$groupBy && query.$groupBy.length > 0 && exclude.indexOf('$groupBy') == -1) {
 		        return true;
 		    }
 
-		    if (query.$sort && query.$sort.length > 0) {
+		    if (query.$sort && query.$sort.length > 0 && exclude.indexOf('$sort') == -1) {
 		        return true;
 		    }
 
-		    if (query.$distinct || query.$limit || query.$offset) {
+		    if (query.$distinct && exclude.indexOf('$distinct') == -1) {
+		        return true;
+		    }
+
+		    if (query.$limit && exclude.indexOf('$limit') == -1) {
+		        return true;
+		    }
+
+		    if (query.$offset && exclude.indexOf('$offset') == -1) {
 		        return true;
 		    }
 
@@ -1850,6 +1859,13 @@ debugger
 		    return cube.getDimensions();
 		},
 
-
+        copyParams: function(params, useSimpleName) {
+            var newParams = {};
+            for(var name in params) {
+                var sname = useSimpleName ? name.substring(2,name.length-1) : name;
+                newParams[sname] = params[name];
+            }
+            return newParams;
+        },
 	}
 }

@@ -380,12 +380,18 @@
 				responseMessage: null,
 				error: null,
 			};
+			Log.debug('HttpMethod url: ' + url);
+			if (postParams) Log.debug('HttpMethod data: ' + postParams);
 			try {
 				result = Http.request(method, encodeURI(url), postParams, httpOpts);
 			} catch(e){
 				result.error = e.message;
 			}
 			return this._processResult(result, ctx, params, opts);
+		},
+
+		isQuerySupport: function(){
+		    return false;
 		},
 		
 		_processResult: function(result, ctx, params, opts){
@@ -853,10 +859,10 @@
 					if(pSel.find('pUseInPaging').checked()){
 						switch(pSel.find('pPagingRole').value()){
 						case 'pRoleOffset':
-							params[pName].pagingOffset = true;
+							params[pName].isOffset = true;
 							break;
 						case 'pRoleLimit':
-							params[pName].pagingLimit = true;
+							params[pName].isLimit = true;
 							break;
 						}
 					}

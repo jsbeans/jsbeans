@@ -30,7 +30,7 @@
 		},
 
 		selectByEnginePriority: function(its){
-		    var enginesPriority = Config.get('datacube.query.engine.iteratorSelector.selectByEnginePriority_selectByEnginePriority');
+		    var enginesPriority = Config.get('datacube.query.engine.iteratorSelector.selectByEnginePriority_priorities');
 		    var selectByEnginePriority_defaultPriority = 0+Config.get('datacube.query.engine.iteratorSelector.selectByEnginePriority_defaultPriority');
 		    its.sort(function(a,b){
 		        var ap = 0+enginesPriority[a.meta.engine.alias]||selectByEnginePriority_defaultPriority;
