@@ -143,7 +143,8 @@
 		},
 		
 		extractParams: function(opts){
-			throw new Error('QueryableEntry.extractParams should be overridden');
+			JSB.getLogger().warn('Please override method "QueryableEntry.extractParams" in bean "' + this.getJsb().getDescriptor().$name + '"');
+			return {};
 		}
 	}
 }

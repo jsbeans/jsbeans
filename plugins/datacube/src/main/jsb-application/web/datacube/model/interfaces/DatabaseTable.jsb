@@ -60,6 +60,10 @@
 		extractFields: function(){
 		    throw new Error('Method "extractFields" should be overridden');
 		},
+		
+		extractParams: function(opts){
+			return {};
+		},
 
 		getStore: function(){
 			return this.getWorkspace().entry(this.getParentId()).getStore();
