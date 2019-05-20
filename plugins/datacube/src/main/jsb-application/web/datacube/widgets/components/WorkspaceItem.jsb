@@ -41,10 +41,9 @@
         			name: 'Расположение',
         			editor: 'JSB.Controls.Positioner',
                     editorOpts: {
-                        dummyColor: '#555',
                         positions: [
                             [ { key: 'topleft', dummy:true }, {key: 'top', name: 'Сверху'}, { key: 'topright', dummy:true }],
-                            [ { key: 'left', name: 'Слева' }, {key: 'center', dummy:true, color:'#55f'}, { key: 'right', name: 'Справа'}],
+                            [ { key: 'left', name: 'Слева' }, {key: 'center', dummy:true, color:'#a5a4a4'}, { key: 'right', name: 'Справа'}],
                             [ { key: 'bottomleft', dummy:true }, {key: 'bottom', name: 'Снизу'}, { key: 'bottomright', dummy:true }]
                         ]
                     },
@@ -56,12 +55,20 @@
 	$client: {
 		$require: ['JSB.Utils.Formatter',
 		           'css:WorkspaceItem.css'],
-		widgets: [],
 		
 		$constructor: function(opts){
 			$base(opts);
 			
 			this.addClass('workspaceItem');
+			
+			this.container = $this.$('<div class="container"></div>');
+			this.append(this.container);
+			
+			this.thumb = this.$('<img class="thumb" />');
+			this.container.append(this.thumb);
+			
+			this.title = this.$('<div class="title"></div>');
+			this.container.append(this.title);
 			
 			$this.setInitialized();
 		},
@@ -78,109 +85,56 @@
 
 			$base();
 			
-/*
+			var options = {
+				wIdSel: this.getContext().find('workspaceId'),
+				eIdSel: this.getContext().find('entryId'),
+				size: this.getContext().find('iconSize').value(),
+				hasTitle: this.getContext().find('title').checked(),
+				titlePosition: this.getContext().find('titlePosition').value()
+			};
+
             this.fetch(dataSource, {batchSize: 1}, function(data, fail){
             	if(fail){
             		return;
             	}
                 dataSource.next();
 
-                $this.draw(series);
+                var wId = options.wIdSel.value();
+    			var eId = options.eIdSel.value();
+    			$this.thumb.attr('width', options.size);
+    			if(options.hasTitle){
+    				$this.container.attr('position', options.titlePosition);
+    				$this.container.addClass('hasTitle');
+    			} else {
+    				$this.container.removeClass('hasTitle');
+    			}
+    			$this.server().getEntryInfo(wId, eId, function(entryInfo, fail){
+    				$this.drawEntry(entryInfo, options)
+    			});
             });
-*/            
+            
 		},
 		
-		draw: function(series){
-			var seriesSel = d3.select(this.getElement().get(0)).selectAll('div.serie');
+		drawEntry: function(entryInfo, options){
+			if(!entryInfo){
+				// draw missing entry
+				
+				return;
+			}
 			
-			var seriesSelData = seriesSel.data(series);
-
-			// remove old
-			seriesSelData.exit()
-				.remove();
-
-			// append new
-			seriesSelData.enter()
-				.append('div')
-					.classed('serie', true)
-					.each(function(d){
-						var opts = {
-							color: d.colSelector.value() || '#637e90',
-							strokeWidth: d.colWidth || 4,
-							trailColor: d.trailColor || '#dadada',
-							trailWidth: d.trailWidth || 2
-						};
-						d3.select(this).attr('style', d.css);
-						//d3.select(this).attr('type', d.type);
-						var min = parseFloat(d.minSelector.value() || 0);
-						var max = parseFloat(d.maxSelector.value() || 0);
-						var val = parseFloat(d.valSelector.value() || 0);
-
-						var progress = 0;
-						if(max - min > 0 && val > min){
-							progress = (val - min) * 100 / (max - min);
-						}
-						
-						d3.select(this)
-							.append('div')
-								.classed('trail', true)
-								.style('background-color', opts.trailColor)
-								.append('div')
-									.classed('progress', true)
-									.style('background-color', opts.color)
-									.style('width', progress + '%');
-						
-						if(d.showValues){
-                            var valStr = '' + val,
-                                format = d.valFormat.value();
-
-                            if(JSB.isNumber(val) && format){
-                                valStr = Formatter.format(format, {y: val});
-                            }
-    						d3.select(this)
-								.append('div')
-									.classed('progressbar-text', true)
-									.attr('style', d.textCss)
-									.text(valStr);
-                        }
-					});
+			// draw existed entry
+			if(options.hasTitle){
+				
+			}
+		}
+	},
+	
+	$server: {
+		$require: ['JSB.Workspace.WorkspaceController'],
+		
+		getEntryInfo: function(wid, eid){
+			var entry = WorkspaceController.getEntry(wid, eid);
 			
-			// update existed
-			seriesSelData.each(function(d){
-				var opts = {
-					color: d.colSelector.value() || '#3a3a3a',
-					strokeWidth: d.colWidth || 4,
-					trailColor: d.trailColor || '#f4f4f4',
-					trailWidth: d.trailWidth || 2
-				};
-				d3.select(this).attr('style', d.css);
-				var min = parseFloat(d.minSelector.value() || 0);
-				var max = parseFloat(d.maxSelector.value() || 0);
-				var val = parseFloat(d.valSelector.value() || 0);
-				var progress = 0;
-				if(max - min > 0 && val > 0){
-					progress = (val - min) * 100 / (max - min);
-				}
-				d3.select(this).selectAll('.trail')
-					.style('background-color', opts.trailColor)
-					.selectAll('.progress')
-						.style('background-color', opts.color)
-						.style('width', progress + '%');
-					
-				if(d.showValues){
-                    var format = d.valFormat.value();
-                    if(JSB.isNumber(val) && format){
-                        val = Formatter.format(format, {y: val});
-                    }
-                    
-                    d3.select(this).select('.progressbar-text')
-                    	.attr('style', d.textCss)
-                    	.text('' + val);
-				}
-			});
-
-			// sort
-			seriesSelData.order();
 		}
 	}
 }

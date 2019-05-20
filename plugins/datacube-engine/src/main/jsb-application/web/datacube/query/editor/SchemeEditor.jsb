@@ -1911,7 +1911,7 @@ console.log('getCubeSlices');
 			} else if($this.scheme.name == '$viewName') {
 				var slice = $this.getSliceForName($this.value);
 				if(slice){
-					$this.container.append(RendererRepository.createRendererFor(slice, {showCube: true}).getElement());
+					$this.container.append(RendererRepository.createRendererFor(slice, {showParent: true}).getElement());
 					return true;
 				}
 			}

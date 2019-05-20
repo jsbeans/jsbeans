@@ -1,6 +1,19 @@
 @CHARSET "UTF-8";
 
 .workspaceItem {
-	min-height: 14px;
 	position: relative;
+}
+
+.workspaceItem > .container {
+	display: flex;
+}
+
+.workspaceItem > .container > .thumb {}
+
+.workspaceItem > .container > .title {
+	display: none;
+}
+
+.workspaceItem > .container.hasTitle > .title {
+	display: inline-block;
 }

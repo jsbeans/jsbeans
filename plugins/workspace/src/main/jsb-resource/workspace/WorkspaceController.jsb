@@ -24,6 +24,8 @@
 			JSB.onLoad(function(){
 				if(this.isSubclassOf('JSB.Workspace.BrowserView') && this.getDescriptor().$name != 'JSB.Workspace.BrowserView'){
 					$this._registerBrowserView(this);
+				} else if(this.isSubclassOf('JSB.Workspace.Entry') && this.getDescriptor().$name != 'JSB.Workspace.Entry'){
+					$this._registerExplorerNode(this);
 				}
 			});
 			
@@ -361,10 +363,16 @@
 			
 		},
 		
-		registerExplorerNode: function(wTypes, entryType, opts){
+		_registerExplorerNode: function(entryType){
+			var wTypes = null;
 			var locker = JSB.getLocker();
 			locker.lock('registerExplorerNode_' + this.getId());
 			try {
+				var opts = entryType.getDescriptor().$expose;
+				if(!opts){
+					return;
+				}
+				
 				if(!JSB.isArray(wTypes)){
 					wTypes = [wTypes||null];
 				}

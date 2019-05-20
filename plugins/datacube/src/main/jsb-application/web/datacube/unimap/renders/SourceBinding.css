@@ -70,7 +70,7 @@
 
 .sourceBindingRender > .item > .renderer > .leftParen,
 .sourceBindingRender > .item > .renderer > .rightParen,
-.sourceBindingRender > .item > .renderer > .cubeRenderer {
+.sourceBindingRender > .item > .renderer > .entryRenderer {
 	vertical-align: middle;
 	max-width: 150px;
 }
@@ -79,13 +79,13 @@
 	margin-left: 2px;
 }
 
-.sourceBindingRender > .item > .renderer > .cubeRenderer > .icon {
+.sourceBindingRender > .item > .renderer > .entryRenderer > .icon {
 	width: 14px;
 	height: 14px;
 	margin-top: -7px;
 }
 
-.sourceBindingRender > .item > .renderer > .cubeRenderer > .title {
+.sourceBindingRender > .item > .renderer > .entryRenderer > .title {
 	font-size: 10px !important;
     padding-left: 20px;
 }
@@ -98,7 +98,7 @@
     font-size: 15px;
 }
 
-.sourceBindingRender > .item.filled .cubeRenderer > .title {
+.sourceBindingRender > .item.filled .entryRenderer > .title {
     font-size: 14px;
 }
 

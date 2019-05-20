@@ -171,18 +171,33 @@
             );
             var mainKey = $this.mainDataProvider.getStore().getJsb().$name + '/' + $this.mainDataProvider.getStore().getName();
             var singleKey;
+            var allSupportQuery = true;
             for(var i = 0; i < providers.length; i++) {
                 var provider = providers[i];
                 var key = provider.getStore().getJsb().$name + '/' + provider.getStore().getName();
                 if (!singleKey) {
                     singleKey = key;
                 }
+                if (!provider.isQuerySupport()) {
+                    allSupportQuery = false;
+                }
                 if (key != singleKey) {
                     return false;
                 }
             }
             // is remote
-            return singleKey != mainKey;
+            var isRemote = singleKey != mainKey;
+            if(isRemote) {
+                if (allSupportQuery) {
+                    return true;
+                } else {
+                    /// если не все провайдеры поддерживают запросы:
+                    if (providers.length == 1 && query.$provider && !QueryUtils.queryHasBody(query)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         },
 
         _generateSubQuery: function(query) {

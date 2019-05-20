@@ -664,7 +664,7 @@ debugger
         visitParam: function(name) {
             for(var i = this.queryPath.length -1; i >=0; i--){
                 var par = this.queryPath[i].$params && this.queryPath[i].$params[name] && this.queryPath[i].$params[name];
-                if (par.$nativeType || par.$type) {
+                if (par && (par.$nativeType || par.$type)) {
                     $this.print('CAST(' , name, 'AS', par.$nativeType || DataTypes.toVendor($this.vendor, par.$type), ')');
                     return;
                 }

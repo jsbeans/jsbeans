@@ -20,7 +20,7 @@
 
 .widgetRenderer > .leftParen,
 .widgetRenderer > .rightParen,
-.widgetRenderer > .dashboardRenderer {
+.widgetRenderer > .entryRenderer {
 	display: inline-block;
 	vertical-align: top;
 }

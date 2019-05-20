@@ -315,7 +315,7 @@
 				if($this._render){
 				    $this._render.destroy();
 				}
-				$this._render = RendererRepository.createRendererFor(source, {showCube: true});
+				$this._render = RendererRepository.createRendererFor(source, {showParent: true});
 				item.empty().append($this._render.getElement());
 
                 var refreshButton = $this.$('<i class="btn btnRefresh fas fa-sync-alt" title="Обновить схему данных"></i>');
