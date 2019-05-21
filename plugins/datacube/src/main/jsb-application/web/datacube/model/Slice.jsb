@@ -156,12 +156,14 @@
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
+		           'DataCube.Query.Extractors.ExtractUtils',
 		           'DataCube.Query.Extractors.TypeExtractor',
 		           'DataCube.Query.Query',
 		           'DataCube.Query.QueryCache',
 		           'DataCube.Scheduler.EntryScheduleController'],
 		
 		fieldsTypes: {},
+		params: {},
 		preparedQuery: {},
 
 		$constructor: function(id, workspace, opts){
@@ -199,6 +201,12 @@
 
 				if(this.property('fieldsTypes')){
 				    this.fieldsTypes = this.property('fieldsTypes');
+				}
+
+				if(this.property('params')) {
+				    this.params = this.property('params');
+				} else {
+				    this.updateParams();
 				}
 
 				if(this.property('preparedQuery')){
@@ -252,12 +260,12 @@
             return this.cube.executeQuery(extendedQueryDesc.query, extendedQueryDesc.params);
 		},
 
-        extractFields: function(){
+        extractFields: function() {
             var fieldsTypes = this.fieldsTypes,
                 fields = {};
 
-            if(this.query.$select){
-                for(var i in this.query.$select){
+            if(this.query.$select) {
+                for(var i in this.query.$select) {
                     if(!this.fieldsTypes[i]){
                         this.updateFieldsTypes(true, true);
                     }
@@ -271,9 +279,8 @@
             return fields;
         },
         
-        extractParams: function(){
-        	// TODO: implement this
-        	return {};
+        extractParams: function() {
+        	return this.params;
         },
 
 		generateQueryFromSource: function(opts){
@@ -433,6 +440,8 @@
 
                 this.updateFieldsTypes(true);
 
+                this.updateParams();
+
                 this.updatePreparedQuery();
 
     			this.invalidate();
@@ -506,6 +515,27 @@
 		    } catch(ex){
 		        JSB.getLogger().error(ex);
 		    }
+		},
+
+		updateParams: function() {
+		    var params = ExtractUtils.extractUsedParams(this.getQuery(), true),
+		        processedParams = {},
+		        regexp = /^\$(\S+)/;
+
+		    for(var i in params) {
+		        processedParams[i] = {};
+
+		        for(var j in params[i]) {
+		            var match = j.match(regexp);
+
+		            if(match) {
+		                processedParams[i][match[1]] = params[i][j];
+		            }
+		        }
+		    }
+
+		    this.property('params', processedParams);
+		    this.params = processedParams;
 		},
 
 		updatePreparedQuery: function() {
