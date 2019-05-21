@@ -13,6 +13,7 @@ package org.jsbeans.serialization;
 import com.google.gson.*;
 import org.jsbeans.PlatformException;
 import org.jsbeans.scripting.Decompiler;
+import org.jsbeans.scripting.JsHub;
 import org.jsbeans.scripting.ScopeTree;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
@@ -261,7 +262,7 @@ public class JsObjectSerializerHelper {
     }
 
     public Object convertToNativeObject(Object obj, NativeObject scopeObject) {
-        Context ctx = Context.enter();
+        Context ctx = JsHub.getContextFactory().enterContext();
         try {
             return this.jsonElementToNativeObject(
                     GsonWrapper.toGsonJsonElement(obj),

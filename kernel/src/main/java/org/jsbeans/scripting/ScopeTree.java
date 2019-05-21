@@ -72,7 +72,7 @@ public class ScopeTree {
         if (scopePath == null || scopePath.length() == 0) {
             return this.getRoot().scope();
         }
-        Context ctx = Context.enter();
+        Context ctx = JsHub.getContextFactory().enterContext();
         String[] parts = scopePath.split("/");
         Node curNode = this.getRoot();
         for (String key : parts) {

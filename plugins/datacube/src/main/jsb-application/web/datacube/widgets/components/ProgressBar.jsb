@@ -17,23 +17,6 @@
 	        name: 'Серии',
 	        multiple: true,
 	        items: {
-/*	        	
-	            type: {
-	                render: 'select',
-	                name: 'Тип',
-	                items: {
-	                    Line: {
-	                        name: 'Линейный'
-	                    },
-	                    Circle: {
-	                        name: 'Круговой'
-	                    },
-	                    SemiCircle: {
-	                        name: 'Дуговой'
-	                    }
-	                }
-	            },
-*/	            
 	            min: {
 	                render: 'dataBinding',
 	                name: 'Минимум',

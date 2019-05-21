@@ -72,9 +72,28 @@ public class JsHub extends Service {
     private final Map<String, Cancellable> timeoutMap = new ConcurrentHashMap<String, Cancellable>();
     private final Map<String, Map<String, Object>> execMapScript = new ConcurrentHashMap<String, Map<String, Object>>();
     private Main debugger;
-    private ContextFactory contextFactory;
+    
+    private static ContextFactory contextFactory = new ContextFactory(){
+        @Override
+        protected boolean hasFeature(Context cx, int featureIndex)
+        {
+        	if(featureIndex == Context.FEATURE_V8_EXTENSIONS){
+        		return true;
+        	}
+/*        	if(featureIndex == Context.FEATURE_THREAD_SAFE_OBJECTS) {
+        		return true;
+            }*/
+            return super.hasFeature(cx, featureIndex);
+        }
+    };
+    
+    public static ContextFactory getContextFactory(){
+    	return contextFactory;
+    }
+    
     private Context context;
     private ScriptableObject sharedScope;
+    
 
     private static String serializeFunction(Function func) throws UnsupportedEncodingException {
         String script;
@@ -98,22 +117,11 @@ public class JsHub extends Service {
     	
     	this.threadQueue = new SynchronousQueue<Runnable>(true);
     	this.threadPool = new ThreadPoolExecutor(0, threadPoolSize > 0 ? threadPoolSize : Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, this.threadQueue );
-        this.contextFactory = new ContextFactory(){
-            @Override
-            protected boolean hasFeature(Context cx, int featureIndex)
-            {
-/*            	if(featureIndex == Context.FEATURE_THREAD_SAFE_OBJECTS) {
-            		return true;
-                }*/
-                return super.hasFeature(cx, featureIndex);
-            }
-        };
         this.context = contextFactory.enterContext();
         this.context.setOptimizationLevel(jsOptimizationLevel);
         this.context.setLanguageVersion(jsLanguageVersion);
         this.sharedScope = this.context.initStandardObjects(null, true);
         
-
         Object wrappedBridge = Context.javaToJS(JsBridge.getInstance(), sharedScope);
         ScriptableObject.putProperty(sharedScope, "Bridge", wrappedBridge);
         JsObjectSerializerHelper.getInstance().initScopeTree(sharedScope);
