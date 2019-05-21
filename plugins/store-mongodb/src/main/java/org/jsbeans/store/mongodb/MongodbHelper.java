@@ -10,6 +10,7 @@ import org.bson.BSONObject;
 import org.bson.BsonTimestamp;
 import org.bson.types.BSONTimestamp;
 import org.bson.types.ObjectId;
+import org.jsbeans.scripting.JsHub;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.jsbeans.types.JsonArray;
@@ -107,7 +108,7 @@ public class MongodbHelper {
 
 
     public static Object toScriptable(Object obj, ScriptableObject scopeObject) {
-        Context ctx = Context.enter();
+        Context ctx = JsHub.getContextFactory().enterContext();
         try {
             return toScriptable(obj, ctx, scopeObject.getParentScope());
         } finally {

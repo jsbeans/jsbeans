@@ -293,7 +293,7 @@ public class JsBridge {
     }
 
     public void tell(NativeObject tellObject) {
-        Context ctx = Context.enter();
+        Context ctx = JsHub.getContextFactory().enterContext();
         Object tObj = ctx.getThreadLocal("token");
         Object sObj = ctx.getThreadLocal("session");
         Object user = ctx.getThreadLocal("user");
@@ -344,7 +344,7 @@ public class JsBridge {
 		}
 */
         ActorSelection jsHubSvc = ActorHelper.getActorSelection(JsHub.class);
-        Context ctx = Context.enter();
+        Context ctx = JsHub.getContextFactory().enterContext();
         Object tObj = ctx.getThreadLocal("token");
         Object sObj = ctx.getThreadLocal("session");
         Object user = ctx.getThreadLocal("user");
