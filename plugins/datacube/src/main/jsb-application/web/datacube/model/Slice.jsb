@@ -270,6 +270,11 @@
 
             return fields;
         },
+        
+        extractParams: function(){
+        	// TODO: implement this
+        	return {};
+        },
 
 		generateQueryFromSource: function(opts){
 		    var sources = opts.sources,

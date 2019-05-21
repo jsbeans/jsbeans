@@ -12,6 +12,7 @@
 	$client: {
         _dataList: [],
         _cubeFieldList: [],
+        _paramList: [],
         _bindingsInfo: {},
 	    _editors: [],
 	    _errorList: [],
@@ -21,6 +22,7 @@
 
 	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList') || [];
 	        this._cubeFieldList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_cubeFieldList') || [];
+	        this._paramList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_paramList') || [];
 	        this._bindingsInfo = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo') || {};
 
 	        $base();
@@ -126,8 +128,10 @@
                 		sourceKey: this._scheme.linkTo,
                 	    clearBtn: !this._scheme.multiple,
                 	    cubeFields: this._scheme.cubeFields,
+                	    showParams: this._scheme.showParams,
                 		items: this._dataList,
                 		cubeItems: this._cubeFieldList,
+                		paramItems: this._paramList,
                 		value: values.value,
                 		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
                 		updateId: this.findRenderByKey(this._scheme.linkTo).updateId,
@@ -194,11 +198,12 @@
 	    changeLinkTo: function(values, render, callback){
 	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList');
 	        this._cubeFieldList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_cubeFieldList');
+	        this._paramList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_paramList');
 	        this._bindingsInfo = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo');
 
             for(var i = 0; i < this._editors.length; i++){
             	if(JSB.isInstanceOf(this._editors[i], 'DataCube.Controls.SchemeSelector')){
-            		this._editors[i].setOptions(this._dataList, this._cubeFieldList, render.updateId);
+            		this._editors[i].setOptions(this._dataList, this._cubeFieldList, this._paramList, render.updateId);
             	} else {
             		this._editors[i].setOptions(this._dataList, true);
             	}

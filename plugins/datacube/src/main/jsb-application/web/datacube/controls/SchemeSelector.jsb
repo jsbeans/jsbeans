@@ -16,6 +16,7 @@
 		$constructor: function(opts){
 			var items = opts.items;
 			var cubeItems = opts.cubeItems;
+			var paramItems = opts.paramItems;
 			var value = opts.value;
 			this.context = opts.context;
 			this.sourceKey = opts.sourceKey;
@@ -24,6 +25,9 @@
 			}
 			if(JSB.isDefined(opts.cubeItems)){
 				delete opts.cubeItems;
+			}
+			if(JSB.isDefined(opts.paramItems)){
+				delete opts.paramItems;
 			}
 			if(JSB.isDefined(opts.value)){
 				delete opts.value;
@@ -34,7 +38,7 @@
 			this.addClass('schemeSelector');
 			
 			if(JSB.isDefined(items)){
-				$this.setItems(items, cubeItems, opts.updateId);
+				$this.setItems(items, cubeItems, paramItems, opts.updateId);
 			}
 			if(JSB.isDefined(value)){
 				this.dontNotify = true;
@@ -43,11 +47,11 @@
 			}
 		},
 		
-		setOptions: function(items, cubeItems, updateId){
-			this.setItems(items, cubeItems, updateId);
+		setOptions: function(items, cubeItems, paramItems, updateId){
+			this.setItems(items, cubeItems, paramItems, updateId);
 		},
 		
-		setItems: function(items, cubeItems, updateId){
+		setItems: function(items, cubeItems, paramItems, updateId){
 			var sourceKey = this.sourceKey + '.' + updateId;
 			if(this.options.cubeFields){
 				sourceKey += '.withCubeFields';
@@ -57,7 +61,7 @@
 			$this.schemeMap = DataBindingCache.get(this.context, sourceKey, 'SchemeSelectorMap');
 			if(!nItems || !$this.schemeMap){
 				$this.schemeMap = {};
-				nItems = $this.translateItems(items, cubeItems);
+				nItems = $this.translateItems(items, cubeItems, paramItems);
 				DataBindingCache.put(this.context, sourceKey, 'SchemeSelectorItems', nItems);
 				DataBindingCache.put(this.context, sourceKey, 'SchemeSelectorMap', $this.schemeMap);
 			}
@@ -137,11 +141,14 @@
 			return this.selectedObject;
 		},
 		
-		translateItems: function(sliceItems, cubeItems){
-			function _translateItem(item, pKey, bCubeField){
+		translateItems: function(sliceItems, cubeItems, paramItems){
+			function _translateItem(item, pKey, bCubeField, bParam){
 				var fieldElt = $this.$('<div class="schemeField" type="'+item.scheme.type+'"></div>').append('<div class="icon"></div>').append($this.$('<div class="field" type="'+item.scheme.type+'"></div>').text(item.scheme.field)).append($this.$('<div class="type"></div>').text(item.scheme.type));
 				if(bCubeField){
 					fieldElt.addClass('cubeField');
+				}
+				if(bParam){
+					fieldElt.addClass('param');
 				}
 				var isNode = item.child && item.child.length > 0; //item.scheme.type == 'array' || item.scheme.type == 'object';
 				var allowSelect = true;
@@ -170,7 +177,7 @@
 				};
 				if(item.child && item.child.length > 0){
 					for(var i = 0; i < item.child.length; i++){
-						nItem.children.push(_translateItem(item.child[i], item.key, bCubeField));
+						nItem.children.push(_translateItem(item.child[i], item.key, bCubeField, bParam));
 					}
 					nItem.children.sort(function(a, b){
 						return a.field.localeCompare(b.field);
@@ -180,23 +187,44 @@
 			}
 			
 			var items = [];
-			if(this.options.cubeFields){
-				// add cube fields
-				var cubeFieldsNode = {
-					key: JSB.generateUid(),
-					pKey: null,
-					element: '<div class="schemeHeader cube"><div class="icon"></div>Поля куба</div>',
-					children: [],
-					allowSelect: false,
-					allowHover: false,
-				};
-				items.push(cubeFieldsNode);
-				for(var i = 0; i < cubeItems.length; i++){
-					cubeFieldsNode.children.push(_translateItem(cubeItems[i], cubeFieldsNode.key, true));
+			if(this.options.cubeFields || this.options.showParams){
+				if(this.options.showParams){
+					// add params
+					var paramsNode = {
+						key: JSB.generateUid(),
+						pKey: null,
+						element: '<div class="schemeHeader param"><div class="icon"></div>Параметры</div>',
+						children: [],
+						allowSelect: false,
+						allowHover: false,
+					};
+					items.push(paramsNode);
+					for(var i = 0; i < paramItems.length; i++){
+						paramsNode.children.push(_translateItem(paramItems[i], paramsNode.key, false, true));
+					}
+					paramsNode.children.sort(function(a, b){
+						return a.field.localeCompare(b.field);
+					});
 				}
-				cubeFieldsNode.children.sort(function(a, b){
-					return a.field.localeCompare(b.field);
-				});
+				
+				if(this.options.cubeFields){
+					// add cube fields
+					var cubeFieldsNode = {
+						key: JSB.generateUid(),
+						pKey: null,
+						element: '<div class="schemeHeader cube"><div class="icon"></div>Поля куба</div>',
+						children: [],
+						allowSelect: false,
+						allowHover: false,
+					};
+					items.push(cubeFieldsNode);
+					for(var i = 0; i < cubeItems.length; i++){
+						cubeFieldsNode.children.push(_translateItem(cubeItems[i], cubeFieldsNode.key, true, false));
+					}
+					cubeFieldsNode.children.sort(function(a, b){
+						return a.field.localeCompare(b.field);
+					});
+				}
 				
 				// add slice fields
 				var sliceFieldsNode = {
@@ -209,14 +237,14 @@
 				};
 				items.push(sliceFieldsNode);
 				for(var i = 0; i < sliceItems.length; i++){
-					sliceFieldsNode.children.push(_translateItem(sliceItems[i], sliceFieldsNode.key, false));
+					sliceFieldsNode.children.push(_translateItem(sliceItems[i], sliceFieldsNode.key, false, false));
 				}
 				sliceFieldsNode.children.sort(function(a, b){
 					return a.field.localeCompare(b.field);
 				});
 			} else {
 				for(var i = 0; i < sliceItems.length; i++){
-					items.push(_translateItem(sliceItems[i], null, false));
+					items.push(_translateItem(sliceItems[i], null, false, false));
 				}
 				items.sort(function(a, b){
 					return a.field.localeCompare(b.field);

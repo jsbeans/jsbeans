@@ -89,8 +89,9 @@
 	            		},
 	            		cubeField: {
 	            			render: 'dataBinding',
-	            			name: 'Задать поле куба',
+	            			name: 'Задать параметр или поле куба',
 	            			cubeFields: true,
+	            			showParams: true,
 	            			linkTo: 'rows',
 	            			optional: true
 	            		}

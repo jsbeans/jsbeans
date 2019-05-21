@@ -287,7 +287,8 @@
 		    for(var i in this.fields){
 		        if(this.fields[i].isDimension){
 		            dimensions[i] = {
-		                slices: this.fields[i].slices
+		                slices: this.fields[i].slices,
+		                type: this.fields[i].type
 		            };
 		        }
 		    }

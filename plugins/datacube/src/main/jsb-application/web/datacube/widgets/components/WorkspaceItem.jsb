@@ -98,6 +98,23 @@
                 }
         	}
         },
+        
+        removedItems: {
+        	render: 'group',
+        	name: 'Отображение удаленного объекта',
+        	items: {
+        		removedName: {
+                	render: 'dataBinding',
+                    name: 'Название',
+                    linkTo: 'dataSource',
+                },
+                removedType: {
+                	render: 'dataBinding',
+                    name: 'Тип',
+                    linkTo: 'dataSource',
+                },
+        	}
+        }
 
 	},
 	$client: {
@@ -149,7 +166,9 @@
 				size: this.getContext().find('iconSize').value(),
 				iconPosition: this.getContext().find('iconPosition').value(),
 				titleCss: this.getContext().find('titleCss').checked() ? prepareCss(this.getContext().find('titleCss cssValue').value()) : null,
-				iconCss: this.getContext().find('iconCss').checked() ? prepareCss(this.getContext().find('iconCss cssValue').value()) : null
+				iconCss: this.getContext().find('iconCss').checked() ? prepareCss(this.getContext().find('iconCss cssValue').value()) : null,
+				removedNameSel: this.getContext().find('removedName'),
+				removedTypeSel: this.getContext().find('removedType')
 			};
 
             this.fetch(dataSource, {batchSize: 1}, function(data, fail){
@@ -162,7 +181,7 @@
     			var eId = options.eIdSel.value();
     			
     			$this.getElement().attr('iconposition', options.iconPosition);
-    			$this.server().getEntryInfo(wId, eId, function(entryInfo, fail){
+    			$this.server().getEntryInfo(wId, eId, options.removedTypeSel.value(), function(entryInfo, fail){
     				$this.drawEntry(entryInfo, options)
     			});
             });
@@ -170,54 +189,81 @@
 		},
 		
 		drawEntry: function(entryInfo, options){
-			if(!entryInfo){
+			var thumb = entryInfo && entryInfo.thumb;
+			
+			if(!entryInfo.entry){
 				// draw missing entry
-				
-				return;
-			}
-			
-			var expose = entryInfo.entry.getJsb().getDescriptor().$expose;
-			var thumb = entryInfo.thumb;
-			var desc = entryInfo.description || expose.description;
-			var title = entryInfo.entry.getName();
-			
-			if(!this.renderer){
 				$this.getElement().empty();
-				this.renderer = RendererRepository.createRendererFor(entryInfo.entry, {});
-				this.append(this.renderer);
+				var removedContainer = $this.$('<div class="removed renderer" title="Объект удален"></div>');
+				$this.append(removedContainer);
+				
+				var icon = $this.$('<div class="icon"></div>');
+				var title = $this.$('<div class="title"></div>');
+				removedContainer.append(icon);
+				removedContainer.append(title);
+				
+				title.text(options.removedNameSel.value());
+			} else {
+				var expose = entryInfo.entry.getJsb().getDescriptor().$expose;
+				var title = entryInfo.entry.getName();
+				
+				if(!this.renderer){
+					$this.getElement().empty();
+					this.renderer = RendererRepository.createRendererFor(entryInfo.entry, {});
+					this.append(this.renderer);
+				}
+				
 			}
 			
-			this.renderer.find('> .icon').css({
+			if(thumb){
+				this.find('> .renderer > .icon').css('background-image', 'url(' + thumb + ')');
+			}
+			
+			this.find('> .renderer > .icon').css({
 				width: options.size,
 				height: options.size,
 				'min-width': options.size,
 				'min-height': options.size
 			});
-			this.renderer.find('> .title').attr('style', options.titleCss);
+			this.find('> .renderer > .title').attr('style', options.titleCss);
 			
-			if(thumb){
-				this.renderer.find('> .icon').css('background-image', 'url(' + thumb + ')');
-			}
 		}
 	},
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController'],
 		
-		getEntryInfo: function(wid, eid){
+		getEntryInfo: function(wid, eid, type){
 			var info = {
-				entry: WorkspaceController.getEntry(wid, eid),
+				entry: null,
 				description: null,
-				thumb: null
+				thumb: null,
+				removed: false
 			};
-			if(JSB.isInstanceOf(info.entry, 'DataCube.Model.Dashboard')){
-				var ctx = info.entry.getSettingsContext();
-				info.description = ctx.find('publication description').value();
-				info.thumb = ctx.find('publication logo').value();
-			} else if(JSB.isInstanceOf(info.entry, 'DataCube.Model.Widget')){
-				var ctx = info.entry.getContext();
-				info.description = ctx.find('common description').value();
-				info.thumb = ctx.find('common icon').value();
+			try {
+				info.entry = WorkspaceController.getEntry(wid, eid);
+			} catch(e){
+				info.removed = true;
+			}
+			
+			if(info.entry){
+				if(JSB.isInstanceOf(info.entry, 'DataCube.Model.Dashboard')){
+					var ctx = info.entry.getSettingsContext();
+					info.description = ctx.find('publication description').value();
+					info.thumb = ctx.find('publication logo').value();
+				} else if(JSB.isInstanceOf(info.entry, 'DataCube.Model.Widget')){
+					var ctx = info.entry.getContext();
+					info.description = ctx.find('common description').value();
+					info.thumb = ctx.find('common icon').value();
+				}
+			} else if(type){
+				var eJsb = JSB.get(type);
+				if(eJsb && eJsb.isSubclassOf('JSB.Workspace.Entry')){
+					var expose = eJsb.getDescriptor().$expose;
+					if(expose && expose.icon){
+						info.thumb = expose.icon;
+					}
+				}
 			}
 			
 			return info;

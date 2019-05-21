@@ -7,11 +7,19 @@
 .workspaceItem > .renderer {
 	display: flex;
 	padding: 2px;
+	
+	transition: 300ms;
+}
+
+.workspaceItem > .renderer.removed {
+	opacity: 0.5;
 }
 
 .workspaceItem > .renderer > .icon {
 	position: relative;
 	margin: 0;
+	background-repeat: no-repeat;
+	background-size: 100%;
 	
 	transition: 300ms;
 }

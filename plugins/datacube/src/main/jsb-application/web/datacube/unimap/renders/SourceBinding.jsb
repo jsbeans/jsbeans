@@ -13,6 +13,8 @@
 
 	    _beans: [],
 	    _dataList: [],
+	    _cubeFieldList: [],
+	    _paramList: [],
 	    _bindingsInfo: {},
 	    _fields: [],
 	    _render: null,
@@ -139,22 +141,46 @@
         			items.push(item);
 	        	}
 	        }
+	        
+	        function collectParams(desc, items){
+	        	if(!desc || !desc.params || Object.keys(desc.params).length == 0){
+	        		return;
+	        	}
+	        	for(var param in desc.params){
+	        		var paramType = desc.params[param].type;
+	        		var key = '__$param.' + param;
+	        		var item = {
+	        			key: key, 
+	        			value: $this.$('<div class="paramRender">' + param + '</div>'),
+	        			scheme: {
+	        				type: paramType,
+	        				field: param,
+	        				param: true
+	        			}
+	        		};
+	        		$this._bindingsInfo[key] = item.scheme;
+        			items.push(item);
+	        	}
+	        }
 
 	        this._fields = [];
 	        this._dataList = [];
 	        this._cubeFieldList = [];
+	        this._paramList = [];
 	        this._bindingsInfo = {};
 	        this.updateId = JSB.generateUid();
 
 	        if(!this._values.values || !this._values.values[0]){
 	            return;
 	        }
-
+	        
 			collectSliceFields(this._values.values[0].binding, this._dataList, '');
 			collectCubeFields(this._values.values[0].binding, this._cubeFieldList);
+			collectParams(this._values.values[0].binding, this._paramList);
 
             DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_dataList', this._dataList);
             DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_cubeFieldList', this._cubeFieldList);
+            DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_paramList', this._paramList);
             DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_bindingsInfo', this._bindingsInfo);
 	    },
 
@@ -487,7 +513,8 @@
 				source: source.getId(),
 				arrayType: recordTypes,
 				workspaceId: source.getWorkspace().getId(),
-				cubeFields: source.getQueryableContainer().getDimensions()
+				cubeFields: source.getQueryableContainer().getDimensions(),
+				params: source.extractParams()
 			}
 	    },
 
