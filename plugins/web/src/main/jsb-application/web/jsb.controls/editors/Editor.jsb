@@ -5,7 +5,7 @@
 		$require: ['css:Editor.css'],
 
 		_startEditValue: undefined,
-	    _types: ['text', 'password', 'color', 'search', 'number'],
+	    _types: ['text', 'password', 'search', 'number'],
 	    _value: null,
 
 	    $constructor: function(opts){
@@ -44,6 +44,9 @@
                 this.setValue(this.options.value);
             }
 
+            var changeDeferId = 'jsb-editor.change' + $this.getId(),
+                isOnChangeFunc = JSB.isFunction($this.options.onChange);
+
             function validate() {
                 if($this.getValue() === $this._value) {
                     $this._editor.removeClass('invalid');
@@ -64,18 +67,26 @@
 
                     return validateResult;
                 } else {
+                    $this._value = $this.getValue();
+
                     return true;
                 }
             }
 
             function onChange() {
-                if(JSB.isFunction($this.options.onChange)){
-                    $this.options.onChange.call($this, $this.getValue());
+                if(!JSB.isDefined($this._startEditValue)) {
+                    $this._startEditValue = $this._value;
                 }
+
+                JSB.defer(function(){
+                    if(isOnChangeFunc && validate()) {
+                        $this.options.onChange.call($this, $this.getValue());
+                    }
+                }, 500, changeDeferId);
             }
 
             function onEditComplete() {
-                JSB.cancelDefer('jsb-editor.keyUp' + $this.getId());
+                JSB.cancelDefer(changeDeferId);
 
                 if($this._startEditValue !== $this._value && JSB.isFunction($this.options.onEditComplete)) {
                     $this.options.onEditComplete.call($this, $this.getValue(), !$this._editor.hasClass('invalid'));
@@ -83,22 +94,22 @@
 
                 $this._startEditValue = undefined;
             }
-// todo: изменение числа стрелками. Наверное нужно отслеживать через onchange
+
+            this._editor.change(function() {
+                onChange();
+            });
+
             this._editor.keyup(function(evt) {
+                if(evt.keyCode === 37 || evt.keyCode === 38 || evt.keyCode === 39 || evt.keyCode === 40) {  // arrows
+                    return;
+                }
+
                 if(evt.keyCode === 13) {
                     validate();
 
                     onEditComplete();
                 } else {
-                    if(!JSB.isDefined) {
-                        $this._startEditValue = $this._value;
-                    }
-
-                    JSB.defer(function(){
-                        if(validate()) {
-                            onChange();
-                        }
-                    }, 500,  'jsb-editor.keyUp' + $this.getId());
+                    onChange();
                 }
             });
 
@@ -117,7 +128,7 @@
 	        label: undefined,
 	        placeholder: null,
 	        readonly: false,
-	        type: 'text',    // password, color, search, number
+	        type: 'text',    // password, search, number
 	        value: null,
 
 	        // number attributes

@@ -156,17 +156,18 @@
 					}, 600, 'textQueryChanged_' + $this.getId());
 				}
 			});
-			tabView.addTab('Текстовый вид', this.textQueryEditor, {id:'textQuery'});
 
 			this.viewsEditor = new ViewsEditor({
 			    schemeController: this.editor
 			});
-			tabView.addTab('Именованные подзапросы', this.viewsEditor, {id:'views'});
 
 			this.paramsEditor = new ParamsEditor({
 			    schemeController: this.editor
 			});
+
+			tabView.addTab('Именованные подзапросы', this.viewsEditor, {id:'views'});
 			tabView.addTab('Параметры', this.paramsEditor, {id:'params'});
+			tabView.addTab('Текстовый вид', this.textQueryEditor, {id:'textQuery'});
 
             this.editor = new SchemeController({
                 extendControllers: {

@@ -57,7 +57,7 @@
     margin-left: 10px;
 }
 
-.scheme .jsb-editor {
+.scheme .jsb-editor > input {
     width: 200px;
     padding: 2px 4px;
     font-size: 14px;
