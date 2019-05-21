@@ -1,5 +1,5 @@
 .querySchemeTool {
-    height: 512px;
+    /*height: 512px;*/
 }
 
 .querySchemeTool,
@@ -13,7 +13,7 @@
 
 .querySchemeTool .queryItemList {
     width: 450px;
-    max-height: 500px;
+    max-height: 530px;
 }
 
 .querySchemeTool .queryItemList > .items{

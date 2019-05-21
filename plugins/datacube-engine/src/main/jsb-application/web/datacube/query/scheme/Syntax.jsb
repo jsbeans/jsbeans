@@ -405,7 +405,7 @@
             }
 
             this.categoriesFunctions.$sourceFields.render = function(itemDesc) {
-                return this.categoriesFunctions.$outputFields.render(itemDesc);
+                return $this.categoriesFunctions.$outputFields.render(itemDesc);
             }
 
 			this.doSync();

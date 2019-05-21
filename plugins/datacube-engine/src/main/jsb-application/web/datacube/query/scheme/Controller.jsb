@@ -310,7 +310,7 @@
 					selector: opts.element,
 					dock: 'bottom'
 				},
-				callback: opts.callback || function(desc){
+				callback: opts.callback || function(desc) {
                     if(opts.editToolCallback){
                         opts.editToolCallback.call($this, desc);
                     } else {
