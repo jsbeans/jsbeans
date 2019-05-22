@@ -13,18 +13,72 @@
             name: 'Источник данных'
         },
         
-        workspaceId: {
-        	render: 'dataBinding',
-            name: 'Идентификатор проекта',
-            linkTo: 'dataSource',
-            require: true,
+        sourceType: {
+        	render: 'select',
+        	name: 'Элемент проекта',
+        	items: {
+        		sourceInstance: {
+        			render: 'group',
+        			name: 'Экземпляр',
+        			items: {
+        				existedItems: {
+        		        	render: 'group',
+        		        	name: 'Отображение существующих элементов',
+        		        	items: {
+        		                workspaceId: {
+        		                	render: 'dataBinding',
+        		                    name: 'Идентификатор проекта',
+        		                    linkTo: 'dataSource',
+        		                    require: true,
+        		                },
+        		                entryId: {
+        		                	render: 'dataBinding',
+        		                    name: 'Идентификатор элемента',
+        		                    linkTo: 'dataSource',
+        		                    require: true,
+        		                },
+        		        	}
+        		        },
+        		        
+        		        removedItems: {
+        		        	render: 'group',
+        		        	name: 'Отображение удаленных элементов',
+        		        	items: {
+        		        		removedName: {
+        		                	render: 'dataBinding',
+        		                    name: 'Название элемента',
+        		                    linkTo: 'dataSource',
+        		                },
+        		                removedType: {
+        		                	render: 'dataBinding',
+        		                    name: 'Тип элемента',
+        		                    linkTo: 'dataSource',
+        		                },
+        		        	}
+        		        },
+        			}
+        		},
+        		
+        		sourceType: {
+        			render: 'group',
+        			name: 'Тип',
+        			items: {
+        				entryName: {
+		                	render: 'dataBinding',
+		                    name: 'Название элемента',
+		                    linkTo: 'dataSource',
+		                },
+		                entryType: {
+		                	render: 'dataBinding',
+		                    name: 'Тип элемента',
+		                    linkTo: 'dataSource',
+		                }
+        			}
+        		}
+        	}
         },
-        entryId: {
-        	render: 'dataBinding',
-            name: 'Идентификатор элемента',
-            linkTo: 'dataSource',
-            require: true,
-        },
+        
+        
         
         title: {
         	render: 'group',
@@ -75,7 +129,7 @@
                             [ { key: 'bottomleft', dummy:true }, {key: 'bottom', name: 'Снизу'}, { key: 'bottomright', dummy:true }]
                         ]
                     },
-                    value: 'right'
+                    value: 'left'
         		},
                 iconCss: {
                     render: 'switch',
@@ -97,24 +151,9 @@
 
                 }
         	}
-        },
-        
-        removedItems: {
-        	render: 'group',
-        	name: 'Отображение удаленного объекта',
-        	items: {
-        		removedName: {
-                	render: 'dataBinding',
-                    name: 'Название',
-                    linkTo: 'dataSource',
-                },
-                removedType: {
-                	render: 'dataBinding',
-                    name: 'Тип',
-                    linkTo: 'dataSource',
-                },
-        	}
         }
+        
+        
 
 	},
 	$client: {
@@ -122,6 +161,9 @@
 		           'css:WorkspaceItem.css'],
 		
 		renderer: null,
+		lastWid: null,
+		lastEid: null,
+		lastInfo: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -138,6 +180,14 @@
 			this.container.append(this.title);
 */			
 			$this.setInitialized();
+		},
+		
+		destroy: function(){
+			if(this.renderer){
+				this.renderer.destroy();
+				this.renderer = null;
+			}
+			$base();
 		},
 
 		refresh: function(opts){
@@ -174,6 +224,7 @@
 			};
 
             this.fetch(dataSource, {batchSize: 1}, function(data, fail){
+            	debugger;
             	if(fail){
             		return;
             	}
@@ -182,10 +233,22 @@
                 var wId = options.wIdSel.value();
     			var eId = options.eIdSel.value();
     			
+    			if(!wId || !eId){
+    				return;
+    			}
+    			
     			$this.getElement().attr('iconposition', options.iconPosition);
-    			$this.server().getEntryInfo(wId, eId, options.removedTypeSel.value(), function(entryInfo, fail){
-    				$this.drawEntry(entryInfo, options)
-    			});
+    			
+    			if($this.lastWid != wId || $this.lastEid != eId || !$this.lastInfo){
+        			$this.server().getEntryInfo(wId, eId, options.removedTypeSel.value(), function(entryInfo, fail){
+        				$this.lastWid = wId;
+        				$this.lastEid = eId;
+        				$this.lastInfo = entryInfo;
+        				$this.drawEntry(entryInfo, options)
+        			});
+    			} else {
+    				$this.drawEntry($this.lastInfo, options)
+    			}
             });
             
 		},
