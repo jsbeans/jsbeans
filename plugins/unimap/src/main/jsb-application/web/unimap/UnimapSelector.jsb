@@ -159,13 +159,13 @@
         }
 
         if(res){
-            if(key.length > 0){
+            if(key.length > 0) {
                 return res.find ? res.find(key, undefined, isFindAll, schemePath) : res;
             } else {
                 return res;
             }
         } else {
-            for(var i in values){
+            for(var i in values) {
                 var r = this.getRenderByName(values[i] && values[i].render),
                     res = r.find ? r.find(curKey[0], values[i].values, isFindAll, schemePath ? (schemePath + '.' + i) : i) : undefined;
 

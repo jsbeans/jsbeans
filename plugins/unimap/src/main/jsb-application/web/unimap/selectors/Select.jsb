@@ -60,7 +60,11 @@
             var res = this.getMainSelector().find(key, values[i].items, isFindAll, schemePath + '.' + values[i].value + '.items');
             if(res){
                 if(isFindAll){
-                    resArr.push(res);
+                    if(JSB.isArray(res)){
+                        resArr = resArr.concat(res);
+                    } else {
+                        resArr.push(res);
+                    }
                 } else {
                     return res;
                 }
@@ -108,7 +112,7 @@
         }
     },
 
-    findAll: function(){
+    findAll: function(key, values) {
         var res = this.find(key, values, true);
 
         if(!JSB.isDefined(res)){

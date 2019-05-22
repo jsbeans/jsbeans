@@ -11,7 +11,6 @@
                 render: 'item',
                 name: 'Источник 1 уровня'
             },
-
             credits: {
                 render: 'group',
                 name: 'Авторская подпись',
@@ -29,7 +28,7 @@
 	    $constructor: function(){
 	        $base();
 
-	        var values = {};
+	        var values = { };
 
             var widgetSchemeRenderer = new Controller({
                 scheme: this.scheme,
