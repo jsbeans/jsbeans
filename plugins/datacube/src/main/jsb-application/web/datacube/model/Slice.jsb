@@ -520,18 +520,24 @@
 		updateParams: function() {
 		    var params = ExtractUtils.extractUsedParams(this.getQuery(), true),
 		        processedParams = {},
-		        regexp = /^\$(\S+)/;
+		        nameRegexp = /\{(.*?)\}/,
+		        propertiesRegexp = /^\$(\S+)/;
 
 		    for(var i in params) {
-		        processedParams[i] = {};
+		        var nameMatch = i.match(nameRegexp);
 
-		        for(var j in params[i]) {
-		            var match = j.match(regexp);
+		        if(nameMatch) {
+		            var name = nameMatch[1];
+                    processedParams[name] = {};
 
-		            if(match) {
-		                processedParams[i][match[1]] = params[i][j];
-		            }
-		        }
+                    for(var j in params[i]) {
+                        var match = j.match(propertiesRegexp);
+
+                        if(match) {
+                            processedParams[name][match[1]] = params[i][j];
+                        }
+                    }
+                }
 		    }
 
 		    this.property('params', processedParams);
