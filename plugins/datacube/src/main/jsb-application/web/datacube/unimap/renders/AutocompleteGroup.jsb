@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'Unimap.Render.AutocompleteGroup',
 	$parent: 'Unimap.Render.Group',

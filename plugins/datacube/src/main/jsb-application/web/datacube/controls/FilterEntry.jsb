@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Controls.FilterEntry',
 	$parent: 'JSB.Widgets.Control',
@@ -7,6 +9,8 @@
 	           'css:FilterEntry.css'],
 	
 	$client: {
+		filterParam: null,
+		filterParamType: null,
 		filterField: null,
 		filterFieldType: null,
 		defaultFilterValue: null,
@@ -105,15 +109,22 @@
 			this.curOp = op;
 		},
 		
-		setField: function(field, type, val, op){
-			if(this.filterField == field && this.filterFieldType == type && this.defaultFilterValue == val && this.defaultFilterOp == op){
+		setField: function(field, type, val, op, param, paramType){
+			if(this.filterField == field 
+				&& this.filterFieldType == type 
+				&& this.defaultFilterValue == val 
+				&& this.defaultFilterOp == op 
+				&& this.filterParam == param
+				&& this.filterParamType == paramType){
 				return;
 			}
 			this.filterField = field;
 			this.filterFieldType = type;
 			this.defaultFilterValue = val;
 			this.defaultFilterOp = op;
-			this.classed('showOp', this.filterFieldType != 'string' && this.filterFieldType != 'boolean');
+			this.filterParam = param;
+			this.filterParamType = paramType;
+			this.classed('showOp', this.filterFieldType != 'string' && this.filterFieldType != 'boolean' && !this.filterParam);
 			this.classed('showEditor', this.filterFieldType != 'boolean');
 			this.classed('showBoolean', this.filterFieldType == 'boolean');
 			this.editor.setData(val);
@@ -135,19 +146,19 @@
 		},
 		
 		getFilter: function(){
-			var fieldFilter = {};
-			var filter = {};
-			fieldFilter[$this.filterField] = filter;
 			
-			if(this.filterFieldType == 'integer'
-				|| this.filterFieldType == 'uint'
-				|| this.filterFieldType == 'float'
-				|| this.filterFieldType == 'double'){
+			var filter = {};
+			var valType = this.filterFieldType || this.filterParamType;
+			
+			if(valType == 'integer'
+				||valType == 'uint'
+				|| valType == 'float'
+				|| valType == 'double'){
 				
 				var val = $this.editor.getData().getValue();
 				// use op
 				if(val && val.length > 0){
-					switch($this.filterFieldType){
+					switch(valType){
 					case 'uint':
 					case 'integer':
 						val = parseInt(val);
@@ -166,74 +177,50 @@
 						break;
 					}
 					if(!JSB.isNaN(val)){
-						filter[$this.curOp] = {'$const': val};
+						if($this.filterParam){
+							filter = val;
+						} else {
+							filter[$this.curOp] = {'$const': val};
+						}
 					}
 				}
-			} else if(this.filterFieldType == 'boolean'){
+			} else if(valType == 'boolean'){
 				var val = $this.booleanEditor.getData().key;
 				// use ilike
 				if(val == 'true'){
-					filter['$eq'] = {'$const': true};
+					if($this.filterParam){
+						filter = true;
+					} else {
+						filter['$eq'] = {'$const': true};
+					}
 				} else if(val == 'false'){
-					filter['$eq'] = {'$const': false};
+					if($this.filterParam){
+						filter = false;
+					} else {
+						filter['$eq'] = {'$const': false};
+					}
 				}
-			} else if(this.filterFieldType == 'string'){
+			} else if(valType == 'string'){
 				var val = $this.editor.getData().getValue();
 				// use ilike
 				if(val && val.length > 0){
-					filter['$ilike'] = {'$const': '%' + val + '%'};
+					if($this.filterParam){
+						filter = val;
+					} else {
+						filter['$ilike'] = {'$const': '%' + val + '%'};
+					}
 				}
+			}
+			
+			var fieldFilter = {};
+			if($this.filterParam){
+				fieldFilter[$this.filterParam] = filter;
+			} else {
+				fieldFilter[$this.filterField] = filter;
 			}
 			return fieldFilter;
 		},
-/*		
-		addFixedFilter: function(fDesc){
-			if(this.fixedFilters[fDesc.id]){
-				return;
-			}
-			this.fixedFilters[fDesc.id] = fDesc;
-			this.updateFixedFilters();
-			
-			
-			var fixedTag = constructFixedTag(fDesc);
-			this.fixedArea.append(fixedTag);
-		},
 		
-		removeFixedFilter: function(fId){
-			if(this.fixedFilters[fId]){
-				delete this.fixedFilters[fId];
-				this.updateFixedFilters();
-			}
-		},
-		
-		constructFixedTag: function(fDesc){
-			return this.$('<div class="fixedTag"></div>').text(fDesc.value);
-		},
-
-		
-		updateFixedFilters: function(){
-			if(Object.keys(this.fixedFilters).length > 0){
-				// has filters
-				if(!this.fixedArea){
-					this.fixedArea = this.$('<div class="fixedArea"></div>');
-					this.append(this.fixedArea);
-				}
-				
-				// remove missing filters
-				
-				
-				// add new filters
-
-				
-				
-			} else {
-				// no filters
-				if(this.fixedArea){
-					this.fixedArea.remove();
-				}
-			}
-		},
-*/		
 		update: function(){
 			if($this.options.onChange){
 				$this.options.onChange.call($this, $this.getFilter());

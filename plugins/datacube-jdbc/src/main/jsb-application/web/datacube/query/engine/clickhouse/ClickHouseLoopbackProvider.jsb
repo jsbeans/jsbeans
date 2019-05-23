@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Query.Engine.ClickHouse.ClickHouseLoopbackProvider',
 	$parent: 'DataCube.Query.Engine.Loopback.LoopbackProvider',

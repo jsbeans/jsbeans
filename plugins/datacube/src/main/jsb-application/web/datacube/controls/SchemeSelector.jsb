@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Controls.SchemeSelector',
 	$parent: 'JSB.Widgets.ComboBox',
@@ -56,6 +58,9 @@
 			if(this.options.cubeFields){
 				sourceKey += '.withCubeFields';
 			}
+			if(this.options.showParams){
+				sourceKey += '.withParams';
+			}
 			
 			var nItems = DataBindingCache.get(this.context, sourceKey, 'SchemeSelectorItems');
 			$this.schemeMap = DataBindingCache.get(this.context, sourceKey, 'SchemeSelectorMap');
@@ -86,6 +91,9 @@
 					var fieldElt = $this.$('<div class="schemeField"></div>');
 					if($this.schemeMap[valObj.key].cubeField){
 						fieldElt.addClass('cubeField');
+					}
+					if($this.schemeMap[valObj.key].param){
+						fieldElt.addClass('param');
 					}
 					var curObj = valObj;
 					var bFirst = true;
@@ -230,7 +238,7 @@
 				var sliceFieldsNode = {
 					key: JSB.generateUid(),
 					pKey: null,
-					element: '<div class="schemeHeader slice"><div class="icon"></div>Поля среза</div>',
+					element: '<div class="schemeHeader slice"><div class="icon"></div>Поля источника</div>',
 					children: [],
 					allowSelect: false,
 					allowHover: false,

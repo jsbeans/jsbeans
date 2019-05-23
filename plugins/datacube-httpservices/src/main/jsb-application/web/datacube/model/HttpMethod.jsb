@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Model.HttpMethod',
 	$parent: 'DataCube.Model.QueryableEntry',
@@ -62,7 +64,6 @@
 						pValue: {
 							render: 'item',
 							name: 'Значение по умолчанию',
-							require: true,
 							description: `
 								<h3>Значение по умолчанию</h3>
 								<p>Используется при отладки взаимодействия с удаленным сервисом на начальном этапе, когда требуется получить с сервиса тестовую выборку.</p>
@@ -372,21 +373,27 @@
 				} catch(e){}
 			}
 			
-			var httpOpts = {connectTimeout:600000, socketTimeout: 600000, requestProperties: props};
+			var httpOpts = {connectTimeout:120000, socketTimeout: 120000, requestProperties: props};
 			// TODO: enhance httpOpts
+			Log.debug('HttpMethod url: ' + url);
+			if (postParams) Log.debug('HttpMethod POST data: ' + postParams);
+			var result = Http.request(method, encodeURI(url), postParams, httpOpts);
+			if(result.responseCode != 200){
+				throw new Error('Remote service responded an error: "' + result.responseMessage + '(' + result.responseCode + ')"');
+			}
+/*			
 			var result = {
 				body: null,
 				responseCode: null,
 				responseMessage: null,
 				error: null,
 			};
-			Log.debug('HttpMethod url: ' + url);
-			if (postParams) Log.debug('HttpMethod data: ' + postParams);
 			try {
 				result = Http.request(method, encodeURI(url), postParams, httpOpts);
 			} catch(e){
 				result.error = e.message;
 			}
+*/			
 			return this._processResult(result, ctx, params, opts);
 		},
 

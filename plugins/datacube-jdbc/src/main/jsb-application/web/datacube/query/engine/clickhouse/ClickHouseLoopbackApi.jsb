@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name:'Datacube.Query.Engine.ClickHouse.ClickHouseLoopbackApi',
 	$parent: 'Datacube.Query.Engine.Postgres.Loopback.LoopbackApi',

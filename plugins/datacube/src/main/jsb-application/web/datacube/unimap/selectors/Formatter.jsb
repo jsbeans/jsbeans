@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
     $name: 'Datacube.Selectors.Formatter',
     $parent: 'Unimap.Selectors.Basic',

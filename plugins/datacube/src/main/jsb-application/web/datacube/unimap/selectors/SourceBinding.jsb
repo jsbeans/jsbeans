@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
     $name: 'Datacube.Selectors.SourceSelector',
     $parent: 'Unimap.Selectors.Basic',
@@ -5,15 +7,15 @@
     $alias: 'sourceBinding',
 
     binding: function(){
-        return this._values[0].binding;
+        return this._values && this._values.length > 0 && this._values[0].binding;
     },
 
     data: function(){
-        return this._values[0].binding.data;
+        return this._values && this._values.length > 0 && this._values[0].binding && this._values[0].binding.data;
     },
 
     isEmbeddedBinding: function(){
-        return this._values[0].binding.embeddedBinding;
+        return this._values && this._values.length > 0 && this._values[0].binding && this._values[0].binding.embeddedBinding;
     },
 
     isReset: function(){
@@ -55,7 +57,7 @@
     },
 
     hasBinding: function(){
-        return this._values[0] && JSB.isDefined(this._values[0].binding);
+        return this._values && this._values.length > 0 && this._values[0] && JSB.isDefined(this._values[0].binding);
     },
 
     next: function(opts){

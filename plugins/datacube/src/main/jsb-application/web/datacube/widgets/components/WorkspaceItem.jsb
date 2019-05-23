@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Widgets.WorkspaceItem',
 	$parent: 'DataCube.Widgets.Widget',
@@ -29,13 +31,11 @@
         		                	render: 'dataBinding',
         		                    name: 'Идентификатор проекта',
         		                    linkTo: 'dataSource',
-        		                    require: true,
         		                },
         		                entryId: {
         		                	render: 'dataBinding',
         		                    name: 'Идентификатор элемента',
         		                    linkTo: 'dataSource',
-        		                    require: true,
         		                },
         		        	}
         		        },
@@ -63,11 +63,6 @@
         			render: 'group',
         			name: 'Тип',
         			items: {
-        				entryName: {
-		                	render: 'dataBinding',
-		                    name: 'Название элемента',
-		                    linkTo: 'dataSource',
-		                },
 		                entryType: {
 		                	render: 'dataBinding',
 		                    name: 'Тип элемента',
@@ -130,26 +125,7 @@
                         ]
                     },
                     value: 'left'
-        		},
-                iconCss: {
-                    render: 'switch',
-                    name: 'Использовать CSS-стиль пиктограммы',
-                    items: {
-                        cssValue: {
-                            render: 'item',
-                            name: 'CSS-стиль',
-                            editor: 'JSB.Widgets.MultiEditor',
-                            editorOpts: {
-                                valueType: 'org.jsbeans.types.Css'
-                            },
-                            value: `/* Заполните объект CSS значениями */
-{
-    border-radius: '4px';
-}`
-                        }
-                    }
-
-                }
+        		}
         	}
         }
         
@@ -164,6 +140,7 @@
 		lastWid: null,
 		lastEid: null,
 		lastInfo: null,
+		lastType: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -190,10 +167,6 @@
 			$base();
 		},
 
-		refresh: function(opts){
-		    this.onRefresh(opts);
-		},
-
 		onRefresh: function(opts){
 		    var dataSource = this.getContext().find('dataSource');
             if(!dataSource.hasBinding || !dataSource.hasBinding()){
@@ -213,42 +186,65 @@
 			}
 			
 			var options = {
-				wIdSel: this.getContext().find('workspaceId'),
-				eIdSel: this.getContext().find('entryId'),
 				size: this.getContext().find('iconSize').value(),
 				iconPosition: this.getContext().find('iconPosition').value(),
-				titleCss: this.getContext().find('titleCss').checked() ? prepareCss(this.getContext().find('titleCss cssValue').value()) : null,
-				iconCss: this.getContext().find('iconCss').checked() ? prepareCss(this.getContext().find('iconCss cssValue').value()) : null,
-				removedNameSel: this.getContext().find('removedName'),
-				removedTypeSel: this.getContext().find('removedType')
+				titleCss: this.getContext().find('titleCss').checked() ? prepareCss(this.getContext().find('titleCss cssValue').value()) : null
 			};
+			
+			if(this.getContext().find('sourceType').value() == 'sourceInstance'){
+				options.sourceType = 'instance';
+				options.wIdSel = this.getContext().find('workspaceId');
+				options.eIdSel = this.getContext().find('entryId');
+				options.itemNameSel = this.getContext().find('removedName');
+				options.itemTypeSel = this.getContext().find('removedType');
+			} else {
+				options.sourceType = 'type';
+				options.itemTypeSel = this.getContext().find('entryType');
+			}
+			
+			$this.getElement().attr('iconposition', options.iconPosition);
 
             this.fetch(dataSource, {batchSize: 1}, function(data, fail){
-            	debugger;
             	if(fail){
             		return;
             	}
                 dataSource.next();
-
-                var wId = options.wIdSel.value();
-    			var eId = options.eIdSel.value();
-    			
-    			if(!wId || !eId){
-    				return;
-    			}
-    			
-    			$this.getElement().attr('iconposition', options.iconPosition);
-    			
-    			if($this.lastWid != wId || $this.lastEid != eId || !$this.lastInfo){
-        			$this.server().getEntryInfo(wId, eId, options.removedTypeSel.value(), function(entryInfo, fail){
-        				$this.lastWid = wId;
-        				$this.lastEid = eId;
-        				$this.lastInfo = entryInfo;
-        				$this.drawEntry(entryInfo, options)
-        			});
-    			} else {
-    				$this.drawEntry($this.lastInfo, options)
-    			}
+                
+                if(options.sourceType == 'instance'){
+	                var wId = options.wIdSel.value();
+	    			var eId = options.eIdSel.value();
+	    			
+	    			if(!wId || !eId){
+	    				return;
+	    			}
+	    			
+	    			if($this.lastWid != wId || $this.lastEid != eId || !$this.lastInfo){
+	        			$this.server().getEntryInfo(wId, eId, options.itemTypeSel.value(), function(entryInfo, fail){
+	        				$this.lastWid = wId;
+	        				$this.lastEid = eId;
+	        				$this.lastInfo = entryInfo;
+	        				$this.drawEntry(entryInfo, options);
+	        			});
+	    			} else {
+	    				$this.drawEntry($this.lastInfo, options);
+	    			}
+                } else if(options.sourceType == 'type'){
+                	var entryType = options.itemTypeSel.value();
+                	if(!entryType){
+                		return;
+                	}
+                	if(!$this.lastInfo || $this.lastType != entryType){
+	                	$this.server().getEntryInfo(null, null, entryType, function(entryInfo, fail){
+	        				$this.lastInfo = entryInfo;
+	        				$this.lastType = entryType;
+	        				$this.lastWid = null;
+	        				$this.lastEid = null;
+	        				$this.drawEntry(entryInfo, options);
+	        			});
+                	} else {
+                		$this.drawEntry($this.lastInfo, options);
+                	}
+                }
             });
             
 		},
@@ -259,15 +255,20 @@
 			if(!entryInfo.entry){
 				// draw missing entry
 				$this.getElement().empty();
-				var removedContainer = $this.$('<div class="removed renderer" title="Объект удален"></div>');
-				$this.append(removedContainer);
+				var container = $this.$('<div class="renderer"></div>');
+				$this.append(container);
+				
+				if(entryInfo.removed){
+					container.addClass('removed');
+					container.attr('title', 'Объект удален');
+				}
 				
 				var icon = $this.$('<div class="icon"></div>');
 				var title = $this.$('<div class="title"></div>');
-				removedContainer.append(icon);
-				removedContainer.append(title);
+				container.append(icon);
+				container.append(title);
 				
-				title.text(options.removedNameSel.value());
+				title.text(options.itemNameSel && options.itemNameSel.value() || entryInfo.title);
 				if(this.renderer){
 					this.renderer.destroy();
 					this.renderer = null;
@@ -307,12 +308,16 @@
 				entry: null,
 				description: null,
 				thumb: null,
+				title: null,
 				removed: false
 			};
-			try {
-				info.entry = WorkspaceController.getEntry(wid, eid);
-			} catch(e){
-				info.removed = true;
+			
+			if(wid != null && eid != null){
+				try {
+					info.entry = WorkspaceController.getEntry(wid, eid);
+				} catch(e){
+					info.removed = true;
+				}
 			}
 			
 			if(info.entry){
@@ -332,6 +337,7 @@
 					if(expose && expose.icon){
 						info.thumb = expose.icon;
 					}
+					info.title = expose && expose.title || type;
 				}
 			}
 			

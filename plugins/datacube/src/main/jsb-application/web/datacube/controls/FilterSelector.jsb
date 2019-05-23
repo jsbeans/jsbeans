@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Controls.FilterSelector',
 	$parent: 'JSB.Widgets.Control',
@@ -82,7 +84,7 @@
 			var ffMap = {};
 			for(var fItemId in filters){
 				var fDesc = filters[fItemId];
-				var f = fDesc.cubeField || fDesc.field;
+				var f = fDesc.cubeField || fDesc.field || fDesc.param;
 				if(!ffMap[f]){
 					ffMap[f] = {
 						andFilters: [],
@@ -91,7 +93,7 @@
 				}
 				
 				var ffDesc = ffMap[f];
-				if(fDesc.type == '$and'){
+				if(fDesc.type == '$and' || fDesc.type == '$param'){
 					ffDesc.andFilters.push({type:'tag', id: fItemId});
 				} else if(fDesc.type == '$or'){
 					ffDesc.orFilters.push({type:'tag', id: fItemId});

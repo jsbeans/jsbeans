@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Renderers.EmbededWidgetRenderer',
 	$parent: 'JSB.Widgets.Renderer',

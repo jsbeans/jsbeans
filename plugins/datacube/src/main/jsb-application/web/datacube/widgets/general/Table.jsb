@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Widgets.Table',
 	$parent: 'DataCube.Widgets.Widget',
@@ -312,6 +314,13 @@ nisi ut aliquip ex ea commodo consequat.
                                     render: 'switch',
                                     name: 'Использовать контексный фильтр',
                                     items: {
+                                    	contextFilterParam: {
+                	            			render: 'dataBinding',
+                	            			name: 'Устанавливать параметр',
+                	            			showParams: true,
+                	            			linkTo: 'rows',
+                	            			optional: true
+                	            		},
                                         contextFilterFixed: {
                                             render: 'item',
                                             name: 'Всегда показывать фильтр',
@@ -404,9 +413,17 @@ nisi ut aliquip ex ea commodo consequat.
                                     items: {
                                         widgetContextFilterField: {
                                             render: 'dataBinding',
-                                            name: 'Фильтровать по полю',
+                                            name: 'Фильтровать по полю/параметру',
+                                            showParams: true,
                                             linkTo: 'rows'
                                         },
+/*                                        widgetContextFilterParam: {
+                	            			render: 'dataBinding',
+                	            			name: 'Устанавливать параметр',
+                	            			showParams: true,
+                	            			linkTo: 'rows',
+                	            			optional: true
+                	            		}, */
                                         widgetContextFilterFixed: {
                                             render: 'item',
                                             name: 'Всегда показывать фильтр',
@@ -2536,7 +2553,7 @@ nisi ut aliquip ex ea commodo consequat.
 					// filter
 					var filterEntry = elt.find('> .filterEntry').jsb();
 					var filterButtonElt = hWrapper.find('> .filterButton');
-					if(d.contextFilterField && d.contextFilterFieldType){
+					if((d.contextFilterField && d.contextFilterFieldType) || (d.contextFilterParam && d.contextFilterParamType)){
 						elt.addClass('contextFilter');
 						if(!filterEntry){
 							var bIgnoreFilter = false;
@@ -2557,18 +2574,21 @@ nisi ut aliquip ex ea commodo consequat.
 							});
 							elt.append(filterEntry.getElement());
 						}
-						filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
+						filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp, d.contextFilterParam, d.contextFilterParamType);
 						filterEntry.allowFix(false);
 						if($this.filterManager){
-						    var sourceArr = $this.getSourceIds();
-							if(sourceArr && sourceArr.length > 0){
-								var source = $this.sources[sourceArr[0]];
-								var cubeField = $this.filterManager.extractCubeField(source, d.contextFilterField);
-								if(cubeField){
-									filterEntry.allowFix(true);
+							if(d.contextFilterField){
+							    var sourceArr = $this.getSourceIds();
+								if(sourceArr && sourceArr.length > 0){
+									var source = $this.sources[sourceArr[0]];
+									var cubeField = $this.filterManager.extractCubeField(source, d.contextFilterField);
+									if(cubeField){
+										filterEntry.allowFix(true);
+									}
 								}
+							} else if(d.contextFilterParam){
+								filterEntry.allowFix(true);
 							}
-							
 						}
 						
 						if(d.contextFilterFixed){
@@ -2591,7 +2611,11 @@ nisi ut aliquip ex ea commodo consequat.
 									} else {
 										// clear field filter
 										var filter = {};
-										filter[d.contextFilterField] = null;
+										if(d.contextFilterField){
+											filter[d.contextFilterField] = null;
+										} else if(d.contextFilterParam){
+											filter[d.contextFilterParam] = null;
+										}
 										$this.updateContextFilter(filter);
 									}
 								});
@@ -2678,22 +2702,30 @@ nisi ut aliquip ex ea commodo consequat.
 			if(!q || Object.keys(q).length == 0){
 				return;
 			}
-			
+			var fDesc = null;
 			var field = Object.keys(q)[0];
-			var op = Object.keys(q[field])[0];
-			var val = q[field][op][Object.keys(q[field][op])[0]];
-			
-			var fDesc = {
-				type: '$and',
-				op: op,
-				field: field,
-				value: val
-			};
-			var cubeField = this.getCubeField(field);
-			if(cubeField){
-				fDesc.cubeField = cubeField;
+			if(field[0] == '$'){
+				// param
+				fDesc = {
+					type: '$param',
+					param: field,
+					value: q[field]
+				};
+			} else {
+				var op = Object.keys(q[field])[0];
+				var val = q[field][op][Object.keys(q[field][op])[0]];
+				
+				fDesc = {
+					type: '$and',
+					op: op,
+					field: field,
+					value: val
+				};
+				var cubeField = this.getCubeField(field);
+				if(cubeField){
+					fDesc.cubeField = cubeField;
+				}
 			}
-			
 			var filterId = this.addFilter(fDesc);
 			
 			this.refreshAll();
@@ -2929,6 +2961,7 @@ nisi ut aliquip ex ea commodo consequat.
 					sortFields: null,
 					status: null,
 					contextFilterField: null,
+					contextFilterParam: null,
 					contextFilterFixed: false,
 					contextFilterValue: '',
 					tooltip: gArr[i].find('colTip').checked() ? gArr[i].find('colTip').value() : null,
@@ -2986,9 +3019,27 @@ nisi ut aliquip ex ea commodo consequat.
                             if(widgetContextFilterSelector.find('widgetContextFilterFixed').checked()){
                                 desc.contextFilterFixed = true;
                             }
+/*
+    						// context filter param
+                            var widgetContextFilterParamSelector = widgetContextFilterSelector.find('widgetContextFilterParam');
+                            desc.contextFilterParam = null;
+                            if(widgetContextFilterParamSelector.checked()){
+                                var bInfo = widgetContextFilterParamSelector.bindingInfo();
+            					if(bInfo && bInfo.field){
+            						desc.contextFilterParam = bInfo.field;
+            					}
+                            }
+*/                            
                             var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
-                            desc.contextFilterField = widgetContextFilterFieldSelector.binding();
-                            desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
+                            var cfbi = widgetContextFilterFieldSelector.bindingInfo();
+                            if(cfbi && cfbi.param){
+                            	desc.contextFilterParam = '${' + cfbi.field + '}';
+                            	desc.contextFilterParamType = cfbi.type;
+                            } else {
+	                            desc.contextFilterField = widgetContextFilterFieldSelector.binding();
+	                            desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
+                            }
+                            
                             desc.contextFilterValue = widgetContextFilterSelector.find('widgetContextFilterValue').value() || '';
                             desc.contextFilterOp = widgetContextFilterSelector.find('widgetContextFilterOp').value() || '$eq';
                         }
@@ -3006,8 +3057,21 @@ nisi ut aliquip ex ea commodo consequat.
 						if(contextFilterSelector.find('contextFilterFixed').checked()){
 							desc.contextFilterFixed = true;
 						}
-						desc.contextFilterField = textSelector.binding();
-						desc.contextFilterFieldType = textSelector.bindingType();
+						
+						// context filter param
+						var contextFilterParamSelector = contextFilterSelector.find('contextFilterParam');
+						desc.contextFilterParam = null;
+                        if(contextFilterParamSelector.checked()){
+                            var bInfo = contextFilterParamSelector.bindingInfo();
+        					if(bInfo && bInfo.field){
+        						desc.contextFilterParam = '${' + bInfo.field + '}';
+        						desc.contextFilterParamType = bInfo.type;
+        					}
+                        } else {
+    						desc.contextFilterField = textSelector.binding();
+    						desc.contextFilterFieldType = textSelector.bindingType();
+                        }
+						
 						desc.contextFilterValue = contextFilterSelector.find('contextFilterValue').value() || '';
 						desc.contextFilterOp = contextFilterSelector.find('contextFilterOp').value() || '$eq';
 					}

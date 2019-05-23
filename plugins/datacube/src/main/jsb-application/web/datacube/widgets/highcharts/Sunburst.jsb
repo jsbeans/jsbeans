@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
     $name: 'DataCube.Widgets.Sunburst',
     $parent: 'DataCube.Widgets.BaseHighchart',

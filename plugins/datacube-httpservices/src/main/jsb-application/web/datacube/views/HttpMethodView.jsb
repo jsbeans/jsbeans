@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.HttpMethodView',
 	$parent: 'JSB.Workspace.BrowserView',
@@ -357,7 +359,7 @@
 		updateStatus: function(){
 			$this.getCurrentEntry().server().getInfo(function(info){
 				if(info.status == 'analyzing'){
-					$this.schemeScroll.getElement().loader({
+					$this.getElement().loader({
 						style:'parser',
 						message:`#dot 
 								<div class="title">Выполняется анализ структуры файла...</div>
@@ -371,7 +373,7 @@
 					$this.switchStage('analysis');
 					
 				} else if(info.status == 'requesting'){
-					$this.schemeScroll.getElement().loader({
+					$this.getElement().loader({
 						style:'parser',
 						message:`#dot 
 								<div class="title">Выполняется запрос к серверу...</div>
@@ -388,12 +390,14 @@
 				} else {
 					// ready to next
 					try {
-						$this.schemeScroll.getElement().loader('hide');
+						$this.getElement().loader('hide');
 					}catch(e){}
 					
 					$this.enableStage('request', true);
 					$this.enableStage('analysis', info.hasResponse);
 					$this.enableStage('tables', info.hasResponse && info.hasStructure);
+					
+					$this.switchStage('request');
 					
 					if(info.hasResponse){
 						$this.switchStage('analysis');

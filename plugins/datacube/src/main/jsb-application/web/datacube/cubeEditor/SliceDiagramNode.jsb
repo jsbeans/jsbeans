@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.SliceDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',

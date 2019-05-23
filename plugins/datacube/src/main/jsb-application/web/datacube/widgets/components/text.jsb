@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Widgets.Text',
 	$parent: 'DataCube.Widgets.Widget',
@@ -69,10 +71,6 @@
 			$base(opts);
 			this.addClass('textWidget');
 			$this.setInitialized();
-		},
-
-		refresh: function(opts){
-		    this.onRefresh(opts);
 		},
 
 		onRefresh: function(opts){

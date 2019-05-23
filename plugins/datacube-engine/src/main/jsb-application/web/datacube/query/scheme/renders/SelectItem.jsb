@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Query.Renders.SelectItem',
 	$parent: 'DataCube.Query.Renders.Basic',
