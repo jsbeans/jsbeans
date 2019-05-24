@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.11 | jsbeans.org | (c) 2011-2019 Special Information Systems, LLC */
+/*! jsBeans v2.6.11 | jsbeans.org | MIT License | (c) 2011-2019 Special Information Systems, LLC */
 if(!(function(){return this;}).call(null).JSB){
 (function(){
 	

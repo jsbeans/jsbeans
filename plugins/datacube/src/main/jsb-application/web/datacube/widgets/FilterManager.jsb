@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Widgets.FilterManager',
 	$require: ['JSB.Crypt.MD5'],
@@ -38,7 +40,7 @@
 					}
 					return str;
 				} else {
-					return '' + (fDesc.cubeField || fDesc.field) + '|' + fDesc.op + '|' + JSON.stringify(fDesc.value);
+					return '' + (fDesc.cubeField || fDesc.field || fDesc.param) + '|' + (fDesc.op || '') + '|' + JSON.stringify(fDesc.value);
 				}
 			}
 			return  MD5.md5(_constructFilterPath(fItem));
@@ -134,6 +136,9 @@
 		translateFilter: function(fDesc, source){
 			var newDesc = JSB.clone(fDesc);
 			function _translate(newDesc){
+				if(newDesc.type == '$param'){
+					return newDesc;
+				}
 				if(newDesc.op == '$group'){
 					for(var i = 0; i < newDesc.items.length; i++){
 						_translate(newDesc.items[i]);
@@ -246,6 +251,8 @@
 						}
 					}
 					return false;
+				} else if(fDesc.type == '$param'){
+					return true;
 				} else {
 					var f = fDesc.cubeField || fDesc.field;
 					return fDesc.boundTo == sourceId || (cubeFields && cubeFields[f]);
@@ -267,7 +274,7 @@
 		
 		performSegmentation: function(segMap, fDesc, sourceId){
 			// generate segDesc entry
-			var segName = fDesc.op == '$group' ? '__group' + fDesc.sender.getId() : fDesc.cubeField || fDesc.field;
+			var segName = fDesc.op == '$group' ? '__group' + fDesc.sender.getId() : fDesc.cubeField || fDesc.field || fDesc.param;
 			if(!segMap[segName]){
 				segMap[segName] = {
 					andFilters: [],
@@ -275,7 +282,8 @@
 					notFilters: [],
 					andFiltersLocal: [],
 					orFiltersLocal: [],
-					notFiltersLocal: []
+					notFiltersLocal: [],
+					params: []
 				};
 			}
 			var type = fDesc.type;
@@ -300,7 +308,8 @@
 						notFilters: [],
 						andFiltersLocal: [],
 						orFiltersLocal: [],
-						notFiltersLocal: []
+						notFiltersLocal: [],
+						params: []
 					};
 					for(var i = 0; i < fDesc.items.length; i++){
 						_performSegmentation(groupSeg, fDesc.items[i]);
@@ -312,6 +321,8 @@
 						_insertToSeg(fDesc, segDesc, 'orFilters', null, groupSeg);
 					} else if(fDesc.type == '$not'){
 						_insertToSeg(fDesc, segDesc, 'notFilters', null, groupSeg);
+					} else if(fDesc.type == '$param'){
+						_insertToSeg(fDesc, segDesc, 'params', null, groupSeg);
 					} else {
 						throw new Error('Unexpected filter type: ' + fDesc.type);
 					}
@@ -325,6 +336,8 @@
 							f2[f] = {$lte: fDesc.value[1]};
 							field.$and = [f1, f2];
 						}
+					} else if(fDesc.type == '$param'){
+						field[fDesc.param] = fDesc.value;
 					} else {
 						var f = fDesc.cubeField || fDesc.field;
 						var fOp = {};
@@ -338,6 +351,8 @@
 						_insertToSeg(fDesc, segDesc, 'orFilters', 'orFiltersLocal', {type:'filter', filter:field});
 					} else if(fDesc.type == '$not'){
 						_insertToSeg(fDesc, segDesc, 'notFilters', 'notFiltersLocal', {type:'filter', filter:field});
+					} else if(fDesc.type == '$param'){
+						_insertToSeg(fDesc, segDesc, 'params', null, {type:'filter', filter:field});
 					} else {
 						throw new Error('Unexpected filter type: ' + fDesc.type);
 					}
@@ -359,43 +374,12 @@
 				var fDesc = filters[fItemId];
 				
 				$this.performSegmentation(ffMap, fDesc, sourceId);
-/*				
-				var f = fDesc.op == '$group' ? '__group' + fDesc.sender.getId() : fDesc.cubeField || fDesc.field;
-				if(!ffMap[f]){
-					ffMap[f] = {
-						andFilters: [],
-						orFilters: [],
-						andFiltersLocal: [],
-						orFiltersLocal: []
-					};
-				}
-				
-				var ffDesc = ffMap[f];
-				var field = $this.resolveOp(fDesc, sourceId);
-				
-				if(fDesc.type == '$and'){
-					if(fDesc.boundTo){
-						if(fDesc.boundTo == sourceId){
-							ffDesc.andFiltersLocal.push(field);
-						}
-					} else {
-						ffDesc.andFilters.push(field);
-					}
-				} else if(fDesc.type == '$or'){
-					if(fDesc.boundTo){
-						if(fDesc.boundTo == sourceId){
-							ffDesc.orFiltersLocal.push(field);
-						}
-					} else {
-						ffDesc.orFilters.push(field);
-					}
-				}
-*/				
 			}
 			
 			function _constructSegFilter(ffDesc){
 				var filter = null;
 				var postFilter = null;
+				var params = null;
 				
 				var or = {$or:[]};
 				var and = {$and:[]};
@@ -530,11 +514,25 @@
 				} else if(andLocal) {
 					postFilter = andLocal;
 				}
-				return {filter: filter, postFilter: postFilter}
+				
+				// proceed params
+				if(ffDesc.params.length > 0){
+					params = {};
+					for(var i = 0; i < ffDesc.params.length; i++){
+						var pDesc = ffDesc.params[i].filter;
+						for(var pName in pDesc){
+							params[pName] = {$defaultValue: pDesc[pName]};
+						}
+						
+					}
+				}
+				
+				return {filter: filter, postFilter: postFilter, params: params}
 			}
 			
 			var filter = {$or:[{$and:[]}]};
 			var postFilter = {$or:[{$and:[]}]};
+			var params = {};
 			
 			for(var fName in ffMap){
 				var ffDesc = ffMap[fName];
@@ -552,6 +550,9 @@
 					} else {
 						postFilter.$or.push(fDesc.postFilter);
 					}
+				}
+				if(fDesc.params){
+					JSB.merge(params, fDesc.params);
 				}
 			}
 			
@@ -582,7 +583,8 @@
 			
 			return {
 				filter: filter,
-				postFilter: postFilter
+				postFilter: postFilter,
+				params: params
 			};
 		},
 		

@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Query.Controls.ExtendEditor',
 	$parent: 'JSB.Controls.Control',

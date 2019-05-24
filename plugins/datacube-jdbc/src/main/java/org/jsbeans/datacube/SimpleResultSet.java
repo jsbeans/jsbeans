@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 package org.jsbeans.datacube;
 
 import org.h2.tools.SimpleRowSource;

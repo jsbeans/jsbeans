@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Controls.FilterTag',
 	$parent: 'JSB.Widgets.Control',
@@ -28,7 +30,7 @@
 				fTag.append(groupCount);
 				removeSelector = groupName;
 			} else {
-				var fName = fDesc.cubeField || fDesc.field;
+				var fName = fDesc.cubeField || fDesc.field || fDesc.param;
 				var fieldElt = $this.$('<div class="field"></div>').text(fName).attr('title', fName);
 				removeSelector = fieldElt;
 				fTag.append(fieldElt);

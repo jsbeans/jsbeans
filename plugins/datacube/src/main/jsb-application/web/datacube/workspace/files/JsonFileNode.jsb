@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.JsonFileNode',
 	$parent: 'JSB.Workspace.FileNode',

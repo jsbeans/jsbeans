@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Model.QueryableEntry',
 	$parent: 'DataCube.Model.SettingsEntry',
@@ -117,6 +119,14 @@
             			preparedQuery.$groupBy = qDesc.query.$groupBy;
             		} else {
             			JSB.merge(preparedQuery.$groupBy, qDesc.query.$groupBy);
+            		}
+            	}
+            	
+            	if(qDesc.query.$params){
+            		if(!preparedQuery.$params){
+            			preparedQuery.$params = qDesc.query.$params;
+            		} else {
+            			JSB.merge(preparedQuery.$params, qDesc.query.$params);
             		}
             	}
 

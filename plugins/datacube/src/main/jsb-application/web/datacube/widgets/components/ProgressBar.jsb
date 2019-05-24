@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Widgets.ProgressBar',
 	$parent: 'DataCube.Widgets.Widget',
@@ -151,10 +153,6 @@
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.setInitialized();
 			});
-		},
-
-		refresh: function(opts){
-		    this.onRefresh(opts);
 		},
 
 		onRefresh: function(opts){

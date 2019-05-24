@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Query.Engine.SQL.InMemoryInterpreter',
 	$parent: 'DataCube.Query.Engine.SQL.SQLInterpreter',

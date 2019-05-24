@@ -1,3 +1,5 @@
+/** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
+
 {
 	$name: 'DataCube.Widgets.Widget',
 	$parent: 'JSB.Widgets.Widget',
@@ -97,6 +99,7 @@
 			        this.addTask = function(opts){
 			            if(status === 'ready'){
 			                status = 'refreshing';
+			                $this.localizeFilters();
 			                $this.onRefresh(opts);
 			            } else {
 			                refreshOpts = opts;
@@ -111,6 +114,7 @@
 			        this.ready = function(){
 			            if(needRefresh){
 			                needRefresh = false;
+			                $this.localizeFilters();
 			                $this.onRefresh(refreshOpts);
 			            } else {
 			                status = 'ready';
@@ -526,6 +530,13 @@
                 callback.call(this);
                 return;
             }
+            
+            if(!selector.hasBinding()){
+            	if(callback){
+            		callback.call($this, null, new Error('Not bound to source'));
+            	}
+            	return false;
+            }
 
             if(arguments.length == 1 && JSB.isFunction(opts)){
                 callback = opts;
@@ -742,15 +753,21 @@
 		translateContextFilter: function(sourceId){
 			var postFilter = {};
 			var cubeFilter = {};
+			var params = {};
 			if(Object.keys($this.contextFilter).length > 0){
 				var source = this.sources[sourceId];
 				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 					var q = source.getQuery();
 					for(var fName in $this.contextFilter){
-						if(q.$select && q.$select[fName]){
-							postFilter[fName] = $this.contextFilter[fName];
+						if(fName[0] == '$'){
+							params[fName] = {$defaultValue: $this.contextFilter[fName]};
 						} else {
-							cubeFilter[fName] = $this.contextFilter[fName];
+							// conditional filter used
+							if(q.$select && q.$select[fName]){
+								postFilter[fName] = $this.contextFilter[fName];
+							} else {
+								cubeFilter[fName] = $this.contextFilter[fName];
+							}
 						}
 					}
 					
@@ -758,7 +775,8 @@
 			}
 			return {
 				postFilter: postFilter,
-				cubeFilter: cubeFilter
+				cubeFilter: cubeFilter,
+				params: params
 			}
 		},
 
@@ -772,6 +790,9 @@
 					}
 					if(contextFilterDesc.cubeFilter && Object.keys(contextFilterDesc.cubeFilter).length > 0){
 						query.$cubeFilter = contextFilterDesc.cubeFilter;
+					}
+					if(contextFilterDesc.params && Object.keys(contextFilterDesc.params).length > 0){
+						query.$params = contextFilterDesc.params;
 					}
 				}
 				if($this.sort){
@@ -797,10 +818,14 @@
 						if(filterDesc.postFilter){
 							query.$postFilter = filterDesc.postFilter;
 						}
+						if(filterDesc.params){
+							query.$params = filterDesc.params;
+						}
 					}
 				}
 				if(Object.keys($this.contextFilter).length > 0){
 					var contextFilterDesc = $this.translateContextFilter(sourceId);
+					
 					if(contextFilterDesc.postFilter && Object.keys(contextFilterDesc.postFilter).length > 0){
 						if(query.$postFilter){
 							query.$postFilter = {'$and':[query.$postFilter, contextFilterDesc.postFilter]};
@@ -813,6 +838,13 @@
 							query.$cubeFilter = {'$and':[query.$cubeFilter, contextFilterDesc.cubeFilter]};
 						} else {
 							query.$cubeFilter = contextFilterDesc.cubeFilter;
+						}
+					}
+					if(contextFilterDesc.params && Object.keys(contextFilterDesc.params).length > 0){
+						if(query.$params){
+							JSB.merge(query.$params, contextFilterDesc.params);
+						} else {
+							query.$params = contextFilterDesc.params;
 						}
 					}
 				}
@@ -836,7 +868,7 @@
 		},
 
 		getSourceFilters: function(selector){
-		    if(selector.getRenderName() !== 'sourceBinding'){
+		    if(selector.getRenderName() !== 'sourceBinding' || !selector.hasBinding()){
 		        return;
 		    }
 
@@ -917,12 +949,13 @@
 			if(this.updateDispatcher){
 				this.updateDispatcher.addTask(opts);
 			} else {
+				this.localizeFilters();
 				this.onRefresh(opts);
 			}
 		},
 
 		onRefresh: function(opts){
-			this.localizeFilters();
+			/*this.localizeFilters();*/
 		},
 
 		refreshAll: function(opts){
