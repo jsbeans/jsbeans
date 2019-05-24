@@ -643,7 +643,8 @@
                 desc: 'Значения параметров',
                 queryElement: true,
                 replaceable: false,
-                removable: true
+                removable: true,
+                defaultValues: {}
             },
 
             // math operators

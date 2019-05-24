@@ -42,7 +42,7 @@
 
 		            itemElement.append(item);
 		        },
-		        onSelect: function(desc){
+		        onSelect: function(desc) {
 		            $this.data.callback.call($this, desc);
 		            $this.close();
 		        }

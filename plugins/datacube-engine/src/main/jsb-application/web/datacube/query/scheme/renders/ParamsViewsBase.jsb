@@ -13,7 +13,7 @@
 
 	        this.addClass('paramsViewsBase');
 
-	        this.createHeader();
+	        this.createHeader(true);
 
 	        this.container = this.$('<div class="container"></div>');
 	        this.append(this.container);
