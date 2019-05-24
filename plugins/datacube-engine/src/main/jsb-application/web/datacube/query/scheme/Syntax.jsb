@@ -637,6 +637,15 @@
                 }
             },
 
+            $params: {
+                render: '$params',
+                displayName: 'Параметры',
+                desc: 'Значения параметров',
+                queryElement: true,
+                replaceable: false,
+                removable: true
+            },
+
             // math operators
             $add: {
                 render: '$default',

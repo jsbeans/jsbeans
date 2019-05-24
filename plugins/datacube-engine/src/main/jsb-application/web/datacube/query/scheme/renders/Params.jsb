@@ -1,28 +1,28 @@
 /** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
 
 {
-	$name: 'DataCube.Query.Controls.ParamsEditor',
-	$parent: 'DataCube.Query.Controls.ExtendEditor',
+	$name: 'DataCube.Query.Renders.Params',
+	$parent: 'DataCube.Query.Renders.ParamsViewsBase',
 
 	$alias: '$params',
 
-	$client: {
+    $client: {
 	    $require: ['DataCube.Query.Helper',
-	               'JSB.Controls.Editor',
+	               'JSB.Controls.MultitypeEditor',
 	               'JSB.Controls.Selectize',
-	               'css:ParamsEditor.css'],
+	               'css:Params.css'],
 
-	    $constructor: function(opts) {
-	        $base(opts);
-// todo: inherited params
-	        this.addClass('paramsEditor');
-	    },
+        $constructor: function(opts) {
+            $base(opts);
+
+            this.addClass('params');
+        },
 
 	    create: function(values, name, isInherit) {
 	        if(name) {
 	            name = this.unwrapName(name);
 	        } else {
-                name = Helper.createName(this._descs, 'Параметр');
+                name = Helper.createName(this.getUnwrappedParams(), 'Параметр');
             }
 
             var isNew = false;
@@ -35,15 +35,39 @@
 
                 isNew = true;
             }
-
+/*
+			    string: 'string',
+			    number: 'number',
+			    integer: 'number',
+			    uint: 'number',
+			    long: 'number',
+			    ulong: 'number',
+			    boolean: 'boolean',
+			    float: 'float',
+			    double: 'double',
+			    datetime: 'date',
+			    date: 'date',
+			    time: 'date',
+			    timestamp: 'date',
+			    array: 'array',
+			    object: 'object',
+*/
             var types = [
             {
-                name: 'Числовой',
-                value: 'number'
+                name: 'Дата',
+                value: 'date'
+            },
+            {
+                name: 'Логический',
+                value: 'boolean'
             },
             {
                 name: 'Строковый',
                 value: 'string'
+            },
+            {
+                name: 'Числовой',
+                value: 'number'
             }
             ];
 
@@ -51,8 +75,10 @@
                 switch(type) {
                     case 'string':
                         return 'text';
-                    case 'number':
-                        return 'number';
+                    case 'boolean':
+                        return 'bool';
+                    default:
+                        return type;
                 }
             }
 
@@ -70,13 +96,13 @@
 	                valueEditor.setType(valueType(val));
 
 	                $this.onChange('change', {
-	                    name: $this.wrapName(name),
+	                    name: $this.wrapName(item.getTitle()),
 	                    values: values
 	                });
 	            }
 	        });
 
-            var valueEditor = new Editor({
+            var valueEditor = new MultitypeEditor({
                 label: 'Значение',
                 type: valueType(values.$type),
                 value: values.$defaultValue,
@@ -84,7 +110,7 @@
                     values.$defaultValue = val;
 
 	                $this.onChange('change', {
-	                    name: $this.wrapName(name),
+	                    name: $this.wrapName(item.getTitle()),
 	                    values: values
 	                });
                 }
@@ -101,14 +127,21 @@
 
             if(isNew) {
                 this.onChange('add', {
-                    name: this.wrapName(name),
+                    name: this.wrapName(item.getTitle()),
                     values: values
                 });
             }
 	    },
 
-	    refresh: function(opts) {
-	        $base(opts);
+	    getUnwrappedParams: function() {
+	        var values = this.getValues(),
+	            params = {};
+
+            for(var i in values) {
+                params[this.unwrapName(i)] = true;
+            }
+
+            return params;
 	    },
 
 	    wrapName: function(name) {  // "${param name}"
@@ -119,13 +152,5 @@
 	        var regexp = /\{(.*?)\}/;
 	        return name.match(regexp)[1];
 	    }
-	},
-
-	$server: {
-	    $require: ['DataCube.Query.Extractors.ExtractUtils'],
-
-	    getInheritParams: function(query) {
-	        return ExtractUtils.extractAllowedParams(query, query);
-	    }
-	}
+    }
 }

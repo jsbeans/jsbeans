@@ -15,7 +15,6 @@
 	$require: ['JSB.Widgets.SplitBox',
 	           'DataCube.Controls.Grid',
 	           'DataCube.Query.Controls.ViewsEditor',
-	           'DataCube.Query.Controls.ParamsEditor',
 	           'JSB.Widgets.TabView',
 	           'JSB.Controls.ScrollBox',
 	           'JSB.Widgets.PrimitiveEditor', 
@@ -163,17 +162,11 @@
 			    schemeController: this.editor
 			});
 
-			this.paramsEditor = new ParamsEditor({
-			    schemeController: this.editor
-			});
-
 			tabView.addTab('Именованные подзапросы', this.viewsEditor, {id:'views'});
-			tabView.addTab('Параметры', this.paramsEditor, {id:'params'});
 			tabView.addTab('Текстовый вид', this.textQueryEditor, {id:'textQuery'});
 
             this.editor = new SchemeController({
                 extendControllers: {
-                    $params: this.paramsEditor,
                     $views: this.viewsEditor
                 },
                 onChange: function(){
