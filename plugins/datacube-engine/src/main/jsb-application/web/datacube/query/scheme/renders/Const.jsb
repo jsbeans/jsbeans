@@ -60,7 +60,6 @@
                             dock: 'bottom'
                         },
                         callback: function(desc) {
-debugger;
                             switch(desc.key) {
                                 case 'number':
                                     var curVal = $this.getValues(),
@@ -72,19 +71,23 @@ debugger;
 
                                     value.text(newVal);
 
+                                    $this.setValues(newVal);
+
                                     $this.createInput(value, 'number', function(val) {
                                         $this.setValues(val);
                                     });
                                     break;
                                 case 'string':
                                     var curVal = $this.getValues(),
-                                        newVal = '""';
+                                        newVal = '';
 
                                     if(typeof curVal === 'string') {
-                                        newVal = '"' + curVal + '"';
+                                        newVal = curVal;
                                     }
 
-                                    value.text(newVal);
+                                    value.text('"' + newVal + '"');
+
+                                    $this.setValues(newVal);
 
                                     $this.createInput(value, 'text', function(val) {
                                         $this.setValues(val);
