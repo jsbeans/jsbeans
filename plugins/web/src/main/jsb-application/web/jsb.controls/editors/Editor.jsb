@@ -5,10 +5,9 @@
 		$require: ['css:Editor.css'],
 
 		_startEditValue: undefined,
-	    _types: ['text', 'password', 'search', 'number'],
 	    _value: null,
 
-	    $constructor: function(opts){
+	    $constructor: function(opts) {
 	        $base(opts);
 
             this.addClass('jsb-editor');
@@ -128,7 +127,10 @@
 	        label: undefined,
 	        placeholder: null,
 	        readonly: false,
-	        type: 'text',    // password, search, number
+            // html types: color(5), date(5), datetime-local(5), email(5),
+            // month(5), number(5), password, range(5), search(5), tel(5), text,
+            // time(5), url(5), week(5)
+	        type: 'text',
 	        value: null,
 
 	        // number attributes
@@ -224,10 +226,6 @@
 	    },
 
 	    setType: function(type) {
-            if(this._types.indexOf(type) < 0){
-                throw Error('Invalid input type');
-            }
-
             this._editor.attr('type', type);
 	    },
 

@@ -44,7 +44,7 @@
 	            id: this.getId() + '_value',
 	            noClick: true,
 	            remove: false,
-	            editCallback: function(){
+	            editCallback: function() {
                     ToolManager.activate({
                         id: 'simpleSelectTool',
                         cmd: 'show',
@@ -57,19 +57,20 @@
                             selector: $this.getElement(),
                             dock: 'bottom'
                         },
-                        callback: function(desc){
-                            switch(desc.key){
+                        callback: function(desc) {
+debugger;
+                            switch(desc.key) {
                                 case 'number':
                                     var curVal = $this.getValues(),
                                         newVal = 0;
 
-                                    if(typeof curVal === 'number'){
+                                    if(typeof curVal === 'number') {
                                         newVal = curVal;
                                     }
 
                                     value.text(newVal);
 
-                                    $this.createInput(value, 'number', function(val){
+                                    $this.createInput(value, 'number', function(val) {
                                         $this.setValues(val);
                                     });
                                     break;
@@ -77,13 +78,13 @@
                                     var curVal = $this.getValues(),
                                         newVal = '""';
 
-                                    if(typeof curVal === 'string'){
+                                    if(typeof curVal === 'string') {
                                         newVal = '"' + curVal + '"';
                                     }
 
                                     value.text(newVal);
 
-                                    $this.createInput(value, 'text', function(val){
+                                    $this.createInput(value, 'text', function(val) {
                                         $this.setValues(val);
                                     });
                                     break;

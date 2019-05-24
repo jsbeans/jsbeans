@@ -111,8 +111,12 @@
             return this.element;
         },
 
-        getOption: function(opt){
-            return this.options[opt];
+        getOption: function(opt) {
+            if(opt) {
+                return this.options[opt];
+            } else {
+                return this.options;
+            }
         },
 
 		hasClass: function(cls){
