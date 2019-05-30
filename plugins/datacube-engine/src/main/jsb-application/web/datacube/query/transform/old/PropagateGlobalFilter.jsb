@@ -10,7 +10,9 @@
 		    'DataCube.Query.Transforms.QueryTransformer'
         ],
 
-		transform: function(dcQuery, cube){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
+            var cube = queryTask.cube;
             // embed $globalFilter to $filter/$postFilter of root and sub queries
             $this.propagateGlobalFilter(dcQuery, cube);
 		    return dcQuery;

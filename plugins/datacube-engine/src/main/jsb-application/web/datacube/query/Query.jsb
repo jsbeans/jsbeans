@@ -9,7 +9,14 @@
             'DataCube.Query.Engine.QueryExecutor'
         ],
 
+        a:0,
+        test: function(){
+            Log.debug(this.a);
+            Log.debug($this.a);
+        },
+
 		execute: function(queryTask){
+		    $this.test.call({a:1});
             if (!queryTask.startEngine) {
 //debugger;
 //$this.prepare({

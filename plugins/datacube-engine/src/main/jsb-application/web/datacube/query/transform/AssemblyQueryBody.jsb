@@ -23,21 +23,24 @@
                 а) перечня использьзуемых полей в запросе, ссылающемся на срез - все используемые поля должны быть в $select среза
                 б) перечня используемых в глобальном срезе измерений - выбираются срезы с максимальным числом совпавших измерений
         */
-		transform: function(dcQuery, cube){
-//debugger;
-            $this.assemblyQuery(dcQuery, cube);
-            return dcQuery;
+		transform: function(executor, queryTask){
+            $this.assemblyQuery(executor, queryTask);
+            return queryTask.query;
 		},
 
 
-		assemblyQuery: function(dcQuery, cube){
+		assemblyQuery: function(executor, queryTask){
+//debugger;
+            var rootQuery = queryTask.query;
+            var params = queryTask.params;
+            var cube = queryTask.cube;
             var queryStack = [];
             var allUsedDimensions = {};
-            dcQuery.$views = dcQuery.$views || {};
+            rootQuery.$views = rootQuery.$views || {};
             var embeddedSlices = {};
             var sliceViews = {};
-		    QueryUtils.walkQueries(dcQuery, {
-		            dcQuery: dcQuery,
+		    QueryUtils.walkQueries(rootQuery, {
+		            rootQuery: rootQuery,
 		            getExternalView: function(name) {
 //debugger
                         /// использовать срез и его заменители
@@ -66,19 +69,19 @@
                             $this._filterJoinedTargetFields(usedSliceFields, this.query, context);
                         }
                         /// непосредственно выбор среза по полям
-                        var bestSlice = $this.selectBestSlice(slices, context, usedSliceFields, usedDimensions, cube);
+                        var bestSlice = $this.selectBestSlice(slices, context, usedSliceFields, usedDimensions, params, cube);
                         if (bestSlice != slice) {
                             // TODO потенциально может возникнуть коллизия имен вьюх, соответствующиъ срезам-аналогам
                         }
                         var body = JSB.clone(bestSlice.getQuery());
                         embeddedSlices[name] = name;
-                        dcQuery.$views[name] = body;
+                        rootQuery.$views[name] = body;
                         if(!sliceViews[bestSlice.getFullId()]) {
                             sliceViews[bestSlice.getFullId()] = [];
                         }
                         sliceViews[bestSlice.getFullId()].push(body);
 
-                        return dcQuery.$views[name];
+                        return rootQuery.$views[name];
 		            }
 		        },
 		        function _enter(query) {
@@ -92,7 +95,6 @@
 
                     /// если запрос к кубу
 		            if (query.$cube || !query.$from && !query.$provider && !query.$join && !query.$union && !query.$recursive) {
-//debugger
                         var queryCube = QueryUtils.getQueryCube(query.$cube || cube.getId(), cube);
                         /// на случай, если запрос-однострочник
 		                if (!query.$cube) {
@@ -110,14 +112,14 @@
 
 		                /// подобрать лучший подходящий срез
                         var usedSliceFields = usedFields || QueryUtils.extractInputFields(query);
-                        var bestSlice = $this.selectBestSlice(slices, query.$context, usedSliceFields, usedDimensions, queryCube);
+                        var bestSlice = $this.selectBestSlice(slices, query.$context, usedSliceFields, usedDimensions, params, queryCube);
                         var body = JSB.clone(bestSlice.getQuery());
                         /// заменить в запросе источник - установить $from вместо $cube и добавить вью
                         delete query.$cube;
                         var name = query.$from = bestSlice.getFullId();
-                        if (!dcQuery.$views[name]) {
+                        if (!rootQuery.$views[name]) {
                             embeddedSlices[name] = name;
-                            dcQuery.$views[name] = body;
+                            rootQuery.$views[name] = body;
                             if(!sliceViews[name]) {
                                 sliceViews[name] = [];
                             }
@@ -142,8 +144,8 @@
         },
 
 
-		selectBestSlice: function(slices, context, usedSliceFields, usedDimensions, cube){
-		    var matchedSlices = $this._filterMatchedSlices(slices, context, usedSliceFields, usedDimensions);
+		selectBestSlice: function(slices, context, usedSliceFields, usedDimensions, usedParams, cube){
+		    var matchedSlices = $this._filterMatchedSlices(slices, context, usedSliceFields, usedDimensions, usedParams);
 		    if(Object.keys(slices).length == 1 && Object.keys(matchedSlices).length == 0) {
 		        matchedSlices = slices;
 		    }
@@ -222,10 +224,13 @@
             return usedDimensions;
         },
 
-		_filterMatchedSlices: function(slices, context, usedSliceFields, usedDimensions) {
-		    var resultSlices = {};
-		    var resultDimensions = {};
-		    var maxDimensions = 0;
+		_filterMatchedSlices: function(slices, context, usedSliceFields, usedDimensions, usedParams) {
+		    var filteredSlices = {};
+		    var sliceDimensionsCountMap = {};
+		    var sliceParamsCountMap = {};
+		    var maxDimensionsCount = 0;
+		    var maxCountParams = 0;
+		    var definedParams = Object.keys(usedParams).length;
 
             for(var sid in slices) {
 		        var slice = slices[sid];
@@ -254,26 +259,55 @@
                             countDimensions ++;
                         }
                     }
-                    if (maxDimensions < countDimensions) {
-                        maxDimensions = countDimensions;
+                    if (maxDimensionsCount < countDimensions) {
+                        maxDimensionsCount = countDimensions;
+                    }
+
+                    var countParams = 0;
+                    if (definedParams > 0) {
+                        var sliceParams = slice.extractParams();
+                        for(var param in usedParams) {
+                            if (sliceParams[param]) {
+                                countParams ++;
+                            }
+                        }
+                        if (maxCountParams < countParams) {
+                            maxCountParams = countParams;
+                        }
                     }
 
                     /// сохранить
-                    resultDimensions[sid] = countDimensions;
-		            resultSlices[sid] = slice;
+                    sliceDimensionsCountMap[sid] = countDimensions;
+                    sliceParamsCountMap[sid] = countParams;
+		            filteredSlices[sid] = slice;
 		        }
 		    }
 
-		    if (Object.keys(usedDimensions).length > maxDimensions && Object.keys(resultSlices).length > 0) {
+		    if (Object.keys(usedDimensions).length > maxDimensionsCount && Object.keys(filteredSlices).length > 0) {
 		        QueryUtils.logDebug("Лучший срез экспортирует меньше змерений, чем используется в запросе: {}", JSON.stringify());
             }
-
-            /// оставить только срезы с максимальным числом совпавших измерений
-		    for(var sid in resultDimensions) {
-		        var count = resultDimensions[sid];
-		        if (count != maxDimensions) {
-		            delete resultSlices[sid];
+debugger
+            var resultSlices = {};
+            /// фильтрация стрезов - остаются только лучшие срезы:
+            /// 1. или с максимальным числом измерениев,
+            /// 2. или с максимальным числом параметров
+            var empty = true;
+		    for(var sid in sliceDimensionsCountMap) {
+		        var dimensionsCount = sliceDimensionsCountMap[sid];
+		        var paramsCount = sliceParamsCountMap[sid];
+		        if (dimensionsCount >= maxDimensionsCount && paramsCount >= maxCountParams) {
+		            resultSlices[sid] = filteredSlices[sid];
+		            empty = false;
 		        }
+            }
+            if (empty) {
+                for(var sid in sliceDimensionsCountMap) {
+                    var dimensionsCount = sliceDimensionsCountMap[sid];
+                    var paramsCount = sliceParamsCountMap[sid];
+                    if (dimensionsCount >= maxDimensionsCount || paramsCount >= maxCountParams) {
+                        resultSlices[sid] = filteredSlices[sid];
+                    }
+                }
             }
 
 //		    QueryUtils.throwError(
@@ -301,6 +335,7 @@
 		        var slice = slices[id];
                 array.push(slice);
 		    }
+		    if (array.length == 1 ) return array[0];
 
 		    array.sort(function (a,b){
 		        return SliceCost.compareSlices(a, b);

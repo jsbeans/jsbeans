@@ -63,13 +63,9 @@
                 }
 
                 /// extract default prams from query
-                var queryParams = ExtractUtils.extractUsedParams($this.queryTask.query, true);
-                for(var param in queryParams) {
-                    if (!$this.params.hasOwnProperty(param)) {
-                        $this.params[param] = queryParams[param].$defaultValue;
-                    }
-                }
+                $this.initDefaultParams();
 
+                /// execute engines
                 $this.executeEngine(startEngine, {
                     cube: $this.cube,
                     query: $this.query,
@@ -77,7 +73,7 @@
                 });
                 $this.submitResult();
 
-                /// wait result if sync
+                /// wait async result if sync call
                 if (!$this.callback) {
                     while(true) {
                         if($this.result.get()) {
@@ -100,6 +96,16 @@
                     },
                 });
                 throw e;
+            }
+		},
+
+		initDefaultParams: function(){
+            var queryParams = ExtractUtils.extractUsedParams($this.queryTask.query);
+            for(var param in queryParams) {
+                // if not defined - set default value
+                if (!$this.params.hasOwnProperty(param)) {
+                    $this.params[param] = queryParams[param].$defaultValue;
+                }
             }
 		},
 

@@ -12,9 +12,11 @@
 		    'DataCube.Query.Visitors.Visitors',
         ],
 
-		transform: function(rootQuery, cube){
+		transform: function(executor, queryTask){
+		    var rootQuery = queryTask.query;
+		    var cube = queryTask.cube;
 		    var slices = new HashMap();
-            Visitors.visitProxy(rootQuery, {
+            Visitors.visit(rootQuery, {
                 getUndefinedView: function(name){
                     var slice = QueryUtils.getQuerySlice(name, cube);
                     QueryUtils.throwError(slice, 'Query slice or named view is undefined: ' + name);

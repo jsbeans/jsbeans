@@ -11,7 +11,9 @@
         ],
 
         /** приведение контекстов и названий в $views к равенству */
-		transform: function(dcQuery, cube){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
+            var cube = queryTask.cube;
             var count = 0;
 		    QueryUtils.walkQueries(dcQuery, {getExternalView:function(){return {};}}, null, function(query){
                 if (query.$views) {

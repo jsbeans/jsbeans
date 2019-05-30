@@ -13,8 +13,10 @@
 		    'DataCube.Query.Visitors.Visitors',
         ],
 
-		transform: function(rootQuery, cubeOrDataProvider){
-            Visitors.visitProxy(rootQuery, {
+		transform: function(executor, queryTask){
+		    var rootQuery = queryTask.query;
+		    var cube = queryTask.cube;
+            Visitors.visit(rootQuery, {
                 getUndefinedView: function(name){
                     return {};
                 },

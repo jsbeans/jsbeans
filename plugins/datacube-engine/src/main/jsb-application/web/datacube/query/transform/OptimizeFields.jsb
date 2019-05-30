@@ -13,10 +13,11 @@
 		    'DataCube.Query.Visitors.Visitors',
         ],
 
-		transform: function(rootQuery, cubeOrDataProvider){
-
+		transform: function(executor, queryTask){
+            var rootQuery = queryTask.query;
+            var cubeOrDataProvider = queryTask.cube;
 		    Visitors.extractedFields(rootQuery, function(fieldsExtractor){
-                Visitors.visitProxy(rootQuery, {
+                Visitors.visit(rootQuery, {
                     query: {
                         before: function(query) {
                             if (this.getExpressionKey(-2) == '$recursive') {

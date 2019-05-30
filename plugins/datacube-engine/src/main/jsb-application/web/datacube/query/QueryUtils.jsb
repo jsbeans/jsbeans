@@ -539,7 +539,7 @@
                     } else if (exp == query){
                         // self query
                         for (var f in exp)
-                        if (exp[f] != null && !QuerySyntax.constValueOperators[f] && !QuerySyntax.queryOperators[f]) {
+                        if (f !== '$params' && exp[f] != null && !QuerySyntax.constValueOperators[f] && !QuerySyntax.queryOperators[f]) {
                             if (!f.startsWith('$')) {
                                 fieldsCallback(f, null, query, path);
                             } else {
@@ -650,7 +650,7 @@
                 } else if (JSB.isObject(exp)) {
                     if (exp == query || !exp.$select) {
                         // if start query or any expression
-                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+                        for (var f in exp) if (f !== '$params' && exp[f] != null && !QuerySyntax.constValueOperators[f]) {
                             if (!f.startsWith('$')) {
                                 var res = callback(f, query.$context, null, query, false);
                             } else {
@@ -662,7 +662,7 @@
                         }
                     } else if(exp.$select && !skipSubQuery) {
                         // if enabled sub-query
-                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+                        for (var f in exp) if (f !== '$params' && exp[f] != null && !QuerySyntax.constValueOperators[f]) {
                             var res = collect(exp[f], true);
                             if (res) {
                                 exp[f] = res;
@@ -692,7 +692,7 @@
                 } else if (JSB.isObject(exp)) {
                     if (exp == query || !exp.$select) {
                         // if start query or any expression
-                        for (var f in exp) if (exp[f] != null && !QuerySyntax.constValueOperators[f]) {
+                        for (var f in exp) if (f !== '$params' && exp[f] != null && !QuerySyntax.constValueOperators[f]) {
                             var res = collect(exp[f]);
                             if (res) {
                                 exp[f] = res;

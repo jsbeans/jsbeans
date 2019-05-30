@@ -35,7 +35,7 @@
             }
         },
 
-		transform: function(transformers, queryTask){
+		transform: function(transformers, queryTask, executor){
 		    var dcQuery = queryTask.query;
 		    var defaultCube = queryTask.cube;
 		    try{
@@ -53,7 +53,7 @@
 
                     var transformer = $this.ensureTransformer(transformerName);
 
-                    dcQuery = transformer.transform(dcQuery, defaultCube, names.length > 1 ? names[1]:null);
+                    dcQuery = transformer.transform(executor, queryTask, names.length > 1 ? names[1]:null);
                     var time = totalTime += times[i+':'+conf] = (Date.now()-startedTime)/1000;
                     if ($this.stat) {
                         var ss = $this.stat[conf] = $this.stat[conf] || {};

@@ -14,7 +14,8 @@
             $base();
         },
 
-		transform: function(dcQuery, cube){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
 		    var contexts = {};
             QueryUtils.walkQueries(dcQuery, {}, null, function(query){
                 if (!contexts[query.$context]) {

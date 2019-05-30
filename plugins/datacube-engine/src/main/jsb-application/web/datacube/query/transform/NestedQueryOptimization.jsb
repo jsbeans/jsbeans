@@ -18,7 +18,8 @@
             verify: true,
         },
 
-		transform: function(dcQuery, cubeOrDataProvider){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
 debugger;
             QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before NestedQueryOptimization: ' + JSON.stringify(dcQuery, 0, 2));
 		    $this._buildViews(dcQuery);

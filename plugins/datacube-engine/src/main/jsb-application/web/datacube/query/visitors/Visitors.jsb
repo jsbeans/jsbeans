@@ -20,7 +20,7 @@
             }
         },
 
-        visitProxy: function(query, options) {
+        visit: function(query, options) {
             try {
                 var visitor = new ProxyVisitor(options);
                 visitor.visit(query);
