@@ -11,11 +11,11 @@
 		    'java:java.util.HashMap',
         ],
 
-		transform: function(rootQuery, cubeOrDataProvider){
+		transform: function(executor, queryTask){
 
             // ensure queries has defined $context
-            $this.defineContexts(rootQuery);
-		    return rootQuery;
+            $this.defineContexts(queryTask.query);
+		    return queryTask.query;
 		},
 
 		defineContexts: function(rootQuery) {

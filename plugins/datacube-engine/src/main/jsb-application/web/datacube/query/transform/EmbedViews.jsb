@@ -17,7 +17,9 @@
         /**
         * Вставляет в запрос тела вьюх согласно конфигу
         */
-		transform: function(rootQuery, cube, arg){
+		transform: function(executor, queryTask, arg){
+            var rootQuery = queryTask.query;
+            var cube = queryTask.cube;
 		    var config = JSB.merge({
                     embedDirectProviders:true,
                     embedDirectQueries:true,
@@ -49,7 +51,7 @@
             /// collect views usages count
             if (config.embedSingleUsedViews && !config.embedAll) {
                 var viewCount = new HashMap();
-                Visitors.visitProxy(rootQuery, {
+                Visitors.visit(rootQuery, {
                     query: {
                         before: function(query) {
                             if (JSB.isString(query.$from)) {
@@ -81,7 +83,7 @@
             /// embed views
             var usedViews = [];
             var renameSourceContext = new HashMap();
-            Visitors.visitProxy(rootQuery, {
+            Visitors.visit(rootQuery, {
                 query: {
                     before: function(query) {
                         if (JSB.isString(query.$from)) {

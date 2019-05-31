@@ -11,7 +11,9 @@
 		    'DataCube.Query.Syntax'
         ],
 
-		transform: function(dcQuery, cubeOrDataProvider){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
+            var cube = queryTask.cube;
             // unwrap macros and $grmax* to complex expressions
             $this.unwrapMacros(dcQuery);
             $this.unwrapGOperators(dcQuery);

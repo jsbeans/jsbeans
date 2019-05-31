@@ -236,6 +236,22 @@
             }
         },
 
+        getDefinedParams: function(externalParams){
+            var params = {}
+            for(var i = this.queryPath.length - 1; i > 0 ; i--) {
+                var query = this.queryPath[i];
+                JSB.merge(params, query.$params);
+            }
+            if (externalParams) {
+                for(var param in externalParams) {
+                    var name = param.startsWith('${') ? param.substr(2, param.length - 3) : param;
+                    var def = params['${' + name + '}'] ? params['${' + name + '}'] : {};
+                    def.$defaultValue = externalParams[param];
+                }
+            }
+            return params;
+        },
+
         getUndefinedView: function(name) {
             throw new Error('View in undefined: ' + name);
         },

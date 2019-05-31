@@ -24,7 +24,9 @@
 
             // TODO похожую историю в определенной мере можно реализовать для $sort и $groupBy
         */
-		transform: function(rootQuery, cube){
+		transform: function(executor, queryTask){
+		    var rootQuery = queryTask.query;
+		    var cube = queryTask.cube;
             QueryUtils.walkQueries(rootQuery, {},
                 function enter(query){
                     if (query.$filter && Object.keys(query.$filter).length > 0 && (query.$from||query.$join||query.$union)) {
@@ -151,9 +153,12 @@
 
 
 
-		transform: function(rootQuery, defaultCube){
+
+		transform: function(executor, queryTask){
+		    var rootQuery = queryTask.query;
+		    var defaultCube = queryTask.cube;
 		    var queryAliasesMap = new HashMap();
-            Visitors.visitProxy(rootQuery, {
+            Visitors.visit(rootQuery, {
                 query: {
                     before: function(query){
                         if (query.$filter && Object.keys(query.$filter).length > 0 && (query.$from||query.$join||query.$union)) {

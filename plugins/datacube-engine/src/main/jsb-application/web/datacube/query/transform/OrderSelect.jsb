@@ -10,7 +10,9 @@
 		    'DataCube.Query.Transforms.QueryTransformer'
         ],
 
-		transform: function(dcQuery, cubeOrDataProvider){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
+            var cube = queryTask.cube;
              // move top fields that used in other
              $this.upperGeneralFields(dcQuery);
 

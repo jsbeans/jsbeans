@@ -12,8 +12,9 @@
 		    'DataCube.Query.Visitors.Visitors',
         ],
 
-		transform: function(rootQuery, cubeOrDataProvider){
-            Visitors.visitProxy(rootQuery, {
+		transform: function(executor, queryTask){
+		    var rootQuery = queryTask.query;
+            Visitors.visit(rootQuery, {
                 query: {
                     after: function(query){
                         if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {

@@ -13,9 +13,11 @@
 
         ],
 
-		transform: function(rootQuery, cube){
+		transform: function(executor, queryTask){
+		    var rootQuery = queryTask.query;
+		    var cube = queryTask.cube;
 		    var queryAliasesMap = new HashMap();
-            Visitors.visitProxy(rootQuery, {
+            Visitors.visit(rootQuery, {
                 getUndefinedView: function(name){
 //                    var slice = QueryUtils.getQuerySlice(name, cube);
 //                    QueryUtils.throwError(slice, 'Query slice or named view is undefined: ' + name);
@@ -65,7 +67,7 @@
 
 //        /** Производит замену
 //        */
-//		transform: function(rootQuery, cube){
+//		transform: function(executor, queryTask){		    var rootQuery = queryTask.query;		    var cube = queryTask.cube;
 //
 //		    QueryUtils.walkQueries(rootQuery, {}, null, function (query){
 //                var directAliases = {};

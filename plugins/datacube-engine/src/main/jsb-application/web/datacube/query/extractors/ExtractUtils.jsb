@@ -13,7 +13,7 @@
         ],
 
 //        test: function(rootQuery) {
-//            Visitors.visitProxy(rootQuery, {
+//            Visitors.visit(rootQuery, {
 //                getUndefinedView: function(name) {
 //                    return {};
 //                },
@@ -38,7 +38,7 @@
             var allowedFields = [];
             var sliceQueries = [];
             /// find query by context
-            Visitors.visitProxy(rootQuery, {
+            Visitors.visit(rootQuery, {
                 getUndefinedView: function(name) {
                     var slice = QueryUtils.getQuerySlice(name);
                     QueryUtils.throwError(slice, 'Slice or named view is undefined: {}', name);
@@ -144,7 +144,7 @@
             }
 
             if (includeImplicit) {
-                Visitors.visitProxy(query, {
+                Visitors.visit(query, {
                     getUndefinedView: function(name) {
                         var slice = QueryUtils.getQuerySlice(name);
                         var subDimensions = $this.extractDimensions(slice, slice.getCube(), includeImplicit);
@@ -158,15 +158,25 @@
 
         /** Возвращает параметры, использованные в запросе и внутренних запросах, включая срезы (их тоже обходит рекурсивно)
         */
-        extractUsedParams: function(rootQuery, includeSubSlices){
+        extractUsedParams: function(rootQuery, rebuildSubSlices){
             var usedParams = {};
             var declaredParams = {};
-            Visitors.visitProxy(rootQuery, {
+            Visitors.visit(rootQuery, {
                 getUndefinedView: function(name) {
-                    if (includeSubSlices) {
-                        var slice = QueryUtils.getQuerySlice(name);
+                    var slice = QueryUtils.getQuerySlice(name);
+                    if (rebuildSubSlices) {
                         return slice.getQuery();
                     } else {
+                        var extractedParams = slice.extractParams();
+                        for(var param in extractedParams) {
+                            var name = !param.startsWith('${') ? '${' + param + '}' : param;
+                            if (!declaredParams.hasOwnProperty(name)) {
+                                declaredParams[name] = {
+                                    $type: extractedParams[param].type || extractedParams[param].$type,
+                                    $defaultValue: extractedParams[param].defaultValue || extractedParams[param].$defaultValue,
+                                };
+                            }
+                        }
                         return {};
                     }
                 },
@@ -178,12 +188,13 @@
                             var providerParams = {};
                             for(var param in extractedParams) {
                                 var name = !param.startsWith('${') ? '${' + param + '}' : param;
-                                providerParams[name] = {
-                                    $type: extractedParams[param].type,
-                                    $defaultValue: extractedParams[param].defaultValue,
-                                };
+                                if (!declaredParams.hasOwnProperty(name)) {
+                                    declaredParams[name] = {
+                                        $type: extractedParams[param].type || extractedParams[param].$type,
+                                        $defaultValue: extractedParams[param].defaultValue || extractedParams[param].$defaultValue,
+                                    };
+                                }
                             }
-                            JSB.merge(true, declaredParams, providerParams);
                         }
 
                         JSB.merge(true, declaredParams, query.$params);
@@ -198,8 +209,7 @@
                     }
                 }
             });
-            JSB.merge(usedParams, declaredParams);
-            return usedParams;
+            return JSB.merge(usedParams, declaredParams);
         },
 
         /** Возвращает объект с параметрами, объявленными и доступными для использования в текущем запросе
@@ -207,7 +217,7 @@
         */
         extractAllowedParams: function(rootQuery, current/**query/context*/) {
             var allowedParams = {};
-            Visitors.visitProxy(rootQuery, {
+            Visitors.visit(rootQuery, {
                 getUndefinedView: function(name) {
                     return {};
                 },
@@ -232,7 +242,7 @@
         */
         extractInternalSlices: function(rootQuery, includeSubSlices){
             var slices = {};
-            Visitors.visitProxy(rootQuery, {
+            Visitors.visit(rootQuery, {
                 getUndefinedView: function(name) {
                     var slice = QueryUtils.getQuerySlice(name);
                     slices[name] = {
@@ -262,7 +272,7 @@
 
             var slices = cube.getSlices();
             for(var sid in slices) {
-                Visitors.visitProxy(slices[sid].getQuery(), {
+                Visitors.visit(slices[sid].getQuery(), {
                     getUndefinedView: function(name) {
                         var slice = QueryUtils.getQuerySlice(name);
                         if (orderedSlices.indexOf(slice) == -1) {
@@ -288,7 +298,7 @@
             var cubeFields = cube.extractFields();
 
             var inputFields = {};
-            Visitors.visitProxy(rootQuery||query, {
+            Visitors.visit(rootQuery||query, {
                 getUndefinedView: function(name) {
                     return {};
                 },

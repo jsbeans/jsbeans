@@ -16,7 +16,8 @@
         /**
         * Вставляет в запрос тела вьюх, удаляя $views
         */
-		transform: function(dcQuery, cubeOrDataProvider){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
 
 //            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before EmbedViewQueries: ' + JSON.stringify(dcQuery));
 		    $this._embedViews(dcQuery);

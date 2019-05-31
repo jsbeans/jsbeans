@@ -41,7 +41,7 @@
 //            var queryFieldTypeMap = new HashMap();
 //            var expressionTypeMap = callback ? new HashMap() : null;
 //
-//            Visitors.visitProxy(rootQuery, {
+//            Visitors.visit(rootQuery, {
 //                getUndefinedView: function(name) {
 //                    /// extract extrenal queries types (slice`s fields)
 //                    var slice = QueryUtils.getQuerySlice(name);

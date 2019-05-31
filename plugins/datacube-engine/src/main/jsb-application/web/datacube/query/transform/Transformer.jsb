@@ -7,7 +7,8 @@
 		$require: [
         ],
 
-		transform: function(dcQuery, cubeOrDataProvider){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
 		    return dcQuery;
 		},
 	}

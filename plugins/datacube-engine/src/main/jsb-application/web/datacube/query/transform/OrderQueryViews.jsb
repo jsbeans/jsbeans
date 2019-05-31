@@ -10,7 +10,9 @@
 		    'DataCube.Query.Transforms.QueryTransformer'
         ],
 
-		transform: function(dcQuery, cube){
+		transform: function(executor, queryTask){
+            var dcQuery = queryTask.query;
+            var cube = queryTask.cube;
 		    QueryUtils.walkQueries(dcQuery, {}, null, function(query){
 		        $this.orderViews(query, dcQuery);
 		    });
