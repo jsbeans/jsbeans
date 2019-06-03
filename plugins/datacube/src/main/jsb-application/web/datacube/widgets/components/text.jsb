@@ -102,20 +102,34 @@
             this.text = this.text.replace(/_x000D_/g , ' ');
 
             var annot = this.getContext().find('annotations').value();
-            if(!JSB().isArray(annot)) annot = [annot];
 
-            if(annot.length > 0){
-                try{
+            try {
+                var json = JSON.parse(annot),
+                    annotations = json.annotations,
+                    concepts = json.concepts;
+
+                if(!JSB.isArray(annotations)) {
+                    annotations = [annotations];
+                }
+
+                if(annotations.length > 0) {
+                    var conceptsMap = {};
+
+                    if(JSB.isArray(concepts)) {
+                        for(var i = 0; i < concepts.length; i++) {
+                            conceptsMap[concepts[i].id] = concepts[i];
+                        }
+                    }
+
                     this.highlights = [];
 
-                    for(var i = 0; i < annot.length; i++){
-                        var h = JSON.parse(annot[i]);
-
+                    for(var i = 0; i < annotations.length; i++){
                         this.highlights.push({
-                            id: h.id,
-                            docId: h.document_id,
-                            offset: h.start,
-                            length: h.end - h.start
+                            id: annotations[i].id,
+                            docId: annotations[i].document_id,
+                            color: conceptsMap[annotations[i].concept_id] && conceptsMap[annotations[i].concept_id].color,
+                            offset: annotations[i].start,
+                            length: annotations[i].end - annotations[i].start
                         });
                     }
 
@@ -137,10 +151,9 @@
 
                         return true;
                     });
-
-                } catch(ex){
-                    console.log(ex);
                 }
+            } catch (ex) {
+                console.log('Ошибка распознавания разметки аннотаций');
             }
 
             this.redraw();
@@ -181,7 +194,7 @@
 				var prefix = html.substr(0, fromIdx);
 				var postfix = html.substr(toIdx);
 				var highlightStr = html.substr(fromIdx, toIdx - fromIdx);
-				html = prefix + '<span class="highlight" hid="'+h.id+'">' + highlightStr + '</span>' + postfix;
+				html = prefix + '<span class="highlight" hid="'+h.id+'" style="background-color:' + h.color + '">' + highlightStr + '</span>' + postfix;
 				var newSize = html.length;
 				var oddSize = newSize - lastSize;
 				lastSize = newSize;
