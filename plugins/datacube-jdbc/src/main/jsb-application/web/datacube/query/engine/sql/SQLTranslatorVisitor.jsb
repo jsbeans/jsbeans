@@ -557,7 +557,7 @@ debugger
             // n-operators
             switch(op) {
                 case '$coalesce':
-                    return nFunction('COALESCE (', ',', ')');
+                    return nFunction('COALESCE(', ',', ')');
                 case '$add':
                     return nFunction('(', '+', ')', function(sqlArg, n, exp){
                         return !exp.hasOwnProperty('$const') ? 'COALESCE('+sqlArg+', 0.0)' : sqlArg;
@@ -602,6 +602,8 @@ debugger
                     return nFunction('CONCAT(', ',', ')');
                 case '$concatArray':
                     return nFunction('ARRAY[', ',', ']');
+                case '$similarity':
+                    return nFunction('SIMILARITY(', ',', ')');
             }
 
              throw new Error('Unsupported select expression ' + op);

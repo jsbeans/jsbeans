@@ -228,7 +228,7 @@
         },
 
         getParam: function(name) {
-            for(var i = this.queryPath.length - 1; i > 0 ; i--) {
+            for(var i = this.queryPath.length - 1; i >= 0 ; i--) {
                 var query = this.queryPath[i];
                 if(query.$params && query.$params.hasOwnProperty(name)) {
                     return query.$params[name];
@@ -238,7 +238,7 @@
 
         getDefinedParams: function(externalParams){
             var params = {}
-            for(var i = this.queryPath.length - 1; i > 0 ; i--) {
+            for(var i = this.queryPath.length - 1; i >= 0 ; i--) {
                 var query = this.queryPath[i];
                 JSB.merge(params, query.$params);
             }

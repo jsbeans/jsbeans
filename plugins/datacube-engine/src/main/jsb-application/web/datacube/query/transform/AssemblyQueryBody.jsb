@@ -30,7 +30,6 @@
 
 
 		assemblyQuery: function(executor, queryTask){
-//debugger;
             var rootQuery = queryTask.query;
             var params = queryTask.params;
             var cube = queryTask.cube;
@@ -42,7 +41,7 @@
 		    QueryUtils.walkQueries(rootQuery, {
 		            rootQuery: rootQuery,
 		            getExternalView: function(name) {
-//debugger
+
                         /// использовать срез и его заменители
                         var slice = QueryUtils.getQuerySlice(name, cube);
                         var slices = JSB.merge({}, QueryUtils.extractReplacementSlices(slice));
@@ -69,6 +68,7 @@
                             $this._filterJoinedTargetFields(usedSliceFields, this.query, context);
                         }
                         /// непосредственно выбор среза по полям
+
                         var bestSlice = $this.selectBestSlice(slices, context, usedSliceFields, usedDimensions, params, cube);
                         if (bestSlice != slice) {
                             // TODO потенциально может возникнуть коллизия имен вьюх, соответствующиъ срезам-аналогам
@@ -286,7 +286,7 @@
 		    if (Object.keys(usedDimensions).length > maxDimensionsCount && Object.keys(filteredSlices).length > 0) {
 		        QueryUtils.logDebug("Лучший срез экспортирует меньше змерений, чем используется в запросе: {}", JSON.stringify());
             }
-debugger
+
             var resultSlices = {};
             /// фильтрация стрезов - остаются только лучшие срезы:
             /// 1. или с максимальным числом измерениев,
