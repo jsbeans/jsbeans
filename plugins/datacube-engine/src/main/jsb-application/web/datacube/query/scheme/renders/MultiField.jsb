@@ -25,11 +25,7 @@
 	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
             this.append(operator);
 
-            this.installMenuEvents({
-                element: operator,
-                id: this.getId() + '_operator',
-                wrap: true
-            });
+            this.bindMenu(this.createMainMenuOptions());
 
             this.append(this.createSeparator(true));
 
@@ -122,11 +118,12 @@
             field.append(valueName);
 
             if(removable){
-                this.installMenuEvents({
+                this.bindMenu({
                     element: valueName,
                     id: this.getId() + '_value_' + name,
                     edit: false,
                     remove: true,
+                    noClickEdit: true,
                     deleteCallback: function(){
                         delete $this.getValues()[name];
 
@@ -136,7 +133,7 @@
 
                         $this.onChange();
                     }
-                }, true, true);
+                });
             }
 
             field.append(this.createSeparator());

@@ -19,8 +19,6 @@
             var header = this.$('<header>Источник запроса: ' + this.getScheme().displayName + '</header>'); //this.getScheme().category
             this.append(header);
 
-            this.installMenuEvents({ element: header });
-
             this.construct();
         },
 
@@ -281,7 +279,7 @@
                 appendElement.append(source);
 	        }
 
-	        var isEditable = this.getScheme().editable;
+	        var isEditable = this.getScheme().allowEdit;
 
 	        if(!isEditable){
 	            appendElement.addClass('notEditable');

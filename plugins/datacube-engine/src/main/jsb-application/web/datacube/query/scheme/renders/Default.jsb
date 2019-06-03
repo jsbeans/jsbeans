@@ -20,12 +20,14 @@
 	        if(opts.parent.getRenderName() === '$query'){
 	            this._isQueryElement = true;
 
-	            this.createHeader(true);
+	            this.createHeader();
 
 	            this.addClass('queryElements');
 	        } else {
 	            this.constructHead();
 	        }
+
+            this.bindMenu(this.createMainMenuOptions());
 
 	        this.constructValues();
 
@@ -67,6 +69,8 @@
             }
 	    },
 
+// убрал, т.к. возможен конфликт: имя именованного запроса или поле?
+/*
 	    // совместимость с некоторыми видами синтаксиса
 	    checkValues: function(){
 	        var curValues = this.getValues(),
@@ -74,7 +78,7 @@
 
 	        if(this.isMultiple()){
 	            for(var i = 0; i < curValues.length; i++){
-	                if(JSB.isString(curValues[i])){
+	                if(JSB.isString(curValues[i])) {
 	                    curValues[i] = {
 	                        $field: curValues[i]
 	                    }
@@ -88,22 +92,13 @@
                 }
 	        }
 	    },
-
+*/
 	    constructHead: function(){
 	        var scheme = this.getScheme(),
 	            desc = this.getKey() + '\n' + scheme.desc;
 
 	        var operator = this.$('<div class="operator" title="' + desc + '">' + scheme.displayName + '</div>');
             this.append(operator);
-
-            this.installMenuEvents({
-                element: operator,
-                id: this.getId() + '_operator',
-                wrap: this.isAllowWrap(),
-                deleteCallback: function(){
-                    $this.getDeleteCallback().call($this);
-                }
-            });
 
             this.append(this.createSeparator(this.isMultiple() || scheme.parameters));
 	    },
@@ -190,6 +185,20 @@
             if(!hideChangeEvt){
                 this.onChange();
             }
+	    },
+
+	    isFixedFieldCount: function() {
+	        return this.getSchemeProperty('fixedFieldCount');
+	    },
+
+	    isSortable: function() {
+	        var schemeProp = this.getSchemeProperty('sortable');
+
+	        if(JSB.isDefined(schemeProp)) {
+	            return schemeProp;
+	        } else {
+	            return true;
+	        }
 	    }
 	}
 }

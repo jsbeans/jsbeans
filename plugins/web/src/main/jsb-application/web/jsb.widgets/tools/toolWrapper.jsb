@@ -1049,8 +1049,12 @@
 		},
 		
 		
-		close: function(){
+		close: function() {
 			this.hide();
+
+			if(this.options.data.closeCallback) {
+			    this.options.data.closeCallback.call(this);
+			}
 		},
 		
 		hideModalBackground: function(){

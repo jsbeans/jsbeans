@@ -9,6 +9,11 @@
 	$client: {
 		$require: ['css:Const.css'],
 
+		options: {
+		    allowDelete: true,
+		    allowReplace: true  // rename
+		},
+
 	    $constructor: function(opts){
 	        $base(opts);
 
@@ -19,11 +24,8 @@
 
             this.append('<div class="separator"></div>');
 
-            this.installMenuEvents({
-                element: $this.fieldName,
-                id: JSB.generateUid(),
-                edit: true,
-                remove: true,
+            this.bindMenu(this.createMainMenuOptions({
+                noClickEdit: true,
                 editCallback: function(evt){
                     evt.stopPropagation();
 
@@ -69,7 +71,7 @@
 
                     input.focus();
                 }
-            });
+            }));
 
             var render = this.createRenderFromValues({
                 allowDelete: false,

@@ -34,7 +34,11 @@
 		    $base();
 
             function itemRender(itemElement, itemDesc){
-                itemElement.append('<div class="key">' + itemDesc.item.displayName + '</div><div class="desc">' + itemDesc.item.desc + '</div>');
+                itemElement.append('<div class="key">' + itemDesc.item.displayName + '</div>');
+
+                if(itemDesc.item.desc) {
+                    itemElement.append('<div class="desc">' + itemDesc.item.desc + '</div>');
+                }
             }
 
 		    this.itemList = new ItemList({

@@ -62,20 +62,26 @@
 			});
 			this.append(this.btnDelete);
 
-            this.getElement().hover(function(){
-                JSB.cancelDefer('DataCube.Query.hideMenu' + $this.getElementId());
-            }, function(){
-                JSB.defer(function(){
+			this.getElement().mouseover(function(evt) {
+			    evt.stopPropagation();
+
+			    JSB.cancelDefer('DataCube.Query.hideMenu_' + $this.getElementId());
+
+                $this.getData('element').addClass('hover');
+			});
+
+			this.getElement().mouseout(function() {
+                JSB.defer(function() {
                     $this.close();
-                }, 300, 'DataCube.Query.hideMenu' + $this.getElementId());
-            });
+                }, 300, 'DataCube.Query.hideMenu_' + $this.getElementId());
+			});
 		},
 
-		getElementId: function(){
+		getElementId: function() {
 		    return this.getData('id');
 		},
 
-		update: function(){
+		update: function() {
 		    this.btnWrap.classed('hidden', !this.getData('wrap'));
 		    this.btnDelete.classed('hidden', !this.getData('remove'));
 		    this.btnEdit.classed('hidden', !this.getData('edit'));

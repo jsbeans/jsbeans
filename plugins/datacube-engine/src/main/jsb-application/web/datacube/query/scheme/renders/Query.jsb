@@ -37,6 +37,8 @@
 
 	            if(!this.options.noHeader){
 	                this.createHeader();
+
+	                this.bindMenu(this.createMainMenuOptions());
                 }
 	        }
 
@@ -176,10 +178,6 @@
             header.append(displayName);
 
             header.append('<div class="context">' + this.getContext() + '</div>');
-
-            this.installMenuEvents({
-                element: displayName
-            });
 
 	        return header;
 	    },

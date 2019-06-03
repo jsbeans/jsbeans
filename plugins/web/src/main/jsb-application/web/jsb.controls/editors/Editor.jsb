@@ -113,7 +113,7 @@
                     return;
                 }
 
-                if(evt.keyCode === 13) {
+                if(evt.keyCode === 13 || evt.keyCode === 27) {  // enter, escape
                     validate();
 
                     onEditComplete();

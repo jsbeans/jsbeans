@@ -15,7 +15,7 @@
 
 	        this.addClass('selectRender');
 
-	        this.createHeader(false);
+	        this.createHeader();
 
             var values = this.getValues(),
                 fieldsArr = Object.keys(values);//.sort();

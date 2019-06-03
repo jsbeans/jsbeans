@@ -4,16 +4,44 @@
 	$name: 'DataCube.Query.Renders.ParamsViewsBase',
 	$parent: 'DataCube.Query.Renders.Basic',
 
+	$alias: '$paramsViewsBase',
+
 	$client: {
-	    $require: ['JSB.Controls.Panel',
-	               'css:ParamsViewsBase.css'],
+	    $require: ['css:ParamsViewsBase.css'],
 
 	    $constructor: function(opts) {
 	        $base(opts);
 
+	        var category,
+	            values = this.getValues();
+
+            function createRender(key, category) {
+                var render = $this.createRender({
+                    category: category,
+                    key: key,
+                    renderName: '$paramsViewsItem',
+                    scope: $this.getValues()
+                });
+
+                if(render){
+                    $this.container.append(render);
+                }
+            }
+
+            switch(this.getKey()) {
+                case '$params':
+                    category = '$param';
+                    break;
+                case '$views':
+                    category = '$view';
+                    break;
+            }
+
 	        this.addClass('paramsViewsBase');
 
-	        this.createHeader(true);
+	        this.createHeader();
+
+	        this.bindMenu(this.createMainMenuOptions());
 
 	        this.container = this.$('<div class="container"></div>');
 	        this.append(this.container);
@@ -21,91 +49,63 @@
 	        var addBtn = this.$('<i class="addBtn"></i>');
 	        this.append(addBtn);
 	        addBtn.click(function() {
-	            $this.create();
-	        });
+	            var key = $this.createItem(category);
 
-	        var values = this.getValues();
+	            createRender(key, category);
+
+	            $this.onChange();
+	        });
 
 	        for(var i in values) {
-	            this.create(values[i], i);
+	            createRender(i, category);
 	        }
 	    },
 
-	    create: function(values, name) {
-	        throw Error('Method should be overridden');
-	    },
+	    createItem: function(category) {
+	        function createName(values, startName) {
+                var count = 1,
+                    name = startName;
 
-	    createItem: function(name, deleteCallback, namePrepareCallback) {
-	        function namePrepare(name) {
-	            if(namePrepareCallback) {
-	                return namePrepareCallback.call($this, name);
-	            } else {
-	                return name;
-	            }
-	        }
-
-	        var item = new Panel({
-                cssClass: 'item',
-                closeBtn: true,
-                title: name,
-                titleEditBtn: true,
-                onCloseBtnClick: function() {
-                    deleteCallback.call();
-
-                    item.destroy();
-
-                    delete $this.getValues()[item.getTitle()];
-
-                    $this.onChange('remove', {
-                        name: namePrepare(item.getTitle())
-                    });
-                },
-                titleValidateFunction: function(val) {
-                    if($this.getValues()[namePrepare(val)]) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                },
-                onTitleEdited: function(val, oldVal) {
-                    $this.onChange('rename', {
-                        oldName: namePrepare(oldVal),
-                        newName: namePrepare(val)
-                    });
-
-                    name = val;
-                    $this.getValues()[val] = $this.getValues()[oldVal];
-                    delete $this.getValues()[oldVal];
+                while(values[name]){
+                    name = startName + '_' + count;
+                    count++;
                 }
-	        });
-	        this.container.append(item);
 
-	        return item;
+                return name;
+	        }
+
+	        var name,
+	            values = this.getValues();
+
+	        if(category === '$param') {
+	            name = this.wrapName(createName(this.getUnwrappedParams(), 'Параметр'));
+	        } else {    // view
+	            name = createName(values, 'Именованный подзапрос');
+	        }
+
+	        values[name] = this.getDefaultAddValues();
+
+	        return name;
 	    },
 
-	    onChange: function(type, options) {
-	        var values = this.getValues();
+	    getUnwrappedParams: function() {
+	        var values = this.getValues(),
+	            params = {};
 
-            switch(type) {
-                case 'add':
-                    values[options.name] = options.values;
-                    break;
-                case 'change':
-                    values[options.name] = options.values;
-                    break;
-                case 'rename':
-                    var oldValues = values[options.oldName];
-
-                    values[options.newName] = oldValues;
-
-                    delete values[options.oldName];
-                    break;
-                case 'remove':
-                    delete values[options.name];
-                    break;
+            for(var i in values) {
+                params[this.unwrapName(i)] = true;
             }
 
-            $base();
+            return params;
+	    },
+
+	    wrapName: function(name) {  // "${param name}"
+	        return '${' + name + '}';
+	    },
+
+	    unwrapName: function(name) {
+	        var regexp = /\{(.*?)\}/;
+	        return name.match(regexp)[1];
 	    }
     }
 }

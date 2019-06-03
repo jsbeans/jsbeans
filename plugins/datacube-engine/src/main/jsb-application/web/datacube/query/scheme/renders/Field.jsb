@@ -22,11 +22,9 @@
 	            this.getElement().attr('title', context);
 	        }
 
-            this.installMenuEvents({
-                element: this.getElement(),
-                wrap: true,
-                editToolCallback: function(desc){
-                    if(desc.key === '$field'){
+	        this.bindMenu(this.createMainMenuOptions({
+                editToolCallback: function(desc) {
+                    if(desc.schemeKey === '$field') {
                         var newVal = {
                                 $field: desc.item
                             };
@@ -34,17 +32,13 @@
                         if(desc.sourceContext){
                             newVal.$sourceContext = desc.sourceContext;
                         }
-/*
-                        if(desc.category === 'Поля источника'){
-                            newVal['$context'] = desc.context;
-                        }
-*/
+
                         $this.changeTo(null, newVal);
                     } else {
-                        $this.changeTo(desc.key);
+                        $this.changeTo(desc.schemeKey);
                     }
                 }
-            });
+	        }));
 	    },
 
 	    getFieldContext: function(){
@@ -102,12 +96,6 @@
             }
 
 	        var render = this.createRender({
-	            // поля, заданные родителем
-                allowOutputFields: this.options.allowOutputFields,
-                allowSourceFields: this.options.allowSourceFields,
-                allowDelete: this.isAllowDelete(),
-                deleteCallback: this.getDeleteCallback(),
-
 	            key: desc.key,
 	            scope: this.getScope()
 	        }, this.getParent());

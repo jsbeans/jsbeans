@@ -19,28 +19,49 @@
 	    _rendersMap: {},
 	    _slice: null,
 
-	    $constructor: function(opts){
+	    $constructor: function(opts) {
 	        $base(opts);
             this.addClass('queryController');
 
-            Syntax.ensureReady(function(){
+            Syntax.ensureReady(function() {
                 $this.setTrigger('Syntax_initialized');
             });
 
-            RenderRepository.ensureReady(function(){
+            RenderRepository.ensureReady(function() {
                 $this.setTrigger('RenderRepository_initialized');
             });
 
-            if(opts && opts.data && opts.values){
+            if(opts && opts.data && opts.values) {
                 this.refresh(opts);
             }
+
+            this.getElement().attr('tabindex', 0);
+
+            this.getElement().mouseenter(function() {
+                $this.getElement().focus();
+            });
+
+            this.getElement().keypress(function(evt) {
+                var eventName;
+
+                if(evt.shiftKey && evt.ctrlKey && evt.keyCode === 26) {
+                    eventName = 'redo';
+                } else if(evt.ctrlKey && evt.keyCode === 26) {
+                    eventName = 'undo';
+                }
+
+                if(eventName && JSB.isFunction($this.options.onEvent)) {
+                    $this.options.onEvent.call($this, eventName);
+                }
+            });
 	    },
 
 	    options: {
-	        onChange: undefined
+	        onChange: undefined,
+	        onEvent: undefined
 	    },
 
-	    clear: function(){
+	    clear: function() {
             for(var i in this._rendersMap){
                 this._rendersMap[i].render.destroy();
             }
@@ -136,8 +157,8 @@
             return this._query;
         },
 
-        hideMenu: function(){
-            if(this._menu){
+        hideMenu: function(closeCallback) {
+            if(this._menu) {
                 this._menu.close();
                 this._menu = null;
             }
@@ -266,7 +287,7 @@
 				target: {
 					selector: opts.element,
 					dock: 'top',
-					offsetVert: -1
+					offsetHorz: 2
 				},
 				callback: function(act, clickEvt){
 				    switch(act){

@@ -171,6 +171,9 @@
                 },
                 onChange: function(){
                     $this.updateTextQuery(this.getValues());
+                },
+                onEvent: function(eventName) {
+                    $this.textQueryEditor.execCommand(eventName);
                 }
             });
             scrollBox.append(this.editor);
@@ -231,13 +234,7 @@
                     slice: $this.slice,
                     values: query
                 });
-/*
-                $this.viewEditor.refresh({
-                    data: data,
-                    slice: $this.slice,
-                    query: query
-                });
-*/
+
                 $this.updateTextQuery(query);
 
                 $this.grid.clear();

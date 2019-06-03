@@ -10,6 +10,10 @@
     background: aliceblue;
 }
 
+.basicQueryRender .acceptDraggable {
+    background-color: red;
+}
+
 .basicQueryRender > header {
     height: 32px;
     padding: 8px 6px 0 6px;

@@ -35,7 +35,7 @@
                 `);
                 item.append(sortableHandle);
 
-                $this.installMenuEvents({
+                $this.bindMenu({
                     element: sortableHandle,
                     id: $this.getId() + '_index_' + index,
                     edit: false,

@@ -19,7 +19,7 @@
             var header = this.$('<header>' + this.getScheme().category + ': ' + this.getScheme().displayName + '</header>');
             this.append(header);
 
-            this.installMenuEvents({ element: header });
+            this.bindMenu(this.createMainMenuOptions());
 
             // $start
             var startContainer = this.$('<div class="startContainer"></div>');

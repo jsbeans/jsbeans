@@ -17,9 +17,13 @@
 }
 
 .queryRender > .addMenu {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
     margin-top: 10px;
+}
+
+.queryRender > .basicQueryRender {
+    border: 2px solid #f1f1f1;
 }
 
 .queryRender.subQuery > .basicQueryRender > header {

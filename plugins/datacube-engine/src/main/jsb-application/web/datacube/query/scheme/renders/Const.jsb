@@ -21,11 +21,7 @@
 	        var operator = this.$('<div class="operator">' + scheme.displayName + '</div>');
 	        this.append(operator);
 
-            this.installMenuEvents({
-                element: operator,
-                id: this.getId() + '_operator',
-                wrap: true
-            });
+	        this.bindMenu(this.createMainMenuOptions());
 
 	        this.append('<div class="separator"></div>');
 
@@ -41,11 +37,13 @@
 	            value.text('"' + this.getValues() + '"');
 	        }
 
-	        this.installMenuEvents({
+	        this.bindMenu({
 	            element: value,
 	            id: this.getId() + '_value',
-	            noClick: true,
+	            noClickEdit: true,
+	            edit: true,
 	            remove: false,
+	            wrap: false,
 	            editCallback: function() {
                     ToolManager.activate({
                         id: 'simpleSelectTool',
@@ -112,7 +110,7 @@
                         }
                     });
 	            }
-	        }, true, true);
+	        });
 
 	        value.click(function(evt){
 	            evt.stopPropagation();

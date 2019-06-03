@@ -2,39 +2,20 @@
 
 {
 	$name: 'DataCube.Query.Renders.Params',
-	$parent: 'DataCube.Query.Renders.ParamsViewsBase',
+	$parent: 'DataCube.Query.Renders.Basic',
 
-	$alias: '$params',
+	$alias: '$paramItem',
 
     $client: {
-	    $require: ['DataCube.Query.Helper',
+	    $require: ['DataCube.Query.SimpleSelectTool',
 	               'JSB.Controls.MultitypeEditor',
-	               'JSB.Controls.Selectize',
-	               'css:Params.css'],
+	               'JSB.Widgets.ToolManager'],
 
         $constructor: function(opts) {
             $base(opts);
 
             this.addClass('params');
-        },
 
-	    create: function(values, name, isInherit) {
-	        if(name) {
-	            name = this.unwrapName(name);
-	        } else {
-                name = Helper.createName(this.getUnwrappedParams(), 'Параметр');
-            }
-
-            var isNew = false;
-
-            if(!values) {
-                values = {
-                    $defaultValue: 0,
-                    $type: 'number'
-                };
-
-                isNew = true;
-            }
 /*
 			    string: 'string',
 			    number: 'number',
@@ -53,23 +34,24 @@
 			    object: 'object',
 */
             var types = [
-            {
-                name: 'Дата',
-                value: 'date'
-            },
-            {
-                name: 'Логический',
-                value: 'boolean'
-            },
-            {
-                name: 'Строковый',
-                value: 'string'
-            },
-            {
-                name: 'Числовой',
-                value: 'number'
-            }
-            ];
+                {
+                    key: 'date',
+                    displayName: 'Дата'
+                },
+                {
+                    key: 'boolean',
+                    displayName: 'Логический'
+                },
+                {
+                    key: 'string',
+                    displayName: 'Строковый'
+                },
+                {
+                    key: 'number',
+                    displayName: 'Числовой'
+                }
+                ],
+                values = this.getValues();
 
             function valueType(type) {
                 switch(type) {
@@ -82,24 +64,46 @@
                 }
             }
 
-	        var typeEditor = new Selectize({
-	            label: 'Тип',
-	            labelField: 'name',
-	            onlySelect: true,
-	            options: types,
-	            searchField: 'name',
-	            value: values.$type,
-	            valueField: 'value',
-	            onChange: function(val){
-	                values.$type = val;
+            var typeEditor = this.$('<div class="typeEditor"><label>Тип</label></div>');
+            this.append(typeEditor);
 
-	                valueEditor.setType(valueType(val));
+	        var type = this.$('<div class="type"></div>');
+	        typeEditor.append(type);
 
-	                $this.onChange('change', {
-	                    name: $this.wrapName(item.getTitle()),
-	                    values: values
-	                });
+	        for(var i = 0; i < types.length; i++) {
+	            if(types[i].key === values.$type) {
+	                type.text(types[i].displayName);
+	                break;
 	            }
+	        }
+
+	        type.click(function(evt) {
+	            evt.stopPropagation();
+
+                ToolManager.activate({
+                    id: 'simpleSelectTool',
+                    cmd: 'show',
+                    data: {
+                        key: $this.getKey(),
+                        values: types
+                    },
+                    scope: null,
+                    target: {
+                        selector: $this.getElement(),
+                        dock: 'bottom'
+                    },
+                    callback: function(desc) {
+                        if(desc.key !== values.$type) {
+                            type.text(desc.item.displayName);
+
+                            values.$type = desc.key;
+
+                            valueEditor.setType(valueType(desc.key));
+
+                            $this.onChange();
+                        }
+                    }
+                });
 	        });
 
             var valueEditor = new MultitypeEditor({
@@ -109,48 +113,10 @@
                 onEditComplete: function(val) {
                     values.$defaultValue = val;
 
-	                $this.onChange('change', {
-	                    name: $this.wrapName(item.getTitle()),
-	                    values: values
-	                });
+	                $this.onChange();
                 }
             });
-
-            var item = this.createItem(name, function() {
-                typeEditor.destroy();
-                valueEditor.destroy();
-            }, function(name) {
-                return $this.wrapName(name);
-            });
-            item.append(typeEditor);
-            item.append(valueEditor);
-
-            if(isNew) {
-                this.onChange('add', {
-                    name: this.wrapName(item.getTitle()),
-                    values: values
-                });
-            }
-	    },
-
-	    getUnwrappedParams: function() {
-	        var values = this.getValues(),
-	            params = {};
-
-            for(var i in values) {
-                params[this.unwrapName(i)] = true;
-            }
-
-            return params;
-	    },
-
-	    wrapName: function(name) {  // "${param name}"
-	        return '${' + name + '}';
-	    },
-
-	    unwrapName: function(name) {
-	        var regexp = /\{(.*?)\}/;
-	        return name.match(regexp)[1];
-	    }
+            this.append(valueEditor);
+        }
     }
 }

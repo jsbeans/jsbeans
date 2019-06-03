@@ -10,6 +10,29 @@
 		$require: ['DataCube.Query.Syntax',
 		           'css:Basic.css'],
 
+        _properties: {
+            allowDelete: {
+                isInherit: true,
+                isFromScheme: true
+            },
+            allowOutputFields: {
+                isInherit: true,
+                isFromScheme: true
+            },
+            allowReplace: {
+                isFromScheme: true
+            },
+            allowSourceFields: {
+                isInherit: true,
+                isFromScheme: true
+            },
+            allowWrap: {
+                isFromScheme: true
+            },
+            deleteCallback: {
+                isInherit: true
+            }
+        },
         _subscribers: {},
 
 	    /**
@@ -30,30 +53,18 @@
 	    * @param {object} [opts.scheme] - схема. Может отсутствовать у дополнительных рендеров
 	    * @param {object} opts.scope - скоп значения
 	    */
-	    $constructor: function(opts){
+	    $constructor: function(opts) {
 	        $base(opts);
 
 	        this.addClass('basicQueryRender');
 
-	        if(!JSB.isDefined(opts.allowOutputFields)){
-	            if(JSB.isDefined(this.getScheme().allowOutputFields)){
-	                this.options.allowOutputFields = this.getScheme().allowOutputFields;
-	            }
-	        }
-
-	        if(!JSB.isDefined(opts.allowSourceFields)){
-	            if(JSB.isDefined(this.getScheme().allowSourceFields)){
-	                this.options.allowSourceFields = this.getScheme().allowSourceFields;
-	            }
-	        }
-
 	        this._key = opts.key;
 	        this._scope = opts.scope;
 
-	        if(opts.changedFrom){
+	        if(opts.changedFrom) {
 	            this.changeValue(opts.changedFrom);
 	        } else {
-                if(JSB.isDefined(this.getValues())){
+                if(JSB.isDefined(this.getValues())) {
                     this.checkValues();
                 } else {
                     this.setDefaultValues();
@@ -61,6 +72,83 @@
             }
 
 	        this.getController().registerRender(this);
+	    },
+
+	    bindMenu: function(menuOpts) {
+	        if(!menuOpts.wrap && !menuOpts.edit && !menuOpts.remove) {
+	            return;
+	        }
+
+	        menuOpts.closeCallback = function() {
+	            menuOpts.element.removeClass('hover');
+	        }
+
+	        menuOpts.element.addClass('pointer');
+
+	        menuOpts.element.mouseover(function(evt) {
+	            evt.stopPropagation();
+
+                menuOpts.element.addClass('hover');
+
+                JSB.cancelDefer('DataCube.Query.hideMenu_' + menuOpts.id);
+
+                JSB.defer(function() {
+                    $this.showMenu(menuOpts);
+                }, 300, 'DataCube.Query.showMenu_' + menuOpts.id);
+	        });
+
+	        menuOpts.element.mouseout(function(evt) {
+	            evt.stopPropagation();
+
+                JSB.cancelDefer('DataCube.Query.showMenu_' + menuOpts.id);
+
+                menuOpts.element.removeClass('hover');
+
+                JSB.defer(function() {
+                    $this.hideMenu();
+                }, 300, 'DataCube.Query.hideMenu_' + menuOpts.id);
+	        });
+
+            if(menuOpts.edit && !menuOpts.noClickEdit) {
+                menuOpts.element.click(function(evt) {
+                    evt.stopPropagation();
+
+                    $this.showTool(menuOpts);
+                });
+            }
+
+/*
+            if(menuOpts.dragDrop) {
+                menuOpts.element.droppable({
+                    accept: function(d) {
+                        var replaceItems = Syntax.getReplacementItems($this.getKey());
+
+                        if()
+console.log();
+console.log($this);
+console.log(Syntax);
+console.log(menuOpts);
+debugger;
+                        //
+                    },
+                    tolerance: 'pointer',
+                    greedy: true,
+                    activeClass : 'acceptDraggable',
+                    hoverClass: 'hoverDraggable',
+                    drop: function(evt, ui) {
+console.log($this);
+debugger;
+                    }
+                });
+
+                menuOpts.element.draggable({
+                    addClasses: false,
+                    classes: {
+                        'ui-draggable-dragging': 'active'
+                    }
+                });
+            }
+*/
 	    },
 
         /**
@@ -81,12 +169,6 @@
 	            this.getParent().setValues(newVal);
 
                 render = this.createRender({
-                    // поля, заданные родителем
-                    allowOutputFields: this.options.allowOutputFields,
-                    allowSourceFields: this.options.allowSourceFields,
-                    allowDelete: this.isAllowDelete(),
-                    deleteCallback: this.getDeleteCallback(),
-
                     changedFrom: {
                         key: this.getKey(),
                         render: this.getRenderName()
@@ -102,12 +184,6 @@
                 }
 
                 render = this.createRender({
-                    // поля, заданные родителем
-                    allowOutputFields: this.options.allowOutputFields,
-                    allowSourceFields: this.options.allowSourceFields,
-                    allowDelete: this.isAllowDelete(),
-                    deleteCallback: this.getDeleteCallback(),
-
                     changedFrom: {
                         key: this.getKey(),
                         render: this.getRenderName()
@@ -136,17 +212,10 @@
 
         /**
         * Создаёт заголовок
-        * @param {boolean} [hasMenu] - создавать меню при наведении
         */
-	    createHeader: function(hasMenu){
+	    createHeader: function(){
             var header = this.$('<header>' + this.getScheme().displayName + '</header>');
             this.append(header);
-
-            if(hasMenu){
-                this.installMenuEvents({
-                    element: header
-                });
-            }
 
 	        return header;
 	    },
@@ -198,6 +267,23 @@
             input.focus();
 	    },
 
+	    createMainMenuOptions: function(options) {
+	        return JSB.merge({
+	            caller: this,
+	            element: this.getElement(),
+	            id: this.getId(),
+	            key: this.getKey(),
+
+	            // buttons
+	            edit: this.getProperty('allowReplace'),
+	            remove: this.getProperty('allowDelete'),
+	            wrap: this.getProperty('allowWrap'),
+
+	            // callbacks
+	            deleteCallback: this.getProperty('deleteCallback')
+	        }, options);
+	    },
+
         /**
         * Создаёт рендер
         * @see DataCube.Query.SchemeController.createRender
@@ -207,8 +293,11 @@
 	            options = {};
 	        }
 
-	        options.allowOutputFields = this.options.allowOutputFields;
-	        options.allowSourceFields = this.options.allowSourceFields;
+	        for(var i in this._properties) {
+	            if(!JSB.isDefined(options[i]) && this._properties[i].isInherit) {
+	                options[i] = this.getProperty(i);
+	            }
+	        }
 
 	        return this.getController().createRender(options, parent || this);
 	    },
@@ -248,7 +337,9 @@
             if(isCollapsible){
                 separator.addClass('collapsible');
 
-                separator.click(function(){
+                separator.click(function(evt){
+                    evt.stopPropagation();
+
                     separator.toggleClass('collapsed');
                 });
             }
@@ -364,12 +455,12 @@
 	        return this.options.parent;
 	    },
 
-        /**
-        * Возвращает имя рендера
-        * @return {string} имя рендера
-        */
-	    getRenderName: function(){
-	        return this.options.renderName;
+	    getProperty: function(propertyName) {
+	        if(JSB.isDefined(this.options[propertyName])) {
+	            return this.options[propertyName];
+	        } else if(this._properties[propertyName] && this._properties[propertyName].isFromScheme) {
+	            return this.getSchemeProperty(propertyName);
+	        }
 	    },
 
         /**
@@ -381,12 +472,28 @@
 	    },
 
         /**
+        * Возвращает имя рендера
+        * @return {string} имя рендера
+        */
+	    getRenderName: function(){
+	        return this.options.renderName;
+	    },
+
+        /**
         * Возвращает схему, описанную в синтаксисе
         * @see DataCube.Query.Syntax
         * @return {object} объект схемы
         */
 	    getScheme: function(){
 	        return this.options.scheme || Syntax.getScheme(this.getRenderName()) || {};
+	    },
+
+        /**
+        * Возвращает свойство схемы
+        * @return {*} свойство
+        */
+	    getSchemeProperty: function(propertyName) {
+	        return this.getScheme()[propertyName];
 	    },
 
         /**
@@ -431,64 +538,8 @@
 	        return this.getParent().getViews();
 	    },
 
-	    hideMenu: function(){
+	    hideMenu: function() {
 	        return this.getController().hideMenu();
-	    },
-
-        /**
-        * Возвращает возможность удаления. Флаг задаётся при создании рендера родительским рендером
-        * @return {boolean} флаг возможности удаления
-        */
-	    isAllowDelete: function(){
-	        return JSB.isDefined(this.options.allowDelete) ? this.options.allowDelete : this.getScheme().removable;
-	    },
-
-        /**
-        * Можно ли дочерним рендерам использовать выходные поля текущего запроса. Разрешено, если родителем не указано иное
-        * @return {boolean}
-        */
-	    isAllowOutputFields: function(){
-	        if(JSB.isDefined(this.options.allowOutputFields)){
-	            return this.options.allowOutputFields;
-	        }
-
-	        return true;
-	    },
-
-        /**
-        * Возвращает возможность замены. Флаг задаётся при создании рендера родительским рендером
-        * @return {boolean} флаг возможности замены
-        */
-	    isAllowReplace: function(){
-	        return JSB.isDefined(this.options.allowReplace) ? this.options.allowReplace : this.getScheme().replaceable;
-	    },
-
-        /**
-        * Можно ли дочерним рендерам использовать выходные поля текущего запроса. Разрешено, если родителем не указано иное
-        * @return {boolean}
-        */
-	    isAllowSourceFields: function(){
-	        if(JSB.isDefined(this.options.allowSourceFields)){
-	            return this.options.allowSourceFields;
-	        }
-
-	        return true;
-	    },
-
-        /**
-        * Возвращает возможность оборачивания рендера в другой рендер
-        * @return {boolean} флаг возможности оборачивания
-        */
-	    isAllowWrap: function(){
-	        return JSB.isDefined(this.options.allowWrap) ? this.options.allowWrap : true;
-	    },
-
-        /**
-        * Рендер с фиксированным количеством значений?
-        * @return {boolean}
-        */
-	    isFixedFieldCount: function(){
-	        return this.getScheme().fixedFieldCount;
 	    },
 
         /**
@@ -497,56 +548,6 @@
         */
 	    isMultiple: function(){
 	        return this.getScheme().multiple;
-	    },
-
-	    isSortable: function(){
-	        return JSB.isDefined(this.getScheme().sortable) ? this.getScheme().sortable : true;
-	    },
-
-        /**
-        * Прикрепляет к элементу всплывающее меню
-        * @param {jQuery} menuOpts - опции для меню @see showMenu
-        */
-	    installMenuEvents: function(menuOpts, noHover, noClick){
-	        menuOpts = this._expandOptions(menuOpts);
-
-	        if(!menuOpts.wrap && !menuOpts.edit && !menuOpts.remove){
-	            return;
-	        }
-
-	        menuOpts.element.addClass('pointer');
-
-            menuOpts.element.hover(function(evt){
-                evt.stopPropagation();
-
-                if(!noHover){
-                    $this.getElement().addClass('hover');
-                }
-
-                JSB.cancelDefer('DataCube.Query.hideMenu' + menuOpts.id);
-
-                JSB.defer(function(){
-                    $this.showMenu(menuOpts);
-                }, 300, 'DataCube.Query.showMenu' + menuOpts.id);
-            }, function(evt){
-                evt.stopPropagation();
-
-                if(!noHover){
-                    $this.getElement().removeClass('hover');
-                }
-
-                JSB.cancelDefer('DataCube.Query.showMenu' + menuOpts.id);
-
-                JSB.defer(function(){
-                    $this.hideMenu(menuOpts);
-                }, 300, 'DataCube.Query.hideMenu' + menuOpts.id);
-            });
-
-            if(!noClick && menuOpts.edit){
-                menuOpts.element.click(function(){
-                    $this.showTool(menuOpts);
-                });
-            }
 	    },
 
 	    onChange: function(changeDesc){
@@ -680,11 +681,12 @@
         /**
         * Устанавливает значения по умолчанию (при наличии)
         */
-	    setDefaultValues: function(){
-	        var defValues = this.getDefaultValues();
+	    setDefaultValues: function() {
+            //constructDefaultValues
+	        var defValues = Syntax.constructDefaultValues(this.options);
 
-	        if(JSB.isDefined(defValues)){
-	            this.setValues(defValues);
+	        if(JSB.isDefined(defValues)) {
+	            this.setValues(defValues[this.getKey()]);
 	        }
 	    },
 
@@ -772,12 +774,6 @@
             }
 
 	        var render = this.createRender({
-	            // поля, заданные родителем
-                allowOutputFields: this.options.allowOutputFields,
-                allowSourceFields: this.options.allowSourceFields,
-                allowDelete: this.isAllowDelete(),
-                deleteCallback: this.getDeleteCallback(),
-
 	            key: desc.key,
 	            scope: this.getScope()
 	        }, this.getParent());
@@ -787,21 +783,6 @@
 	            this.destroy();
 	            this.onChange();
 	        }
-	    },
-
-	    _expandOptions: function(options){
-	        return JSB.merge({
-	            caller: this,
-	            id: this.getId(),
-	            key: this.getKey(),
-
-	            // buttons
-	            edit: this.isAllowReplace(),
-	            remove: this.isAllowDelete(),
-
-	            // callbacks
-	            deleteCallback: this.getDeleteCallback()
-	        }, options);
 	    }
 	},
 

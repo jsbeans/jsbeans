@@ -84,12 +84,16 @@
 
 	    var scheme = this.getScheme(key);
 
+	    if(!scheme) {
+	        return;
+	    }
+
 	    if(scheme.defaultValuesConstructor) {
 	        return scheme.defaultValuesConstructor(desc);
 	    } else {
 	        var val = {};
 
-	        val[desc.key] = JSB().clone(this.getScheme(key).defaultValues);
+	        val[desc.key] = JSB().clone(this.getScheme(key).defaultValues) || {};
 
 	        return val;
 	    }
@@ -129,9 +133,20 @@
         return this._replacements[replacementsGroupKey];
 	},
 
+	getReplacementItems: function(key, parentKey) {
+	    var replacements = this.getReplacements(key, parentKey),
+	        items = replacements.items || [];
+
+	    for(var i = 0; i < replacements.categories.length; i++) {
+	        items = items.concat(this._replacements[replacements.categories[i]]);
+	    }
+
+	    return items;
+	},
+
     /**
     * Возвращает список ключей замены для данного ключа группы
-    * @param {key} name - ключ, для которого нудно вернуть список замен
+    * @param {key} name - ключ группы, для которой нужно вернуть список замен
     *
     * @return {array} массив ключей для замены
     */
@@ -220,7 +235,7 @@
                             categoryItems: []
                         };
 
-                    if(!render.isAllowOutputFields()) {
+                    if(!render.getProperty('allowOutputFields')) {
                         result.categoryItems = [];
                         callback.call(null, result);
                         return;
@@ -354,7 +369,9 @@
                         categoryItems: []
                     };
 
-                if(!render.isAllowSourceFields()) {
+                var allowSourceFields = render.getProperty('allowSourceFields');
+
+                if(allowSourceFields === false) {
                     callback.call(null, result);
                     return;
                 }
@@ -443,7 +460,7 @@
                 category: '$other',
                 displayName: 'Подзапрос',
                 desc: 'Запрос внутри запроса',
-                replaceable: true,
+                allowReplace: true,
                 defaultValues: {$from: {}, $select: {}},
                 defaultValuesConstructor: function(desc) {
                     return JSB().clone(this.defaultValues);
@@ -461,9 +478,9 @@
                 category: '$querySource',
                 displayName: 'Куб',
                 isSource: true,
-                editable: false,
+                allowDelete: false,
                 priority: 1,
-                removable: false,
+                allowDelete: false,
 
                 replacements: '$sources'
             },
@@ -475,7 +492,7 @@
                 desc: 'Задает в качестве источника запроса другой запрос',
                 isSource: true,
                 priority: 1,
-                removable: false,
+                allowDelete: false,
 
                 replacements: '$sources'
             },
@@ -487,7 +504,7 @@
                 desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
                 isSource: true,
                 priority: 1,
-                removable: false,
+                allowDelete: false,
 
                 replacements: '$sources'
             },
@@ -497,9 +514,9 @@
                 category: '$querySource',
                 displayName: 'Таблица базы данных',
                 isSource: true,
-                editable: false,
+                allowDelete: false,
                 priority: 1,
-                removable: false,
+                allowDelete: false,
 
                 replacements: '$sources'
             },
@@ -512,7 +529,7 @@
                 isSource: true,
                 multiple: true,
                 priority: 1,
-                removable: false,
+                allowDelete: false,
 
                 replacements: '$sources'
             },
@@ -524,7 +541,7 @@
                 desc: 'Рекурсивный запрос',
                 isSource: true,
                 priority: 1,
-                removable: false,
+                allowDelete: false,
 
                 replacements: '$sources'
             },
@@ -535,8 +552,8 @@
                 render: '$select',
                 displayName: 'Столбцы',
                 desc: 'Выражения для формирования выходных полей (значений в столбцах)',
-                removable: false,
-                replaceable: false,
+                allowDelete: false,
+                allowReplace: false,
                 defaultValues: {$const: 0},
 
                 allowOutputFields: false
@@ -548,8 +565,8 @@
                 desc: 'Группировка строк по значениям или выражениям',
                 multiple: true,
                 queryElement: true,
-                replaceable: false,
-                removable: true,
+                allowReplace: false,
+                allowDelete: true,
                 defaultValues: [],
                 defaultAddValues: {$const: 0},
 
@@ -563,8 +580,8 @@
 
                 multiple: true,
                 queryElement: true,
-                replaceable: false,
-                removable: true,
+                allowReplace: false,
+                allowDelete: true,
 
                 defaultValues: {},
                 defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
@@ -580,8 +597,8 @@
                 desc: 'Фильтрация результатов запроса по условию (условия накладываются на выходные столбцы результата запроса)',
                 multiple: true,
                 queryElement: true,
-                replaceable: false,
-                removable: true,
+                allowReplace: false,
+                allowDelete: true,
                 defaultValues: {},
                 defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]},
 
@@ -596,7 +613,7 @@
                 desc: 'Дополнительная фильтрация строк куба для всех подзапросов в данном и вложенных срезах',
                 multiple: true,
                 queryElement: true,
-                replaceable: false,
+                allowReplace: false,
                 defaultValues: {$and: []},
                 defaultAddValues: {$eq: [{$const: 0}, {$const: 0}]}
             },
@@ -606,8 +623,8 @@
                 displayName: 'Сортировка',
                 desc: 'Сортировка элементов (строк)',
                 queryElement: true,
-                replaceable: false,
-                removable: true,
+                allowReplace: false,
+                allowDelete: true,
                 defaultValues: [],
                 defaultAddValues: {$expr: {$const: 0}, $type: 1}
             },
@@ -625,6 +642,8 @@
 
             $view: {
                 render: '$text',
+                allowReplace: false,
+                allowDelete: false,
                 defaultValuesConstructor: function(desc) {
                     return desc.item;
                 }
@@ -638,12 +657,16 @@
             },
 
             $params: {
-                render: '$params',
+                render: '$paramsViewsBase',
                 displayName: 'Параметры',
                 desc: 'Значения параметров',
                 queryElement: true,
-                replaceable: false,
-                removable: true,
+                allowReplace: false,
+                allowDelete: true,
+                defaultAddValues: {
+                    $type: 'string',
+                    $defaultValue: null
+                },
                 defaultValues: {}
             },
 
@@ -654,6 +677,7 @@
                 displayName: 'Сложение',
                 desc: 'Сложение чисел',
                 multiple: true,
+                dragDrop: true,
                 defaultAddValues: {$const: 0},
                 defaultValues: [{$const: 0},{$const: 0}]
             },
@@ -730,6 +754,7 @@
                 category: '$functions',
                 displayName: 'Максимум',
                 desc: 'Выбор максимального значения из перечня заданных',
+                multiple: true,
                 defaultValues: [{$const: 0},{$const: 0}]
             },
 
@@ -738,6 +763,7 @@
                 category: '$functions',
                 displayName: 'Минимум',
                 desc: 'Выбор минимального значения из перечня заданных',
+                multiple: true,
                 defaultValues: [{$const: 0},{$const: 0}]
             },
 
@@ -1368,18 +1394,18 @@
         $constructor: function() {
             $base();
 
+            var defaultValues = {
+                allowDelete: true,
+                allowEdit: true,
+                allowReplace: true,
+            };
+
             for(var i in this.scheme) {
                 // set defaults
-                if(!JSB.isDefined(this.scheme[i].removable)) {
-                    this.scheme[i].removable = true;
-                }
-
-                if(!JSB.isDefined(this.scheme[i].editable)) {
-                    this.scheme[i].editable = true;
-                }
-
-                if(!JSB.isDefined(this.scheme[i].replaceable)) {
-                    this.scheme[i].replaceable = true;
+                for(var j in defaultValues) {
+                    if(!JSB.isDefined(this.scheme[i][j])) {
+                        this.scheme[i][j] = defaultValues[j];
+                    }
                 }
 
                 // create tool categories
@@ -1416,7 +1442,7 @@
                 displayName: definition.displayName || definition.name,
                 desc: definition.desc,
                 values: values,
-                replaceable: true
+                allowReplace: true
             };
 
 		    this._macros[definition.name] = {

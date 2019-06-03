@@ -1,4 +1,13 @@
 .queryController,
 .queryController .queryRender {
     overflow: visible;
+    height: 100%;
+}
+
+.queryController {
+    outline: none;
+}
+
+.queryController > .basicQueryRender {
+    border: 0;
 }

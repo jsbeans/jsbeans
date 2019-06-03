@@ -185,6 +185,7 @@
 		},
 		
 		options: {
+		    autofocus: false,
 			valueType: 'org.jsbeans.types.JavaScript',
 			showHints: true,
 			validation: true,
@@ -201,12 +202,21 @@
 			}
 		},
 
+		execCommand: function(command) {
+		    return this.editor.execCommand(command);
+		},
+
 		init: function(mode, theme, opts){
 			var self = this;
 			var readonly = false;
 			if(this.options.readOnly){
 				readonly = this.options.readOnly;
 			}
+
+			if(!opts) {
+			    opts = this.options;
+			}
+
 			var cmOpts = JSB.merge(true, {
 				lineNumbers: JSB.isNull(self.options.lineNumbers) ? true : self.options.lineNumbers,
 				mode: mode,
@@ -381,6 +391,5 @@
 			}
 			
 		}
-			
 	}
 }

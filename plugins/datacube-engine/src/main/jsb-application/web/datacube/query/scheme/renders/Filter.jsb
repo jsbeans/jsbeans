@@ -18,15 +18,17 @@
 
 	        this.addClass('filterRender');
 
-	        if(opts.parent.getRenderName() === '$query'){
+	        if(opts.parent.getRenderName() === '$query') {
 	            this._isQueryElement = true;
 
-	            this.createHeader(true);
+	            this.createHeader();
 
 	            this.addClass('queryElements');
 	        } else {
-	            this.constructHead()
+	            this.constructHead();
 	        }
+
+	        this.bindMenu(this.createMainMenuOptions());
 
 	        this.constructValues();
 
@@ -101,15 +103,6 @@
 
 	        var operator = this.$('<div class="operator" title="Условия фильтрации">Фильтрация</div>');
             this.append(operator);
-
-            this.installMenuEvents({
-                element: operator,
-                id: this.getId() + '_operator',
-                wrap: this.isAllowWrap(),
-                deleteCallback: function(){
-                    $this.getDeleteCallback().call($this);
-                }
-            });
 
             this.append(this.createSeparator(this.isMultiple() || scheme.parameters));
 	    },
