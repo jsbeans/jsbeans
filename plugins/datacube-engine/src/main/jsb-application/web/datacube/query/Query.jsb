@@ -60,8 +60,14 @@
 		},
 
 		prepare: function(queryTask){
-		    queryTask.startEngine = Config.get('datacube.query.engine.prepare');
-            return $this.execute(queryTask);
+//		    queryTask.startEngine = Config.get('datacube.query.engine.prepare');
+//            return $this.execute(queryTask);
+            return {
+                next: function() {
+                    return queryTask.query;
+                },
+                close:function(){}
+            };
 		},
 	}
 }

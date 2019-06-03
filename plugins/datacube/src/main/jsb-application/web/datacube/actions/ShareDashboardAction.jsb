@@ -27,6 +27,21 @@
 			var url = window.location.href;
 			var tags = JSB.$('meta[name="keywords"]').attr('content');
 			var logo = JSB.$('meta[property="og:image"]').attr('content');
+			
+			function _twitterPrepareTags(){
+				if(!tags || tags.length == 0){
+					return '';
+				}
+				var newTagsStr = '';
+				var tagParts = tags.split(',');
+				for(var i = 0; i < tagParts.length; i++){
+					if(newTagsStr.length > 0){
+						newTagsStr += ', ';
+					}
+					newTagsStr += tagParts[i].trim().toLowerCase().replace(/\s/g, '');
+				}
+				return newTagsStr;
+			}
 
 			function _twitterPrepareTags(){
 				if(!tags || tags.length == 0){

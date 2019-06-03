@@ -1429,6 +1429,8 @@
                     this._queryElements.push(JSB.merge({}, this.scheme[i], {key: i}));
                 }
             }
+
+            this.registerBaseMacros();
         },
 
         getClientFields: function() {
@@ -1500,6 +1502,45 @@
 		            dcQuery.$select[alias] = newExp;
 		        });
 		    }
+		},
+
+		registerBaseMacros: function(){
+            $this.registerMacro(
+                {
+                    name:'$similarity2',
+                    desc: 'Поиск похожих со значением по умолчанию. Если значение $value не определено, то подставляет $defaultValue, иначе`similarity($expr, $value) .'
+                },
+                {
+                    $expr: {
+                        displayName: 'Основное выражение',
+                        desc: 'Ззадает основное значение и первый аргумент similarity',
+                        defaultValues: {$const: ''}
+                    },
+                    $value: {
+                        displayName: 'Проверяемое выражение',
+                        desc: 'Задает проверяемое значение и второй аргумент similarity',
+                        defaultValues: {$const: ''}
+                    },
+                    $defaultValue: {
+                        displayName: 'Значение по умолчанию',
+                        desc: 'Значение по умолчанию, которое подставляется в результат при $value = null',
+                        defaultValues: 1,
+                        parameter: true,
+                        type: 'double'
+                    },
+                },
+                function(expr, dcQuery, rootQuery) {
+                    return {
+                        $if:{
+                            $cond: {$eq:[ expr.$value, {$const: null} ]},
+                            $then: {$const: expr.$defaultValue},
+                            $else: {
+                                $similarity: [expr.$expr, expr.$value]
+                            }
+                        }
+                    };
+                }
+            );
 		}
     }
 }
