@@ -649,6 +649,17 @@
                 }
             },
 
+            $views: {
+                render: '$paramsViewsBase',
+                displayName: 'Именованные подзапросы',
+                desc: 'Значения подзапросов',
+                queryElement: true,
+                allowReplace: false,
+                allowDelete: true,
+                defaultValues: {},
+                defaultAddValues: {$from: {}, $select: {}}
+            },
+
             $param: {
                 render: '$param',
                 defaultValuesConstructor: function(desc) {

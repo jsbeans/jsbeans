@@ -26,6 +26,10 @@
 
 	        this.addClass('queryRender');
 
+	        this.getElement().mouseover(function(evt) {
+	            evt.stopPropagation();
+	        });
+
 	        if(this.getParent()){
 	            this.addClass('subQuery');
 

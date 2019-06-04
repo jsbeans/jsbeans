@@ -1,7 +1,7 @@
 /** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
 
 {
-	$name: 'DataCube.Query.Renders.Params',
+	$name: 'DataCube.Query.Renders.ParamItem',
 	$parent: 'DataCube.Query.Renders.Basic',
 
 	$alias: '$paramItem',
@@ -14,7 +14,7 @@
         $constructor: function(opts) {
             $base(opts);
 
-            this.addClass('params');
+            this.addClass('paramItem');
 
 /*
 			    string: 'string',

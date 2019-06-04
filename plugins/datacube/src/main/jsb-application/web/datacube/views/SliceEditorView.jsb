@@ -14,7 +14,6 @@
 	
 	$require: ['JSB.Widgets.SplitBox',
 	           'DataCube.Controls.Grid',
-	           'DataCube.Query.Controls.ViewsEditor',
 	           'JSB.Widgets.TabView',
 	           'JSB.Controls.ScrollBox',
 	           'JSB.Widgets.PrimitiveEditor', 
@@ -158,17 +157,9 @@
 				}
 			});
 
-			this.viewsEditor = new ViewsEditor({
-			    schemeController: this.editor
-			});
-
-			tabView.addTab('Именованные подзапросы', this.viewsEditor, {id:'views'});
 			tabView.addTab('Текстовый вид', this.textQueryEditor, {id:'textQuery'});
 
             this.editor = new SchemeController({
-                extendControllers: {
-                    $views: this.viewsEditor
-                },
                 onChange: function(){
                     $this.updateTextQuery(this.getValues());
                 },

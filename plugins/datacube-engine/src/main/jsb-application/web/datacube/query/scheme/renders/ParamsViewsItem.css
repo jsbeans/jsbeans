@@ -24,26 +24,26 @@
     border-width: 2px;
 }
 
-.paramsViewsItemRender > .params > .typeEditor {
+.paramsViewsItemRender > .paramItem > .typeEditor {
     margin-bottom: 2px;
 }
 
-.paramsViewsItemRender > .params > .typeEditor > * {
+.paramsViewsItemRender > .paramItem > .typeEditor > * {
     display: inline-block;
     vertical-align: middle;
 }
 
-.paramsViewsItemRender > .params > .typeEditor > label {
+.paramsViewsItemRender > .paramItem > .typeEditor > label {
     width: 100px;
 }
 
-.paramsViewsItemRender > .params > .typeEditor > .type {
+.paramsViewsItemRender > .paramItem > .typeEditor > .type {
     border: 1px solid transparent;
     border-radius: 5px;
     cursor: pointer;
 }
 
-.paramsViewsItemRender > .params > .typeEditor > .type:hover {
+.paramsViewsItemRender > .paramItem > .typeEditor > .type:hover {
     border: 1px solid #d8d8d8;
     background-color: #e3eff5;
     color: #1091d2;
