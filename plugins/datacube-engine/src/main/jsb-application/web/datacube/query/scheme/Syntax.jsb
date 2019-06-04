@@ -963,6 +963,16 @@
                 defaultValues: {$const: 0}
             },
 
+            $similarity: {
+                render: '$default',
+                category: '$functions',
+                displayName: 'Похожесть строк',
+                desc: 'Вычисление похожести двух строк',
+                multiple: true,
+                fixedFieldCount: 2,
+                defaultValues: [{$const: ''}, {$const: ''}]
+            },
+
             // type conversion
             $toInt: {
                 render: '$default',
@@ -1526,7 +1536,7 @@
                         desc: 'Значение по умолчанию, которое подставляется в результат при $value = null',
                         defaultValues: 1,
                         parameter: true,
-                        type: 'double'
+                        type: 'number'
                     },
                 },
                 function(expr, dcQuery, rootQuery) {
