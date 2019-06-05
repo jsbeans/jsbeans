@@ -625,6 +625,8 @@
                 queryElement: true,
                 allowReplace: false,
                 allowDelete: true,
+                allowSourceFields: false,
+                allowOutputFields: true,
                 defaultValues: [],
                 defaultAddValues: {$expr: {$const: 0}, $type: 1}
             },
