@@ -1,7 +1,7 @@
 /** DataCube - jsBeans extension | jsbeans.org (MIT Licence) | (c) Special Information Systems, LLC */
 
 {
-	$name: 'DataCube.Query.Renders.ParamItem',
+	$name: 'DataCube.Query.Renders.ViewItem',
 	$parent: 'DataCube.Query.Renders.Basic',
 
 	$alias: '$viewItem',
