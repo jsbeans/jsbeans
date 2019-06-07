@@ -12,7 +12,7 @@
     $name:'JSB.Net.HttpConnection',
 
     $server: {
-    	$require: 'JSB.System.Log',
+    	$require: ['JSB.System.Log', 'JSB.IO.Stream'],
     	
         $constructor: function(options){
             this.URL = Packages.java.net.URL;
@@ -30,8 +30,8 @@
             debug: true,
             trace: true,
 
-            connectTimeout: 3000, // remote machine does not answer
-            socketTimeout: 15000,// connection interrupted
+            connectTimeout: 15000, // remote machine does not answer
+            socketTimeout: 120000,// connection interrupted
             method: 'GET',
             charset: 'utf-8',
             useCaches: false,
@@ -142,6 +142,10 @@
 
                 if(JSB.isString(data)) {
                     this.HttpHelper.streamWriteString(outputStream, data, this.options.charset);
+                } else if(JSB.isInstanceOf(data, 'JSB.IO.Stream')) {
+                	var outStream = new Stream(outputStream);
+                	data.copy(outStream);
+                	outStream.destroy();
                 } else if(JSB.isPlainObject(data)) {
                     var json = JSON.stringify(data) + this.options.delimiter;
                     this.HttpHelper.streamWriteString(outputStream, json, this.options.charset);
