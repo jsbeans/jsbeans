@@ -82,7 +82,7 @@
         *  a) 'cubeId' - in workspace of defaultCube
         *  b) 'wsId/cubeId' - in custom workspace
         */
-        getQueryCube: function(cubeId, defaultCube) {
+        getQueryCube: function(cubeId, defaultCube, notCheck) {
             var ids = cubeId.split('/');
             if (ids.length > 1) {
                 var wid = ids[0];
@@ -94,7 +94,7 @@
                 var ws = defaultCube.getWorkspace();
                 var cube = ws.entry(cid);
             }
-            $this.throwError(cube, 'Cube with id "{}" is undefined', cubeId);
+            $this.throwError(notCheck || cube, 'Cube with id "{}" is undefined', cubeId);
             return cube;
 
         },
@@ -140,6 +140,28 @@
                 var slice = ws.existsEntry(sid) ? ws.entry(sid) : null;
             }
             $this.throwError(notCheck || slice, 'Slice with id "{}" is undefined', sliceId);
+            return slice;
+        },
+
+        /** Entry by id :
+        *  a) 'entryId' - in defaultCube
+        *  b) 'wsId/entryId' - in custom workspace
+        */
+        getQueryEntry: function(entryId, defaultCube, notCheck) {
+            var ids = entryId.split('/');
+            if (ids.length > 1) {
+                var wid = ids[0];
+                var sid = ids[1];
+                if (WorkspaceController.existsWorkspace(wid)) {
+                    var ws = WorkspaceController.getWorkspace(wid);
+                    var slice = ws.existsEntry(sid) ? ws.entry(sid) : null;
+                }
+            } else {
+                var sid = ids[0];
+                var ws = defaultCube.getWorkspace();
+                var slice = ws.existsEntry(sid) ? ws.entry(sid) : null;
+            }
+            $this.throwError(notCheck || slice, 'Entry with id "{}" is undefined', entryId);
             return slice;
         },
 

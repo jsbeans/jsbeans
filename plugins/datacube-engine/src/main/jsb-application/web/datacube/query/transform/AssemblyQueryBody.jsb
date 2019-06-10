@@ -9,6 +9,7 @@
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.Transforms.QueryTransformer',
 		    'DataCube.Query.Cost.SliceCost',
+		    'DataCube.Query.QuerySourceType',
         ],
 
         $constructor: function(){
@@ -89,6 +90,9 @@
 		            if (!query.$context)  {
 		                query.$context = 'ASSEMBLY##'+JSB.generateUid().substr(0,4);
 		            }
+
+		            $this._fixupSource(query, cube);
+
                     //
                     var usedDimensions = $this._collectUsedDimensions(queryStack);
                     JSB.merge(allUsedDimensions, usedDimensions);
@@ -152,6 +156,41 @@
 		    var bestSlice = $this._selectTheEasiestSlice(matchedSlices, cube);
 		    QueryUtils.throwError(bestSlice, 'Slice not found fo cube source and fields');
 		    return bestSlice;
+		},
+
+		_fixupSource: function(query, cube) {
+		    if (query.$from && !query.$cube && !query.$provider && !query.$join && !query.$union && !query.$recursive) {
+
+                var sourceType = QuerySourceType.getSourceType(query, cube);
+                switch(sourceType) {
+                    case QuerySourceType.Cube:
+                        query.$cube = query.$from;
+                        delete query.$from;
+                        break;
+                    case QuerySourceType.Provider:
+                        query.$provider = query.$from;
+                        delete query.$from;
+                        break;
+                    case QuerySourceType.Join:
+                        query.$join = query.$from;
+                        delete query.$from;
+                        break;
+                    case QuerySourceType.Union:
+                        query.$union = query.$from;
+                        delete query.$from;
+                        break;
+                    case QuerySourceType.Recursive:
+                        query.$recursive = query.$from;
+                        delete query.$from;
+                        break;
+                    // $from
+                    case QuerySourceType.Slice:
+                    case QuerySourceType.EmptyQuery:
+                    case QuerySourceType.SubQuery:
+                    case QuerySourceType.ViewName:
+                    break;
+                }
+		    }
 		},
 
 		_wrapProvider: function(query) {

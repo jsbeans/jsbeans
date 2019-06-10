@@ -72,19 +72,23 @@
                 	'charset': 'utf-8'
                 }
         	}, props));
-        	if(data){
-        		if(JSB.isPlainObject(data) || JSB.isArray(data)){
-        			c.sendArgs(data);
-        		} else {
-        			c.send(data);
-        		}
+        	
+        	try {
+	        	if(data){
+	        		if(JSB.isPlainObject(data) || JSB.isArray(data)){
+	        			c.sendArgs(data);
+	        		} else {
+	        			c.send(data);
+	        		}
+	        	}
+	        	
+	        	var result = c.getResult();
+	        	return result;
+        	} finally {
+        		c.destroy();
         	}
         	
-        	var result = c.getResult();
         	
-        	c.destroy();
-        	
-        	return result;
         }
     }
 }

@@ -2,7 +2,7 @@
     $.widget("ui.loader", {
     	
     	options:{
-    		style: 'gear32',
+    		style: 'gear',
     		onShow: null,
     		onHide: null,
     		message: '',

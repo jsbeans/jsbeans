@@ -488,7 +488,7 @@
 			});
 			
 			this.subscribe('ParserManager.cancel', function(sender, msg, entry){
-				if($this.source != source){
+				if($this.source != entry){
 					return;
 				}
 				$this.cancelFlag = true;

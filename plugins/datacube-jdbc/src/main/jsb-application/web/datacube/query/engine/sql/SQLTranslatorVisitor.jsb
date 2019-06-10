@@ -467,10 +467,10 @@ debugger
                 case '$corr':
                     return nFunction('CORR(', ',', ')');
                 case '$first':
-                    throw QueryUtils.throwError($this.vendor != 'SQLServer', 'Aggregate functions $first/$last is not supported in {}, use $any instead', $this.vendor);
+                    QueryUtils.throwError($this.vendor != 'SQLServer', 'Aggregate functions $first/$last is not supported in {}, use $any instead', $this.vendor);
                     return simple('(ARRAY_AGG(', '))[1]');
                 case '$last':
-                    throw QueryUtils.throwError($this.vendor != 'SQLServer', 'Aggregate functions $first/$last is not supported in {}, use $any instead', $this.vendor);
+                    QueryUtils.throwError($this.vendor != 'SQLServer', 'Aggregate functions $first/$last is not supported in {}, use $any instead', $this.vendor);
                     var lastVal = $this.printScope(function(){
                         $base(exp);
                     });
