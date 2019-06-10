@@ -419,7 +419,8 @@
                     dimensions: desc.dimensions,
                     editor: this,
                     entry: desc.slices[i].entry,
-                    position: desc.slices[i].diagramOpts && desc.slices[i].diagramOpts.position
+                    position: desc.slices[i].diagramOpts && desc.slices[i].diagramOpts.position,
+                    size: desc.slices[i].diagramOpts && desc.slices[i].diagramOpts.size
                 });
 	        }
 

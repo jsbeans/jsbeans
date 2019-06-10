@@ -3,20 +3,25 @@
 {
 	$name: 'DataCube.SliceDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JSB.Controls.ScrollBox',
+	$require: ['jQuery.UI.Resizable',
+	           'JSB.Controls.Grid',
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.RendererRepository',
 	           'JSB.Widgets.ToolManager',
 	           'css:SliceDiagramNode.css'],
 	
 	$client: {
+	    // const
+	    MAX_HEIGHT: 200,
+	    MAX_GRID_HEIGHT: 150,
+
 		editor: null,
 		entry: null,
 
 		_sources: {},
 		
 		options: {
-		    onCreate: function(){
+		    onCreate: function() {
 		        var self = this;
 
 		        this.entry.server().extractFields(function(res, fail){
@@ -34,18 +39,18 @@
                     self.updateLinks();
 		        });
 		    },
-			onHighlight: function(bEnable){
+			onHighlight: function(bEnable) {
 				this.highlightNode(bEnable);
 			},
 			onSelect: function(bEnable){
 				this.selectNode(bEnable);
 			},
-			onPositionChanged: function(x, y){
+			onPositionChanged: function(x, y) {
 				var self = this;
 
 				JSB.defer(function(){
 				    self.editor.getCube().server().updateNodePosition(self.entry, {position: {x: x, y: y}});
-				}, 500, 'posChanged_' + this.getId());
+				}, 500, 'posChanged_' + self.getId());
 			}
 		},
 		
@@ -100,11 +105,31 @@
 			header.append(editBtn.getElement());
 
 			// select fields
-			this.fieldList = new ScrollBox({
+			this.fieldList = new Grid({
 			    cssClass: 'fields',
-			    xAxisScroll: false
+			    columns: ['name', 'type'],
+			    colHeader: false,
+			    cellRenderer: function(td, value, rowIndex, colIndex, rowData) {
+			        td.append(value);
+
+			        if(colIndex === 'name') {
+			            td.addClass('cubeFieldIcon sliceField');
+
+                        if(rowData.isDimension) {
+                            td.addClass('dimension');
+                        }
+			        }
+			    }
 			});
-			this.append(this.fieldList.getElement());
+			this.append(this.fieldList);
+
+            this.fieldList.getElement().mousewheel(function(evt){
+                evt.stopPropagation();
+            });
+
+            this.fieldList.getElement().click(function(evt) {
+                evt.stopPropagation();
+            });
 
 			// right connector
 			var rightConnector = this.$('<div class="connector right"></div>');
@@ -119,7 +144,7 @@
 			var footer = this.$('<footer></footer>');
 			this.append(footer);
 
-			if(dataSource){
+			if(dataSource) {
                 var renderer = RendererRepository.createRendererFor(dataSource, {showSource: true});
                 footer.append(renderer.getElement());
 
@@ -131,8 +156,23 @@
                 this.addClass('dataSourceSlice');
 			}
 
-            this.subscribe('DataCube.CubeEditor.search', function(sender, msg, value){
-                $this.search(value);
+			this.getElement().resizable({
+			    start: function(evt) {
+			        $this.getElement().css('max-height', '');
+			    },
+                stop: function(evt, ui) {
+                    JSB.defer(function(){
+                        $this.editor.getCube().server().updateNodePosition($this.entry, {size: {width: $this.getElement().width(), height: $this.getElement().height()}});
+                    }, 500, 'sizeChanged_' + $this.getId());
+                }
+            });
+
+            if(!opts.size) {
+                this.getElement().css('max-height', this.MAX_HEIGHT);
+            }
+
+            this.subscribe('DataCube.CubeEditor.search', function(sender, msg, value) {
+                $this.fieldList.search('name', value);
             });
 
             this.subscribe('DataCube.CubeEditor.sliceUpdated', function(sender, msg, obj){
@@ -164,72 +204,50 @@
 			}
 		},
 
-		refresh: function(opts){
-            if(opts && opts.fields){
-                var dimensions = this.editor.getDimensions(),
-                    fields = [];
+		refresh: function(opts) {
+            if(opts && opts.fields) {
+                var dimensions = this.editor.getDimensions();
 
-                for(var i in opts.fields){
-                    fields.push({
-                        isDimension: dimensions[i],
-                        key: i,
-                        type: opts.fields[i].type
-                    });
+                this.fieldList.clear();
+
+                // add dimensions
+                for(var i in opts.fields) {
+                    if(dimensions[i]) {
+                        this.fieldList.addRow({
+                            isDimension: dimensions[i],
+                            name: i,
+                            type: opts.fields[i].type
+                        });
+                    }
                 }
 
-                fields.sort(function(a, b){
-                    if(a.isDimension && !b.isDimension){
-                        return -1;
+                // add non dimension fields
+                for(var i in opts.fields) {
+                    if(!dimensions[i]) {
+                        this.fieldList.addRow({
+                            isDimension: dimensions[i],
+                            name: i,
+                            type: opts.fields[i].type
+                        });
                     }
+                }
+            }
 
-                    if(!a.isDimension && b.isDimension){
-                        return 1;
-                    }
+            this.fieldList.updateDimensions();
 
-                    if(a.key > b.key){
-                        return 1;
-                    }
+            var gridHeight = this.fieldList.getElement().children('.grid-master').height();
 
-                    if(a.key < b.key){
-                        return -1;
-                    }
-
-                    return 0;
-                });
-
-                var fieldsBox = d3.select(this.fieldList.getElement().get(0));
-
-                // enter
-                fieldsBox.selectAll('div.sliceField').data(fields).enter().append(function(d){
-                    var el = $this.$('<div class="cubeFieldIcon sliceField"></div>');
-
-                    el.append('<div class="key"></div>');
-                    el.append('<div class="type"></div>');
-
-                    return el.get(0);
-                });
-
-                // update
-                var sliceFields = fieldsBox.selectAll('div.sliceField').data(fields);
-
-                sliceFields.classed('dimension', function(d){ return d.isDimension; });
-                sliceFields.select('.key')
-                	.text(function(d){ return d.key; })
-                	.attr('title', function(d){return d.key;});
-                
-                sliceFields.select('.type')
-                	.attr('type', function(d){ return d.type; })
-                	.text(function(d){ return d.type; });
-
-                // exit
-                fieldsBox.selectAll('div.sliceField').data(fields).exit().remove();
+            if(gridHeight > this.MAX_GRID_HEIGHT) {
+                this.getElement().height(this.MAX_GRID_HEIGHT + this.getElement().children('header').height() + this.getElement().children('footer').height());
+            } else {
+                this.getElement().height(gridHeight + this.getElement().children('header').height() + this.getElement().children('footer').height() + 16);
             }
 
             // set link type
-            if(this.leftConnectorElement){
+            if(this.leftConnectorElement) {
                 var fromType = this.entry.getFromType();
 
-                if(fromType !== '$cube'){
+                if(fromType !== '$cube') {
                     // update links
                     var oldLinks = this._sources,
                         newLinks = opts && opts.sources || this.entry.extractSources(opts && opts.query);
@@ -261,20 +279,6 @@
             }
 
             this.fields = opts && opts.fields || {};
-/*
-            if(opts && opts.name){
-                this.sliceName.text(opts.name);
-            }
-*/            
-		},
-
-		search: function(value){
-		    if(value){
-                this.fieldList.find('.key:not(:icontains("' + value + '"))').closest('.sliceField').addClass('hidden');
-                this.fieldList.find('.key:icontains("' + value + '")').closest('.sliceField').removeClass('hidden');
-            } else {
-                this.fieldList.find('.key').closest('.sliceField').removeClass('hidden');
-            }
 		},
 
 		selectNode: function(bEnable){
@@ -295,24 +299,23 @@
 		},
 
 		toggleDimension: function(desc){
-		    if(this.fields[desc.field]){
-		        if(desc.isDimension){
-		            this.fieldList.find('.key:contains("' + desc.field + '")').closest('.sliceField').addClass('dimension');
-		        } else {
-		            this.fieldList.find('.key:contains("' + desc.field + '")').closest('.sliceField').removeClass('dimension');
+		    this.fieldList.search('name', desc.field, function(tr, isSuit) {
+		        if(isSuit) {
+                    if(desc.isDimension) {
+                        tr.children('td[colKey="name"]').addClass('dimension');
+                    } else {
+                        tr.children('td[colKey="name"]').removeClass('dimension');
+                    }
 		        }
-		    }
+		    });
 
-		    var fields = this.fieldList.children();
-
-		    fields.sort(function(a, b){
-		        a = $this.$(a);
-		        b = $this.$(b);
-
-		        var aDim = a.hasClass('dimension'),
-		            bDim = b.hasClass('dimension'),
-		            aName = a.find('.name').text(),
-		            bName = b.find('.name').text();
+		    this.fieldList.sort(function(a, b) {
+		        var aTD = $this.$(a).children('td[colKey="name"]'),
+		            bTD = $this.$(b).children('td[colKey="name"]'),
+		            aDim = aTD.hasClass('dimension'),
+		            bDim = bTD.hasClass('dimension'),
+		            aName = aTD.text(),
+		            bName = bTD.text();
 
                 if(aDim && !bDim){
                     return -1;
@@ -332,8 +335,6 @@
 
                 return 0;
 		    });
-
-		    fields.detach().appendTo(this.fieldList.getElement());
 		}
 	}
 }

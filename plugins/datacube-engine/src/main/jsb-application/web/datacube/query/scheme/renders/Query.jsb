@@ -191,7 +191,7 @@
 	            allowReplace: allowReplace,
                 key: key,
                 scope: this.getScope(),
-                deleteCallback: function(){
+                deleteCallback: function() {
                     $this.addMenu.addItem(JSB.merge({}, this.getScheme(), {key: this.getKey()}));
 
                     this.remove();

@@ -151,8 +151,9 @@
 .grid-top > table th.grid-header-col {
     text-overflow: ellipsis;
 	vertical-align: top;
+    word-break: break-all;
+    word-wrap: break-word;
 }
-
 
 .grid-top > table tr.grid-header-row {}
 

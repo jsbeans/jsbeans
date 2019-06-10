@@ -200,6 +200,10 @@
             }
         },
 
+        addRow: function(rowData, rowIndex) {
+            this.addArray([rowData], rowIndex);
+        },
+
         clear: function(){
             this._dataScheme = null;
 
@@ -216,6 +220,36 @@
             this.showNoDataMsg(false);
         },
 
+        search: function(colKey, searchWord, searchFunction) {
+		    if(searchWord) {
+		        if(searchFunction) {
+		            var notSuit = this._masterTable.find('> tr > td[colKey="' + colKey + '"]:not(:icontains("' + searchWord + '"))').closest('tr'),
+		                suit = this._masterTable.find('> tr > td[colKey="' + colKey + '"]:icontains("' + searchWord + '")').closest('tr');
+
+                    for(var i = 0; i < suit.length; i++) {
+                        searchFunction.call(this, this.$(suit[i]), true);
+                    }
+
+                    for(var i = 0; i < notSuit.length; i++) {
+                        searchFunction.call(this, this.$(notSuit[i]), false);
+                    }
+		        } else {
+		            this._masterTable.find('> tr > td[colKey="' + colKey + '"]:not(:icontains("' + searchWord + '"))').closest('tr').addClass('hidden');
+		            this._masterTable.find('> tr > td[colKey="' + colKey + '"]:icontains("' + searchWord + '")').closest('tr').removeClass('hidden');
+                }
+            } else {
+		        if(searchFunction) {
+		            var trs = this._masterTable.children();
+
+                    for(var i = 0; i < trs.length; i++) {
+                        searchFunction.call(this, this.$(trs[i]), true);
+                    }
+		        } else {
+		            this._masterTable.children().removeClass('hidden');
+                }
+            }
+        },
+
         setData: function(data){
             this.clear();
 
@@ -226,78 +260,7 @@
 
             this.addArray(data);
 
-            var firstRow = this._masterTable.find("tr:first-child > td"),
-                masterColGroup = this.$('<colgroup></colgroup>'),
-                topColGroup = this.$('<colgroup></colgroup>'),
-                tableWidth = 0,
-                headerTR = this.$('<tr class="grid-header-row"></tr>');
-
-            this._masterTable.prepend(masterColGroup);
-            this._topTable.prepend(topColGroup);
-
-            for(var i = 0; i < firstRow.length; i++){
-                var col = this.$(firstRow[i]),
-                    colWidth = col.width(),
-                    colKey = col.attr('colKey'),
-                    style;
-
-                if(colWidth > this.options.maxColWidth){
-                    style = this.options.maxColWidth;
-                } else if(colWidth < this.options.minColWidth){
-                    style = this.options.minColWidth;
-                } else {
-                    style = colWidth;
-                }
-
-                var col = '<col colKey="' + colKey + '" style="width: ' + Math.ceil(style) + 'px">',
-                    masterCol = this.$(col),
-                    topCol = this.$(col);
-
-                tableWidth += style;
-
-                masterColGroup.append(masterCol);
-                topColGroup.append(topCol);
-
-                if(this.options.colHeader){
-                    var th = this.$('<th class="grid-header-col"></th>');
-
-                    this.options.headerRenderer(th, colKey);
-
-                    headerTR.append(th);
-                }
-
-                if(this.options.resizeColumns){
-                    var resizeHandle = this.$('<div class="col-resize-handle"></div>');
-                    this._colResizeHandleContainer.append(resizeHandle);
-
-                    resizeHandle.get(0).style.left = tableWidth + 'px';
-
-                    (function(resizeHandle, masterCol, topCol, index){
-                        resizeHandle.draggable({
-                            addClasses: false,
-                            axis: 'x',
-                            classes: {
-                                'ui-draggable-dragging': 'active'
-                            },
-                            stop: function(evt, ui){
-                                var widthDif = ui.position.left - ui.originalPosition.left,
-                                    newColWidth = masterCol.width() + widthDif;
-
-                                masterCol.get(0).style.width = newColWidth + 'px';
-                                topCol.get(0).style.width = newColWidth + 'px';
-
-                                $this._resizeColumnHandles(index + 1, widthDif);
-                            }
-                        });
-                    })(resizeHandle, masterCol, topCol, i);
-                }
-            }
-
-            if(this.options.colHeader){
-                this._topTable.append(headerTR);
-            }
-
-            this._updateSizes();
+            this.updateDimensions();
 
             if(this.options.preloader && this._masterTable.height() < this.getElement().height()){
                 this.options.preloader.call(this);
@@ -317,8 +280,18 @@
             }
         },
 
-        sort: function(){
-            // todo
+        sort: function(colKeyOrSortFunction) {
+            var tr = this._masterTable.children();
+
+            if(JSB.isFunction(colKeyOrSortFunction)) {
+                tr.sort(colKeyOrSortFunction);
+            }
+
+            if(JSB.isString(colKeyOrSortFunction)) {
+                // todo
+            }
+
+            tr.detach().appendTo(this._masterTable);
         },
 
         _defaultHeaderRenderer: function(th, index){
@@ -410,6 +383,99 @@
 
         _setResizeHandle: function(element, opts){
             //
+        },
+
+        updateDimensions: function() {
+            JSB.defer(function() {
+                $this._updateColGroups();
+
+                $this._updateSizes();
+            }, 300, 'grid.updateDimensions.id:' + this.getId());
+        },
+
+        _updateColGroups: function() {
+            var firstRow = this._masterTable.find("tr:first-child > td"),
+                masterColGroup = this.$('<colgroup></colgroup>'),
+                topColGroup = this.$('<colgroup></colgroup>'),
+                tableWidth = 0,
+                headerTR = this.$('<tr class="grid-header-row"></tr>');
+
+            this._masterTable.prepend(masterColGroup);
+            this._topTable.prepend(topColGroup);
+
+            for(var i = 0; i < firstRow.length; i++){
+                var col = this.$(firstRow[i]),
+                    colWidth = col.width(),
+                    colKey = col.attr('colKey'),
+                    style;
+
+                if(colWidth > this.options.maxColWidth){
+                    style = this.options.maxColWidth;
+                } else if(colWidth < this.options.minColWidth){
+                    style = this.options.minColWidth;
+                } else {
+                    style = colWidth;
+                }
+
+                var col = '<col colKey="' + colKey + '" style="width: ' + Math.ceil(style) + 'px">',
+                    masterCol = this.$(col),
+                    topCol = this.$(col);
+
+                tableWidth += style;
+
+                masterColGroup.append(masterCol);
+                topColGroup.append(topCol);
+
+                if(this.options.colHeader){
+                    var th = this.$('<th class="grid-header-col"></th>');
+
+                    this.options.headerRenderer(th, colKey);
+
+                    headerTR.append(th);
+                }
+
+                if(this.options.resizeColumns){
+                    var resizeHandle = this.$('<div class="col-resize-handle"></div>');
+                    this._colResizeHandleContainer.append(resizeHandle);
+
+                    resizeHandle.get(0).style.left = tableWidth + 'px';
+
+                    (function(resizeHandle, masterCol, topCol, index){
+                        var curLeft;
+
+                        resizeHandle.draggable({
+                            appendTo: $this.getElement(),
+                            addClasses: false,
+                            axis: 'x',
+                            classes: {
+                                'ui-draggable-dragging': 'active'
+                            },
+                            helper: 'clone',
+                            start: function(evt, ui) {
+                                var left = resizeHandle.css('left');
+
+                                curLeft = Number(left.substr(0, left.length - 2));
+                            },
+                            drag: function(evt, ui) {
+                                resizeHandle.css('left', curLeft + ui.position.left - ui.originalPosition.left);
+                            },
+                            stop: function(evt, ui) {
+                                var widthDif = ui.position.left - ui.originalPosition.left,
+                                    newColWidth = masterCol.width() + widthDif;
+
+                                masterCol.get(0).style.width = newColWidth + 'px';
+                                topCol.get(0).style.width = newColWidth + 'px';
+
+                                $this._resizeColumnHandles(index + 1, widthDif);
+                            }
+                        });
+                    })(resizeHandle, masterCol, topCol, i);
+                }
+            }
+
+            if(this.options.colHeader){
+                this._topTable.append(headerTR);
+            }
         },
 
         _updateSizes: function(){

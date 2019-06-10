@@ -47,6 +47,10 @@
 			if(this.options.position){
 			    this.setPosition(this.options.position, true);
 			}
+
+			if(this.options.size) {
+			    this.setSize(this.options.size);
+			}
 			
 			// install drag handles
 			for(var dhKey in this.dragHandles){
@@ -133,7 +137,19 @@
 			}
 //			console.log('setPosition X:' + this.position.x + '; Y:' + this.position.y);
 		},
-		
+
+		setSize: function(size) {
+		    var element = this.getElement();
+
+		    if(JSB.isDefined(size.width)) {
+		        element.width(size.width);
+            }
+
+		    if(JSB.isDefined(size.height)) {
+		        element.height(size.height);
+            }
+		},
+
 		isFixed: function(){
 			return this.options.fixed;
 		},
@@ -458,6 +474,10 @@
 				return true;
 			}
 			return false;
+		},
+
+		getDiagram: function() {
+		    return this.diagram;
 		}
 	}
 }

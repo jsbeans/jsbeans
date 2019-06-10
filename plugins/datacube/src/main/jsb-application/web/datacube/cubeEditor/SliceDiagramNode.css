@@ -285,9 +285,23 @@
 
 /* fields */
 .sliceDiagramNode > .fields {
-    max-height: 150px;
+    height: calc(100% - 24px - 11px);
+    background-color: #f0f7ee;
 }
 
+.sliceDiagramNode.dataSourceSlice > .fields {
+    height: calc(100% - 24px - 28px);
+    background-color: #f7f7ee;
+}
+
+.sliceDiagramNode > .fields > .grid-master {
+    height: 100%;
+}
+/*
+.sliceDiagramNode > .fields > .grid-master > table {
+    min-width: 100%;
+}
+*/
 .sliceDiagramNode > .fields > .sliceField {
     padding: 0 4px;
 	position: relative;
@@ -388,6 +402,7 @@
 
 .sliceDiagramNode.dataSourceSlice > footer {
 	border-top: 1px solid #8e8544;
+    height: 28px;
 }
 
 .sliceDiagramNode[sourcetype="$join"] > footer {
@@ -424,18 +439,18 @@
 }
 
 /* gripper */
-.sliceDiagramNode > .gripper {
+.sliceDiagramNode > footer > .gripper {
 	position: absolute;
 }
 
-.sliceDiagramNode > .gripper.cornerGripper {
+.sliceDiagramNode > footer > .gripper.cornerGripper {
 	width: 10px;
 	height: 10px;
 	background-image: url("/jsb.widgets/images/grip.png");
 	background-repeat: no-repeat;
 }
 
-.sliceDiagramNode > .gripper.cornerGripper.rightBottomGripper {
+.sliceDiagramNode > footer > .gripper.cornerGripper.rightBottomGripper {
 	right: -1px;
 	bottom: -1px;
 	cursor: se-resize;
