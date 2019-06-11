@@ -92,8 +92,9 @@
                 var hasBody = QueryUtils.queryHasBody(query);
                 var isRoot = $this.isRoot();
                 var inUnion = $this.getExpressionKey(-2) == '$union';
+                var pairsJoin = $this.getExpressionKey(-2) == '$join' && $this.vendor == 'ClickHouse';
 
-                $this.current.printBody = isRoot || inUnion || hasBody;
+                $this.current.printBody = isRoot || inUnion || hasBody || pairsJoin;
                 $this.current.printBrackets = !(isRoot || !$this.current.printBody);
                 $this.current.printAlias = $this.current.printBody && $this.current.printBrackets
                     && !inUnion
@@ -736,15 +737,29 @@ debugger
         },
 
         visitJoin: function($join) {
-            $this.withPath('$join', '$left', function(){
-                $this.visit($join.$left, {asQuery: true});
-            });
-            $this.printNewLineIndent();
-            $this.print($join.$joinType.toUpperCase().replace('INNER','').trim(), 'JOIN');
+            var rotateRight = $this.vendor == 'ClickHouse';
 
-            $this.withPath('$join', '$right', function(){
-                $this.visit($join.$right, {asQuery: true});
-            });
+            if (/RIGHT/i.test($join.$joinType) && rotateRight) {
+                $this.withPath('$join', '$right', function(){
+                    $this.visit($join.$right, {asQuery: true});
+                });
+                $this.printNewLineIndent();
+                $this.print('LEFT JOIN');
+
+                $this.withPath('$join', '$left', function(){
+                    $this.visit($join.$left, {asQuery: true});
+                });
+            } else {
+                $this.withPath('$join', '$left', function(){
+                    $this.visit($join.$left, {asQuery: true});
+                });
+                $this.printNewLineIndent();
+                $this.print($join.$joinType.toUpperCase(), 'JOIN');
+
+                $this.withPath('$join', '$right', function(){
+                    $this.visit($join.$right, {asQuery: true});
+                });
+            }
             $this.printNewLineIndent();
             $this.print('ON');
             $this.withPath('$join', '$filter', function(){
