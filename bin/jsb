@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+
+export SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
+
+source ${SCRIPT_BASE_DIR}/jsb.sh
+
+"$@"

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.jsbeans.modules.module-template</groupId>
+    <artifactId>module-template</artifactId>
+    <version>module-version</version>
+
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+
+    <properties>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <org.jsbeans.version>1.0-SNAPSHOT</org.jsbeans.version>
+        <!-- define system js-beans location in jar -->
+        <org.jsbeans.system.path>jsb-system</org.jsbeans.system.path>
+        <!-- define resource js-beans location in jar -->
+        <org.jsbeans.resource.path>jsb-resource</org.jsbeans.resource.path>
+        <!-- define application js-beans location in jar and result build directory-->
+        <org.jsbeans.application.path>jsb-application</org.jsbeans.application.path>
+    </properties>
+
+    <build>
+        <finalName>org.jsbeans.modules.module-template-module-template</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/jsb-system</directory>
+                <targetPath>${org.jsbeans.system.path}</targetPath>
+            </resource>
+            <resource>
+                <directory>src/main/jsb-resource</directory>
+                <targetPath>${org.jsbeans.resource.path}</targetPath>
+            </resource>
+            <resource>
+                <directory>src/main/jsb-application</directory>
+                <targetPath>${org.jsbeans.application.path}</targetPath>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/main/java</directory>
+            </testResource>
+            <testResource>
+                <directory>src/main/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/main/jsb-system</directory>
+                <targetPath>${org.jsbeans.system.path}</targetPath>
+            </testResource>
+            <testResource>
+                <directory>src/main/jsb-application</directory>
+                <targetPath>${org.jsbeans.application.path}</targetPath>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <compilerArgument>-g</compilerArgument>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                            <excludes>
+                                <exclude>${org.jsbeans.application.path}/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jsb-application-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>jsb-application</classifier>
+                            <includes>
+                                <include>${org.jsbeans.application.path}/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--<basedir>${project.basedir}/src</basedir>-->
+                    <includes>
+                        <include>**/*.sh</include>
+                    </includes>
+                    <token>KERNEL.JAR</token>
+                    <value>jsbeans-kernel-${project.version}.jar</value>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.jsbeans</groupId>
+            <artifactId>jsbeans</artifactId>
+            <version>${org.jsbeans.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jsbeans</groupId>
+            <artifactId>jsbeans</artifactId>
+            <version>${org.jsbeans.version}</version>
+            <classifier>jsb-application</classifier>
+        </dependency>
+
+    </dependencies>
+
+</project>

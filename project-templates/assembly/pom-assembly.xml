@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.jsbeans.modules.module-template</groupId>
+    <artifactId>module-template-assembly</artifactId>
+    <version>module-version</version>
+
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+
+    <properties>
+        <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <org.jsbeans.version>1.0-SNAPSHOT</org.jsbeans.version>
+        <!-- define system js-beans location in jar -->
+        <org.jsbeans.system.path>jsb-system</org.jsbeans.system.path>
+        <!-- define resource js-beans location in jar -->
+        <org.jsbeans.resource.path>jsb-resource</org.jsbeans.resource.path>
+        <!-- define application js-beans location in jar and result build directory-->
+        <org.jsbeans.application.path>jsb-application</org.jsbeans.application.path>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>1.7.23</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <finalName>org.jsbeans.modules.module-template-module-template</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>build-classpath </id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputFile>.classpath_jars</outputFile>
+                    <prefix>lib</prefix>
+                    <pathSeparator>:</pathSeparator>
+                    <excludeClassifiers>jsb-application</excludeClassifiers>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>collect-all</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.jsbeans.modules.module-template</groupId>
+            <artifactId>module-template</artifactId>
+            <version>module-version</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jsbeans.modules.module-template</groupId>
+            <artifactId>module-template</artifactId>
+            <version>module-version</version>
+            <classifier>jsb-application</classifier>
+        </dependency>
+
+    </dependencies>
+
+</project>

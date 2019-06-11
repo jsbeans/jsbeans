@@ -2,21 +2,23 @@
 <!--
   ~ This file is the part of jsBeans, high-level JavaScript client-server framework.
   ~ The contents of this file are subject to the MIT License (MIT).
-  ~ (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2018
+  ~ (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2017
   ~
   ~ Настоящий файл является частью клиент-сервеной JavaScript платформы.
   ~ Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
-  ~ Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2018гг.
+  ~ Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
   -->
 
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.jsbeans</groupId>
+
     <artifactId>jsbeans</artifactId>
-    <packaging>pom</packaging>
+    <groupId>org.jsbeans</groupId>
     <version>1.0-SNAPSHOT</version>
+
+    <packaging>jar</packaging>
 
     <name>jsBeans node</name>
     <url>http://jsbeans.org</url>
@@ -48,34 +50,174 @@
         <maven.compiler.source>1.8</maven.compiler.source>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
         <org.jsbeans.version>1.0-SNAPSHOT</org.jsbeans.version>
-
-        <!-- org.jsbeans.system.path - define system js-beans location in jar -->
+        <!-- define system js-beans location in jar -->
         <org.jsbeans.system.path>jsb-system</org.jsbeans.system.path>
-
-        <!-- org.jsbeans.resource.path - define system js-beans location in jar -->
+        <!-- define resource js-beans location in jar -->
         <org.jsbeans.resource.path>jsb-resource</org.jsbeans.resource.path>
-
-        <!-- org.jsbeans.system.path - define application js-beans location in jar and result build directory (look builds/**/assembly.xml)-->
+        <!-- define application js-beans location in jar and result build directory-->
         <org.jsbeans.application.path>jsb-application</org.jsbeans.application.path>
     </properties>
 
-    <modules>
-        <module>utils</module>
-        <module>kernel</module>
-        <module>plugins</module>
-        <module>enviroment</module>
-        <module>builds</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.23</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>ru.sis.tpl</groupId>-->
+            <!--<artifactId>sis-gson</artifactId>-->
+            <!--<version>2.2.2.patch1-SNAPSHOT</version>-->
+        <!--</dependency>-->
 
+        <dependency>
+            <groupId>org.mozilla</groupId>
+            <artifactId>rhino</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.10</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>google-collections</artifactId>
+                    <groupId>com.google.collections</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>21.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>google-collections</artifactId>
+            <groupId>com.google.collections</groupId>
+            <version>1.0</version>
+        </dependency>
+        <!--
+              <dependency>
+                    <groupId>com.esotericsoftware</groupId>
+                    <artifactId>wildcard</artifactId>
+                    <version>1.03</version>
+                </dependency>
+        -->
+        <dependency>
+            <!-- for search files by wildcard -->
+            <groupId>com.larrymite</groupId>
+            <artifactId>js-class-loader</artifactId>
+            <version>1.2.7</version>
+        </dependency>
 
-    <dependencyManagement>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-cluster_2.10</artifactId>
+            <version>2.3.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.10.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+            <version>2.10.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-kernel_2.10</artifactId>
+            <version>2.3.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j_2.10</artifactId>
+            <version>2.3.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-remote_2.10</artifactId>
+            <version>2.3.9</version>
+        </dependency>
 
-    </dependencyManagement>
+        <dependency>
+            <groupId>org.eclipse.jetty.aggregate</groupId>
+            <artifactId>jetty-all</artifactId>
+            <version>8.1.12.v20130726</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.javascript</groupId>
+            <artifactId>closure-compiler</artifactId>
+            <!--artifactId>closure-compiler-unshaded</artifactId-->
+            <!--             <version>v20130411</version> -->
+            <version>v20170626</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>google-collections</artifactId>
+                    <groupId>com.google.collections</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+    </dependencies>
 
     <build>
+        <finalName>jsbeans</finalName>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -98,158 +240,159 @@
         </resources>
         <testResources>
             <testResource>
-                <directory>src/test/java</directory>
+                <directory>src/main/java</directory>
             </testResource>
             <testResource>
-                <directory>src/test/resources</directory>
+                <directory>src/main/resources</directory>
             </testResource>
             <testResource>
-                <directory>src/test/jsb-system</directory>
+                <directory>src/main/jsb-system</directory>
                 <targetPath>${org.jsbeans.system.path}</targetPath>
             </testResource>
             <testResource>
-                <directory>src/test/jsb-resource</directory>
-                <targetPath>${org.jsbeans.resource.path}</targetPath>
-            </testResource>
-            <testResource>
-                <directory>src/test/jsb-application</directory>
+                <directory>src/main/jsb-application</directory>
                 <targetPath>${org.jsbeans.application.path}</targetPath>
             </testResource>
         </testResources>
+        
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <compilerArgument>-g</compilerArgument>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Manifest-Version>${org.jsbeans.version}</Manifest-Version>
+                        </manifestEntries>
+                    </archive>
+                    <!--<finalName>${project.groupId}-${project.artifactId}-${project.version}</finalName>-->
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                            <excludes>
+                                <exclude>${org.jsbeans.application.path}/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jsb-application-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>jsb-application</classifier>
+                            <includes>
+                                <include>${org.jsbeans.application.path}/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+            </plugin-->
+        </plugins>
+
         <pluginManagement>
             <plugins>
-                <!--plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>1.6</version>
-                    <configuration>
-                        <verbose>true</verbose>
-                        <includes>
-                            <includes>**/*.java</includes>
-                        </includes>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>generate-license-headers</id>
-                            <goals>
-                                <goal>update-file-header</goal>
-                            </goals>
-                            <phase>process-sources</phase>
-                            <configuration>
-                                <licenseName>MIT</licenseName>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin-->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <skipTests>true</skipTests>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
-                        <compilerArgument>-g</compilerArgument>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>compile</goal>
-                                <goal>testCompile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <Manifest-Version>${org.jsbeans.version}</Manifest-Version>
-                            </manifestEntries>
-                        </archive>
-                        <!--<finalName>${project.groupId}-${project.artifactId}-${project.version}</finalName>-->
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>default-jar</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                            <configuration>
-                                <includes>
-                                    <include>**</include>
-                                </includes>
-                                <excludes>
-                                    <exclude>${org.jsbeans.application.path}/**</exclude>
-                                </excludes>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>jsb-application-jar</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                            <configuration>
-                                <classifier>jsb-application</classifier>
-                                <includes>
-                                    <include>${org.jsbeans.application.path}/**</include>
-                                </includes>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>test-jar</id>
-                            <goals>
-                                <goal>test-jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.0.1</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-clean-plugin</artifactId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.2</version>
                 </plugin>
-                <!--plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9.1</version>
-                </plugin-->
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.19.1</version>
+                    <configuration>
+                        <skipTests>true</skipTests>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
 </project>

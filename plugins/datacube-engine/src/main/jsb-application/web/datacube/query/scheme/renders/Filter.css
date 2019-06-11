@@ -1,9 +1,0 @@
-.filterRender > .operator,
-.filterRender > .separator {
-    display: inline-block;
-}
-
-.filterRender > .separator.collapsed + .addMenu,
-.filterRender > .separator.collapsed ~ .basicQueryRender {
-    display: none;
-}

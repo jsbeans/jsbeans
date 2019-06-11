@@ -1,1 +1,0 @@
-Contains content filed and directories that would be extracted to JSBEANS_HOME/content and removed from jars.
