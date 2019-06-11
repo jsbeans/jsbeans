@@ -66,6 +66,18 @@
 					});
 				}
 			});
+			
+			items.push({
+				key: 'fileLink',
+				element: '<div class="icon"></div><div class="text">Открыть в новом окне</div>',
+				allowHover: true,
+				allowSelect: true,
+				callback: function(){
+					$this.getTargetEntry().server().getFileUrl(function(url){
+						window.open(url,'_blank');
+					});
+				}
+			});
 			return items;
 		},
 		

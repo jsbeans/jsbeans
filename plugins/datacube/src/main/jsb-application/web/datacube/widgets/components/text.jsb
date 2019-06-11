@@ -100,6 +100,7 @@
         update: function(){
             this.text = this.getContext().find('text').value();
             this.text = this.text.replace(/_x000D_/g , ' ');
+            this.text = this.text.replace(/\n/g, '\r\n');
 
             var annot = this.getContext().find('annotations').value();
 
@@ -178,6 +179,7 @@
         },
 
 		redraw: function(){
+			debugger;
 			var self = this;
 			this.getElement().empty();
 

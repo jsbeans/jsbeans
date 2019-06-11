@@ -27,7 +27,8 @@
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController', 
-		           'JSB.Web.Download'],
+		           'JSB.Web.Download',
+		           'JSB.Workspace.DownloadEntry'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerFileUploadCallback(null, this, 0, function(name, data){
@@ -78,6 +79,11 @@
 				inputStream.close();
 			});
 			return dh;
+		},
+		
+		getFileUrl: function(){
+			var path = DownloadEntry.jsb.getBasePathFile();
+			return '/' + path + '?wsid=' + this.getWorkspace().getId() + '&eid=' + this.getId();
 		},
 		
 		read: function(opts){
