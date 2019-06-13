@@ -67,6 +67,7 @@
 	position: relative;
 	display: inline-block;
 	min-height: 25px;
+	box-sizing: content-box;
 	-webkit-user-select: initial;
 	-khtml-user-select: initial;
 	-moz-user-select: initial;
@@ -122,6 +123,7 @@
     width: 5px;
     cursor: e-resize;
     cursor: col-resize;
+	box-sizing: content-box;
 }
 
 .dwpConsole .logWindow .canvas .logItem .itemSplitter .gripIcon {

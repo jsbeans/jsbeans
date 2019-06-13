@@ -3,7 +3,7 @@
  * The contents of this file are subject to the MIT License (MIT).
  * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2019
  *
- * Настоящий файл является частью клиент-сервеной JavaScript платформы.
+ * Настоящий файл является частью клиент-серверной JavaScript платформы.
  * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2019гг.
  */
@@ -72,19 +72,23 @@
                 	'charset': 'utf-8'
                 }
         	}, props));
-        	if(data){
-        		if(JSB.isPlainObject(data) || JSB.isArray(data)){
-        			c.sendArgs(data);
-        		} else {
-        			c.send(data);
-        		}
+        	
+        	try {
+	        	if(data){
+	        		if(JSB.isPlainObject(data) || JSB.isArray(data)){
+	        			c.sendArgs(data);
+	        		} else {
+	        			c.send(data);
+	        		}
+	        	}
+	        	
+	        	var result = c.getResult();
+	        	return result;
+        	} finally {
+        		c.destroy();
         	}
         	
-        	var result = c.getResult();
         	
-        	c.destroy();
-        	
-        	return result;
         }
     }
 }

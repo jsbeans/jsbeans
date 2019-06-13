@@ -85,7 +85,7 @@
         <dependency>
             <groupId>org.mozilla</groupId>
             <artifactId>rhino</artifactId>
-            <version>1.7.7</version>
+            <version>1.7.11</version>
         </dependency>
         <dependency>
             <groupId>org.reflections</groupId>
@@ -217,7 +217,7 @@
     </dependencies>
 
     <build>
-        <finalName>jsbeans</finalName>
+        <finalName>org.jsbeans-jsbeans</finalName>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -254,7 +254,7 @@
                 <targetPath>${org.jsbeans.application.path}</targetPath>
             </testResource>
         </testResources>
-        
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

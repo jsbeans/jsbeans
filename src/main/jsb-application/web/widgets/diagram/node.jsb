@@ -3,7 +3,7 @@
  * The contents of this file are subject to the MIT License (MIT).
  * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2019
  *
- * Настоящий файл является частью клиент-сервеной JavaScript платформы.
+ * Настоящий файл является частью клиент-серверной JavaScript платформы.
  * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2019гг.
  */
@@ -46,6 +46,10 @@
 			
 			if(this.options.position){
 			    this.setPosition(this.options.position, true);
+			}
+
+			if(this.options.size) {
+			    this.setSize(this.options.size);
 			}
 			
 			// install drag handles
@@ -133,7 +137,19 @@
 			}
 //			console.log('setPosition X:' + this.position.x + '; Y:' + this.position.y);
 		},
-		
+
+		setSize: function(size) {
+		    var element = this.getElement();
+
+		    if(JSB.isDefined(size.width)) {
+		        element.width(size.width);
+            }
+
+		    if(JSB.isDefined(size.height)) {
+		        element.height(size.height);
+            }
+		},
+
 		isFixed: function(){
 			return this.options.fixed;
 		},
@@ -458,6 +474,10 @@
 				return true;
 			}
 			return false;
+		},
+
+		getDiagram: function() {
+		    return this.diagram;
 		}
 	}
 }

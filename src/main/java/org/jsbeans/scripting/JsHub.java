@@ -80,9 +80,9 @@ public class JsHub extends Service {
         	if(featureIndex == Context.FEATURE_V8_EXTENSIONS){
         		return true;
         	}
-/*        	if(featureIndex == Context.FEATURE_THREAD_SAFE_OBJECTS) {
+        	if(featureIndex == Context.FEATURE_THREAD_SAFE_OBJECTS) {
         		return true;
-            }*/
+            }
             return super.hasFeature(cx, featureIndex);
         }
     };
