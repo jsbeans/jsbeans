@@ -12,7 +12,16 @@ package org.jsbeans.plugin;
 
 
 public interface PluginActivator {
-    void init();
+    default void init() {
+        String folder = ConfigHelper.getConfigString("web.folder");
+        if (folder == null) {
+            folder = "web";
+        }
+        String ff = ConfigHelper.getPluginHomeFolder(this) + "/" + folder;
+
+        ConfigHelper.addJssFolder(ff);
+        ConfigHelper.addWebFolder(ff);
+    }
 
     default String getName() {
         String name = this.getClass().getSimpleName();

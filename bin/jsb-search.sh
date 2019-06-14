@@ -11,5 +11,42 @@
 #--------------------------------------------------------------------------------------------------
 set -o errexit
 
-export SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
-${SCRIPT_BASE_DIR}/jsb.sh "$@"
+jsb-search-help(){
+    echo
+
+    echo 'NAME'
+    echo '    jsb-search - Search jsBeans modules in repositories'
+    echo
+    echo 'SYNOPSIS'
+    echo '    jsb [OPTIONS] search MODULE'
+    echo
+    echo 'OPTIONS'
+    echo '    Look `jsb help`'
+    echo
+    echo 'STANDARD OUTPUT'
+    echo '    MODULE_ID REPOSITORY_URL VERSION_TAG'
+    echo
+    echo 'EXAMPLES'
+    echo '    jsb search jsbeans'
+
+    echo
+}
+
+jsb-search(){
+    ( jsb-search-local "$1"; jsb-search-home "$1" ) | sort -u
+}
+
+jsb-search-local(){
+    local module="$1"
+    if [[ -f .jsbeans_modules ]]; then
+        cat .jsbeans_modules | grep "$module"
+    fi
+}
+
+jsb-search-home(){
+    local module="$1"
+    # $JSBEANS_HOME/.git_modules
+    if [[ -f "$JSBEANS_HOME/.jsbeans_modules" ]]; then
+        cat "$JSBEANS_HOME/.jsbeans_modules" | grep "$module"
+    fi
+}

@@ -11,5 +11,6 @@
 #--------------------------------------------------------------------------------------------------
 set -o errexit
 
-export SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
-${SCRIPT_BASE_DIR}/jsb.sh "$@"
+jsb-build(){
+    mvn -f pom.xml clean install
+}
