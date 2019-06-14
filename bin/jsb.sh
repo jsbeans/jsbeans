@@ -11,17 +11,18 @@
 #--------------------------------------------------------------------------------------------------
 set -o errexit
 
-JSBEANS_HOME="${JSBEANS_HOME:-"$(pwd)"}"
-echo $JSBEANS_HOME
+export SCRIPT_BASE_DIR=${SCRIPT_BASE_DIR:-"$(cd "$( dirname "$0")" && pwd )"}
+export JSBEANS_HOME="${JSBEANS_HOME:-"$(dirname $SCRIPT_BASE_DIR)"}"
+
+if [[ "$(pwd)" = */bin ]] && [[ -f ../pom.xml ]]; then
+    cd ..
+fi
+
 
 for jsb_tool in ${JSBEANS_HOME}/bin/jsb-*.sh
 do
     source ${jsb_tool}
 done
-
-if [[ "$(pwd)" = */bin ]] && [[ -f ../pom.xml ]]; then
-    cd ..
-fi
 
 while [[ -n "$1" ]]; do
     case "$1" in
@@ -44,7 +45,7 @@ while [[ -n "$1" ]]; do
         --*)
             name=$1; shift
             var_name=jsb_${name:2}
-            if [[ -z "$(echo name | cut -d "=" -f 2)" ]]; then
+            if [[ -z "$(echo "$name" | grep "=")" ]]; then
                 var_name=${var_name}=yes;
             fi
             echo "Set variable: ${var_name}"
@@ -59,8 +60,9 @@ while [[ -n "$1" ]]; do
             fi
             echo "Executing command ${command}"
             jsb-${command} "$@" || {
+                exit_code=$?
                 echo "ERROR: Failed execution of command ${command}" 1>&2
-                exit 1
+                exit $?
             }
             exit 0;
             ;;

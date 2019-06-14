@@ -11,6 +11,8 @@
 package org.jsbeans.plugin;
 
 
+import org.jsbeans.helpers.ConfigHelper;
+
 public interface PluginActivator {
     default void init() {
         String folder = ConfigHelper.getConfigString("web.folder");

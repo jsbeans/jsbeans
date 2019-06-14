@@ -12,5 +12,10 @@
 set -o errexit
 
 jsb-build(){
-    mvn -f pom.xml clean install
+    local clean=
+    if [[ -z "${jsb_noclean}" ]]; then
+        clean=clean
+    fi
+    mvn -f pom.xml $clean install
+    return $?
 }
