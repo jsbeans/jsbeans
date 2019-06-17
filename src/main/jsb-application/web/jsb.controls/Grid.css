@@ -8,7 +8,7 @@
 
 /* grid master */
 .grid-master {
-    height: inherit;
+    height: 100%;
     max-height: inherit;
     overflow: auto;
 }

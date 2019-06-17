@@ -37,6 +37,7 @@ jsb-help(){
     echo '    -h|--help [COMMAND]       - Print help for command or tool, eg.: `jsb --help install`'
     echo '    --verbose                 - Print all executed bash commands, eg.: `jsb --verbose init`'
     echo '    --verbose-syslog          - Print all executed bash commands to syslog'
+    echo '    --noclean                 - Does not clean before build and assembly, eg.: `jsb --noclean build`'
     echo
     echo 'MODULE ID FORMAT'
     echo '    GIT_URL:BRANCH_TAG        - Public module identity by git repository location (need add .git to the URL)'

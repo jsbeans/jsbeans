@@ -107,6 +107,7 @@
             //resizeRows: true, todo
             //rowHeader: true, todo
             rowClass: null,
+            stringLimit: 0,
 
             // renderers
             headerRenderer: null,
@@ -359,7 +360,7 @@
             this.$(td).attr('type', valueType);
 
             // object or array
-            if(valueType === 'object' || valueType === 'array'){
+            if(valueType === 'object' || valueType === 'array') {
                 var jvInst = new JsonView({collapsed:true});
 
                 if(valueType === 'array' && value.length > $this.options.jsonArrayLimit){
@@ -372,6 +373,12 @@
             } else if(valueType == 'boolean'){
                 this.$(td).attr('val', value);
                 this.$(td).text(String(value));
+            } else if(valueType === 'string') {
+                if(this.options.stringLimit && value.length > this.options.stringLimit) {
+                    this.$(td).text(value.substr(0, this.options.stringLimit - 3) + '...');
+                } else {
+                    this.$(td).text(value);
+                }
             } else {
                 this.$(td).text(String(value));
             }

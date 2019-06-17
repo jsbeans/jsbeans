@@ -15,6 +15,8 @@ set -o errexit
 jsb-install() {
     local module="${1:-"jsbeans"}"
 
+    local modules_dir=${jsb_dir:-modules}
+
     # check java and maven
     java -version &> /dev/null || {
         echo 'ERROR: Java is not installed' 1>&2
@@ -31,37 +33,22 @@ jsb-install() {
         [[ ! -f ".jsbeans" ]] && { echo 'ERROR: jsBeans sources not found' 1>&2; return 1; }
 
         # Build jsBeanss
-        jsb-assembly
+        jsb-build || return $?
 
         # check jsbeans
-        [[ ! -d "./target/jsbeans/" ]] && { echo 'ERROR: jsBeans not found in '"./target/jsbeans/" 1>&2; return 1; }
-
-        export JSBEANS_HOME="$JSBEANS_HOME"
-        export PATH=$PATH:'${JSBEANS_HOME}/bin'
-        if [[ -f ~/.bash_profile ]]; then
-            local file=~/.bash_profile
-        elif [[ -f ~/.profile ]]; then
-            local file=~/.profile
-        elif [[ -f ~/.bashrc ]]; then
-            local file=~/.bashrc
-        else
-            local file=
-        fi
-        if [[ -n $file ]]; then
-            echo 'Initialize environment variable JSBEANS_HOME and $JSBEANS_HOME/bin in PATH added to '"$file"
-            if ! grep -q 'export JSBEANS_HOME' $file; then
-                echo "export JSBEANS_HOME=$JSBEANS_HOME" >> $file
-            fi
-            if ! grep -q '${JSBEANS_HOME}/bin' $file; then
-                echo 'export PATH=$PATH:${JSBEANS_HOME}/bin' >> $file
-            fi
+        if [[ ! -f "./target/org.jsbeans-jsbeans.jar" ]] || [[ ! -f "./target/org.jsbeans-jsbeans-jsb-application.jar" ]]; then
+            echo 'ERROR: jsBeans not found in '"./target/jsbeans/" 1>&2;
+            return 1;
         fi
 
-        echo "*** "
-        echo "*** Please initialize environment variables ***"
-        echo "***     $ export JSBEANS_HOME=$JSBEANS_HOME"
-        echo "***     $ "'export PATH=$PATH:${JSBEANS_HOME}/bin'
-        echo "*** "
+
+        echo 'Initialize alias for jsb tool:'
+        echo '    $ alias jsb=${JSBEANS_HOME}/bin/jsb '
+        if ! grep -q "alias jsb=${JSBEANS_HOME}/bin/jsb" ~/.bashrc; then
+            echo "alias jsb=${JSBEANS_HOME}/bin/jsb" >> ~/.bashrc
+            echo
+            echo 'Reenter bash session to apply alias `jsb`' >> ~/.bashrc
+        fi
 
     else
 
@@ -79,14 +66,14 @@ jsb-install() {
         local git_branch="$(echo "$git_path"|sed 's/.*\.git\:\(.*\)$/\1/')"
         local git_url_group="$(echo "$module_group"|sed 's/\./\//')"
 
-        local module_dir=modules/$git_url_group/$module_name
+        local module_dir=$modules_dir/$git_url_group/$module_name
 
         echo "Clone module git repository $git_url branch $git_branch to $module_dir"
         mkdir -p $module_dir
         git clone --recurse-submodules --branch $git_branch $git_url $module_dir || return 1
         cd $module_dir
 
-        jsb-build
+        jsb-build || return $?
 
         local module_mvn_group=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.groupId -q -DforceStdout)
         local module_mvn_name=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.artifactId -q -DforceStdout)

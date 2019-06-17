@@ -16,4 +16,9 @@ public class KernelPluginActivator implements PluginActivator {
     public void init() {
 
     }
+
+    @Override
+    public String getName() {
+        return "kernel";
+    }
 }

@@ -28,6 +28,14 @@ jsb-assembly(){
 	sed -i "s/module-template/${name}/g" pom-assembly.xml
 	sed -i "s/module-version/${version}/g" pom-assembly.xml
 
-    jsb-build
-    mvn -f pom-assembly.xml clean install
+    jsb-build || return $?
+
+    # assembly
+    local clean=
+    if [[ -z "${jsb_noclean}" ]]; then
+        clean=clean
+    fi
+    mvn -f pom-assembly.xml $clean install
+
+    return $?
 }

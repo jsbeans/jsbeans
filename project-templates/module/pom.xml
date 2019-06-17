@@ -169,7 +169,6 @@
             <artifactId>jsbeans</artifactId>
             <version>${org.jsbeans.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.jsbeans</groupId>
             <artifactId>jsbeans</artifactId>
