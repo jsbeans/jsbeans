@@ -11,7 +11,11 @@
 #--------------------------------------------------------------------------------------------------
 set -o errexit
 
-export SCRIPT_BASE_DIR=${SCRIPT_BASE_DIR:-"$(cd "$( dirname "$0")" && pwd )"}
+is_command_exists() {
+  command -v "$1" >/dev/null 2>&1;
+}
+
+export SCRIPT_BASE_DIR=${SCRIPT_BASE_DIR:-"$(cd "$(dirname "$0")" && pwd)"}
 export JSBEANS_HOME="${JSBEANS_HOME:-"$(dirname $SCRIPT_BASE_DIR)"}"
 
 if [[ "$(pwd)" = */bin ]] && [[ -f ../pom.xml ]]; then
@@ -19,49 +23,57 @@ if [[ "$(pwd)" = */bin ]] && [[ -f ../pom.xml ]]; then
 fi
 
 
-for jsb_tool in ${JSBEANS_HOME}/bin/jsb-*.sh
+for jsb_tool in ${JSBEANS_HOME}/bin/.jsb-*.sh
 do
     source ${jsb_tool}
 done
 
-while [[ -n "$1" ]]; do
-    case "$1" in
+## collect options
+for arg in "$@"
+do
+    case "$arg" in
         -h|--help)
-            shift
             jsb_help=yes
             ;;
         --verbose)
-            shift
             PS4='$LINENO: '
             set -x
             ;;
         --verbose-syslog)
-            shift
             exec 5> >(logger -t $0)
             BASH_XTRACEFD="5"
             PS4='$LINENO: '
             set -x
             ;;
         --*)
-            name=$1; shift
+            name=$arg
             var_name=jsb_${name:2}
+            var_name=$(echo "$var_name" | sed 's/\-/_/')
             if [[ -z "$(echo "$name" | grep "=")" ]]; then
                 var_name=${var_name}=yes;
             fi
             echo "Set variable: ${var_name}"
             export ${var_name}
             ;;
+    esac
+done
+
+## execute command
+while [[ -n "$1" ]]; do
+    case "$1" in
+        -h|--*)
+            shift
+            ;;
         *)
-            # export all functions name started with jsb-
-            command=$1; shift
+            selected_command=$1
             if [[ -n "${jsb_help}" ]]; then
-                jsb-${command}-help "$@"
+                jsb-${selected_command}-help "$@"
                 exit $?
             fi
-            echo "Executing command ${command}"
-            jsb-${command} "$@" || {
+            echo "Executing command - ${selected_command}"
+            jsb-${selected_command} "$@" || {
                 exit_code=$?
-                echo "ERROR: Failed execution of command ${command}" 1>&2
+                echo "ERROR: Failed execution of command ${selected_command}" 1>&2
                 exit $?
             }
             exit 0;
@@ -69,5 +81,6 @@ while [[ -n "$1" ]]; do
     esac
 done
 
+## default command
 jsb-help
 exit $?

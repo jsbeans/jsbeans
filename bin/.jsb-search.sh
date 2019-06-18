@@ -14,21 +14,6 @@ set -o errexit
 jsb-search-help(){
     echo
 
-    echo 'NAME'
-    echo '    jsb-search - Search jsBeans modules in repositories'
-    echo
-    echo 'SYNOPSIS'
-    echo '    jsb [OPTIONS] search MODULE'
-    echo
-    echo 'OPTIONS'
-    echo '    Look `jsb help`'
-    echo
-    echo 'STANDARD OUTPUT'
-    echo '    MODULE_ID REPOSITORY_URL VERSION_TAG'
-    echo
-    echo 'EXAMPLES'
-    echo '    jsb search jsbeans'
-
     echo
 }
 
@@ -38,15 +23,15 @@ jsb-search(){
 
 jsb-search-local(){
     local module="$1"
-    if [[ -f .jsbeans_modules ]]; then
-        cat .jsbeans_modules | grep "$module"
+    if [[ -f .jsbeans_packages ]]; then
+        cat .jsbeans_packages | grep "$module"
     fi
 }
 
 jsb-search-home(){
     local module="$1"
     # $JSBEANS_HOME/.git_modules
-    if [[ -f "$JSBEANS_HOME/.jsbeans_modules" ]]; then
-        cat "$JSBEANS_HOME/.jsbeans_modules" | grep "$module"
+    if [[ -f "$JSBEANS_HOME/.jsbeans_packages" ]]; then
+        cat "$JSBEANS_HOME/.jsbeans_packages" | grep "$module"
     fi
 }

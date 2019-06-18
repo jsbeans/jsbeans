@@ -1,0 +1,3 @@
+jsb -crlf
+*.bat -crlf
+*.sh -crlf
