@@ -49,6 +49,11 @@ jsb-install() {
     module="${1:-"jsbeans"}"
     modules_dir=${jsb_packages_dir:-modules}
 
+    # is git URL
+    if [[ "$module" =~ (\.git) ]] || [[ "$module" =~ (git@) ]]; then
+        module_git_path="$module"
+    fi
+
     # check java and maven
     is_command_exists java || {
         echo 'ERROR: Java is not installed' 1>&2
@@ -85,7 +90,7 @@ jsb-install-jsbeans() {
     if ! grep -q "alias jsb=${JSBEANS_HOME}/bin/jsb" ~/.bashrc; then
         echo "alias jsb=${JSBEANS_HOME}/bin/jsb" >> ~/.bashrc
         echo
-        echo 'Reenter bash session to apply alias `jsb`' >> ~/.bashrc
+        echo 'Reenter bash session to apply alias `jsb`'
     fi
 }
 
@@ -94,12 +99,12 @@ jsb-install-package() {
     is_command_exists git || {
         echo 'ERROR: Git is not installed or PATH does not contains directory with git' 1>&2
     }
-
+##  TODO: debug setup from git URL
     local names=( )
     IFS=':' read -ra names <<< "my/project:workspace:tag"
     local module_group="${names[0]}"
     local module_name=="${names[1]}"
-    local module_tag=="${names[2]}"
+    local module_tag=="${names[2]-master}"
 
     local git_path="$(extract_module_repository_path "$module")"
     [[ -z "$git_path" ]] && { return 1; }
@@ -158,7 +163,7 @@ extract_module_repository_path(){
     local module=$1
 
     # is git URL
-    if [[ "$module" =~ (\.git) ]]; then
+    if [[ "$module" =~ (\.git) ]] || [[ "$module" =~ (git@) ]]; then
         echo "$module"
         return 0
     fi

@@ -66,6 +66,7 @@ while [[ -n "$1" ]]; do
             ;;
         *)
             selected_command=$1
+            shift
             if [[ -n "${jsb_help}" ]]; then
                 jsb-${selected_command}-help "$@"
                 exit $?

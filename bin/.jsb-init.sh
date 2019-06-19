@@ -39,18 +39,29 @@ jsb-init-help(){
 }
 
 jsb-init(){
+    module="$1"
+
+    # is git URL
+    if [[ "$module" =~ (\.git) ]] || [[ "$module" =~ (git@) ]]; then
+        module_git_path="$module"
+    fi
 
     local names=( )
-    IFS=':' read -ra names <<< "my/project:workspace:tag"
+    IFS=':' read -ra names <<< "$module"
     module_group="${names[0]}"
     module_name="${names[1]}"
-    module_version=="${names[2]-"0.1-SNAPSHOT"}"
+    module_version="${names[2]-"0.1-SNAPSHOT"}"
 	module_cname=$module_name
 	module_grouppath=$(echo "$module_group" | sed "s/\./\//")
 
 	[[ -z "$module_group" ]]   && { echo 'ERROR: Module group is undefined, use argument group:name:version' 1>&2; exit 1; }
 	[[ -z "$module_name" ]]    && { echo 'ERROR: Module name is undefined, use argument group:name:version' 1>&2; exit 1; }
 	[[ -z "$module_version" ]] && { echo 'ERROR: Module version is undefined, use argument group:name:version' 1>&2; exit 1; }
+
+	if [[ -n "${jsb_new_dir}" ]]; then
+	    mkdir -p "${jsb_new_dir}"
+	    cd "${jsb_new_dir}"
+	fi
 
     if [[ -z "${jsb_package}" ]]; then
         jsb-init-module "$@"

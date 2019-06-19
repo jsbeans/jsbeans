@@ -16,8 +16,8 @@
 
     <modules>
         <!--MODULES-DO-NOT-REMOVE-THIS-COMMENT-->
-
-	    <!-- add module to build reactor: <module>modules/your-module</module> -->
+        
+        <!-- add module to build reactor: <module>modules/your-module</module> -->
         <!-- add application to build reactor: <module>modules/your-module/pom-assembly.xml</module> -->
     </modules>
 
