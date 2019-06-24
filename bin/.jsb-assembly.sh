@@ -11,7 +11,12 @@
 #--------------------------------------------------------------------------------------------------
 set -o errexit
 
-jsb-assembly(){
+jsb-init-assembly(){
+    if [[ -f ./pom-assembly.xml ]]; then
+        echo "Assembly already initialized"
+        return 0;
+    fi
+
     local group=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.groupId -q -DforceStdout)
     local name=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.artifactId -q -DforceStdout)
     local version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -27,6 +32,10 @@ jsb-assembly(){
 	sed -i "s/org\.jsbeans\.modules\.module-template/${group}/g" pom-assembly.xml
 	sed -i "s/module-template/${name}/g" pom-assembly.xml
 	sed -i "s/module-version/${version}/g" pom-assembly.xml
+}
+
+jsb-assembly(){
+    jsb-init-assembly
 
     jsb-build || return $?
 

@@ -31,7 +31,7 @@ jsb-help(){
     echo 'Commands and arguments:'
     echo '    init GROUP:NAME[:VERSION] - Initialize module in current directory (create base project files), eg.: `jsb init my.test:hello:0.1`'
     echo '    search [PACKAGE]          - List all or search packages by pattern in .jsbeans_packages, ${JSB_HOME}/.jsbeans_packages'
-    echo '    install [PACKAGE ID]      - Get, build and install org.jsbeans or other package'
+    echo '    install [PACKAGE]         - Get, build and install org.jsbeans or other package'
     echo '    build                     - Build current project artifacts'
     echo '    assembly                  - Initialize assembly project files, build and assembly current application distributive'
     echo '    start                     - Assembly and start application based on current module'
@@ -45,19 +45,6 @@ jsb-help(){
     echo
     echo 'Other options look at:'
     echo '    $ jsb [COMMAND] --help'
-    echo
-    echo 'Package id format:'
-    echo '    GIT_URL:BRANCH_TAG        - Public module identity by git repository location (need add .git to the URL)'
-    echo '    PREFIX:NAME[:BRANCH_TAG]   - Local module identity transformed to `GIT_URL:TAG`.'
-    echo '                                Example:'
-    echo '                                    org.jsbeans:jsbeans:LATEST transforms.'
-    echo '                                    to https://github.com/jsbeans/jsbeans.git:LATEST'
-    echo '                                Git repository location extracted from first of:'
-    echo '                                  1. From file .jsbeans_packages is record with module exist.'
-    echo '                                  2. If current module has `.git` then get first URL in `git remote -v` and build'
-    echo '                                     module URL such `ORIGIN_PREFIX:PREFIX/NAME`.'
-    echo '                                     If branch or tag is undefined it extracted from current.'
-    echo '                                  3. From file `${JSBEANS_HOME}/.jsbeans_packages` if record with module exists.'
 
     echo
 }

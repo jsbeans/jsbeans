@@ -41,7 +41,7 @@
     </dependencyManagement>
 
     <build>
-        <finalName>org.jsbeans.modules.module-template-module-template</finalName>
+        <finalName>org.jsbeans.modules.module-template-module-template-assembly</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
