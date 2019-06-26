@@ -200,6 +200,10 @@
 	        }
 	    },
 
+	    select: function() {
+	        this._editor.get(0).select();
+	    },
+
 	    setDefaultValue: function(defaultValue) {
 	        this._editor.attr('defaultValue', defaultValue);
 	    },
