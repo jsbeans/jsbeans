@@ -386,10 +386,12 @@
 
         _resizeColumnHandles: function() {
             var resizeHandles = $this._colResizeHandleContainer.children('.col-resize-handle'),
-                cols = this._masterTable.find('colgroup > col');
+                cols = this._masterTable.find('colgroup > col'),
+                left = 0;
 
             for(var i = 0; i < resizeHandles.length; i++) {
-                resizeHandles[i].style.left = this.$(cols[i]).width() + 'px';
+                left += this.$(cols[i]).width();
+                resizeHandles[i].style.left = left + 'px';
             }
         },
 
@@ -465,12 +467,12 @@
                             },
                             helper: 'clone',
                             start: function(evt, ui) {
-                                var left = resizeHandle.css('left');
+                                var left = $this.$(this).css('left');
 
                                 curLeft = Number(left.substr(0, left.length - 2));
                             },
                             drag: function(evt, ui) {
-                                resizeHandle.css('left', curLeft + ui.position.left - ui.originalPosition.left);
+                                $this.$(this).css('left', curLeft + ui.position.left - ui.originalPosition.left);
                             },
                             stop: function(evt, ui) {
                                 var widthDif = ui.position.left - ui.originalPosition.left;
@@ -518,7 +520,7 @@
                                         }
                                     }
                                 } else {
-                                    setColWidth(i, getColWidth(i) + widthDif);
+                                    setColWidth(index, getColWidth(index) + widthDif);
                                 }
 
                                 $this._resizeColumnHandles();
