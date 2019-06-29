@@ -12,6 +12,7 @@
 }
 
 ._dwp_scrollBox > ._dwp_scrollPane {
+	display: inline-block;
 /*	position: absolute;
 	width: 100%; */
 	-webkit-transform: translateZ(0);
@@ -58,6 +59,8 @@
 ._dwp_scrollBox.vertScrollVisible > .iScrollVerticalScrollbar {
 	display: block;
 	width: 10px !important;
+	bottom: 0 !important;
+    top: 0 !important;
 }
 
 ._dwp_scrollBox > .iScrollHorizontalScrollbar {
@@ -75,6 +78,12 @@
 ._dwp_scrollBox.horzScrollVisible > .iScrollHorizontalScrollbar {
 	display: block;
 	height: 10px !important;
+	left: 0 !important;
+    right: 0 !important;
+}
+
+._dwp_scrollBox.horzScrollVisible.vertScrollVisible > .iScrollHorizontalScrollbar {
+	right: 12px !important;
 }
 
 ._dwp_scrollBox > div > .iScrollIndicator {
