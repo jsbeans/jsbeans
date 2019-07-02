@@ -145,6 +145,7 @@
 				click: JSB().isNull(self.options.click) ? false : self.options.click,
 				preventDefault: self.options.preventDefault || false,
 				freeScroll: true,
+				resize: true,
 				probeType: 3
 			}));
 			this.scroll.on('scrollEnd', function(){

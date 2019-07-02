@@ -26,11 +26,11 @@
     box-sizing: border-box;
 }
 
-._dwp_scrollBox.vertScrollVisible > ._dwp_scrollPane {
+._dwp_scrollBox.vertScrollVisible {
 	padding-right: 12px;
 }
 
-._dwp_scrollBox.horzScrollVisible > ._dwp_scrollPane {
+._dwp_scrollBox.horzScrollVisible {
 	padding-bottom: 12px;
 }
 
