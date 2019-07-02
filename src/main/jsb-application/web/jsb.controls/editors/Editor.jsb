@@ -195,6 +195,8 @@
 	        switch(this.getType()) {
 	            case 'number':
 	                return Number(val);
+                case 'date':
+                    return Date.parse(val);
                 default:
                     return val;
 	        }

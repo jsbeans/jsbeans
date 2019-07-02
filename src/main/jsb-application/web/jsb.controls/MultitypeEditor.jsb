@@ -25,7 +25,7 @@
                 this.setLabel(this.options.label);
             }
 
-            this.setEditor(this.options);
+            this.setEditor();
         },
 
         options: {
@@ -33,7 +33,7 @@
 	        label: undefined,
 	        placeholder: undefined,
 	        readonly: false,
-	        // bool
+	        // bool, null
 	        // (5) - только в HTML5
             // html types: color(5), date(5), datetime-local(5), email(5),
             // month(5), number(5), password, range(5), search(5), tel(5), text,
@@ -55,74 +55,106 @@
 	        onEditComplete: null
         },
 
-	    clear: function() {
-	        this._editor.clear();
-	    },
-
 	    destroy: function() {
-	        this._editor.destroy();
+	        if(this.options.type !== 'null') {
+	            this._editor.destroy();
+            }
 
 	        $base();
 	    },
 
-	    enable: function(isEnable) {
-            this._editor.enable(isEnable);
-	    },
-
-	    focus: function() {
-	        this._editor.focus();
-	    },
-
 	    getType: function() {
-	        if(this._editor) {
-	            if(JSB.isInstanceOf(this._editor, 'JSB.Controls.Editor')) {
-	                return this._editor.getType();
-                } else {
-                    return 'bool';
-                }
-	        }
+	        return this.options.type;
 	    },
 
 	    getValue: function() {
-            if(JSB.isInstanceOf(this._editor, 'JSB.Controls.Editor')) {
-                return this._editor.getValue();
-            } else {
-                return this._editor.isChecked();
-            }
+	        return this.options.value;
 	    },
 
-	    setDefaultValue: function(defaultValue) {
-	        this._editor.setDefaultValue(defaultValue);
-	    },
-
-	    setEditor: function(options) {
+	    setEditor: function() {
 	        var hasOnChangeFunc = JSB.isFunction(this.options.onChange),
 	            hasOnEditCompleteFunc = JSB.isFunction(this.options.onEditComplete);
 
-            if(options.type === 'bool') {
-                if(this._editor && JSB.isInstanceOf(this._editor, 'JSB.Controls.Editor')) {
+            if(this._editor) {
+                if(JSB.isInstanceOf(this._editor, 'JSB.Controls.Control')) {
                     this._editor.destroy();
+                } else {
+                    this._editor.remove();
                 }
-
-                this._editor = new Checkbox({
-                    checked: options.value,
-                    onChange: function(val) {
-                        if(hasOnEditCompleteFunc) {
-                            $this.options.onEditComplete.call($this, val);
-                        }
-                    }
-                });
-                this.append(this._editor);
-            } else {
-                if(this._editor && JSB.isInstanceOf(this._editor, 'JSB.Controls.Checkbox')) {
-                    this._editor.destroy();
-                }
-
-                this._editor = new Editor(JSB.merge(options, {
-                    label: null
-                }));
-                this.append(this._editor);
             }
+
+            switch(this.options.type) {
+                case 'null':
+                    this.options.value = null;
+
+                    this._editor = this.$('<span class="value">null</span>');
+
+                    this.append(this._editor);
+                    break;
+                case 'bool':
+                    this._editor = new Checkbox({
+                        checked: this.options.value,
+                        onChange: function(val) {
+                            $this.options.value = val;
+
+                            if(hasOnEditCompleteFunc) {
+                                $this.options.onEditComplete.call($this, val);
+                            }
+                        }
+                    });
+                    this.append(this._editor);
+                    break;
+                default:
+                    this._editor = this.$('<span class="value"></span>');
+                    this.append(this._editor);
+
+                    if(this.options.type === 'date') {
+                        var date = new Date(this.options.value);
+                        this._editor.text(date.toLocaleDateString());
+                    } else {
+                        this._editor.text(this.options.value);
+                    }
+
+                    this._editor.click(function(evt) {
+                        evt.stopPropagation();
+
+                        var curVal = $this.getValue(),
+                            input = new Editor({
+                                type: $this.options.type,
+                                value: $this.options.value,
+                                onEditComplete: function(newVal, isValid) {
+                                    if(isValid) {
+                                        if(newVal !== curVal) {
+                                            if($this.options.type === 'date') {
+                                                var date = new Date(newVal);
+                                                $this._editor.text(date.toLocaleDateString());
+                                            } else {
+                                                $this._editor.text(newVal);
+                                            }
+
+                                            $this.options.value = newVal;
+
+                                            if(hasOnEditCompleteFunc) {
+                                                $this.options.onEditComplete.call($this, newVal);
+                                            }
+                                        }
+
+                                        input.destroy();
+
+                                        $this._editor.removeClass('hidden');
+                                    }
+                                }
+                            });
+
+                        $this._editor.addClass('hidden');
+                        $this.append(input);
+
+                        input.select();
+                    });
+                    break;
+            }
+
+            this.getElement().attr('valType', this.options.type);
 	    },
 
 	    setLabel: function(label) {
@@ -134,50 +166,40 @@
 	        this._label.text(label);
 	    },
 
-	    setNumberOptions: function(opts) {
-	        // todo
-	        /*
-	        if(JSB.isDefined(opts.min)) {
-	            this._editor.attr('min', opts.min);
-	        }
-
-	        if(JSB.isDefined(opts.max)) {
-	            this._editor.attr('max', opts.max);
-	        }
-
-	        if(JSB.isDefined(opts.step)) {
-	            this._editor.attr('step', opts.step);
-	        }
-	        */
-	    },
-
-	    setPlaceholder: function(placeholder) {
-	        if(JSB.isInstanceOf(this._editor, 'JSB.Controls.Editor')) {
-	            this._editor.setPlaceholder(placeholder);
-	        }
-	    },
-
-	    setReadonly: function(isReadOnly) {
-	        // todo: readonly in checkbox
-	        //this._editor.attr('readonly', bool);
-	    },
-
 	    setType: function(type, hideEvent) {
-            if(type === 'bool') {
-                if(JSB.isInstanceOf(this._editor, 'JSB.Controls.Editor')) {
-                    var options = this._editor.getOption();
-                    options.type = type;
-                    this.setEditor(options);
-                }
-            } else {
-                if(JSB.isInstanceOf(this._editor, 'JSB.Controls.Checkbox')) {
-                    var options = this.options;
-                    options.type = type;
-                    this.setEditor(options);
-                } else {
-                    this._editor.setType(type);
-                }
-            }
+	        this.options.type = type;
+
+	        switch(type) {
+	            case 'null':
+	                this.options.value = null;
+	                break;
+	            case 'bool':
+	                this.options.value = true;
+	                break;
+	            case 'text':
+	                this.options.value = String(this.options.value);
+	                break;
+	            case 'number':
+	                var number = Number(this.options.value);
+
+	                if(isNaN(number)) {
+	                    this.options.value = 0;
+	                } else {
+	                    this.options.value = number;
+	                }
+	                break;
+	            case 'date':
+	                var date = Date.parse(this.options.value);
+
+	                if(isNaN(date)) {
+	                    this.options.value = 0;
+	                } else {
+	                    this.options.value = date;
+	                }
+	                break;
+	        }
+
+	        this.setEditor();
 
             if(!hideEvent && JSB.isFunction(this.options.onEditComplete)) {
                 $this.options.onEditComplete.call($this, this.getValue());
@@ -186,7 +208,11 @@
 
 	    setValue: function(value) {
 	        if(JSB.isDefined(value)) {
-	            this._editor.setValue(value);
+	            this.options.value = value;
+
+	            if(this.options.type === 'bool') {
+	                this._editor.setValue(value);
+	            }
 	        }
 	    }
     }

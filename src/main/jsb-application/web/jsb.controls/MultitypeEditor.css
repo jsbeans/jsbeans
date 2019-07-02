@@ -1,4 +1,33 @@
+.jsb-multitypeEditor[valType="number"] {
+    color: #650184;
+}
+
+.jsb-multitypeEditor[valType="text"] {
+    color: #82711e;
+}
+
+.jsb-multitypeEditor[valType="null"] {
+    color: #8c8171;
+}
+
 .jsb-multitypeEditor > label {
     width: 100px;
+    display: inline-block;
+}
+
+.jsb-multitypeEditor > .value {
+    border: 2px solid transparent;
+    border-radius: 5px;
+}
+
+.jsb-multitypeEditor:not([valType="null"]) > .value:hover {
+    border: 2px solid #5f75a552;
+    background: aliceblue;
+    cursor: pointer;
+}
+
+.jsb-multitypeEditor[valType="text"] > .value:before,
+.jsb-multitypeEditor[valType="text"] > .value:after {
+    content: '"';
     display: inline-block;
 }
