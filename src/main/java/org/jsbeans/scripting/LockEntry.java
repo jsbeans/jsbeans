@@ -21,14 +21,18 @@ public class LockEntry {
 	}
 	
 	public void reserve(){
-		this._count++;
+		synchronized(this){
+			this._count++;
+		}
 	}
 	
 	public void unlock() {
 		try {
 			this._lock.unlock();
 		} catch(Exception e){}
-		this._count--;
+		synchronized(this){
+			this._count--;
+		}
 	}
 	
 	public ReentrantLock getLock() {
