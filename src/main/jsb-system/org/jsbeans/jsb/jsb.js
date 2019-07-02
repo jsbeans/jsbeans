@@ -86,6 +86,7 @@ if(!(function(){return this;}).call(null).JSB){
 		resourceLoaded: {},
 		resourceScheduled: {},
 		deferTimeoutMap: {},
+		intervalMap: {},
 		globalInstances: {},
 		libraryScopes: {},
 		threadLocal: null,
@@ -3007,6 +3008,41 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 		},
 		
+		interval: function(proc, interval, key){
+			var self = this;
+			if(!this.isNumber(interval)){
+				throw new Error('Missing interval argument in JSB.interval');
+			}
+			if(key && this.intervalMap[key]){
+				JSB().Window.clearInterval(this.intervalMap[key]);
+			}
+			var intervalHandle = JSB().Window.setInterval(function(){
+				/*self.putCallingContext(callCtx);*/
+				if(key && self.intervalMap[key]){
+					var locker = self.getLocker();
+					if(locker){
+						locker.lock('__intervalMap');
+					}
+					delete self.intervalMap[key];
+					if(locker){
+						locker.unlock('__intervalMap');
+					}
+
+				}
+				proc.call(self);
+			}, interval);
+			if(key){
+				var locker = self.getLocker();
+				if(locker){
+					locker.lock('__intervalMap');
+				}
+				this.intervalMap[key] = intervalHandle;
+				if(locker){
+					locker.unlock('__intervalMap');
+				}
+			}
+		},
+		
 		deferUntil: function(deferProc, untilProc, interval, silent, key){
 			var self = this;
 			if(!this.isNumber(interval)){
@@ -3075,6 +3111,22 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				if(locker){
 					locker.unlock('__deferTimeoutMap');
+				}
+			}
+		},
+		
+		cancelInterval: function(key){
+			if(key && this.intervalMap[key]){
+				var locker = this.getLocker();
+				if(locker){
+					locker.lock('__intervalMap');
+				}
+				if(this.intervalMap[key]){
+					JSB().Window.clearInterval(this.intervalMap[key]);
+					delete this.intervalMap[key];
+				}
+				if(locker){
+					locker.unlock('__intervalMap');
 				}
 			}
 		},
