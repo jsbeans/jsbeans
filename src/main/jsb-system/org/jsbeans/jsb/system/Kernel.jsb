@@ -271,109 +271,21 @@
 		
 		lockStats: function(){
 			var stats = [];
-			var lockMap = Bridge.getLockMap();
-			var lockNames = lockMap.keys();
-			while(lockNames.hasMoreElements()){
-				var curLockName = lockNames.nextElement();
-				var lock = lockMap.get(curLockName);
+			var lockStats = Bridge.lockStats();
+			for(var i = 0; i < lockStats.size(); i++){
+				var lockStatsEntry = lockStats.get(i);
 				stats.push({
-					lock: '' + curLockName,
-					locked: lock.getLock().isLocked(),
-					queueLength: lock.getLocks()
+					lock: '' + lockStatsEntry.getLockName(),
+					locked: lockStatsEntry.isLocked(),
+					queueLength: lockStatsEntry.getQueueLength()
 				});
 			}
-			
 			return stats;
 		},
 
 		hostName: function() {
 		    return '' + InetAddress.getLocalHost().getHostName();
 		},
-/*		
-		fork: function(proc, param){
-			var self = this;
-			var count = 1;
-			if(param){
-				if(JSB().isArray(param)){
-					count = param.length;
-				} else if(JSB().isPlainObject(param)){
-					param = [param];
-				} else if(JSB().isNumber(param)){
-					count = param;
-					param = null;
-				}
-			}
-			if(JSB().isNull(this.forkJoinHandles)){
-				this.forkJoinHandles = {};
-			}
-			// create handle
-			var h = JSB().generateUid();
-			this.forkJoinHandles[h] = {
-				count: count,
-				ready: 0,
-				items: [],
-				callback: null
-			};
-			
-			for(var i = 0; i < count; i++ ){
-				(function(idx){
-					JSB().defer(function(){
-						var res = null;
-						try {
-							var p = null; 
-							if(param){
-								p = param[idx];
-							}
-							res = proc.call(self, p, function(res){
-								self.lock('fork_' + h);
-								self.forkJoinHandles[h].items[idx] = res;
-								self.forkJoinHandles[h].ready++;
-								self.unlock('fork_' + h);
-								self.checkJoinCallback(h);
-							});
-
-						} catch(e){
-							res = e;
-						}
-						if(res !== undefined){
-							self.lock('fork_' + h);
-							self.forkJoinHandles[h].items[idx] = res;
-							self.forkJoinHandles[h].ready++;
-							self.unlock('fork_' + h);
-							self.checkJoinCallback(h);
-						}
-					}, 0);
-				})(i);
-			}
-			
-			return h;
-		},
 		
-		join: function(forkHandle, callback){
-			if(callback){
-				this.forkJoinHandles[forkHandle].callback = callback;
-				this.checkJoinCallback(forkHandle);
-			} else {
-				while(this.forkJoinHandles[forkHandle].ready < this.forkJoinHandles[forkHandle].count){
-					Kernel.sleep(10);
-				}
-				var res = this.forkJoinHandles[forkHandle].items;
-				delete this.forkJoinHandles[forkHandle];
-				this.clearLock('fork_' + forkHandle);
-				return res;
-			}
-		},
-		
-		checkJoinCallback: function(forkHandle){
-			if(this.forkJoinHandles[forkHandle] && this.forkJoinHandles[forkHandle].callback){
-				if(this.forkJoinHandles[forkHandle].ready == this.forkJoinHandles[forkHandle].count){
-					this.forkJoinHandles[forkHandle].callback.call(this, this.forkJoinHandles[forkHandle].items);
-					// remove handle
-					this.clearLock('fork_' + forkHandle);
-					delete this.forkJoinHandles[forkHandle];
-				}
-			}
-		}
-*/		
 	}
 }

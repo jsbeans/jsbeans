@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -84,8 +86,15 @@ public class JsBridge {
         }
     }
     
-    public Map<String, LockEntry> getLockMap(){
-    	return lockMap;
+    public List<LockStatEntry> lockStats(){
+    	List<LockStatEntry> stats = new ArrayList<LockStatEntry>();
+    	synchronized (lockMap){
+    		lockMap.forEach((name, lock) -> {
+    			stats.add(new LockStatEntry(name, lock.getLock().isLocked(), lock.getLocks()));
+    		});
+    	}
+    	
+    	return stats;
     }
 
     public void clearLock(String str) {
