@@ -3638,11 +3638,10 @@ if(!(function(){return this;}).call(null).JSB){
 			if(!JSB().isNull(bindMapScope[instanceId])){
 				serverInstanceId = bindMapScope[instanceId];
 				serverInstance = JSB().getInstance(serverInstanceId);
-				if(JSB().isNull(serverInstance)) {
+/*				if(JSB().isNull(serverInstance)) {
 					delete bindMapScope[instanceId];
-				}
+				}*/
 			}
-			
 			if(JSB().isNull(serverInstance)){
 				try {
 					locker = JSB().getLocker();
@@ -3716,7 +3715,6 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
 			return serverInstance;
 
 		},
@@ -5036,7 +5034,6 @@ JSB({
 					self.client().doSync(true);	
 				}, 0);
 			}
-			
 			return retSlice;
 		},
 		
@@ -6660,6 +6657,7 @@ JSB({
 		performRpc: function(jsoName, instanceId, procName, params, rpcId){
 			var np = {};
 			var ret = null, fail = null;
+			
 			$jsb.injectComplexObjectInRpcResult(params, function(r){
 				np.res = r;
 				try {
@@ -6703,7 +6701,7 @@ JSB({
 					}
 				}
 			});
-
+			
 			if(!rpcId){
 				if(!JSB.isDefined(np.res)){
 					throw new Error("Synchronous RPC don't support streamed transfers");
@@ -6726,11 +6724,14 @@ JSB({
 				throw new Error('Failed to call method "' + procName + '" in bean "' + jsbName + '". Method not exists');
 			}
 			
-			if(JSB().isArray(params)){
-				return serverInstance[procName].apply(serverInstance, params);
-			}
-			return serverInstance[procName].call(serverInstance, params);
+			var res = null;
 
+			if(JSB().isArray(params)){
+				res = serverInstance[procName].apply(serverInstance, params);
+			} else {
+				res = serverInstance[procName].call(serverInstance, params);
+			}
+			return res;
 		},
 		
 		executeServerRpc: function(jsbName, instanceId, procName, params){

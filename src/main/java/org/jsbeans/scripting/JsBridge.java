@@ -63,6 +63,7 @@ public class JsBridge {
 
     public void unlock(String str) {
         if (!lockMap.containsKey(str)) {
+        	this.log("warning", String.format("Mutex '%s' has already been unlocked", str));
             return;
         }
         LockEntry l = (LockEntry) lockMap.get(str);
@@ -71,18 +72,27 @@ public class JsBridge {
         		l.unlock();
 	            if(l.canRemove()) {
 	            	synchronized (lockMap) {
-	            		if (lockMap.containsKey(str) && l.canRemove()){
-	            			 lockMap.remove(str);
+	            		if(lockMap.containsKey(str)){
+	            			LockEntry nl = lockMap.get(str);
+	            			if(l == nl && nl.canRemove()){
+	            				lockMap.remove(str);
+	            			}
 	            		}
 	            	}
 	            }
 	        } else {
+	        	this.log("warning", String.format("Removing mutex '%s' without unlock", str));
 	        	synchronized (lockMap) {
-	        		if (lockMap.containsKey(str) && l.canRemove()){
-	        			lockMap.remove(str);
-	           		}
+	        		if(lockMap.containsKey(str)){
+            			LockEntry nl = lockMap.get(str);
+            			if(l == nl && nl.canRemove()){
+            				lockMap.remove(str);
+            			}
+            		}
 	        	}
 	        }
+        } else {
+        	this.log("error", String.format("Error occured due to unlocking mutex '%s'", str));
         }
     }
     
