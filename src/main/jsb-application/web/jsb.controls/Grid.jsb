@@ -40,7 +40,8 @@
                 this._topContainer.append(this._topTable);
 
                 this._topTable.resize(function() {
-                    $this._masterTable.get(0).style['margin-top'] = $this._topTable.height() + 'px';
+                    $this._masterContainer.get(0).style['margin-top'] = $this._topTable.height() + 'px';
+                    $this._masterContainer.get(0).style['height'] = 'calc(100% - ' + $this._topTable.height() + 'px)';
                 });
 			//}
 
@@ -541,11 +542,12 @@
         _updateSizes: function() {
             this._topContainer.width(this._masterTable.width());
 
-            this._masterTable.get(0).style['margin-top'] = this._topTable.height() + 'px';
+            $this._masterContainer.get(0).style['margin-top'] = $this._topTable.height() + 'px';
+            $this._masterContainer.get(0).style['height'] = 'calc(100% - ' + $this._topTable.height() + 'px)';
 
-            this._colResizeHandleContainer.get(0).style['margin-top'] = -this._masterContainer.height() + 'px';
+            this._colResizeHandleContainer.get(0).style['margin-top'] = -this.getElement().height() + 'px';
 
-            this._colResizeHandleContainer.children('.col-resize-handle').height(this._masterContainer.get(0).clientHeight);
+            this._colResizeHandleContainer.children('.col-resize-handle').height(this.getElement().height());
 
             var masterContainer = this._masterContainer.get(0),
                 masterTableCols = this._masterTable.find('colgroup > col');
