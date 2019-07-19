@@ -38,6 +38,10 @@
 			//if(this.options.colHeader){
                 this._topTable = this.$('<table cellspacing="0" cellpadding="0"></table>');
                 this._topContainer.append(this._topTable);
+
+                this._topTable.resize(function() {
+                    $this._masterTable.get(0).style['margin-top'] = $this._topTable.height() + 'px';
+                });
 			//}
 
 			if(this.options.resizeColumns){
@@ -57,7 +61,6 @@
 		        // todo: только при горизонтальном скроле
 		        // header
 		        $this._topContainer.get(0).style.left = -evt.target.scrollLeft + 'px';
-		        $this._topContainer.width($this._masterContainer.get(0).clientWidth + evt.target.scrollLeft);
 
 		        // resize container
 		        $this._colResizeHandleContainer.get(0).style.left = -evt.target.scrollLeft + 'px';
@@ -536,7 +539,7 @@
         },
 
         _updateSizes: function() {
-            this._topContainer.width(this._masterContainer.get(0).clientWidth);
+            this._topContainer.width(this._masterTable.width());
 
             this._masterTable.get(0).style['margin-top'] = this._topTable.height() + 'px';
 
