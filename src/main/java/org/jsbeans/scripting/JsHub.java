@@ -86,6 +86,122 @@ public class JsHub extends Service {
             return super.hasFeature(cx, featureIndex);
         }
     };
+
+    public class InterceptWrapFactory extends WrapFactory{
+        private final Map<String, Object> locals = new HashMap<>();
+        {
+            Context context = Context.getCurrentContext();
+            this.locals.put("token", context.getThreadLocal("token"));
+            this.locals.put("session", context.getThreadLocal("session"));
+            this.locals.put("user", context.getThreadLocal("user"));
+            this.locals.put("userToken", context.getThreadLocal("token"));
+            this.locals.put("clientAddr", context.getThreadLocal("clientAddr"));
+            this.locals.put("clientRequestId", context.getThreadLocal("clientRequestId"));
+            this.locals.put("scope", context.getThreadLocal("scope"));
+            this.locals.put("_jsbCallingContext", context.getThreadLocal("_jsbCallingContext"));
+        }
+        @Override
+        public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, Object javaObject, Class<?> staticType) {
+            return new InterceptNativeObject(scope, javaObject, staticType, locals);
+        }
+    }
+
+    public class InterceptNativeObject extends NativeJavaObject {
+        private final Map<String, Object> locals;
+        @Override
+        public Object get(String name, Scriptable start) {
+            Object res = super.get(name, start);
+            if (res instanceof NativeJavaMethod) {
+                NativeJavaMethod method = (NativeJavaMethod) res;
+                return new JavaMethodWrapper(method, locals);
+            }
+            return res;
+        }
+        public InterceptNativeObject(Scriptable scope, Object javaObject, Class<?> staticType, Map<String, Object> locals) {
+            super(scope, javaObject, staticType);
+            this.locals = locals;
+        }
+    }
+
+    private static class JavaMethodWrapper implements Function {
+        private final Map<String, Object> locals;
+        private final NativeJavaMethod method;
+        public JavaMethodWrapper(NativeJavaMethod method, Map<String, Object> locals) {
+            this.method = method;
+            this.locals = locals;
+        }
+        public boolean hasInstance(Scriptable instance) {
+            return method.hasInstance(instance);
+        }
+        public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+            if(cx.getThreadLocal("session") == null) {
+                cx.putThreadLocal("token", this.locals.get("token"));
+                cx.putThreadLocal("session", this.locals.get("session"));
+                cx.putThreadLocal("user", this.locals.get("user"));
+                cx.putThreadLocal("userToken", this.locals.get("token"));
+                cx.putThreadLocal("clientAddr", this.locals.get("clientAddr"));
+                cx.putThreadLocal("clientRequestId", this.locals.get("clientRequestId"));
+                cx.putThreadLocal("scope", this.locals.get("scope"));
+                cx.putThreadLocal("_jsbCallingContext", this.locals.get("_jsbCallingContext"));
+            }
+
+            return method.call(cx, scope, thisObj, args);
+        }
+        public boolean has(int index, Scriptable start) {
+            return method.has(index, start);
+        }
+        public Scriptable construct(Context cx, Scriptable scope, Object[] args) {
+            return method.construct(cx, scope, args);
+        }
+        public void put(int index, Scriptable start, Object value) {
+            method.put(index, start, value);
+        }
+        public void delete(int index) {
+            method.delete(index);
+        }
+        public Scriptable createObject(Context cx, Scriptable scope) {
+            return method.createObject(cx, scope);
+        }
+        public boolean has(String name, Scriptable start) {
+            return method.has(name, start);
+        }
+        public void defineConst(String name, Scriptable start) {
+            method.defineConst(name, start);
+        }
+        public void put(String name, Scriptable start, Object value) {
+            method.put(name, start, value);
+        }
+        public void delete(String name) {
+            method.delete(name);
+        }
+        public Scriptable getPrototype() {
+            return method.getPrototype();
+        }
+        public void setPrototype(Scriptable m) {
+            method.setPrototype(m);
+        }
+        public Scriptable getParentScope() {
+            return method.getParentScope();
+        }
+        public void setParentScope(Scriptable m) {
+            method.setParentScope(m);
+        }
+        public Object[] getIds() {
+            return method.getIds();
+        }
+        public Object get(int index, Scriptable start) {
+            return method.get(index, start);
+        }
+        public Object get(String name, Scriptable start) {
+            return method.get(name, start);
+        }
+        public String getClassName() {
+            return method.getClassName();
+        }
+        public Object getDefaultValue(Class<?> typeHint) {
+            return method.getDefaultValue(typeHint);
+        }
+    }
     
     public static ContextFactory getContextFactory(){
     	return contextFactory;
@@ -629,6 +745,8 @@ public class JsHub extends Service {
                     cx.putThreadLocal("clientRequestId", msg.getClientRequestId());
                     cx.putThreadLocal("scope", scope);
                     cx.putThreadLocal("_jsbCallingContext", null);
+
+                    cx.setWrapFactory(new InterceptWrapFactory());
 
                     Subject subj = Subject.getSubject(msg.getAccessControlContext());
                     Object resultObj = null;
