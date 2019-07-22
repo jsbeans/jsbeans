@@ -92,8 +92,15 @@
 		    if(this.options.data){
 		        this.setData(this.options.data);
 		    }
-
-
+/*		    
+		    this._masterTable.resize(function(){
+		    	if($this._masterTable.is(':visible')){
+		    		JSB.defer(function(){
+		    			$this._updateSizes();
+		    		}, 300, '__masterTable_resize.' + $this.getId());
+		    	}
+		    });
+*/
             this.getElement().resize(function(){
                 $this._updateSizes();
             });
@@ -306,7 +313,7 @@
                 $this._updateColGroups();
 
                 $this._updateSizes();
-            }, 300, 'grid.updateDimensions.id:' + this.getId());
+            }, 0, 'grid.updateDimensions.id:' + this.getId());
         },
 
         _defaultHeaderRenderer: function(th, index){
@@ -540,7 +547,14 @@
         },
 
         _updateSizes: function() {
-            this._topContainer.width(this._masterTable.width());
+        	var masterWidth = this._masterTable.width();
+        	JSB.defer(function(){
+        		var nw = $this._masterTable.width();
+        		if(nw != masterWidth){
+        			$this._updateSizes();
+        		}
+        	}, 100, '_updateSizes_additional_check_' + $this.getId());
+            this._topContainer.width(masterWidth);
 
             $this._masterContainer.get(0).style['margin-top'] = $this._topTable.height() + 'px';
             $this._masterContainer.get(0).style['height'] = 'calc(100% - ' + $this._topTable.height() + 'px)';
