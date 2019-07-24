@@ -128,12 +128,12 @@ public class JsBridge {
     	return obj != null && !(obj instanceof Boolean) && !(obj instanceof String) && !(obj instanceof Number) && !(obj instanceof ScriptableObject);
     }
     
-    public synchronized void putThreadLocal(String key, ScriptableObject val){
+    public synchronized void putThreadLocal(String key, Object val){
     	Context.getCurrentContext().putThreadLocal(key, val);
     }
     
-    public ScriptableObject getThreadLocal(String key){
-    	return (ScriptableObject)Context.getCurrentContext().getThreadLocal(key);
+    public Object getThreadLocal(String key){
+    	return Context.getCurrentContext().getThreadLocal(key);
     }
     
     public void removeThreadLocal(String key){

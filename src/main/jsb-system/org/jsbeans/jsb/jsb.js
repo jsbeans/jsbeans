@@ -129,6 +129,39 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 		},
 		
+		wrap: function(method, opts){
+			if(!this.isServer() || !opts || Object.keys(opts).length == 0){
+				return method;
+			}
+			var self = this;
+			var tlVars = null;
+			var preserveContext = opts && opts.preserveContext;
+			
+			if(preserveContext){
+				var tls = this.getThreadLocal();
+				tlVars = {
+					'token': tls.get('token'),
+					'session': tls.get('session'),
+					'user': tls.get('user'),
+					'userToken': tls.get('userToken'),
+					'clientAddr': tls.get('clientAddr'),
+					'clientRequestId': tls.get('clientRequestId'),
+					'scope': tls.get('scope'),
+					'_jsbCallingContext': tls.get('_jsbCallingContext'),
+				};
+			}
+			
+			return function(){
+				if(preserveContext && tlVars){
+					var tls = self.getThreadLocal();
+					for(var key in tlVars){
+						tls.put(key, tlVars[key]);
+					}
+				}
+				return method.apply(this, arguments);
+			};
+		},
+		
 		getCurrentSession: function(){
 			if(!this.isServer()){
 				return '';
