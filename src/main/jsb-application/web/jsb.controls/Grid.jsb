@@ -84,8 +84,8 @@
 		    });
 
 		    if(!opts.cellRenderer){
-		        this.options.cellRenderer = function(td, value){
-		            return $this._defaultRenderer(td, value);
+		        this.options.cellRenderer = function(td, value, rowIndex, colIndex, rowData, opts){
+		            return $this._defaultRenderer(td, value, opts);
 		        };
 		    }
 
@@ -130,7 +130,7 @@
             preloader: null
         },
 
-        addArray: function(data, rowIndex){
+        addArray: function(data, rowIndex, opts){
             var newRows = [],
                 dataType = 'array';
 
@@ -169,7 +169,7 @@
 
                 td.attr('colKey', colIndex);
 
-                $this.options.cellRenderer.call($this, td, data, rowIndex, colIndex, rowData);
+                $this.options.cellRenderer.call($this, td, data, rowIndex, colIndex, rowData, opts);
 
                 row.append(td);
             }
@@ -263,7 +263,7 @@
             }
         },
 
-        setData: function(data){
+        setData: function(data, opts){
             this.clear();
 
             if(!data || data.length == 0) {
@@ -271,7 +271,7 @@
             	return;
             }
 
-            this.addArray(data);
+            this.addArray(data, undefined, opts);
 
             this.updateDimensions();
 
@@ -320,7 +320,7 @@
             th.append(index);
         },
 
-        _defaultRenderer: function(td, value){
+        _defaultRenderer: function(td, value, opts){
             function detectType(val){
                 if(!JSB.isDefined(val)){
                     return 'undefined';
@@ -385,8 +385,9 @@
                 this.$(td).attr('val', value);
                 this.$(td).text(String(value));
             } else if(valueType === 'string') {
-                if(this.options.stringLimit && value.length > this.options.stringLimit) {
-                    this.$(td).text(value.substr(0, this.options.stringLimit - 3) + '...');
+            	var stringLimit = opts && JSB.isDefined(opts.stringLimit) ? opts.stringLimit : this.options.stringLimit;
+                if(stringLimit && value.length > stringLimit) {
+                    this.$(td).text(value.substr(0, stringLimit - 3) + '...');
                 } else {
                     this.$(td).text(value);
                 }
