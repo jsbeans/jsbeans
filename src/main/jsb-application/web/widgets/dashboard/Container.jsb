@@ -337,7 +337,7 @@
 				this.clientContainer.append(this.widgetContainer.getElement());
 				this.type = 'widget';
 				this.childContainers = [];
-			} else {
+			} else if(container.type == 'split'){
 				container.splitBox.getElement().detach();
 				this.splitBox = container.splitBox;
 				container.splitBox = null;
