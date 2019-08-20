@@ -4097,27 +4097,29 @@ JSB({
 	},
 	
 	lock: function(lName){
-		if($jsb.getLocker()){
+		var locker = $jsb.getLocker();
+		if(locker){
 			var mtxName = this.getId();
 			if(lName){
-				mtxName += lName;
+				mtxName += ':' + lName;
 			}
 			if(!this.$_locks){
 				this.$_locks = {};
 			}
 			this.$_locks[mtxName] = true;
-			$jsb.getLocker().lock(mtxName);
+			locker.lock(mtxName);
 		}
 	},
 	
 	unlock: function(lName){
-		if($jsb.getLocker()){
+		var locker = $jsb.getLocker();
+		if(locker){
 			var mtxName = this.getId();
 			if(lName){
-				mtxName += lName;
+				mtxName += ':' + lName;
 			}
 
-			$jsb.getLocker().unlock(mtxName);
+			locker.unlock(mtxName);
 		}
 	},
 	
@@ -4565,19 +4567,35 @@ JSB({
 	},
 	
 	existTrigger: function(key){
-		if(!$this.$_ecMap){
-			$this.$_ecMap = {};
-		}
-		if($this.$_ecMap[key]){
+		if($this.$_ecMap && $this.$_ecMap[key]){
 			return true;
 		}
 		return false;
 	},
 	
-	ensureTrigger: function(keyArr, callback, valOrCondOpt){
+	_ensureTriggerMap: function(){
 		if(!$this.$_ecMap){
-			$this.$_ecMap = {};
+			$this.lock('trigger.map');
+			if(!$this.$_ecMap){
+				$this.$_ecMap = {};
+			}
+			$this.unlock('trigger.map');
 		}
+	},
+	
+	_ensureTriggerKey: function(key){
+		$this._ensureTriggerMap();
+		if(!$this.$_ecMap[key]){
+			$this.lock('trigger.map');
+			if(!$this.$_ecMap[key]){
+				$this.$_ecMap[key] = {cArr:[]};
+			}
+			$this.unlock('trigger.map');
+		}
+	},
+	
+	ensureTrigger: function(keyArr, callback, valOrCondOpt){
+		$this._ensureTriggerMap();
 		var bKeyArr = true;
 		if(!JSB.isArray(keyArr)){
 			keyArr = [keyArr];
@@ -4595,18 +4613,17 @@ JSB({
 		} else {
 			for(var i = 0; i < keyArr.length; i++){
 				var key = keyArr[i];
-				if(!$this.$_ecMap[key]){
-					$this.$_ecMap[key] = {cArr:[]};
-				}
+				$this._ensureTriggerKey(key);
+				var mtx = 'trigger.key:' + key;
+				$this.lock(mtx);
 				$this.$_ecMap[key].cArr.push({exec:callback, cond:valOrCondOpt, keyArr: keyArr, bKeyArr: bKeyArr});
+				$this.unlock(mtx);
 			}
 		}
 	},
 	
 	matchTrigger: function(keyArr, valOrCondOpt){
-		if(!$this.$_ecMap){
-			$this.$_ecMap = {};
-		}
+		$this._ensureTriggerMap();
 		if(!JSB.isArray(keyArr)){
 			keyArr = [keyArr];
 		}
@@ -4616,9 +4633,7 @@ JSB({
 		}
 		for(var i = 0; i < keyArr.length; i++){
 			var key = keyArr[i];
-			if(!$this.$_ecMap[key]){
-				$this.$_ecMap[key] = {cArr:[]};
-			}
+			$this._ensureTriggerKey(key);
 			if(JSB.isDefined($this.$_ecMap[key].val)){
 				if(JSB.isFunction(valOrCondOpt)){
 					if(!valOrCondOpt.call($this, $this.$_ecMap[key].val)){
@@ -4641,12 +4656,7 @@ JSB({
 	},
 	
 	setTrigger: function(key, valOpt){
-		if(!$this.$_ecMap){
-			$this.$_ecMap = {};
-		}
-		if(!$this.$_ecMap[key]){
-			$this.$_ecMap[key] = {cArr:[]};
-		}
+		$this._ensureTriggerKey(key);
 		if(!JSB.isDefined(valOpt)){
 			valOpt = true;	// default value
 		}
@@ -4689,14 +4699,20 @@ JSB({
 						if(otherKey == key){
 							continue;
 						}
+						var mtx = 'trigger.key:' + otherKey;
+						$this.lock(mtx);
 						for(var k = $this.$_ecMap[otherKey].cArr.length - 1; k >= 0; k--){
 							if($this.$_ecMap[otherKey].cArr[k].keyArr == cDesc.keyArr){
 								$this.$_ecMap[otherKey].cArr.splice(k, 1);
 							}
 						}
+						$this.unlock(mtx);
 					}
 					// remove this
+					var mtx = 'trigger.key:' + key;
+					$this.lock(mtx);
 					$this.$_ecMap[key].cArr.splice(i, 1);
+					$this.unlock(mtx);
 					cDesc.exec.call($this, cDesc.bKeyArr ? vals : vals[0]);
 				}
 			}
@@ -4704,17 +4720,13 @@ JSB({
 	},
 	
 	resetTrigger: function(keyArr){
-		if(!$this.$_ecMap){
-			$this.$_ecMap = {};
-		}
+		$this._ensureTriggerMap();
 		if(!JSB.isArray(keyArr)){
 			keyArr = [keyArr];
 		}
 		for(var i = 0; i < keyArr.length; i++){
 			var key = keyArr[i];
-			if(!$this.$_ecMap[key]){
-				$this.$_ecMap[key] = {cArr:[]};
-			}
+			$this._ensureTriggerKey(key);
 			if(JSB.isDefined($this.$_ecMap[key].val)){
 				delete $this.$_ecMap[key].val;
 			}
@@ -4722,16 +4734,16 @@ JSB({
 	},
 	
 	removeTrigger: function(keyArr){
-		if(!$this.$_ecMap){
-			$this.$_ecMap = {};
-		}
+		$this._ensureTriggerMap();
 		if(!JSB.isArray(keyArr)){
 			keyArr = [keyArr];
 		}
 		for(var i = 0; i < keyArr.length; i++){
 			var key = keyArr[i];
 			if($this.$_ecMap[key]){
+				$this.lock('trigger.map');
 				delete $this.$_ecMap[key];
+				$this.unlock('trigger.map');
 			}
 		}
 	},
