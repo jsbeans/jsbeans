@@ -9,11 +9,11 @@
  */
 
 {
-	$name:'Template',
+	$name:'JSB.Template.Template',
 	$require: ['JSB.System.Kernel', 'JSB.System.Log'],
 	$server: {
 		$singleton: true,
-		$globalize: true,
+		$globalize: 'Template',
 		$constructor: function(){},
 
 		exec: function(te, pattern, json){
