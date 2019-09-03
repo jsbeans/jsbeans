@@ -188,6 +188,12 @@
             }
 
             if(JSB.isArray(data)) {  // array
+                /*
+                if(data.length == 0) {
+                    this.showNoDataMsg(true);
+                    return;
+                }
+                */
                 for(var i = 0; i < data.length; i++) {
                     if(!this._dataScheme){
                         createDataScheme(data[i]);
@@ -231,6 +237,10 @@
             }
 
             this.showNoDataMsg(false);
+        },
+
+        getRowCount: function() {
+            return this._masterTable.children().length;
         },
 
         search: function(colKey, searchWord, searchFunction) {

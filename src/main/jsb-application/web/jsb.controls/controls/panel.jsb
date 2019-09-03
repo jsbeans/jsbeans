@@ -203,7 +203,7 @@
         togglePanel: function(){
             var $BOX_PANEL = $this.getElement(),
                 $ICON = $this.elements.buttons.collapseBtn.find('i'),
-                $BOX_CONTENT = $BOX_PANEL.find('> .content');
+                $BOX_CONTENT = this.elements.content;
 
             // fix for some div with hardcoded fix class
             if ($BOX_PANEL.attr('style')) {
