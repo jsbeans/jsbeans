@@ -2715,7 +2715,7 @@ if(!(function(){return this;}).call(null).JSB){
 			return url;
 		},
 		
-		loadScript: function(curl, callback){
+		loadScript: function(curl, callback, bChain){
 			var self = this;
 			
 			var scriptArr = [];
@@ -2806,22 +2806,38 @@ if(!(function(){return this;}).call(null).JSB){
 
 			var checkArr = JSB().clone(scriptArr);
 			
-			for(var i in scriptArr){
-				(function(url){
-					loadOneScript(url, function(){
-						for(var j = 0; j < checkArr.length; j++ ){
-							if(checkArr[j] == url){
-								checkArr.splice(j, 1);
-								break;
-							}
+			if(bChain){
+				function loadNext(){
+					if(checkArr.length > 0){
+						loadOneScript(checkArr[0], function(){
+							checkArr.splice(0, 1);
+							loadNext();
+						});
+					} else {
+						if(callback){
+							callback.call(self);
 						}
-						if(checkArr.length == 0){
-							if(callback){
-								callback.call(self);
+					}
+				}
+				loadNext();
+			} else {
+				for(var i in scriptArr){
+					(function(url){
+						loadOneScript(url, function(){
+							for(var j = 0; j < checkArr.length; j++ ){
+								if(checkArr[j] == url){
+									checkArr.splice(j, 1);
+									break;
+								}
 							}
-						}
-					});
-				})(scriptArr[i]);
+							if(checkArr.length == 0){
+								if(callback){
+									callback.call(self);
+								}
+							}
+						});
+					})(scriptArr[i]);
+				}
 			}
 
 		},
