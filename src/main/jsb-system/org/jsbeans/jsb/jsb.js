@@ -821,6 +821,16 @@ if(!(function(){return this;}).call(null).JSB){
 					
 					// setup rootFunc
 					$rootFunc = function(inst, callback){
+						if(!callback){
+							return;
+						}
+						var curSession = self.getCurrentSession();
+						if(!curSession || curSession.length == 0){
+							return callback();
+						}
+						if(self.isSession()){
+							throw new Error('Use of $root is restricted for session bean "' + self.getDescriptor().$name+ '"');
+						}
 						return Bridge.executeRoot(callback);
 					}
 /*					
