@@ -461,7 +461,7 @@ if(!(function(){return this;}).call(null).JSB){
 				return null;
 			}
 			var scope = this.getGlobalInstancesScope();
-			if(obj.getJsb().isSession()){
+			if(obj.getJsb().isSession() && obj.$_session && obj.$_session.length > 0){
 				scope = this.getSessionInstancesScope();
 			}
 			
