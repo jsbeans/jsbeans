@@ -11,8 +11,6 @@
 package org.jsbeans.scripting;
 
 import org.jsbeans.messages.Message;
-import org.jsbeans.types.JsObject;
-
 import java.util.List;
 
 public class UpdateStatusMessage implements Message {
@@ -20,7 +18,7 @@ public class UpdateStatusMessage implements Message {
 
     public ExecutionStatus status;
     public String token;
-    public JsObject result;
+    public Object result;
     public String error;
     public List<String> subTokens = null;
 

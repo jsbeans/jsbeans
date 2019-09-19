@@ -18,6 +18,7 @@ import org.jsbeans.helpers.FileHelper;
 import org.jsbeans.scripting.ExecuteScriptMessage;
 import org.jsbeans.scripting.JsHub;
 import org.jsbeans.scripting.UpdateStatusMessage;
+import org.jsbeans.types.JsObject;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
@@ -119,7 +120,7 @@ public class JsbTemplateEngine {
     	                return "";
     	            }
 
-    	            newText = String.format("%s.call(this, this)", usMsg.result.toJS(false));
+    	            newText = String.format("%s.call(this, this)", ((JsObject)usMsg.result).toJS(false));
 
     			} else if("include".compareToIgnoreCase(templateOp) == 0){
     				Pattern p2 = Pattern.compile("\\#include\\s+[\\'\\\"]([^\\'\\\"]+)[\\'\\\"]", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);

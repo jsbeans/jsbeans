@@ -36,6 +36,7 @@ public class ExecuteScriptMessage implements Message {
     private AccessControlContext accessControlContext;
     private String clientRequestId = null;
     private boolean respond = true;
+    private boolean respondNative = false;
 
     public ExecuteScriptMessage() {
         initAccessControl();
@@ -69,6 +70,14 @@ public class ExecuteScriptMessage implements Message {
     
     public boolean isNeedResponse(){
     	return this.respond;
+    }
+    
+    public void setRespondNative(boolean bRespondNative){
+    	this.respondNative = bRespondNative;
+    }
+    
+    public boolean isRespondNative(){
+    	return this.respondNative;
     }
     
     public void setPreserveScope(boolean b){

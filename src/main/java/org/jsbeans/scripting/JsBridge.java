@@ -18,6 +18,7 @@ import org.jsbeans.helpers.*;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
 import org.mozilla.javascript.IdScriptableObject;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
@@ -219,6 +220,47 @@ public class JsBridge {
         return null;
     }
 
+    public Object executeRoot(ScriptableObject callback){
+    	ActorSelection jsHubSvc = ActorHelper.getActorSelection(JsHub.class);
+        String token = Context.getCurrentContext().getThreadLocal("token").toString();
+        String sessionId = Context.getCurrentContext().getThreadLocal("session").toString();
+        Object user = Context.getCurrentContext().getThreadLocal("user");
+        Object userToken = Context.getCurrentContext().getThreadLocal("userToken");
+        Object clientAddr = Context.getCurrentContext().getThreadLocal("clientAddr");
+        Object clientRequestId = Context.getCurrentContext().getThreadLocal("clientRequestId");
+        
+        final ExecuteScriptMessage execMsg = new ExecuteScriptMessage(token, (Function) callback, new Object[]{});
+        //execMsg.setScopePath(msg.getScopePath());
+        if(user != null){
+        	execMsg.setUser(user.toString());
+        }
+        if(userToken != null){
+        	execMsg.setUserToken(userToken.toString());
+        }
+        if(clientRequestId != null){
+        	execMsg.setClientRequestId(clientRequestId.toString());
+        }
+        if(clientAddr != null){
+        	execMsg.setClientAddr(clientAddr.toString());
+        }
+        execMsg.setRespondNative(true);
+        
+        Timeout timeout = ActorHelper.getServiceCommTimeout();
+        Future<Object> f = ActorHelper.futureAsk(jsHubSvc, execMsg, timeout);
+        Object result = null;
+        try {
+            result = Await.result(f, timeout.duration());
+            if (!(result instanceof UpdateStatusMessage)) {
+                throw new PlatformException(String.format("Invalid response. Expected message of type '%s' but received '%s'", UpdateStatusMessage.class.getName(), result.getClass().getName()));
+            }
+            UpdateStatusMessage resp = (UpdateStatusMessage) result;
+            return resp.result;
+        } catch (Exception e) {
+            final Logger la = LoggerFactory.getLogger(JsBridge.class.getName() + ".JS:" + sessionId);
+            la.error(e.getMessage(), e);
+            return null;
+        }
+    }
 
     private String setTimeoutOrInterval(boolean isTimeout, ScriptableObject callback, long duration) {
         ActorSelection jsHubSvc = ActorHelper.getActorSelection(JsHub.class);

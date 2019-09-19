@@ -269,7 +269,7 @@ public class JsbRegistryService extends Service {
                             return;
                         }
                         if (result.status == ExecutionStatus.SUCCESS) {
-                            sender.tell(new LookupJsoMessage(result.result), getSelf());
+                            sender.tell(new LookupJsoMessage((JsObject)result.result), getSelf());
                         } else {
                             getLog().error(String.format("JSB lookup completes with unsuccessfull code: '%s'", result.error), fail);
                             sender.tell(new LookupJsoMessage(new PlatformException(result.error)), getSelf());
@@ -356,7 +356,7 @@ public class JsbRegistryService extends Service {
                     try {
                         UpdateStatusMessage result = (UpdateStatusMessage) Await.result(f, timeout.duration());
                         rpcEntryResp.addToObject("error", result.error);
-                        rpcEntryResp.addToObject("result", result.result);
+                        rpcEntryResp.addToObject("result", (JsObject)result.result);
                         rpcEntryResp.addToObject("success", result.status == ExecutionStatus.SUCCESS);
                     } catch (Throwable fail) {
                         rpcEntryResp.addToObject("error", fail.getMessage());

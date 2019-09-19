@@ -121,7 +121,7 @@ public class HttpJsbServlet extends HttpServlet {
         String contentType = null, encoding = null, contentDisposition = null;
         if (mode == null || mode.trim().length() == 0) {
             if (respObj != null && respObj.result != null) {
-                JsObject execOpts = respObj.result.getAttribute("opts");
+                JsObject execOpts = ((JsObject)respObj.result).getAttribute("opts");
                 JsObject modeObj = execOpts.getAttribute("mode");
                 if (modeObj != null && modeObj.getResultType() == JsObjectType.STRING) {
                     mode = modeObj.getString();
@@ -130,7 +130,7 @@ public class HttpJsbServlet extends HttpServlet {
         }
 
         if (respObj != null && respObj.result != null) {
-            JsObject execOpts = respObj.result.getAttribute("opts");
+            JsObject execOpts = ((JsObject)respObj.result).getAttribute("opts");
 
             JsObject ctObj = execOpts.getAttribute("contentType");
             if (ctObj != null && ctObj.getResultType() == JsObjectType.STRING) {
@@ -163,7 +163,7 @@ public class HttpJsbServlet extends HttpServlet {
                 jObj.addToObject("error", "");
             }
             if (respObj != null && respObj.result != null) {
-                JsObject execObj = respObj.result.getAttribute("exec");
+                JsObject execObj = ((JsObject)respObj.result).getAttribute("exec");
                 jObj.addToObject("result", execObj);
             } else {
                 jObj.addToObject("result", "");
@@ -183,7 +183,7 @@ public class HttpJsbServlet extends HttpServlet {
                 if (contentDisposition != null) {
                     resp.addHeader("Content-disposition", contentDisposition);
                 }
-                this.responseBytes(respObj.result.getAttribute("exec").toByteArray(), req, resp);
+                this.responseBytes(((JsObject)respObj.result).getAttribute("exec").toByteArray(), req, resp);
             } else {
                 this.responseBytes(new byte[]{}, req, resp);
                 throw new PlatformException(respObj.error);

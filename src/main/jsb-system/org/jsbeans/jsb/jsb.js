@@ -249,8 +249,9 @@ if(!(function(){return this;}).call(null).JSB){
 			var isSingleton = jsb.isSingleton();
 			var isFixedId = jsb.isFixedId();
 			var isSession = jsb.isSession();
+			var curSession = jsb.getCurrentSession();
 			
-			if(isSession){
+			if(isSession && curSession && curSession.length > 0){
 				scope = this.getSessionInstancesScope();
 			} else {
 				scope = this.getGlobalInstancesScope();
@@ -265,7 +266,7 @@ if(!(function(){return this;}).call(null).JSB){
 					obj.id = this.generateUid();
 				}
 			}
-			obj.$_session = jsb.getCurrentSession();
+			obj.$_session = curSession;
 			// repeating registration - wrong
 			if(scope[obj.id] && (isSingleton || isFixedId)){
 				debugger;
@@ -817,6 +818,11 @@ if(!(function(){return this;}).call(null).JSB){
 							}
 						})(mtdName);
 					}
+					
+					// setup rootFunc
+					$rootFunc = function(inst, callback){
+						return Bridge.executeRoot(callback);
+					}
 /*					
 					// propagate $server and $client
 					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_serverProcs; return new f();}
@@ -828,7 +834,8 @@ if(!(function(){return this;}).call(null).JSB){
 						'$class': self._cls,
 						'$parent': $parent,
 						'$superFunc': $superFunc,
-						'$curFunc': $curFunc
+						'$curFunc': $curFunc,
+						'$rootFunc': $rootFunc
 					}, requireVals);
 					
 /*					
@@ -859,6 +866,7 @@ if(!(function(){return this;}).call(null).JSB){
 					var baseRx = /\$base/;
 					var currentRx = /\$current/;
 					var thisRx = /\$this/;
+					var rootRx = /\$root/;
 					function _enrichFunction(mtdName, proc, isCtor, isBootstrap){
 						var procStr = proc.toString();
 						// extract proc declaration
@@ -874,7 +882,8 @@ if(!(function(){return this;}).call(null).JSB){
 						var hasSuper = superRx.test(procStr);
 						var hasBase = baseRx.test(procStr);
 						var hasCurrent = currentRx.test(procStr);
-						var hasThis = thisRx.test(procStr);
+						var hasRoot = rootRx.test(procStr);
+						var hasThis = hasRoot || thisRx.test(procStr);
 						
 						var procDecl = 'function __' + fName + '(' + declM[2] + '){ ';
 						if(hasThis || (hasBase && isCtor)){
@@ -895,6 +904,9 @@ if(!(function(){return this;}).call(null).JSB){
 							}
 							if(hasCurrent){
 								procDecl += 'var $current = new $curFunc(this); ';
+							}
+							if(hasRoot && self.isServer()){
+								procDecl += 'var $root = function(callback){return $rootFunc($this, callback);}; ';
 							}
 						}
 /*						if(self.isClient()){

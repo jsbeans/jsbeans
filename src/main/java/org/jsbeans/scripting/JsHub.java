@@ -713,8 +713,6 @@ public class JsHub extends Service {
         Runnable r = new Runnable() {
 			@Override
 			public void run() {
-                JsObject jsResult = null;
-
                 // put wrapped entries if any
                 if (msg.getWrapped() != null) {
                     for (String key : msg.getWrapped().keySet()) {
@@ -776,7 +774,6 @@ public class JsHub extends Service {
                                 (PrivilegedExceptionAction<Object>) () -> msg.getFunction().call(cx, scope, scope, objArr.toArray())
                         );
                     }
-                    jsResult = new JsObjectSerializerHelper().serializeNative(resultObj);
 
                     UpdateStatusMessage uMsg = new UpdateStatusMessage(token);
                     if (msg.isTemporaryScope()) {
@@ -784,7 +781,13 @@ public class JsHub extends Service {
                     }
                     // success
                     uMsg.status = ExecutionStatus.SUCCESS;
-                    uMsg.result = jsResult;
+                    
+                    if(msg.isRespondNative()){
+                    	uMsg.result = resultObj;
+                    } else {
+                    	uMsg.result = new JsObjectSerializerHelper().serializeNative(resultObj);
+                    }
+                    
                     if (msg.isAsync()) {
                         self.tell(uMsg, self);
                     } else {
@@ -862,7 +865,7 @@ public class JsHub extends Service {
     private class JsCmdState {
         private final String token;
         private ExecutionStatus status = ExecutionStatus.INIT;
-        private JsObject result;
+        private Object result;
         private String error;
         private long updateTime;
         private List<String> subTokens = null;

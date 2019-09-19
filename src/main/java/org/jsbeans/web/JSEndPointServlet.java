@@ -65,7 +65,7 @@ public class JSEndPointServlet extends HttpServlet {
         }
 
         if (respObj != null && respObj.result != null) {
-            jObj.addToObject("result", respObj.result);
+        	jObj.addToObject("result", (JsObject)respObj.result);
         } else {
             jObj.addToObject("result", "");
         }
