@@ -21,6 +21,8 @@
 
             this.addClass('jsb-multitypeEditor');
 
+            this.options.type = String(this.options.type);
+
             if(this.options.label) {
                 this.setLabel(this.options.label);
             }
@@ -82,7 +84,7 @@
                     this._editor.remove();
                 }
             }
-
+debugger;
             switch(this.options.type) {
                 case 'null':
                     this.options.value = null;
@@ -167,7 +169,7 @@
 	    },
 
 	    setType: function(type, hideEvent) {
-	        this.options.type = type;
+	        this.options.type = String(type);
 
 	        switch(type) {
 	            case 'null':
