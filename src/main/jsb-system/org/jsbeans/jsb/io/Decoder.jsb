@@ -52,10 +52,11 @@
 		
 		_decode: function(remaining){
 			$this.inputBuffer.flip();
+			$this.outputBuffer.limit($this.outputBuffer.capacity());
 			var result = $this.decoder.decode($this.inputBuffer, $this.outputBuffer, false);
 			while(result.isOverflow()){
 				$this.capacity += Math.max($this.capacity, remaining);
-				var newOutput = CharBuffer.allocate(1.2 * $this.capacity * $this.decoder.averageCharsPerByte());
+				var newOutput = CharBuffer.allocate(Math.round(1.2 * $this.capacity * $this.decoder.averageCharsPerByte()));
 	            $this.outputBuffer.flip();
 	            newOutput.append($this.outputBuffer);
 	            $this.outputBuffer = newOutput;
