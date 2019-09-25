@@ -4,6 +4,7 @@
     max-height: inherit;
     max-width: inherit;
 	overflow: auto;
+	scroll-behavior: smooth;
 }
 
 /* IE, Edge & Firefox not support -webkit-scrollbar */

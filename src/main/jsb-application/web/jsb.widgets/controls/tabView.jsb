@@ -49,11 +49,31 @@
 			}
 
 			// create tab pane
-			this.tabPane = this.$('<ul class="_dwp_tabPane"></ul>');
+			this.tabPane = this.$('<div class="_dwp_tabPane"></div>');
 			this.append(this.tabPane);
+			
+			// create scrollbar
+			this.tabScrollBar = $this.$('<div class="_jsb_tabScrollbar"></div>');
+			this.leftArrow = this.$('<div class="_jsb_handle left"></div>');
+			this.rightArrow = this.$('<div class="_jsb_handle right"></div>');
+			this.tabScrollBar.append(this.leftArrow);
+			this.tabScrollBar.append(this.rightArrow);
+			this.leftArrow.click(function(){
+				$this.scrollTab('back');
+			});
+			this.rightArrow.click(function(){
+				$this.scrollTab('front');
+			});
+			this.tabPane.append(this.tabScrollBar);
+			
+			// create scrollable pane
+			this.tabScrollPane = $this.$('<ul class="_jsb_tabScrollPane"></ul>');
+			this.tabPane.append(this.tabScrollPane);
+			
+			
 			if(this.options.allowNewTab){
 				this.newTab = this.$('<li class="_dwp_newTab"><div class="_dwp_icon"></div></li>');
-				this.tabPane.append(this.newTab);
+				this.tabScrollPane.append(this.newTab);
 				this.newTab.click(function(){
 					if(!JSB().isNull(self.options.onTabClick)){
 						self.options.onTabClick();
@@ -64,8 +84,6 @@
 				this.addClass('_dwp_hiddenTabs');
 			}
 
-			// add tab arrows
-			
 			// create client area
 			this.clientPane = this.$('<div class="_dwp_clientPane"></div>');
 			this.append(this.clientPane);
@@ -75,10 +93,64 @@
 					if(!$this.tabPane.is(':visible')){
 						return;
 					}
-					self.updateSizes();
+					
+					$this.updateSizes();
 				});
 			}
 		},
+		
+		scrollTab: function(dir){
+			var tabElt = this.tabScrollPane.get(0);
+			var newScroll = 0;
+			if(this.options.tabPosition == 'top' || this.options.tabPosition == 'bottom') {
+				var scrollSize = Math.round($this.tabScrollBar.width() / 2);
+				if(dir == 'front'){
+					newScroll = tabElt.scrollLeft + scrollSize;
+					if(tabElt.scrollWidth - newScroll < tabElt.offsetWidth){
+						newScroll = tabElt.scrollWidth - tabElt.offsetWidth;
+					}
+					tabElt.scrollLeft = newScroll;
+				} else {
+					newScroll = tabElt.scrollLeft - scrollSize;
+					if(newScroll < 0){
+						newScroll = 0;
+					}
+					tabElt.scrollLeft = newScroll;
+				}
+			} else {
+				// TODO:
+			}
+			this.updateTabScroll(newScroll);
+		},
+		
+		updateTabScroll: function(newScroll){
+			var tabElt = this.tabScrollPane.get(0);
+			if(JSB.isNull(newScroll)){
+				newScroll = tabElt.scrollLeft;
+			}
+			if(this.options.tabPosition == 'top' || this.options.tabPosition == 'bottom'){
+				if(tabElt.scrollWidth > tabElt.offsetWidth){
+					this.tabPane.addClass('scrollable');
+					
+					if(newScroll > 0){
+						$this.tabScrollBar.addClass('hasLeft');
+					} else {
+						$this.tabScrollBar.removeClass('hasLeft');
+					}
+					if(tabElt.scrollWidth - newScroll > tabElt.offsetWidth){
+						$this.tabScrollBar.addClass('hasRight');
+					} else {
+						$this.tabScrollBar.removeClass('hasRight');
+					}
+					
+				} else {
+					this.tabPane.removeClass('scrollable');
+				}
+			} else {
+				// TODO: for vertical orientation
+			}
+		},
+
 		
 		containsTab: function(tab){
 			var entry = this.resolveTab(tab);
@@ -109,7 +181,7 @@
 			if(this.newTab){
 				this.newTab.before(tab);
 			} else {
-				this.tabPane.append(tab);
+				this.tabScrollPane.append(tab);
 			}
 			tab.click(function(evt){
 				if(evt.which == 2 && (self.options.allowCloseTab || opts.allowCloseTab) && !tab.hasClass('disabled')){
@@ -298,13 +370,21 @@
 		
 		updateSizes: function(){
 			var tabPaneRc = this.tabPane.get(0).getBoundingClientRect();
+			
 			var css = {};
+			var tabScrollCss = {};
 			if(this.options.tabPosition == 'bottom'){
 				css = {
 					top: 0,
 					bottom: tabPaneRc.height,
 					left: 0,
 					right: 0 
+				};
+				tabScrollCss = {
+					left: 0,
+					right: 0,
+					bottom: 0,
+					height: tabPaneRc.height
 				};
 				
 			} else if(this.options.tabPosition == 'left'){
@@ -314,12 +394,24 @@
 					left: tabPaneRc.width,
 					right: 0 
 				};
+				tabScrollCss = {
+					top: 0,
+					left: 0,
+					bottom: 0,
+					width: tabPaneRc.width
+				};
 			} else if(this.options.tabPosition == 'right'){
 				css = {
 					top: 0,
 					bottom: 0,
 					left: 0,
 					right: tabPaneRc.width 
+				};
+				tabScrollCss = {
+					top: 0,
+					right: 0,
+					bottom: 0,
+					width: tabPaneRc.width
 				};
 			} else {
 				// top
@@ -329,10 +421,20 @@
 					left: 0,
 					right: 0 
 				};
+				tabScrollCss = {
+					left: 0,
+					right: 0,
+					top: 0,
+					height: tabPaneRc.height
+				};
 			}
 			this.clientPane.css(css);
+			//this.tabScrollBar.css(tabScrollCss);
 
+			// check tab pane width for scrolling
+			this.updateTabScroll();
 		},
+		
 		
 		sortTabs: function(callback){
 			var itemArr = [];
@@ -344,7 +446,7 @@
 			
 			// rebuild according to new order
 			for(var i = 0; i < itemArr.length; i++ ){
-				this.tabPane.append(itemArr[i].tab);
+				this.tabScrollPane.append(itemArr[i].tab);
 			}
 		}
 	}
