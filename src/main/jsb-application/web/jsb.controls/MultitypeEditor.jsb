@@ -84,7 +84,7 @@
                     this._editor.remove();
                 }
             }
-debugger;
+
             switch(this.options.type) {
                 case 'null':
                     this.options.value = null;
