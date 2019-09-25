@@ -646,6 +646,10 @@ public class Decompiler {
                 case Token.DEBUGGER:
                     result.append("debugger;\n");
                     break;
+                    
+                case Token.ARROW:
+                    result.append(" => ");
+                    break;
 
                 default:
                     // If we don't know how to decompile it, raise an exception.
