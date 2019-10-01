@@ -701,9 +701,9 @@ if(!(function(){return this;}).call(null).JSB){
 				var requireMap = self._requireMap = {};
 				var reverseRequireMap = {};
 				var requireVals = {};
+				var requireArr = [];
 				
 				if(this.$require || (entry && entry.$require)){
-					
 					var parseReqEntry = function(e){
 						if(JSB().isArray(e)){
 							for(var i = 0; i < e.length; i++){
@@ -740,6 +740,10 @@ if(!(function(){return this;}).call(null).JSB){
 									}
 									requireMap[requiredJsb] = alias;
 									reverseRequireMap[alias] = requiredJsb;
+									if(alias.indexOf('script:') == 0 || alias.indexOf('css:') == 0){
+										requireArr.push(alias);	
+									}
+									
 								}
 							}
 						}
@@ -762,23 +766,33 @@ if(!(function(){return this;}).call(null).JSB){
 							_requireCnt: Object.keys(requireMap).length
 						};
 						
+						function _loadReq(req){
+							var alias = requireMap[req];
+							self._lookupRequire(req, function(cls){
+								if(locker)locker.lock('_jsb_lookupRequires_' + self.$name);
+								rcWrap._requireCnt--;
+								if(locker)locker.unlock('_jsb_lookupRequires_' + self.$name);
+								
+								if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0){
+									requireVals[alias] = cls;
+								}
+								
+								if(rcWrap._requireCnt === 0){
+									callback.call(self);
+								}
+							});
+						}
+						var lMap = {};
+						for(var i = 0; i < requireArr.length; i++){
+							var req = requireArr[i];
+							lMap[req] = true;
+							_loadReq(req);
+						}
 						for(var req in requireMap){
-							(function(req){
-								var alias = requireMap[req];
-								self._lookupRequire(req, function(cls){
-									if(locker)locker.lock('_jsb_lookupRequires_' + self.$name);
-									rcWrap._requireCnt--;
-									if(locker)locker.unlock('_jsb_lookupRequires_' + self.$name);
-									
-									if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0){
-										requireVals[alias] = cls;
-									}
-									
-									if(rcWrap._requireCnt === 0){
-										callback.call(self);
-									}
-								});
-							})(req);
+							if(lMap[req]){
+								continue;
+							}
+							_loadReq(req);
 						}
 					}
 				}
