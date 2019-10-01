@@ -766,7 +766,7 @@ if(!(function(){return this;}).call(null).JSB){
 							_requireCnt: Object.keys(requireMap).length
 						};
 						
-						function _loadReq(req){
+						function _loadReq(req, cb){
 							var alias = requireMap[req];
 							self._lookupRequire(req, function(cls){
 								if(locker)locker.lock('_jsb_lookupRequires_' + self.$name);
@@ -779,21 +779,39 @@ if(!(function(){return this;}).call(null).JSB){
 								
 								if(rcWrap._requireCnt === 0){
 									callback.call(self);
+								} else {
+									if(cb){
+										cb.call(self);
+									}
 								}
 							});
 						}
+						
 						var lMap = {};
-						for(var i = 0; i < requireArr.length; i++){
-							var req = requireArr[i];
-							lMap[req] = true;
-							_loadReq(req);
-						}
-						for(var req in requireMap){
-							if(lMap[req]){
-								continue;
+						
+						function _loadLeftReqs(){
+							for(var req in requireMap){
+								if(lMap[req]){
+									continue;
+								}
+								_loadReq(req);
 							}
-							_loadReq(req);
 						}
+						
+						function _loadOrderedNextReq(){
+							if(requireArr.length > 0){
+								var req = requireArr[0];
+								lMap[req] = true;
+								_loadReq(req, function(){
+									requireArr.splice(0, 1);
+									_loadOrderedNextReq();
+								});
+							} else {
+								_loadLeftReqs();
+							}
+						}
+						
+						_loadOrderedNextReq();
 					}
 				}
 				
