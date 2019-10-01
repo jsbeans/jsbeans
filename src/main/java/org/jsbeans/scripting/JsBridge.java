@@ -20,6 +20,7 @@ import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.IdScriptableObject;
+import org.mozilla.javascript.JavaScriptException;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -220,10 +221,10 @@ public class JsBridge {
         return null;
     }
 
-    public Object executeRoot(ScriptableObject callback){
+    public Object executeRoot(ScriptableObject callback) throws Exception{
     	ActorSelection jsHubSvc = ActorHelper.getActorSelection(JsHub.class);
         String token = Context.getCurrentContext().getThreadLocal("token").toString();
-        String sessionId = Context.getCurrentContext().getThreadLocal("session").toString();
+        //String sessionId = Context.getCurrentContext().getThreadLocal("session").toString();
         Object user = Context.getCurrentContext().getThreadLocal("user");
         Object userToken = Context.getCurrentContext().getThreadLocal("userToken");
         Object clientAddr = Context.getCurrentContext().getThreadLocal("clientAddr");
@@ -248,18 +249,18 @@ public class JsBridge {
         Timeout timeout = ActorHelper.getServiceCommTimeout();
         Future<Object> f = ActorHelper.futureAsk(jsHubSvc, execMsg, timeout);
         Object result = null;
-        try {
-            result = Await.result(f, timeout.duration());
-            if (!(result instanceof UpdateStatusMessage)) {
-                throw new PlatformException(String.format("Invalid response. Expected message of type '%s' but received '%s'", UpdateStatusMessage.class.getName(), result.getClass().getName()));
-            }
-            UpdateStatusMessage resp = (UpdateStatusMessage) result;
-            return resp.result;
-        } catch (Exception e) {
-            final Logger la = LoggerFactory.getLogger(JsBridge.class.getName() + ".JS:" + sessionId);
-            la.error(e.getMessage(), e);
-            return null;
+        result = Await.result(f, timeout.duration());
+        if (!(result instanceof UpdateStatusMessage)) {
+            throw new PlatformException(String.format("Invalid response. Expected message of type '%s' but received '%s'", UpdateStatusMessage.class.getName(), result.getClass().getName()));
         }
+        UpdateStatusMessage resp = (UpdateStatusMessage) result;
+        if(resp.status == ExecutionStatus.FAIL){
+        	if(resp.result instanceof JavaScriptException){
+        		throw (JavaScriptException)resp.result;
+        	}
+        	throw new JavaScriptException(resp.result.toString(), "", 0);
+        }
+        return resp.result;
     }
 
     private String setTimeoutOrInterval(boolean isTimeout, ScriptableObject callback, long duration) {

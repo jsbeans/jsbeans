@@ -798,16 +798,19 @@ public class JsHub extends Service {
                 } catch (Throwable e) {
                     StringBuilder sb = new StringBuilder("Execute script error: ");
                     sb.append(e.getMessage()).append("\n");
-                    sb.append("--> Script executed: ");
                     if (msg.getBody() != null) {
+                        sb.append("--> Script executed: ");
                         sb.append(msg.getBody());
                     } else {
-                        sb.append("Serialized function: \n");
+/*                    	
+// commented out because of invalid function serialization
+                        sb.append("--> Serialized function: \n");
                         try {
                             sb.append(serializeFunction(msg.getFunction()));
                         } catch (UnsupportedEncodingException e1) {
                             sb.append("(serialize error: " + e1.getMessage() + ")");
                         }
+*/                        
                     }
 
                     if (e instanceof RhinoException) {
@@ -826,7 +829,9 @@ public class JsHub extends Service {
                     UpdateStatusMessage uMsg = new UpdateStatusMessage(token);
                     uMsg.status = ExecutionStatus.FAIL;
                     uMsg.error = messageStr;
-
+                    if(msg.isRespondNative()){
+                    	uMsg.result = e;
+                    }
                     if (msg.isAsync()) {
                         self.tell(uMsg, self);
                     } else {
