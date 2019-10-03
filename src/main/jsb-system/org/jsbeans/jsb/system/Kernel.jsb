@@ -161,7 +161,7 @@
 		},
 		
 		sessions: function(){
-			return JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().getChildrenIds();
+			return JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().getChildrenIds().toArray();
 		},
 		
 		killSession: function(sessionId){
