@@ -68,9 +68,31 @@
 		draw: function(wDescObj){
 			RendererRepository.ensureReady(function(){
 				$this.treeView.clear();
+				var orderMap = {};
+				if($this.options.order){
+					if(JSB.isArray($this.options.order)){
+						for(var i = 0; i < $this.options.order.length; i++){
+							var on = $this.options.order[i];
+							orderMap[on] = $this.options.order.length - i;
+						}
+					} else if(JSB.isObject($this.options.order)){
+						orderMap = $this.options.order;
+					}
+				}
 				var descArr = Object.keys(wDescObj);
 				descArr.sort(function(a, b){
-					return a.localeCompare(b);
+					var an = 0;
+					var bn = 0;
+					if(orderMap[a]){
+						an = orderMap[a];
+					}
+					if(orderMap[b]){
+						bn = orderMap[b];
+					}
+					if(an == bn){
+						return a.localeCompare(b);	
+					}
+					return bn - an;
 				});
 				
 				for(var i = 0; i < descArr.length; i++){
@@ -137,9 +159,18 @@
 					}
 					
 					$this.treeView.sort(function(a, b){
-						var str1 = a.key;
-						var str2 = b.key;
-						return str1.localeCompare(str2);
+						var an = 0;
+						var bn = 0;
+						if(orderMap[a.key]){
+							an = orderMap[a.key];
+						}
+						if(orderMap[b.key]){
+							bn = orderMap[b.key];
+						}
+						if(an == bn){
+							return a.key.localeCompare(b.key);	
+						}
+						return bn - an;
 					});
 					 
 				}
