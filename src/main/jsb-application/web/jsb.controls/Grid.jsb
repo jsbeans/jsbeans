@@ -67,7 +67,8 @@
 		        $this._colResizeHandleContainer.get(0).style.left = -evt.target.scrollLeft + 'px';
 		        $this._colResizeHandleContainer.width($this._masterContainer.get(0).clientWidth + evt.target.scrollLeft);
 
-		        // preload
+		        $this.checkPreload();
+/*		        // preload
 		        if($this.options.preloader){
                     var scrollTop = evt.target.scrollTop,
                         scrollHeight = evt.target.scrollHeight,
@@ -80,7 +81,7 @@
                     }
 
                     yPos = scrollTop;
-                }
+                }*/
 		    });
 
 		    if(!opts.cellRenderer){
@@ -128,6 +129,21 @@
 
             // callbacks
             preloader: null
+        },
+        
+        checkPreload: function(){
+        	if($this.options.preloader){
+	        	var elt = this._masterContainer.get(0);
+	        	var scrollTop = elt.scrollTop,
+	            scrollHeight = elt.scrollHeight,
+	            clientHeight = elt.clientHeight;
+	
+		        if(scrollHeight - scrollTop <= 2 * clientHeight) {
+		            JSB().defer(function(){
+		                $this.options.preloader.call($this);
+		            }, 300, 'jsb-grid.preload|' + $this.getId());
+		        }
+        	}
         },
 
         addArray: function(data, rowIndex, opts){
