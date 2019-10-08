@@ -1,10 +1,10 @@
 /*
  * This file is the part of jsBeans, high-level JavaScript client-server framework.
- * The contents of this file are subject to the MIT License (MIT).
+ * The contents of this file are subject to the MIT Licence (MIT).
  * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2019
  *
  * Настоящий файл является частью клиент-серверной JavaScript платформы.
- * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
+ * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT Licence (MIT).
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2019гг.
  */
 
@@ -68,9 +68,31 @@
 		draw: function(wDescObj){
 			RendererRepository.ensureReady(function(){
 				$this.treeView.clear();
+				var orderMap = {};
+				if($this.options.order){
+					if(JSB.isArray($this.options.order)){
+						for(var i = 0; i < $this.options.order.length; i++){
+							var on = $this.options.order[i];
+							orderMap[on] = $this.options.order.length - i;
+						}
+					} else if(JSB.isObject($this.options.order)){
+						orderMap = $this.options.order;
+					}
+				}
 				var descArr = Object.keys(wDescObj);
 				descArr.sort(function(a, b){
-					return a.localeCompare(b);
+					var an = 0;
+					var bn = 0;
+					if(orderMap[a]){
+						an = orderMap[a];
+					}
+					if(orderMap[b]){
+						bn = orderMap[b];
+					}
+					if(an == bn){
+						return a.localeCompare(b);	
+					}
+					return bn - an;
 				});
 				
 				for(var i = 0; i < descArr.length; i++){
@@ -137,9 +159,18 @@
 					}
 					
 					$this.treeView.sort(function(a, b){
-						var str1 = a.key;
-						var str2 = b.key;
-						return str1.localeCompare(str2);
+						var an = 0;
+						var bn = 0;
+						if(orderMap[a.key]){
+							an = orderMap[a.key];
+						}
+						if(orderMap[b.key]){
+							bn = orderMap[b.key];
+						}
+						if(an == bn){
+							return a.key.localeCompare(b.key);	
+						}
+						return bn - an;
 					});
 					 
 				}

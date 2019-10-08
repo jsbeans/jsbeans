@@ -2,7 +2,7 @@
   html2canvas 0.4.1 <http://html2canvas.hertzen.com>
   Copyright (c) 2013 Niklas von Hertzen
 
-  Released under MIT License
+  Released under MIT Licence
 */
 
 (function(window, document, undefined){

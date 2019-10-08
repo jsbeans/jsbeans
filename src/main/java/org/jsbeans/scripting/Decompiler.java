@@ -1,17 +1,17 @@
 /*
  * This file is the part of jsBeans, high-level JavaScript client-server framework.
- * The contents of this file are subject to the MIT License (MIT).
+ * The contents of this file are subject to the MIT Licence (MIT).
  * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2019
  *
  * Настоящий файл является частью клиент-сервеной JavaScript платформы.
- * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
+ * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT Licence (MIT).
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2019гг.
  */
 
 /* -*- Mode: java; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * Licence, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 package org.jsbeans.scripting;

@@ -16,7 +16,7 @@
 			 * @copyright (c) 2014 Alexandre Dantas
 			 * @copyright (c) 2012-2013 Yu-Jie Lin
 			 * @copyright (c) 2009 Russ Painter
-			 * @license   MIT License
+			 * @license   MIT Licence
 			 * @homepage  https://github.com/jquery-textfill/jquery-textfill
 			 * @example   http://jquery-textfill.github.io/jquery-textfill/index.html
 			 */
