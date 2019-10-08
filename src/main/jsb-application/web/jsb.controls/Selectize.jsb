@@ -46,6 +46,12 @@
 	    clear: function() {
 	    },
 
+	    disable: function() {
+	        this.ensureTrigger('_initialized', function() {
+	            $this._select[0].selectize.disable();
+	        });
+	    },
+
 	    getValue: function() {
 	        return this._value;
 	    },
@@ -78,7 +84,7 @@
 	        });
 	    },
 
-	    _checkOptions: function(options){
+	    _checkOptions: function(options) {
 	        if(!JSB.isArray(options)){
 	            throw new Error('Options must be array');
 	        }
