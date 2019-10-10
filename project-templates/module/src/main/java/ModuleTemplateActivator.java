@@ -10,7 +10,7 @@ import org.jsbeans.plugin.PluginActivator;
 
 @DependsOn({KernelPluginActivator.class, WebPluginActivator.class})
 public class ModuleTemplateActivator implements PluginActivator {
-    public String getConfigurationName() {
+    public String getName() {
         return "module-template";
     }
 }
