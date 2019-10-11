@@ -191,6 +191,8 @@
 			validation: true,
 			value: null,
 			readOnly: false,
+
+			hideSetDataEvt: false,
 			
 			onChange: null
 		},
@@ -252,11 +254,14 @@
 					this.editor.getDoc().setValue(this.data.getValue());
 				}
 			}
-			self.editor.on('change', function(cm, evt2){
-				if(!JSB.isNull(self.options.onChange)){
-					var val = self.editor.getDoc().getValue();
-					if($this.isValid()){
-						self.options.onChange.call($this, $this.getData().getValue());
+			self.editor.on('change', function(cm, evt) {
+			    if(evt.origin === 'setValue' && $this.options.hideSetDataEvt) {
+			        return;
+			    }
+
+				if(!JSB.isFunction($this.options.onChange)) {
+					if($this.isValid()) {
+						$this.options.onChange.call($this, $this.getData().getValue());
 					}
 				}
 			});
@@ -311,7 +316,7 @@
 			}
 		},
 		
-		setData: function(data){
+		setData: function(data) {
 			if(!this.ready){
 				JSB.deferUntil(function(){
 					$this.setData(data);
