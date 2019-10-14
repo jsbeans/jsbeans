@@ -3557,7 +3557,7 @@ if(!(function(){return this;}).call(null).JSB){
 					dEntry.p.push(JSB.clone(path));
 					return {};
 				} 
-				if(JSB.isPlainObject(res)){
+				if(JSB.isObject(res)){
 					// parse json object
 					var nobj = {};
 					for(var f in res){
@@ -5157,6 +5157,7 @@ JSB({
 			var self = this;
 			var node = opts && opts.node;
 			var session = opts && opts.session;
+			
 			if(JSB.isDefined(node) && (!node || node == JSB.getClusterProvider().getNodeAddress())){
 				// execute on locale node (self-call)
 				try {
@@ -6043,18 +6044,22 @@ JSB({
 			}
 		},
 		
+		_createTimeString: function(){
+			var t = new Date();
+			return '' + t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate() + ' ' + t.getHours() + ':' + t.getMinutes() + ':' + t.getSeconds() + ',' + t.getMilliseconds();
+		},
+		
 		info: function(str){
-			console.log('INFO: ' + this._prepareObj(str));
+			console.log(this._createTimeString() + ' [INFO] ' + this._prepareObj(str));
 		},
 		debug: function(str){
-			console.log('DEBUG: ' + this._prepareObj(str));
+			console.log(this._createTimeString() + ' [DEBUG] ' + this._prepareObj(str));
 		},
 		warn: function(str){
-			console.log('WARNING: ' + this._prepareObj(str));
+			console.log(this._createTimeString() + ' [WARNING] ' + this._prepareObj(str));
 		},
 		error: function(str){
-			console.log('ERROR: ' + this._prepareObj(str));
-			debugger;
+			console.log(this._createTimeString() + ' [ERROR] ' + this._prepareObj(str));
 		}
 	}
 });
