@@ -12,7 +12,8 @@
     $name:'JSB.Net.HttpConnection',
 
     $server: {
-    	$require: ['JSB.System.Log', 'JSB.IO.Stream'],
+    	$require: ['JSB.System.Log', 
+    	           'JSB.IO.Stream'],
     	
         $constructor: function(options){
             this.URL = Packages.java.net.URL;
@@ -264,6 +265,9 @@
 
             try {
                 var inputStream = this.inputStream = this.inputStream || this.httpConnection.getInputStream();
+            	if(this.options.responseType == 'stream'){
+            		return inputStream;
+            	}
                 var result = this.HttpHelper.streamRead(inputStream, this.options.responseType, bytes);
                 if (this.options.responseType === 'json') result = JSON.parse(result); // eval
 //                    this.log.trace('read() result: ', result);

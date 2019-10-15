@@ -28,6 +28,7 @@
 			'java:java.nio.file.StandardCopyOption',
 			'java:java.nio.file.FileVisitor',
 			'java:java.nio.file.FileVisitResult',
+			'java:java.io.RandomAccessFile',
 			
 			'java:java.nio.file.attribute.FileTime',
 			'java:java.nio.file.attribute.PosixFileAttributeView',
@@ -305,17 +306,22 @@
 			var sourcePath = this._resolvePath(from);
 		    var targetPath = this._resolvePath(to);
 		    
-		    var tries = 10;
-		    
+		    var tries = 100;
 		    for(var i = 0; i < tries; i++){
 		    	try {
-		    		Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
+		    		Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE]);
 		    		break;
 		    	} catch(e){
-		    		if(!bForce || i >= tries - 1){
-		    			throw e;
+		    		try {
+		    			Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
+			    		break;
+		    		} catch(e){
+			    		if(!bForce || i >= tries - 1){
+			    			JSB.getLogger().error(e);
+			    			throw e;
+			    		}
+			    		Kernel.sleep((i + 1) * 100);
 		    		}
-		    		Kernel.sleep((i + 1) * 100);
 		    	}
 		    }
 		},

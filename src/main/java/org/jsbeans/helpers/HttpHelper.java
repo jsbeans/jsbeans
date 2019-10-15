@@ -28,7 +28,8 @@ public class HttpHelper {
         string,
         bytes,
         base64,
-        json
+        json,
+        stream
     }
 
     public static Object requestJS(String url, Object data, NativeObject options) {

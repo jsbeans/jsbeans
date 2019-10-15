@@ -90,6 +90,10 @@
 			return this.writeTotal;
 		},
 		
+		getNativeStream: function(){
+			return this.input || this.output;
+		},
+		
 		read: function(arg, from, to){
 	        if ($jsb.isNull(this.input)) {
 	            throw new Error("No input stream");

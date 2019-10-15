@@ -39,7 +39,8 @@ public class BufferHelper {
 			copyToArrayBuffer(bytes, 0, nab, 0, bytes.length);
 		} else if(obj instanceof NativeArray){
 			NativeArray array = (NativeArray) obj;
-			
+			nab = new NativeArrayBuffer(array.size());
+			System.arraycopy(array.toArray(), 0, nab.getBuffer(), 0, array.size());
 		}
 		return nab;
 	}
