@@ -106,8 +106,16 @@ if(!(function(){return this;}).call(null).JSB){
 				this.options.plain = true;
 			}
 			
+			this.setComplex = function(){
+				this.options.plain = false;
+			}
+			
 			this.isPlain = function(){
 				return this.options.plain || false;
+			}
+			
+			this.isComplex = function(){
+				return !this.isPlain();
 			}
 			
 			this.getValue = function(){
