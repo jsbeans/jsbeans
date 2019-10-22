@@ -15,7 +15,6 @@
 		UiEffects: 'jQuery.UI.Effects',
 		Node: 'JSB.Widgets.Diagram.Node',
 		Link: 'JSB.Widgets.Diagram.Link',
-		Joint: 'JSB.Widgets.Diagram.Joint',
 		Connector: 'JSB.Widgets.Diagram.Connector',
 		Controller: 'JSB.Widgets.Diagram.Controller',
 		WiringController: 'JSB.Widgets.Diagram.WiringController',
@@ -78,6 +77,33 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('_jsb_diagram');
+			
+			this.Joint = function(link, opts){
+				this.link = link;
+				this.options = {};
+				JSB.merge(true, this.options, opts);
+			};
+			
+			this.Joint.prototype = {
+				getLink: function(){
+					return this.link;
+				},
+		
+				getPosition: function(){
+					if(!this.options.position){
+						return null;
+					}
+					if(JSB.isFunction(this.options.position)){
+						return this.options.position.call(this);
+					} else if(JSB.isObject(this.options.position)){
+						if(!JSB.isDefined(this.options.position.x) || !JSB.isDefined(this.options.position.y)){
+							throw new Error('Missing joint position');
+						}
+						return this.options.position;
+					}
+				}
+			};
+
 			
 			JSB().loadScript('tpl/d3/d3.min.js', function(){
 				$this.init();

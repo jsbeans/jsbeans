@@ -10,10 +10,6 @@
 
 {
 	$name: 'JSB.Widgets.Diagram.Link',
-	$require: {
-		Joint: 'JSB.Widgets.Diagram.Joint'
-	},
-	
 	$client: {
 		diagram: null,
 		
@@ -53,19 +49,6 @@
 			this.key = key;
 			JSB().merge(true, this.options, this.diagram.linkDescs[key].options, opts);
 			
-			// construct joints
-			if(this.options.joints){
-				for(var i = 0; i < this.options.joints.length; i++){
-					var jDesc = this.options.joints[i];
-					var jClass = Joint;
-					if(jDesc.jsb){
-						jClass = jDesc.jsb.getClass();
-					}
-					var joint = new jClass(this, jDesc);
-					this.joints.push(joint);
-				}
-			}
-			
 			var isNeedRedraw = false;
 
 			if(this.options.sourceConnector){
@@ -88,9 +71,8 @@
 					self.redraw();
 				}
 			});
+			
 		},
-		
-		installJoint: function(){},
 		
 		destroy: function(){
 			if(this.diagram && this.diagram.hasLink(this)){
@@ -199,6 +181,38 @@
 			return this.target;
 		},
 		
+		getSourceNode: function(){
+			if(this.source && JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector')){
+				return this.source.getNode();
+			}
+			return null;
+		},
+		
+		getTargetNode: function(){
+			if(this.target && JSB().isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector')){
+				return this.target.getNode();
+			}
+			return null;
+		},
+		
+		constructJoints: function(){
+			var joints = [];
+			// construct joints
+			var jOpts = this.options.joints;
+			if(JSB.isFunction(jOpts)){
+				jOpts = jOpts.call(this);
+			}
+			if(JSB.isArray(jOpts)){
+				for(var i = 0; i < jOpts.length; i++){
+					var jDesc = jOpts[i];
+					var joint = new this.diagram.Joint(this, jDesc);
+					joints.push(joint);
+				}
+			}
+			
+			return joints;
+		},
+		
 		createPathFromPoints: function(pts){
 			var pathStr = '';
 			for(var i = 0; i < pts.length; i++ ){
@@ -297,8 +311,10 @@
 			// construct points
 			var pts = [ptSource];
 			
-			for(var i = 0; i < this.joints.length; i++){
-				var joint = this.joints[i];
+			var joints = this.constructJoints();
+			
+			for(var i = 0; i < joints.length; i++){
+				var joint = joints[i];
 				var pt = joint.getPosition();
 				if(pt){
 					pts.push(pt);

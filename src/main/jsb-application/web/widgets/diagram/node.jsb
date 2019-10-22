@@ -16,7 +16,7 @@
 	},
 	
 	$client: {
-		connectors: {},
+		_connectors: {},
 		dragHandles: {},
 		resizeHandles: {},
 		selectHandles: {},
@@ -60,9 +60,9 @@
 			}
 			
 			// install connector
-			for(var cKey in $this.connectors){
-				if(!JSB().isNull($this.connectors[cKey].installed) && !$this.connectors[cKey].installed){
-					$this.connectors[cKey].install();
+			for(var cKey in $this._connectors){
+				if(!JSB().isNull($this._connectors[cKey].installed) && !$this._connectors[cKey].installed){
+					$this._connectors[cKey].install();
 				}
 			}
 			
@@ -107,10 +107,10 @@
 			}
 			
 			// destroy connectors
-			for(var cId in this.connectors){
-				this.connectors[cId].destroy();
+			for(var cId in this._connectors){
+				this._connectors[cId].destroy();
 			}
-			this.connectors = {};
+			this._connectors = {};
 			
 			$base();
 		},
@@ -242,9 +242,9 @@
 			}
 			
 			// install connector
-			for(var cKey in this.connectors){
-				if(!JSB().isNull(this.connectors[cKey].installed) && !this.connectors[cKey].installed){
-					this.connectors[cKey].install();
+			for(var cKey in this._connectors){
+				if(!JSB().isNull(this._connectors[cKey].installed) && !this._connectors[cKey].installed){
+					this._connectors[cKey].install();
 				}
 			}
 		},
@@ -360,23 +360,23 @@
 			}
 			
 			var connector = new connectorClass(this, cKey, opts);
-			this.connectors[connector.getId()] = connector;
+			this._connectors[connector.getId()] = connector;
 			
 			return connector;
 		},
 		
 		removeConnector: function(conn){
 			if(JSB.isString(conn)){
-				conn = this.connectors[conn];
+				conn = this._connectors[conn];
 			}
-			delete this.connectors[conn.getId()];
+			delete this._connectors[conn.getId()];
 			conn.destroy();
 		},
 		
 		getConnectors: function(cKey){
 			var cMap = {};
-			for(var cId in this.connectors){
-				var conn = this.connectors[cId];
+			for(var cId in this._connectors){
+				var conn = this._connectors[cId];
 				if(!cKey || conn.key == cKey){
 					cMap[cId] = conn;
 				}
@@ -387,8 +387,8 @@
 		
 		getLinks: function(){
 			var lMap = {};
-			for(var i in this.connectors){
-				var cObj = this.connectors[i];
+			for(var i in this._connectors){
+				var cObj = this._connectors[i];
 				JSB().merge(lMap, cObj.links);
 			}
 			return lMap;

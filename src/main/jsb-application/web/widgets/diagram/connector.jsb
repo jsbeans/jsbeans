@@ -95,8 +95,8 @@
 				return;
 			}
 
-			if(this.node.connectors[this.getId()]){
-				delete this.node.connectors[this.getId()];
+			if(this.node._connectors[this.getId()]){
+				delete this.node._connectors[this.getId()];
 			}
 			
 			var links = this.getLinks();
