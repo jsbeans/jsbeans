@@ -98,6 +98,30 @@ if(!(function(){return this;}).call(null).JSB){
 			ownLast: checkOwnLast()
 		},
 
+		RpcResponse: function(val, opts){
+			this.value = val;
+			this.options = opts || {};
+
+			this.setPlain = function(){
+				this.options.plain = true;
+			}
+
+			this.setComplex = function(){
+				this.options.plain = false;
+			}
+
+			this.isPlain = function(){
+				return this.options.plain || false;
+			}
+
+			this.isComplex = function(){
+				return !this.isPlain();
+			}
+
+			this.getValue = function(){
+				return this.value;
+			}
+		},
 
 		isClient: function(){
 			if(this.isNull(this._isClient)){
@@ -110,7 +134,7 @@ if(!(function(){return this;}).call(null).JSB){
 		isServer: function(){
 			return !this.isClient();
 		},
-		
+
 		eval: function(script, scopeVars, fName){
 			if(this.isClient()){
 				// generate scope vars
@@ -128,7 +152,7 @@ if(!(function(){return this;}).call(null).JSB){
 				return res;
 			}
 		},
-		
+
 		wrap: function(method, opts){
 			if(!this.isServer() || !opts || Object.keys(opts).length == 0){
 				return method;
@@ -136,7 +160,7 @@ if(!(function(){return this;}).call(null).JSB){
 			var self = this;
 			var tlVars = null;
 			var preserveContext = opts && opts.preserveContext;
-			
+
 			if(preserveContext){
 				var tls = this.getThreadLocal();
 				tlVars = {
@@ -150,7 +174,7 @@ if(!(function(){return this;}).call(null).JSB){
 					'_jsbCallingContext': tls.get('_jsbCallingContext'),
 				};
 			}
-			
+
 			return function(){
 				if(preserveContext && tlVars){
 					var tls = self.getThreadLocal();
@@ -161,7 +185,7 @@ if(!(function(){return this;}).call(null).JSB){
 				return method.apply(this, arguments);
 			};
 		},
-		
+
 		getCurrentSession: function(){
 			if(!this.isServer()){
 				return '';
@@ -172,7 +196,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return '';
 		},
-		
+
 		getSync: function(){
 			var s = false;
 			if(this.getDescriptor().$sync){
@@ -197,7 +221,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return false;
 		},
-		
+
 		getKeywordOption: function(opt){
 			if(this[opt]){
 				return this[opt];
@@ -209,22 +233,22 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return false;
 		},
-		
+
 		isSingleton: function(){
 			return this.getKeywordOption('$singleton');
 		},
-		
+
 		isFixedId: function(){
 			return this.getKeywordOption('$fixedId');
 		},
-		
+
 		isSession: function(){
 			if(this.hasKeywordOption('$session')){
 				return this.getKeywordOption('$session');
 			}
 			return !this.isSingleton() && !this.isFixedId();
 		},
-		
+
 		isSystem: function(name){
 			if(!name){
 				name = this.$name;
@@ -242,7 +266,7 @@ if(!(function(){return this;}).call(null).JSB){
 			};
 			return sysMap[name] ? true: false;
 		},
-		
+
 		register: function(obj, id){
 			var scope, jsb;
 			jsb = obj.getJsb();
@@ -250,13 +274,13 @@ if(!(function(){return this;}).call(null).JSB){
 			var isFixedId = jsb.isFixedId();
 			var isSession = jsb.isSession();
 			var curSession = jsb.getCurrentSession();
-			
+
 			if(isSession && curSession && curSession.length > 0){
 				scope = this.getSessionInstancesScope();
 			} else {
 				scope = this.getGlobalInstancesScope();
 			}
-			
+
 			if(isSingleton){
 				obj.id = jsb.$name;
 			} else {
@@ -286,11 +310,11 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			scope[obj.id] = obj;
 		},
-		
+
 		getGlobe: function(){
 			return (function(){return this;}).call(null);
 		},
-		
+
 		getSessionInstancesScope: function(){
 			var scopeConst = '_jsb_sessionInstances';
 			if(this.isServer()){
@@ -300,14 +324,14 @@ if(!(function(){return this;}).call(null).JSB){
 			if(globe[scopeConst] == null || globe[scopeConst] == undefined){
 				globe[scopeConst] = {};
 			}
-			
+
 			return globe[scopeConst];
 		},
-		
+
 		getGlobalInstancesScope: function(){
 			return JSB().globalInstances;
 		},
-		
+
 		addLibraryScope: function(name, scope){
 			if(this.isNull(this.libraryScopes[name])){
 				this.libraryScopes[name] = scope;
@@ -317,7 +341,7 @@ if(!(function(){return this;}).call(null).JSB){
 			JSB()[name] = this.libraryScopes[name];
 			JSB[name] = JSB()[name];
 		},
-		
+
 		isLibraryScope: function(scope){
 			for(var s in this.libraryScopes){
 				if(this.libraryScopes[s] == scope){
@@ -326,49 +350,49 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return false;
 		},
-		
+
 		isLibraryScopeName: function(n){
 			if(this.libraryScopes[n]){
 				return true;
 			}
 			return false;
 		},
-		
+
 		setServerVersion: function(v){
 			this.serverVersion = v;
 		},
-		
+
 		getServerVersion: function(){
 			return this.serverVersion;
 		},
-		
+
 		getBasePath: function(){
 			if(this.$_path == null || this.$_path == undefined){
 				return '';
 			}
-			if(this.$_path.length > 0 
+			if(this.$_path.length > 0
 					&& this.$_path[this.$_path.length - 1] != '\\'
 					&& this.$_path[this.$_path.length - 1] != '/' ){
 				return this.$_path + '/';
 			}
 			return this.$_path;
 		},
-		
+
 		getBasePathFile: function(){
 			if(this.$_pathFile == null || this.$_pathFile == undefined){
 				return '';
 			}
 			return this.$_pathFile;
 		},
-		
+
 		getFullPath: function(){
 			return this.getRepository().get(this.$name).cfg.$_fullPath;
 		},
-		
+
 		getFullPathFile: function(){
 			return this.getRepository().get(this.$name).cfg.$_fullPathFile;
 		},
-		
+
 		constructClientJSB: function(name){
 			var jsb = this.get(name);
 			if(this.isClient()){
@@ -392,14 +416,14 @@ if(!(function(){return this;}).call(null).JSB){
 				Log.error('Unable to find JSB: ' + name);
 				return null;
 			}
-			
+
 			var cJsb = {};
 			for(var f in jsb){
 				if(jsb.hasOwnProperty(f) && !clientFieldBlacklist[f]){
 					cJsb[f] = this.clone(jsb[f]);
 				}
 			}
-			
+
 			// filter out java requires
 			var self = this;
 			function filterJavaRequires(req){
@@ -427,11 +451,11 @@ if(!(function(){return this;}).call(null).JSB){
 					throw new Error('Invalid $require format in bean "'+name+'"');
 				}
 			}
-			
+
 			if(cJsb.$require){
 				if(this.isString(cJsb.$require)){
 					if(cJsb.$require.toLowerCase().indexOf('java:') == 0){
-						delete cJsb.$require;	
+						delete cJsb.$require;
 					}
 				} else {
 					filterJavaRequires(cJsb.$require);
@@ -446,12 +470,12 @@ if(!(function(){return this;}).call(null).JSB){
 					filterJavaRequires(cJsb.$client.$require);
 				}
 			}
-			
-			
+
+
 			return cJsb;
 		},
 
-		
+
 		unregister: function(obj){
 			if(!obj || !obj.getId || !obj.getJsb){
 				throw new Error('Wrong object to unregister');
@@ -464,11 +488,11 @@ if(!(function(){return this;}).call(null).JSB){
 			if(obj.getJsb().isSession() && obj.$_session && obj.$_session.length > 0){
 				scope = this.getSessionInstancesScope();
 			}
-			
+
 			if(scope[id]){
 				delete scope[id];
 			}
-			
+
 			// remove from callbackAttrs
 			if(JSB().callbackAttrs && JSB().callbackAttrs.bindMap[id]){
 				var lst = JSB().callbackAttrs.bindMap[id];
@@ -479,7 +503,7 @@ if(!(function(){return this;}).call(null).JSB){
 				delete JSB().callbackAttrs.bindMap[id];
 			}
 		},
-		
+
 		_create: function(cfg, parent){
 			if(cfg.$format == 'jso'){
 				throw new Error('Unable to create bean "' + cfg.$name + '" due to JSO format is no longer supported');
@@ -487,31 +511,31 @@ if(!(function(){return this;}).call(null).JSB){
 			if(!this.isString(cfg.$name)){
 				throw new Error("Class name required to create managed object");
 			}
-			
+
 			if(this.objects[cfg.$name]){
 				return;	// already created or in progress
 			} else {
 				// add to objects
 				this.objects[cfg.$name] = this;
 			}
-			
+
 			var _kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require', '$format', '$common'];
 			var self = this;
 			var logger = this.getLogger();
-			
+
 			// copy all current system fields into this
 			for(var f in cfg){
 				if(f && f.length > 0 && f[0] == '$'){
 					this[f] = cfg[f];
 				}
 			}
-			
+
 			this._descriptor = cfg;
 			this._ready = false;
 			this._readyState = 0;
 			this._reqState = 0;
-			
-			
+
+
 			// build common section
 			var commonSection = this.$common;
 			if(!commonSection){
@@ -522,9 +546,9 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			this._prepareSections(parent);
-			
+
 			// inherit parent's jso options
 			var entry = this.currentSection();
 			if(parent){
@@ -537,7 +561,7 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			function _waitRequiresBeforeBootstrap(){
 				var reqBeans = {};
 
@@ -559,11 +583,11 @@ if(!(function(){return this;}).call(null).JSB){
 						reqBeans[req] = jsb
 					}
 				}
-				
+
 				var reqContainer = {
 					curReqBeans: reqBeans
 				};
-				
+
 				function _matchReqSynchronized(state){
 					if(JSB.isNull(state)){
 						self._reqSynchronized = true;
@@ -585,7 +609,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					}
 				}
-				
+
 				function _ensureReqSynchronized(jsb, callback, state){
 					if(JSB.isNull(state)){
 						state = null;
@@ -601,7 +625,7 @@ if(!(function(){return this;}).call(null).JSB){
 					jsb._reqCallbacks.push({callback: callback, reqState: state});
 				}
 
-				
+
 				function _reqIteration(s){
 /*					if(s > 1000){
 						debugger;
@@ -620,20 +644,20 @@ if(!(function(){return this;}).call(null).JSB){
 						for(var sid in reqContainer.curReqBeans){
 							(function(sid){
 								var reqJsb = reqContainer.curReqBeans[sid];
-								
+
 								_ensureReqSynchronized(reqJsb, function(){
 									cCnt.ready++;
 									if(cCnt.ready >= sCnt){
 										var sbMap = {};
-										
+
 										for(var ssid in reqContainer.curReqBeans){
 											var rJsb = reqContainer.curReqBeans[ssid];
-											
+
 											if(!rJsb._reqSynchronized && rJsb._reqState <= self._reqState){
 												sbMap[ssid] = rJsb;
 											}
 										}
-										
+
 										reqContainer.curReqBeans = sbMap;
 										_reqIteration(s + 1);
 									}
@@ -641,15 +665,15 @@ if(!(function(){return this;}).call(null).JSB){
 							})(sid);
 						}
 					}
-					
+
 				}
-				
+
 				_reqIteration(1);
 			}
-			
+
 			if(this.isPlainObject(entry) || this.isPlainObject(commonSection)){
 				var body = {};
-				
+
 				// construct class stub
 				if(parent == null || parent == undefined || parent.currentSection() == null){
 					self._cls = self._simpleClass();
@@ -659,7 +683,7 @@ if(!(function(){return this;}).call(null).JSB){
 				self._cls['jsb'] = self;
 				self._readyState = 1;
 				self._matchWaiters(1);
-				
+
 				// merge common and entry sections
 				if(commonSection && Object.keys(commonSection).length > 0){
 					this.merge(true, body, commonSection);
@@ -667,14 +691,14 @@ if(!(function(){return this;}).call(null).JSB){
 				if(entry && Object.keys(entry).length > 0){
 					this.merge(true, body, entry);
 				}
-				
+
 				// clear JSB keyword fields
 				for(var i = 0; i < _kfs.length; i++ ){
 					if(body[_kfs[i]]){
 						delete body[_kfs[i]];
 					}
 				}
-/*				
+/*
 				// substitute body methods via checking proxy
 				function checkPrivate(curDesc, ctxStack){
 					if(ctxStack.length == 0){
@@ -696,13 +720,13 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 */
-				
+
 				// combine requires
 				var requireMap = self._requireMap = {};
 				var reverseRequireMap = {};
 				var requireVals = {};
 				var requireArr = [];
-				
+
 				if(this.$require || (entry && entry.$require)){
 					var parseReqEntry = function(e){
 						if(JSB().isArray(e)){
@@ -741,9 +765,9 @@ if(!(function(){return this;}).call(null).JSB){
 									requireMap[requiredJsb] = alias;
 									reverseRequireMap[alias] = requiredJsb;
 									if(alias.indexOf('script:') == 0 || alias.indexOf('css:') == 0){
-										requireArr.push(alias);	
+										requireArr.push(alias);
 									}
-									
+
 								}
 							}
 						}
@@ -756,7 +780,7 @@ if(!(function(){return this;}).call(null).JSB){
 						parseReqEntry(entry.$require);
 					}
 				}
-				
+
 				function loadRequires(callback){
 					if(Object.keys(requireMap).length === 0){
 						callback.call(self);
@@ -765,18 +789,18 @@ if(!(function(){return this;}).call(null).JSB){
 						var rcWrap = {
 							_requireCnt: Object.keys(requireMap).length
 						};
-						
+
 						function _loadReq(req, cb){
 							var alias = requireMap[req];
 							self._lookupRequire(req, function(cls){
 								if(locker)locker.lock('_jsb_lookupRequires_' + self.$name);
 								rcWrap._requireCnt--;
 								if(locker)locker.unlock('_jsb_lookupRequires_' + self.$name);
-								
+
 								if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0){
 									requireVals[alias] = cls;
 								}
-								
+
 								if(rcWrap._requireCnt === 0){
 									callback.call(self);
 								} else {
@@ -786,9 +810,9 @@ if(!(function(){return this;}).call(null).JSB){
 								}
 							});
 						}
-						
+
 						var lMap = {};
-						
+
 						function _loadLeftReqs(){
 							for(var req in requireMap){
 								if(lMap[req]){
@@ -797,7 +821,7 @@ if(!(function(){return this;}).call(null).JSB){
 								_loadReq(req);
 							}
 						}
-						
+
 						function _loadOrderedNextReq(){
 							if(requireArr.length > 0){
 								var req = requireArr[0];
@@ -810,16 +834,16 @@ if(!(function(){return this;}).call(null).JSB){
 								_loadLeftReqs();
 							}
 						}
-						
+
 						_loadOrderedNextReq();
 					}
 				}
-				
+
 				loadRequires(function(){
 
 					var $jsb = self;
 					var $parent = null;
-					
+
 					// propagate $super variable
 					var $superFunc = null;
 					if(parent){
@@ -837,7 +861,7 @@ if(!(function(){return this;}).call(null).JSB){
 							})(mtdName);
 						}
 					}
-					
+
 					// propagate $current
 					$curFunc = function(inst){this.__instance = inst;};
 					for(var mtdName in body){
@@ -850,7 +874,7 @@ if(!(function(){return this;}).call(null).JSB){
 							}
 						})(mtdName);
 					}
-					
+
 					// setup rootFunc
 					$rootFunc = function(inst, callback){
 						if(!callback){
@@ -865,12 +889,12 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 						return Bridge.executeRoot(callback);
 					}
-/*					
+/*
 					// propagate $server and $client
 					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_serverProcs; return new f();}
 					var $clientFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_clientProcs; return new f();}
-*/					
-					
+*/
+
 					var scopeVars = self.merge({
 						'$jsb': $jsb,
 						'$class': self._cls,
@@ -879,8 +903,8 @@ if(!(function(){return this;}).call(null).JSB){
 						'$curFunc': $curFunc,
 						'$rootFunc': $rootFunc
 					}, requireVals);
-					
-/*					
+
+/*
 					// add self class
 					if(self.$name != 'JSB.Object'){
 						var selfAlias = self.$name;
@@ -891,7 +915,7 @@ if(!(function(){return this;}).call(null).JSB){
 							scopeVars[selfAlias] = self.getClass();
 						}
 					}
-					
+
 					// add parent class
 					if(parent){
 						var parentAlias = parent.$name;
@@ -902,7 +926,7 @@ if(!(function(){return this;}).call(null).JSB){
 							scopeVars[parentAlias] = $parent;
 						}
 					}
-*/					
+*/
 					var funcRx = /^\s*function\s*([^\(\s]*)\s*\(([^\)]*)\)\s*\{/;
 					var superRx = /\$super/;
 					var baseRx = /\$base/;
@@ -920,19 +944,19 @@ if(!(function(){return this;}).call(null).JSB){
 						if(fName.length === 0){
 							fName = mtdName;
 						}
-						
+
 						var hasSuper = superRx.test(procStr);
 						var hasBase = baseRx.test(procStr);
 						var hasCurrent = currentRx.test(procStr);
 						var hasRoot = rootRx.test(procStr);
 						var hasThis = hasRoot || thisRx.test(procStr);
-						
+
 						var procDecl = 'function __' + fName + '(' + declM[2] + '){ ';
 						if(hasThis || (hasBase && isCtor)){
 							procDecl += 'var $this=this; ';
 						}
 						if(!isBootstrap){
-							if(parent){ 
+							if(parent){
 								if(hasSuper || (hasBase && !isCtor)){
 									procDecl += 'var $super = new $superFunc(this); ';
 								}
@@ -956,8 +980,8 @@ if(!(function(){return this;}).call(null).JSB){
 						} else {
 							procDecl += 'var $client = $clientFunc(this); ';
 						}
-*/						
-						// extract proc body 
+*/
+						// extract proc body
 						procStr = procDecl + procStr.substr(declM[0].length);
 
 						try {
@@ -973,7 +997,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					}
 
-					
+
 					for(var mtdName in body){
 						if(!self.isFunction(body[mtdName]) || self.isJavaObject(body[mtdName])){
 							continue;
@@ -988,12 +1012,12 @@ if(!(function(){return this;}).call(null).JSB){
 								}
 								// private or protected method
 								protectedMethod = true;
-								
+
 								if(mtdName[1] == '_'){
 									if(mtdName.length < 3){
 										throw new Error('Invalid method name "' + mtdName + '" in bean ' + self.$name);
 									}
-									
+
 									// private method
 									privateMethod = true;
 								}
@@ -1006,7 +1030,7 @@ if(!(function(){return this;}).call(null).JSB){
 									methodName: mtdName,
 									inst: this
 								});
-								
+
 								var res;
 								try {
 									// call original function
@@ -1015,10 +1039,10 @@ if(!(function(){return this;}).call(null).JSB){
 									// restore prev context
 									ctxStack.pop();
 								}
-								
+
 								return res;
 							}*/
-							
+
 							body[mtdName].jsb = self;
 						})(mtdName);
 					}
@@ -1033,7 +1057,7 @@ if(!(function(){return this;}).call(null).JSB){
 						ctor = function(){};
 					}
 					self._ctor = _enrichFunction('$constructor', ctor, true);
-					
+
 					// perform bootstrap
 					if(entry && entry.$bootstrap){
 						self._entryBootstrap = _enrichFunction('$bootstrap', entry.$bootstrap, false, true);
@@ -1041,8 +1065,8 @@ if(!(function(){return this;}).call(null).JSB){
 					if(self.$bootstrap){
 						self._commonBootstrap = _enrichFunction('$bootstrap', self.$bootstrap, false, true);
 					}
-					
-					
+
+
 					if(parent == null || parent == undefined || parent.currentSection() == null){
 						self._enhanceSimple(self._cls, body);
 					} else {
@@ -1053,7 +1077,7 @@ if(!(function(){return this;}).call(null).JSB){
 					// prepare field map
 					self._prepareFieldMap();
 					self._setupLibraries(self._cls.prototype);
-					
+
 					_waitRequiresBeforeBootstrap();
 				});
 
@@ -1061,7 +1085,7 @@ if(!(function(){return this;}).call(null).JSB){
 				_waitRequiresBeforeBootstrap();
 			}
 		},
-		
+
 		_waitRequires: function(readyState, callback){
 			var self = this;
 			if(Object.keys(this._requireMap).length === 0){
@@ -1090,7 +1114,7 @@ if(!(function(){return this;}).call(null).JSB){
 			var rcWrap = {
 				_requireCnt: Object.keys(wMap).length
 			};
-			
+
 			if(rcWrap._requireCnt === 0){
 				callback.call(this);
 				return;
@@ -1107,13 +1131,13 @@ if(!(function(){return this;}).call(null).JSB){
 				}, readyState);
 			}
 		},
-		
+
 		_setupLibraries: function(proto){
 			for(var name in this.libraryScopes){
 				proto[name] = this.libraryScopes[name];
 			}
 		},
-		
+
 		_prepareSections: function(parent){
 			var self = this;
 			var blackProcs = {
@@ -1123,7 +1147,7 @@ if(!(function(){return this;}).call(null).JSB){
 				'$constructor': true,
 				'$bootstrap': true
 			};
-			
+
 			function fillProcs(scope, sec1, sec2){
 				var curJsb = self;
 				while(curJsb) {
@@ -1149,7 +1173,7 @@ if(!(function(){return this;}).call(null).JSB){
 							scope[procName] = eval('(function(){JSB().proxyRpcCall.call(this.__instance, this.__node, "'+procName+'", arguments, this.__opts);})');
 						}
 					}
-					
+
 					if(curJsb.getClass()){
 						var s = curJsb.getClass().$superclass;
 						if(!s){
@@ -1161,22 +1185,22 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			if(this.isClient()){
 				if(this.isNull(this.$client)){
 					this.$client = {};
 				}
-				
+
 				if(this.isNull(this.$_serverProcs)){
 					var scope = this.$_serverProcs = this.$_serverProcs || {};
 					fillProcs(scope, '$common', '$server');
 				}
-				
+
 			} else {
 				if(this.isNull(this.$server)){
 					this.$server = {};
 				}
-				
+
 				// resolve server-side push-proxies
 				var scope = this.$_clientProcs = this.$_clientProcs || {};
 				fillProcs(scope, '$common', '$client');
@@ -1184,20 +1208,20 @@ if(!(function(){return this;}).call(null).JSB){
 				// resolve client-side rpc proxies
 				var scope = this.$_serverProcs = this.$_serverProcs || {};
 				fillProcs(scope, '$common', '$server');
-				
+
 			}
-			
+
 			var entry = this.currentSection();
 			// copy global jsb settings into current entry
 			if(this.isNull(entry.$fixedId) && !this.isNull(this.$fixedId)){
 				entry.$fixedId = this.$fixedId;
 			}
-			
+
 			if(this.isNull(entry.$singleton) && !this.isNull(this.$singleton)){
 				entry.$singleton = this.$singleton;
 			}
 		},
-		
+
 		proxyRpcCall: function(node, name, argsO, opts){
 			var callback = null;
 			var args = [];
@@ -1220,65 +1244,65 @@ if(!(function(){return this;}).call(null).JSB){
 		getDescriptor: function(){
 			return this._descriptor;
 		},
-		
+
 		getName: function(){
 			return this.getDescriptor().$name;
 		},
-		
+
 		getParent: function(){
 			if(this.$parent){
 				return JSB.get(this.$parent);
 			}
 			return null;
 		},
-		
+
 		currentSection: function(){
 			if(this.isClient() ){
 				return this.$client;
 			} else {
 				return this.$server;
 			}
-			
+
 			return null;
 		},
-		
+
 		isNumber: function(obj){
 			return typeof(obj) === 'number' && !JSB.isNaN(obj);
 		},
-		
+
 		isNaN: function(obj){
 			return isNaN(obj);
 		},
-		
+
 		isFloat: function(n){
 			return Number(n) === n && n % 1 !== 0;
 		},
-		
+
 		isDouble: function(n){
 			return Number(n) === n && n % 1 !== 0;
 		},
-		
+
 		isInteger: function(n){
 			return Number(n) === n && n % 1 === 0;
 		},
-		
+
 		isBoolean: function(obj){
 			return typeof(obj) === 'boolean';
 		},
-		
+
 		isDate: function(obj){
 			return Object.prototype.toString.call(obj) === '[object Date]';
 		},
-		
+
 		isFunction: function(obj){
 			return typeof(obj) === 'function';
 		},
-		
+
 		isWindow: function( obj ) {
 			/* jshint eqeqeq: false */
 			return obj != null && obj == obj.window;
 		},
-		
+
 		isJavaObject: function(obj){
 			if(!this.isClient()){
 				return obj instanceof java.lang.Object || Bridge.isJavaObject(obj);
@@ -1286,26 +1310,26 @@ if(!(function(){return this;}).call(null).JSB){
 				return false;
 			}
 		},
-		
+
 		isDomNode: function(o){
 			if(this.isServer()){
 				return false;
 			}
 			return ( typeof Node === "object" ? o instanceof Node : o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string" );
 		},
-		
+
 		isDomElement: function(o){
 			if(this.isServer()){
 				return false;
 			}
-			return ( typeof HTMLElement === "object" ? o instanceof HTMLElement : o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string" );			
+			return ( typeof HTMLElement === "object" ? o instanceof HTMLElement : o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string" );
 		},
-		
+
 		isPlainObject: function(obj, checkPojo){
 			var key;
 			var class2type = {};
 			var hasOwn = class2type.hasOwnProperty;
-			
+
 			try {
 				if ( !obj || typeof(obj) !== "object" || this.isDomNode(obj) || this.isWindow( obj ) || this.isArray(obj) || this.isString(obj) ) {
 					return false;
@@ -1313,11 +1337,11 @@ if(!(function(){return this;}).call(null).JSB){
 			} catch(e){
 				return false;
 			}
-			
+
 			if(this.isJavaObject(obj)){
 				return false;
 			}
-			
+
 			if(checkPojo){
 				try {
 					// Not own constructor property must be Object
@@ -1330,36 +1354,36 @@ if(!(function(){return this;}).call(null).JSB){
 					// IE8,9 Will throw exceptions on certain host objects #9897
 					return false;
 				}
-	
+
 				if(this.support.ownLast){
 					for ( key in obj ) {
 						return hasOwn.call(obj, key);
 					}
 				}
-	
+
 				// Own properties are enumerated firstly, so to speed up,
 				// if last one is own, then all properties are own.
 				for ( key in obj ) {}
-	
+
 				return key === undefined || hasOwn.call(obj,key);
 			} else {
 				return true;
 			}
-			
+
 		},
-		
+
 		isError: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Error]";
 		},
-		
+
 		isArray: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Array]";
 		},
-		
+
 		isArrayBuffer: function(obj){
 			return Object.prototype.toString.call(obj) === "[object ArrayBuffer]";
 		},
-		
+
 		isArrayBufferView: function(obj){
 			return this.isInt8Array(obj)
 			|| this.isUint8Array(obj)
@@ -1371,11 +1395,11 @@ if(!(function(){return this;}).call(null).JSB){
 			|| this.isFloat32Array(obj)
 			|| this.isFloat64Array(obj);
 		},
-		
+
 		isInt8Array: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Int8Array]";
 		},
-		
+
 		isUint8Array: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Uint8Array]";
 		},
@@ -1387,7 +1411,7 @@ if(!(function(){return this;}).call(null).JSB){
 		isInt16Array: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Int16Array]";
 		},
-		
+
 		isUint16Array: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Uint16Array]";
 		},
@@ -1395,7 +1419,7 @@ if(!(function(){return this;}).call(null).JSB){
 		isInt32Array: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Int32Array]";
 		},
-		
+
 		isUint32Array: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Uint32Array]";
 		},
@@ -1411,23 +1435,23 @@ if(!(function(){return this;}).call(null).JSB){
 		isString: function(obj){
 			return Object.prototype.toString.call(obj) === "[object String]";
 		},
-		
+
 		isObject: function(obj){
 			return Object.prototype.toString.call(obj) === "[object Object]";
 		},
-		
+
 		isRegExp: function(obj){
 			return Object.prototype.toString.call(obj) === "[object RegExp]";
 		},
-		
+
 		isNull: function(obj){
 			return obj == null || obj == undefined;
 		},
-		
+
 		isDefined: function(obj){
 			return obj !== undefined;
 		},
-		
+
 		isInstanceOf: function(obj, cls){
 			if(!obj){
 				return false;
@@ -1435,21 +1459,25 @@ if(!(function(){return this;}).call(null).JSB){
 			if(obj.jsb && obj.jsb.getClass && obj instanceof obj.jsb.getClass()){
 				return obj.jsb.isSubclassOf(cls);
 			}
-/*			
+/*
 			if(JSB().isString(obj)){
 				var jso = this.get(obj);
 				if(jso){
 					return jso.isSubclassOf(cls);
 				}
 			}
-*/			
+*/
 			return false;
 		},
-		
+
 		isFuture: function(obj){
 			return this.isInstanceOf(obj, 'JSB.Future');
 		},
-		
+
+		isRpcResponse: function(obj){
+			return obj instanceof JSB().RpcResponse;
+		},
+
 		isBean: function(obj, skipCheckPlain){
 			if(!skipCheckPlain && !this.isPlainObject(obj)){
 				return false;
@@ -1461,7 +1489,7 @@ if(!(function(){return this;}).call(null).JSB){
 			} catch(e) {}
 			return false;
 		},
-		
+
 		isSubclassOf: function(str){
 			if(this.isString(str)){
 				// do nothing
@@ -1475,9 +1503,9 @@ if(!(function(){return this;}).call(null).JSB){
 			if(this.$name == str){
 				return true;
 			}
-			if(this.$parent == null 
-				|| this.$parent == undefined 
-				|| this.$parent.length == 0 
+			if(this.$parent == null
+				|| this.$parent == undefined
+				|| this.$parent.length == 0
 				|| this.$parent == 'JSB.Object'){
 				if(str == 'JSB.Object'){
 					return true;
@@ -1487,7 +1515,7 @@ if(!(function(){return this;}).call(null).JSB){
 			var parentJso = this.get(this.$parent);
 			return parentJso.isSubclassOf(str);
 		},
-		
+
 		getSubclassOfDistance: function(str, deep){
 			if(!deep){
 				deep = 0;
@@ -1501,13 +1529,13 @@ if(!(function(){return this;}).call(null).JSB){
 			} else if(this.isBean(str, true)){
 				str = str.getJsb().$name;
 			}
-			
+
 			if(this.$name == str){
 				return deep;
 			}
-			if(this.$parent == null 
-				|| this.$parent == undefined 
-				|| this.$parent.length == 0 
+			if(this.$parent == null
+				|| this.$parent == undefined
+				|| this.$parent.length == 0
 				|| this.$parent == 'JSB.Object'){
 				if(str == 'JSB.Object'){
 					return deep;
@@ -1517,7 +1545,7 @@ if(!(function(){return this;}).call(null).JSB){
 			var parentJso = this.get(this.$parent);
 			return parentJso.getSubclassOfDistance(str, deep + 1);
 		},
-		
+
 		isEqual: function(b1, b2){
 			if(b1 == b2){
 				return true;
@@ -1636,9 +1664,9 @@ if(!(function(){return this;}).call(null).JSB){
                 locker.unlock(id);
             }
 		},
-		
-		
-		
+
+
+
 		stringify: function(obj, callback, name, pretty){
 			// TODO: replace implementation to avoid cyclic references
             var offsetStep = '  ';
@@ -1723,15 +1751,15 @@ if(!(function(){return this;}).call(null).JSB){
 
 			return stringify(obj, callback, name);
 		},
-		
+
 		get: function(name){
 			if(this.objects[name] != null && this.objects[name] != undefined){
 				return this.objects[name];
 			}
-			
+
 			return null;
 		},
-		
+
 /*		getCallingContext: function(){
 			var tls = this.getThreadLocal();
 			var ctx = tls.get('_jsbCallingContext');
@@ -1739,10 +1767,10 @@ if(!(function(){return this;}).call(null).JSB){
 				ctx = [];
 				tls.put('_jsbCallingContext', ctx);
 			}
-			
+
 			return ctx;
 		},*/
-		
+
 /*		saveCallingContext: function(){
 			var saveCtx = [];
 			var ctx = this.getCallingContext();
@@ -1756,15 +1784,15 @@ if(!(function(){return this;}).call(null).JSB){
 					inst: ctx[i].inst
 				});
 			}
-			
+
 			return saveCtx;
 		},*/
-		
+
 /*		putCallingContext: function(ctx){
 			var tls = this.getThreadLocal();
 			tls.put('_jsbCallingContext', ctx);
 		}, */
-		
+
 		getGroup: function(){
 			if(this.group){
 				if(this.isArray(this.group)){
@@ -1779,7 +1807,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return null;
 		},
-		
+
 		getDescendants: function(p){
 			var jsbMap = {};
 			if(!p){
@@ -1817,7 +1845,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return jsbMap;
 		},
-		
+
 		clone: function(obj){
 			if(this.isArray(obj)){
 				return this.merge(true, [], obj);
@@ -1826,7 +1854,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return obj;
 		},
-		
+
 		merge: function() {
 			var src, copyIsArray, copy, name, options, clone, target = arguments[0] || {}, i = 1, length = arguments.length, deep = false;
 
@@ -1849,7 +1877,7 @@ if(!(function(){return this;}).call(null).JSB){
 				target = this;
 				--i;
 			}
-			
+
 			for (; i < length; i++) {
 				// Only deal with non-null/undefined values
 				if ((options = arguments[i]) != null) {
@@ -1864,10 +1892,10 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 
 						// Recurse if we're merging plain objects or arrays
-						if (deep && 
-							copy && 
-							(this.isPlainObject(copy, true) || (copyIsArray = this.isArray(copy))) && 
-							!this.isJavaObject(copy) && 
+						if (deep &&
+							copy &&
+							(this.isPlainObject(copy, true) || (copyIsArray = this.isArray(copy))) &&
+							!this.isJavaObject(copy) &&
 							!(copy instanceof JSB) &&
 							!this.isDate(copy) &&
 							!this.isInstanceOf(copy, 'JSB.Object') &&
@@ -1901,7 +1929,7 @@ if(!(function(){return this;}).call(null).JSB){
 			// Return the modified object
 			return target;
 		},
-		
+
 		_checkBeanReady: function(){
 			if(this._ready || this._readyState >= 2){
 				return;
@@ -1973,7 +2001,7 @@ if(!(function(){return this;}).call(null).JSB){
 						debugger;
 					}
 					_copyFields(this, /*this.jsb._fieldsArr*/JSB().fieldArrs[this.jsb.$name]);
-					
+
 					// place sync scopes
 					var syncScopes = JSB().syncScopes[this.jsb.$name];
 					if(syncScopes){
@@ -1984,14 +2012,14 @@ if(!(function(){return this;}).call(null).JSB){
 					} else {
 						this.$_syncScopes = null;
 					}
-					
+
 					this.$_fieldsCopied = true;
 				}
-				
-				
+
+
 				// call ctor
 				this.$_superCalled = false;
-					
+
 				// call original function
 				if(ss._ctor){
 					ss._ctor.apply(this, arguments);
@@ -2000,12 +2028,12 @@ if(!(function(){return this;}).call(null).JSB){
 					parent.apply(this, arguments);
 					this.$_superCalled = true;
 				}
-					
+
 				this.$_superCalled = storeSuperCalled;
-				
+
 			};
 		},
-		
+
 		_enhanceInherited: function(cls, parent, body) {
 			var F = function() {};
 			F.prototype = parent.prototype;
@@ -2031,14 +2059,14 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			};
 		},
-		
+
 		_enhanceSimple: function(cls, body){
 			var F = function() {};
 			F.prototype = body;
 			cls.prototype = new F();
 			cls.prototype.$constructor = cls;
 		},
-		
+
 		create: function(wName, opts, callback){
 			var self = this;
 			this.lookup(wName, function(f){
@@ -2051,11 +2079,15 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			});
 		},
-		
+
 		createFuture: function(opts){
 			return new (this.getClass('JSB.Future'))(opts);
 		},
-		
+
+		createRpcResponse: function(val, opts){
+			return new (JSB().RpcResponse)(val, opts);
+		},
+
 		classTree: function(qName){
 			var curGlobe = JSB().getGlobe();
 			var path = qName.split('.');
@@ -2066,10 +2098,10 @@ if(!(function(){return this;}).call(null).JSB){
 					return null;
 				}
 			}
-			
+
 			return curGlobe;
 		},
-		
+
 		_pushWaiter: function(name, callback, readyState){
 			if(!callback){
 				return;
@@ -2090,18 +2122,18 @@ if(!(function(){return this;}).call(null).JSB){
 				callback: callback,
 				readyState: readyState
 			});
-		
+
 			if(locker){ locker.unlock('JSB_lookup_waiters'); }
-			
+
 			return wList.length;
 		},
-		
+
 		_matchWaiters: function(readyState){
 			if(this.isNull(readyState)){
 				readyState = 4;	// maximum readiness
 			}
 			var execArr = [];
-			
+
 			var locker = this.getLocker();
 			if(locker){ locker.lock('JSB_lookup_waiters'); }
 			var wList = this.waiters[this.$name];
@@ -2115,7 +2147,7 @@ if(!(function(){return this;}).call(null).JSB){
 						delArr.push(c);
 					}
 				}
-				
+
 				if(delArr.length > 0){
 					for(var i = delArr.length - 1; i >= 0; i--){
 						var idx = delArr[i];
@@ -2126,25 +2158,25 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			if(locker){ locker.unlock('JSB_lookup_waiters'); }
-			
+
 			if(execArr.length === 0){
 				return;
 			}
-			
+
 			var cls = this.getClass();
-			
+
 			if(this._ready && this.isSingleton()){
 				cls = this.getInstance();
 			}
-			
+
 			for(var i = 0; i < execArr.length; i++){
 				var wObj = execArr[i];
 				wObj.callback.call(this, cls);
 			}
 		},
-		
+
 		_lookupRequire: function(name, callback){
 			var self = this;
 			if(name.toLowerCase().indexOf('java:') == 0){
@@ -2157,7 +2189,7 @@ if(!(function(){return this;}).call(null).JSB){
 				if(!curJavaScope){
 					throw new Error('Failed to load java require due to missing java object "'+qualifiedName+'"');
 				}
-/*				
+/*
 				var qNameParts = qualifiedName.split('.');
 				var curJavaScope = Packages;
 				for(var i = 0; i < qNameParts.length; i++){
@@ -2167,7 +2199,7 @@ if(!(function(){return this;}).call(null).JSB){
 						throw 'Failed to load java require due to missing java object "'+qualifiedName+'"';
 					}
 				}
-*/				
+*/
 				callback.call(self, curJavaScope);
 			} else if(name.toLowerCase().indexOf('css:') == 0){
 				if(this.isServer()){
@@ -2207,28 +2239,28 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 		},
 
-		
+
 		lookup: function(name, callback, opts){
 			var self = this;
 			var forceUpdate = opts && opts.forceUpdate || false;
 			var readyState = opts && opts.readyState || 4;
-			
+
 			if(this.objects[name] && this.objects[name]._readyState >= readyState && !forceUpdate){
 				var ctObj = this.objects[name].getClass();
 				if(this.objects[name]._ready && this.objects[name].isSingleton()){
 					ctObj = this.objects[name].getInstance();
 				}
-				
+
 				if(callback){
 					callback.call(this, ctObj);
 				}
 				return;
 			} else {
 				var queueLength = this._pushWaiter(name, callback, readyState);
-				
+
 				// load object from the server
 				if(this.isClient() && (!this.objects[name] || forceUpdate) && queueLength == 1){
-					if(this.isNull(this.initQueue) || this.isNull(this.initQueue[name])){ 
+					if(this.isNull(this.initQueue) || this.isNull(this.initQueue[name])){
 						if(this.provider){
 							if(!this.isNull(this.loadQueue) && !this.isNull(this.loadQueue[name]) && !forceUpdate){
 								return;
@@ -2263,7 +2295,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return obj;
 		},
-		
+
 		getInstanceInfo: function(){
 			function _buildInstanceMap(scope){
 				var typeMap = {};
@@ -2282,19 +2314,19 @@ if(!(function(){return this;}).call(null).JSB){
 				typeArr.sort(function(a, b){
 					return b.count - a.count;
 				});
-				
+
 				return typeArr;
 			}
-			
+
 			function _count(arr){
 				var cnt = 0;
 				for(var i = 0; i < arr.length; i++){
 					cnt += arr[i].count;
 				}
-				
+
 				return cnt;
 			}
-			
+
 			var sArr = _buildInstanceMap(this.getSessionInstancesScope());
 			var gArr = _buildInstanceMap(this.getGlobalInstancesScope());
 			var sCount = _count(sArr);
@@ -2307,7 +2339,7 @@ if(!(function(){return this;}).call(null).JSB){
 				globalInstances: gArr
 			};
 		},
-		
+
 		searchInstances: function(patternObj){
 			var arr = [];
 			// look in singleton scope
@@ -2339,10 +2371,10 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			return arr;
 		},
-		
+
 		lookupSingleton: function(key, callback){
 			var self = this;
 			var obj = JSB().getInstance(key);
@@ -2350,7 +2382,7 @@ if(!(function(){return this;}).call(null).JSB){
 				callback.call(this, obj);
 				return;
 			}
-			// if not loaded yet - try to lookup 
+			// if not loaded yet - try to lookup
 			this.lookup(key, function(obj){
 				obj = JSB().getInstance(key);
 				if(!JSB().isNull(obj)){
@@ -2364,14 +2396,14 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			});
 		},
-		
+
 		_prepareFieldMap: function(){
 			var self = this;
 			var curProto = this.getClass().prototype;
 			var fieldMap = /*this.fieldMaps[this.$name] = */{};
 			var syncScopes = this.syncScopes[this.$name] = {};
 			var protoStack = [];
-			
+
 			while(curProto){
 				// add to proto stack
 				protoStack.push(curProto);
@@ -2381,7 +2413,7 @@ if(!(function(){return this;}).call(null).JSB){
 					break;
 				}
 			}
-			
+
 			function _translateFields(fromScope, toScope, deep){
 
 				for(var fName in fromScope){
@@ -2392,7 +2424,7 @@ if(!(function(){return this;}).call(null).JSB){
 					if(self.isLibraryScopeName(fName)){
 						continue;
 					}
-					
+
 					if(self.isFunction(fromScope[fName])){
 						if(deep == 0){
 							continue;
@@ -2422,7 +2454,7 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			function _collectSyncScopes(curJsb, scope){
 				// collect sync scopes
 				var commonScope = curJsb.$common;
@@ -2438,7 +2470,7 @@ if(!(function(){return this;}).call(null).JSB){
 					'$disableRpcInstance': true,
 					'$sync': true
 				};
-				
+
 				for(var fieldName in commonScope){
 					// check fieldName is non-function
 					if(kfs[fieldName]){
@@ -2452,7 +2484,7 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			// prepare field map
 			var acceptSync = this.getSync();
 			while(protoStack.length > 0){
@@ -2462,14 +2494,14 @@ if(!(function(){return this;}).call(null).JSB){
 					_collectSyncScopes(curProto.jsb, syncScopes);
 				}
 			}
-			
+
 			if(Object.keys(syncScopes).length === 0){
 				this.syncScopes[this.$name] = null;
 			}
-			
+
 			// prepare field arr
 			var fieldArr = this.fieldArrs[this.$name] = [];
-			
+
 			function _convertMapsToArrs(fieldMap, arrMap){
 				for(var fName in fieldMap){
 					var fDesc = fieldMap[fName];
@@ -2486,18 +2518,18 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			_convertMapsToArrs(fieldMap, fieldArr);
 		},
-		
+
 		deploy: function(qname, obj, overwrite, scope){
 			if(!qname || qname.trim().length == 0){
 				return;
 			}
-			
+
 			var locker = this.getLocker();
 			if(locker){ locker.lock('JSB_deploy'); }
-			
+
 			// expose to class tree
 			var path = qname.split('.');
 			var curScope = scope || this.getGlobe();
@@ -2509,7 +2541,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				curScope = curScope[part];
 			}
-			
+
 			if(curScope[name]){
 				// update and copy old fields
 				var oldObj = curScope[name];
@@ -2519,15 +2551,15 @@ if(!(function(){return this;}).call(null).JSB){
 						curScope[name][f] = oldObj[f];
 					}
 				}
-				
+
 			} else {
 				curScope[name] = obj;
 			}
-			
+
 			if(locker){ locker.unlock('JSB_deploy'); }
 		},
 
-		
+
 		_proceedBootstrapStage: function(){
 			var self = this;
 			// execute bootstrap and keep initialization
@@ -2549,12 +2581,12 @@ if(!(function(){return this;}).call(null).JSB){
 							ebcall();
 						});
 					}
-						
+
 				} else {
 					self._proceedSingletonStage();
 				}
 			}
-			
+
 			if(this._commonBootstrap){
 				function bcall(){
 					var bWait = self._commonBootstrap.call(self, afterBoostrap1);
@@ -2573,13 +2605,13 @@ if(!(function(){return this;}).call(null).JSB){
 				afterBoostrap1();
 			}
 		},
-		
-		
+
+
 		_proceedSingletonStage: function(){
 			var self = this;
 			self._readyState = 3;
 			self._matchWaiters(3);
-			
+
 			function keepFinalize(){
 				self._readyState = 4;
 				self._ready = true;
@@ -2587,14 +2619,14 @@ if(!(function(){return this;}).call(null).JSB){
 				self._runOnLoadCallbacks();
 				self._matchWaiters();
 			}
-			
+
 			self._waitRequires(3, function(){
 				var entry = self.currentSection();
 				if(entry && self.isSingleton()){
 					function ccall(){
 						var f = self._cls;
 						var o = new f();
-						
+
 						var globalize = entry.$globalize || self.$globalize;
 						if(globalize){
 							if(self.isString(globalize)){
@@ -2603,13 +2635,13 @@ if(!(function(){return this;}).call(null).JSB){
 								self.deploy(self.$name, o);
 							}
 						}
-	/*					
+	/*
 						// run sync if syncScopes
 						if(o.syncScopes){
 							o.doSync();
 						}
-	*/					
-/*						
+	*/
+/*
 						if(self.isClient() && !self.isNull(o.$_syncScopes) && self.getSync()){
 							if(o.isSynchronized()){
 								keepFinalize();
@@ -2622,11 +2654,11 @@ if(!(function(){return this;}).call(null).JSB){
 						} else {
 							keepFinalize();
 						}
-*/						
+*/
 						keepFinalize();
 					}
 					ccall();
-/*					
+/*
 					if(self.isSystem()){
 						ccall();
 					} else {
@@ -2634,15 +2666,15 @@ if(!(function(){return this;}).call(null).JSB){
 							ccall();
 						});
 					}
-*/					
+*/
 				} else {
 					keepFinalize();
 				}
 
 			});
-			
+
 		},
-		
+
 		_runOnLoadCallbacks: function(){
 			if(this.isNull(this.onLoadCallbacks)){
 				return;
@@ -2651,14 +2683,14 @@ if(!(function(){return this;}).call(null).JSB){
 				this.onLoadCallbacks[i].call(this);
 			}
 		},
-		
+
 		onLoad: function(callback){
 			if(this.isNull(this.onLoadCallbacks)){
 				this.onLoadCallbacks = [];
 			}
 			this.onLoadCallbacks.push(callback);
 		},
-		
+
 		getClass: function(jsb){
 			if(!jsb){
 				jsb = this;
@@ -2681,11 +2713,11 @@ if(!(function(){return this;}).call(null).JSB){
 				this.objectsToLoad = [];
 			}
 		},
-		
+
 		getProvider: function(){
 			return this.provider;
 		},
-		
+
 		setClusterProvider: function(cp){
 			if(!JSB.isServer()){
 				throw new Error('Failed to set cluster provider in client side');
@@ -2695,14 +2727,14 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			this.clusterProvider = cp;
 		},
-		
+
 		getClusterProvider: function(){
 			if(!JSB.isServer()){
 				throw new Error('Failed to use cluster provider in client side');
 			}
 			return this.clusterProvider;
 		},
-		
+
 		setRepository: function(repo){
 			this.repository = repo;
 		},
@@ -2710,11 +2742,11 @@ if(!(function(){return this;}).call(null).JSB){
 		getRepository: function(){
 			return this.repository;
 		},
-		
+
 		setMessageBus: function(bus){
 			this.messageBus = bus;
 		},
-		
+
 		getMessageBus: function(){
 			return this.messageBus;
 		},
@@ -2722,27 +2754,27 @@ if(!(function(){return this;}).call(null).JSB){
 		setLogger: function(l){
 			this.logger = l;
 		},
-		
+
 		getLogger: function(){
 			return this.logger;
 		},
-		
+
 		setLocker: function(l){
 			this.locker = l;
 		},
-		
+
 		getLocker: function(){
 			return this.locker;
 		},
-		
+
 		setThreadLocal: function(tls){
 			this.threadLocal = tls;
 		},
-		
+
 		getThreadLocal: function(){
 			return this.threadLocal;
 		},
-		
+
 		getSystemProfiler: function(){
 			var self = this;
 			if(this.systemProfiler){
@@ -2750,11 +2782,11 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return null;
 		},
-		
+
 		setSystemProfiler: function(prof){
 			this.systemProfiler = prof;
 		},
-		
+
 		injectServerVersion: function(url){
 			if(!this.getServerVersion()){
 				return url;
@@ -2765,13 +2797,13 @@ if(!(function(){return this;}).call(null).JSB){
 				url += '&';
 			}
 			url += 'v=' + this.getServerVersion();
-			
+
 			return url;
 		},
-		
+
 		loadScript: function(curl, callback, bChain){
 			var self = this;
-			
+
 			var scriptArr = [];
 			if(JSB().isArray(curl)){
 				scriptArr = curl;
@@ -2785,7 +2817,7 @@ if(!(function(){return this;}).call(null).JSB){
 				scriptArr[i] = self.injectServerVersion(scriptArr[i]);
 			}
 
-			
+
 			function loadOneScript(url, callback){
 				if(self.resourceLoaded[url]){
 					if(callback && JSB().isFunction(callback)){
@@ -2793,7 +2825,7 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 					return;
 				}
-				
+
 				if(self.resourceScheduled[url]){
 					if(callback && JSB().isFunction(callback)){
 						self.resourceScheduled[url].push(callback);
@@ -2803,7 +2835,7 @@ if(!(function(){return this;}).call(null).JSB){
 					self.resourceScheduled[url] = self.resourceScheduled[url] || [];
 					self.resourceScheduled[url].push(callback);
 				}
-				
+
 				var _s = document.createElement("script");
 			    _s.type = "text/javascript";
 			    if(url.indexOf('http') == -1){
@@ -2822,23 +2854,23 @@ if(!(function(){return this;}).call(null).JSB){
 			    	_s.src = url;
 			    }
 			    var _oHead = document.getElementsByTagName('HEAD').item(0);
-				
+
 				// append scriptlet code that calls after main script complete its execution
 				_s.onload = function(){
 					self.resourceLoaded[url] = true;
 					if(!self.resourceScheduled[url] || self.resourceScheduled[url].length == 0){
 						return;
 					}
-					
+
 					var syncId = JSB().generateUid();
 					if(self.isNull(JSB().loadScriptScope)){
 						JSB().loadScriptScope = {};
 					}
-					
+
 					JSB().loadScriptScope[syncId] = function(){
 						delete JSB().loadScriptScope[syncId];
 						_oHead.removeChild( _ss);
-						
+
 						for(var cit in self.resourceScheduled[url]){
 							var c = self.resourceScheduled[url][cit];
 							if(!c || !JSB().isFunction(c)){
@@ -2852,14 +2884,14 @@ if(!(function(){return this;}).call(null).JSB){
 				    _ss.type = 'text/javascript';
 				    _ss.text = 'JSB().loadScriptScope["' + syncId + '"]();';
 				    _oHead.appendChild( _ss);
-					
+
 				};
 			    _oHead.appendChild( _s);
 			}
-			
+
 
 			var checkArr = JSB().clone(scriptArr);
-			
+
 			if(bChain){
 				function loadNext(){
 					if(checkArr.length > 0){
@@ -2895,21 +2927,21 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 
 		},
-		
+
 		loadCss: function(url, callback){
 			if(this instanceof JSB){
 				url = this.getBasePath() + url;
 			}
 			url = this.injectServerVersion(url);
 			var oUrl = url;
-			
+
 			if(this.resourceLoaded[oUrl]){
 				if(callback && JSB().isFunction(callback)){
 					callback.call(this);
 				}
 				return;
 			}
-			
+
 			if(this.resourceScheduled[oUrl]){
 				if(callback && JSB().isFunction(callback)){
 					this.resourceScheduled[oUrl].push(callback);
@@ -2921,9 +2953,9 @@ if(!(function(){return this;}).call(null).JSB){
 					this.resourceScheduled[oUrl].push(callback);
 				}
 			}
-			
+
 			var self = this;
-			
+
 			var _l = document.createElement("link");
 			_l.rel = "stylesheet";
 		    if(url.indexOf('http') == -1){
@@ -2942,7 +2974,7 @@ if(!(function(){return this;}).call(null).JSB){
 		    	_l.href = url;
 		    }
 			_l.type = "text/css";
-			
+
 			_l.onload = function(){
 				self.resourceLoaded[oUrl] = true;
 				if(self.resourceScheduled[oUrl]){
@@ -2953,12 +2985,12 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 		    var _oHead = document.getElementsByTagName('HEAD').item(0);
 		    _oHead.appendChild( _l);
-			
+
 		},
-		
+
 		waitForObjectExist: function(funcName, callback){
 			var obj = undefined;
 			try {
@@ -2979,14 +3011,14 @@ if(!(function(){return this;}).call(null).JSB){
 		    function S4() {
 		        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
 		    }
-		    
+
 		    var res = '';
 		    if(bytes == null || bytes == undefined){
 		    	bytes = 16;
 		    }
 		    bytes /= 2;
 		    for(var i = 0; i < bytes; i++ ){
-		    	res += S4(); 
+		    	res += S4();
 		    }
 
 		    return res;
@@ -3074,7 +3106,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return op;
 		},
-		
+
 		defer: function( deferProc, timeout, key ){
 			var self = this;
 			if(!this.isNumber(timeout)){
@@ -3110,7 +3142,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 		},
-		
+
 		interval: function(proc, interval, key){
 			var self = this;
 			if(!this.isNumber(interval)){
@@ -3145,7 +3177,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 		},
-		
+
 		deferUntil: function(deferProc, untilProc, interval, silent, key){
 			var self = this;
 			if(!this.isNumber(interval)){
@@ -3201,7 +3233,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 		},
-		
+
 		cancelDefer: function(key){
 			if(key && this.deferTimeoutMap[key]){
 				var locker = this.getLocker();
@@ -3217,7 +3249,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 		},
-		
+
 		cancelInterval: function(key){
 			if(key && this.intervalMap[key]){
 				var locker = this.getLocker();
@@ -3233,7 +3265,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 		},
-		
+
 		fork: function(param, proc, opts){
 			var self = this;
 			var count = 1;
@@ -3259,13 +3291,13 @@ if(!(function(){return this;}).call(null).JSB){
 				items: [],
 				callback: null
 			};
-			
+
 			for(var i = 0; i < count; i++ ){
 				(function(idx){
 					var forkFunc = function(){
 						var res = null;
 						try {
-							var p = null; 
+							var p = null;
 							if(param){
 								p = param[idx];
 							}
@@ -3296,10 +3328,10 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				})(i);
 			}
-			
+
 			return h;
 		},
-		
+
 		join: function(forkHandle, callback, opts){
 			if(callback){
 				this.forkJoinHandles[forkHandle].callback = callback;
@@ -3308,7 +3340,7 @@ if(!(function(){return this;}).call(null).JSB){
 				throw new Error('JSB.join: missing callback argument');
 			}
 		},
-		
+
 		_checkJoinCallback: function(forkHandle){
 			var locker = this.getLocker();
 			if(this.forkJoinHandles[forkHandle] && this.forkJoinHandles[forkHandle].callback){
@@ -3320,7 +3352,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 		},
-		
+
 		chain: function(){
 			var self = this;
 			var procArr = [];
@@ -3342,7 +3374,7 @@ if(!(function(){return this;}).call(null).JSB){
 				throw new Error('JSB.chain: no chain callbacks passed');
 			}
 			var scope = {curIdx: 0};
-			
+
 			function generateForkJoinTask(pObj){
 				if(scope.curIdx == procArr.length){
 					return;
@@ -3359,11 +3391,11 @@ if(!(function(){return this;}).call(null).JSB){
 					self.join(self.fork(pObj, forkProc, opts), generateForkJoinTask, opts);
 				}
 			}
-			
+
 			generateForkJoinTask(params);
 		},
 
-		substComplexObjectInRpcResult: function(res){
+		substComplexObjectInRpcResult: function(res, bSkip){
 			var self = this;
 			var reverseBindMap = this.getReverseBindMap();
 			var isServer = this.isServer();
@@ -3380,7 +3412,7 @@ if(!(function(){return this;}).call(null).JSB){
 				var rType = Object.prototype.toString.call(res);
 				if(rType === '[object String]'){
 					return res;
-				} 
+				}
 				if(rType === "[object ArrayBuffer]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3390,7 +3422,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Int8Array]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3400,7 +3432,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Uint8Array]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3410,7 +3442,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Uint8ClampedArray]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3420,7 +3452,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Int16Array]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3430,7 +3462,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Uint16Array]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3440,7 +3472,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Int32Array]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3450,7 +3482,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Uint32Array]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3460,7 +3492,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Float32Array]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3470,7 +3502,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === "[object Float64Array]"){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3480,7 +3512,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					};
 					return {};
-				} 
+				}
 				if(rType === '[object Date]'){
 					dict[JSB.generateUid()] = {
 						p: [JSB.clone(path)],
@@ -3518,7 +3550,7 @@ if(!(function(){return this;}).call(null).JSB){
 				if(rType === "[object Array]"){
 					// parse array
 					var nobj = [];
-					for(var f in res){
+					for(var f = 0; f < res.length; f++){
 						path.push(f);
 						nobj[f] = _substComplexObjectInRpcResult(res[f]);
 						path.pop();
@@ -3556,7 +3588,7 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 					dEntry.p.push(JSB.clone(path));
 					return {};
-				} 
+				}
 				if(JSB.isObject(res)){
 					// parse json object
 					var nobj = {};
@@ -3569,17 +3601,19 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				return {};
 			}
-			
+
 			// prepare response
-			var dt = _substComplexObjectInRpcResult(res);
+			var dt = bSkip ? res:_substComplexObjectInRpcResult(res);
 			var dictVals = [];
-			for(var dk in dict){
-				dictVals.push(dict[dk]);
+			if(!bSkip){
+				for(var dk in dict){
+					dictVals.push(dict[dk]);
+				}
 			}
-			
+
 			return {__dt:dt, __di:dictVals};
 		},
-		
+
 		injectComplexObjectInRpcResult: function(res, callback, opts){
 			var self = this;
 			if(!res || !JSB.isArray(res.__di)){
@@ -3589,7 +3623,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				return res;
 			}
-			var obj = res.__dt; 
+			var obj = res.__dt;
 
 			if(res.__di.length == 0){
 				if(callback){
@@ -3609,65 +3643,65 @@ if(!(function(){return this;}).call(null).JSB){
 					} else if(res.__type && res.__type == 'File') {
 						if(callback && JSB().isServer()){
 							JSB().getProvider().ensureUpload(res.__id, function(stream){
-/*								
+/*
 								var StreamClass = JSB().get('JSB.IO.Stream').getClass();
 								callback(new StreamClass(javaStream));
-*/								
+*/
 								callback(stream);
 							})
 						}
 					} else if(res.__type && res.__type == 'ArrayBuffer'){
 						if(callback){
 							callback(JSB().Base64.decode(res.__data));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Int8Array'){
 						if(callback){
 							callback(new Int8Array(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Uint8Array'){
 						if(callback){
 							callback(new Uint8Array(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Uint8ClampedArray'){
 						if(callback){
 							callback(new Uint8ClampedArray(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Int16Array'){
 						if(callback){
 							callback(new Int16Array(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Uint16Array'){
 						if(callback){
 							callback(new Uint16Array(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Int32Array'){
 						if(callback){
 							callback(new Int32Array(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Uint32Array'){
 						if(callback){
 							callback(new Uint32Array(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Float32Array'){
 						if(callback){
 							callback(new Float32Array(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Float64Array'){
 						if(callback){
 							callback(new Float64Array(JSB().Base64.decode(res.__data)));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Date'){
 						if(callback){
 							callback(new Date(res.__data));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Function'){
 						if(callback){
 							callback(eval('(' + res.__data + ')'));
-						} 
+						}
 					} else if(res.__type && res.__type == 'Error'){
 						if(callback){
 							callback(new Error(res.__data.message, res.__data.fileName, res.__data.lineNumber));
-						} 
+						}
 					} else {
 						throw new Error('Unknown ComplexObject type');
 					}
@@ -3701,7 +3735,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return obj;
 		},
-		
+
 		getBindMap: function(){
 			if(this.isClient()){
 				return;
@@ -3713,7 +3747,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return globe[c];
 		},
-		
+
 		getReverseBindMap: function(){
 			if(this.isClient()){
 				return;
@@ -3725,7 +3759,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			return globe[c];
 		},
-		
+
 		constructServerInstanceFromClientId: function(jsoName, instanceId){
 			if(JSB().isClient()){
 				return;
@@ -3733,10 +3767,10 @@ if(!(function(){return this;}).call(null).JSB){
 			var locker = null;
 			// lookup for associations
 			var serverInstanceId = null;
-			
+
 			var bindMapScope = JSB().getBindMap();
 			var reverseBindMapScope = JSB().getReverseBindMap();
-			
+
 			var serverInstance = null;
 			if(!JSB().isNull(bindMapScope[instanceId])){
 				serverInstanceId = bindMapScope[instanceId];
@@ -3756,7 +3790,7 @@ if(!(function(){return this;}).call(null).JSB){
 							delete bindMapScope[instanceId];
 						}
 					}
-			
+
 					if(JSB().isNull(serverInstance)){
 						var bNeedSync = false;
 						var jso = JSB().get(jsoName);
@@ -3768,7 +3802,7 @@ if(!(function(){return this;}).call(null).JSB){
 						} else {
 							serverInstance = JSB().getInstance(instanceId);
 						}
-						
+
 						function updateBindMaps(id, sid){
 							bindMapScope[id] = sid;
 							if(!reverseBindMapScope[sid]){
@@ -3776,18 +3810,18 @@ if(!(function(){return this;}).call(null).JSB){
 							}
 							reverseBindMapScope[sid][id] = true;
 						}
-						
+
 						if(JSB().isNull(serverInstance)){
-							
+
 							// check for rpc instance creation permission
 							if(jso.getKeywordOption('$disableRpcInstance')){
 								JSB().getLogger().warn('Unable to create new instance from RPC call for jsb: "' + jsoName + '('+instanceId+')" due option "disableRpcInstance" set')
 								return null;
 							}
-							
+
 							var f = jso.getClass();
 							// create server-side instance with client-side id
-							
+
 							if(jso.getKeywordOption('$fixedId')){
 								JSB().getThreadLocal().put('_jsbRegisterCallback', function(){
 									// use this to access current object
@@ -3807,7 +3841,7 @@ if(!(function(){return this;}).call(null).JSB){
 						} else {
 							updateBindMaps(instanceId, serverInstance.getId());
 						}
-						
+
 						if(bNeedSync){
 							serverInstance.doSync();
 						}
@@ -3828,13 +3862,13 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			var locker = null;
 			serverInstance = JSB().getInstance(instanceId);
-			
+
 			if(JSB().isNull(serverInstance)){
 				try {
 					locker = JSB().getLocker();
 					locker.lock('rpcServerLock');
 					serverInstance = JSB().getInstance(instanceId);
-			
+
 					if(JSB().isNull(serverInstance)){
 						var bNeedSync = false;
 						var jsb = JSB().get(jsbName);
@@ -3846,18 +3880,18 @@ if(!(function(){return this;}).call(null).JSB){
 						} else {
 							serverInstance = JSB().getInstance(instanceId);
 						}
-						
+
 						if(JSB().isNull(serverInstance)){
-/*							
+/*
 							// check for rpc instance creation permission
 							if(jsb.getKeywordOption('$disableRpcInstance')){
 								JSB().getLogger().warn('Unable to create new instance from RPC call for jsb: "' + jsbName + '('+instanceId+')" due option "disableRpcInstance" set')
 								return null;
 							}
-*/							
+*/
 							var f = jsb.getClass();
 							// create server-side instance with client-side id
-							
+
 							JSB().getThreadLocal().put('_jsbRegisterCallback', function(){
 								// use this to access current object
 								this.id = instanceId;
@@ -3866,7 +3900,7 @@ if(!(function(){return this;}).call(null).JSB){
 							JSB().getThreadLocal().clear('_jsbRegisterCallback');
 							bNeedSync = true;
 						}
-						
+
 						if(bNeedSync){
 							serverInstance.doSync();
 						}
@@ -3877,7 +3911,7 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+
 			return serverInstance;
 
 		},
@@ -3900,7 +3934,7 @@ if(!(function(){return this;}).call(null).JSB){
 							obj = self.getInstance(id);
 //						}
 					}
-					
+
 					if(!obj){
 						JSB().getThreadLocal().put('_jsbRegisterCallback', function(){
 							// use this to access current object
@@ -3926,13 +3960,13 @@ if(!(function(){return this;}).call(null).JSB){
 				if(serverRemote){
 					obj = this.constructServerInstanceFromServerId(jsoName, id);
 				} else {
-					obj = this.constructServerInstanceFromClientId(jsoName, id);	
+					obj = this.constructServerInstanceFromClientId(jsoName, id);
 				}
-				
+
 				if(callback){ callback(obj); }
 			}
 		},
-		
+
 		callbackAttr: function(proc, bindTo){
 			if(!this.callbackAttrs){
 				this.callbackAttrs = {
@@ -3940,7 +3974,7 @@ if(!(function(){return this;}).call(null).JSB){
 					idMap: {}
 				};
 			}
-			
+
 			// generate uniqueId for proc
 			var id = JSB().generateUid();
 			if(bindTo){
@@ -3950,12 +3984,12 @@ if(!(function(){return this;}).call(null).JSB){
 				this.callbackAttrs.bindMap[bindTo.getId()].push(id);
 			}
 			this.callbackAttrs.idMap[id] = proc;
-			
+
 			return "(function(){ var procToCall = JSB().callbackAttrs.idMap[&#39;"+id+"&#39;]; if(procToCall){ return procToCall.apply(this, arguments); } })";
 		},
-		
+
 		/* JSB reflection methods */
-		
+
 		getMethods: function(own){
 			var names = [];
 			var cls = this.getClass();
@@ -3968,31 +4002,31 @@ if(!(function(){return this;}).call(null).JSB){
 					names.push(n);
 				}
 			}
-			
+
 			return names;
 		},
-		
+
 		createMethodInterceptor: function(mtdName, inetrceptorCallback){
 			var cls = this.getClass();
 			var scope = cls.prototype;
-			
+
 			var originalMethod = scope[mtdName];
-			
+
 			var mtdWrapper = function(){
 				return inetrceptorCallback.call(this, originalMethod, arguments);
 			}
 			mtdWrapper.jsb = originalMethod.jsb;
-			
+
 			scope[mtdName] = mtdWrapper;
-			
+
 			return mtdWrapper;
 		}
-		
+
 	};
-	
+
 	// expose JSB
 	(function(){return this;}).call(null).JSB = JSB;
-	
+
 	// deploy JSB.fn methods into JSB scope
 	var jsbScope = (function(){return this;}).call(null).JSB;
 	for(var f in JSB.fn){
@@ -4013,11 +4047,11 @@ if(!(function(){return this;}).call(null).JSB){
         Error.captureStackTrace(this);
     };
     jsbScope.Error.prototype = Object.create(Error.prototype);
-	
+
 	// setup window
 	if(JSB().isClient()){
 		JSB().addLibraryScope('Window', window);
-		JSB().setThreadLocal({		
+		JSB().setThreadLocal({
 			put: function(key, val){
 				if(!this.tlsMap){
 					this.tlsMap = {};
@@ -4039,7 +4073,7 @@ if(!(function(){return this;}).call(null).JSB){
 				delete this.tlsMap[key];
 			}
 		});
-		
+
 	} else {
 		JSB().addLibraryScope('Window', {
 			setTimeout: function(proc, timeout){
@@ -4048,7 +4082,7 @@ if(!(function(){return this;}).call(null).JSB){
 			clearTimeout: function(key){
 				Bridge.clearTimeout(key);
 			},
-			
+
 			setInterval: function(proc, timeout){
 				return Bridge.setInterval(proc, timeout);
 			},
@@ -4059,7 +4093,7 @@ if(!(function(){return this;}).call(null).JSB){
 				Bridge.clearInterval(key);
 			}
 		});
-		
+
 		JSB().setThreadLocal({
 			get: function(key){
 				return Bridge.getThreadLocal(key);
@@ -4071,7 +4105,7 @@ if(!(function(){return this;}).call(null).JSB){
 				Bridge.removeThreadLocal(key);
 			}
 		});
-		
+
 	}
 })();
 
@@ -4100,7 +4134,7 @@ JSB({
 		this.$_destroyLocal = true;
 		this.destroy();
 	},
-	
+
 	destroy: function(){
 		if(this.isDestroyed()){
 			return;
@@ -4116,27 +4150,27 @@ JSB({
 			}
 		}
 		$jsb.unregister(this);
-		
+
 		if(!this.$_destroyLocal && (this.jsb.isServer() || (this.jsb.isSession() && this.$_bindKey))){
 			if(this.remote()._destroyLocal){
 				this.remote()._destroyLocal();
 			}
 		}
-/*		
+/*
 		if($jsb.getLogger()){
 			$jsb.getLogger().info(this.jsb.$name + ' destroyed');
 		}
-*/		
+*/
 	},
-	
+
 	isDestroyed: function(){
 		return this.$_destroyed;
 	},
-	
+
 	getClass: function(){
 		return this.getJsb().getClass();
 	},
-	
+
 	getSession: function(){
 		return this.$_session;
 	},
@@ -4144,28 +4178,28 @@ JSB({
 	getJsb: function(){
 		return this.jsb;
 	},
-	
+
 	subscribe: function(msg, arg1, arg2){
 		if(!$jsb.getMessageBus()){
 			return;
 		}
 		$jsb.getMessageBus().subscribe(this, msg, arg1, arg2);
 	},
-	
+
 	unsubscribe: function(msg){
 		if(!$jsb.getMessageBus()){
 			return;
 		}
 		$jsb.getMessageBus().unsubscribe(this, msg);
 	},
-	
+
 	publish: function(msg, params, arg1, arg2){
 		if(!$jsb.getMessageBus()){
 			return;
 		}
 		return $jsb.getMessageBus().publish(this, msg, params, arg1, arg2);
 	},
-	
+
 	lock: function(lName){
 		var locker = $jsb.getLocker();
 		if(locker){
@@ -4180,7 +4214,7 @@ JSB({
 			locker.lock(mtxName);
 		}
 	},
-	
+
 	unlock: function(lName){
 		var locker = $jsb.getLocker();
 		if(locker){
@@ -4192,20 +4226,20 @@ JSB({
 			locker.unlock(mtxName);
 		}
 	},
-	
+
 	setupSync: function(){
 		if(!this.getJsb().getSync() || !this.$_syncScopes){
 			return;
 		}
-		
+
 		var defaultVal = 1000;
 		if(JSB().isObject(this.getJsb().getSync()) && !JSB().isNull(this.getJsb().getSync().updateCheckInterval)){
 			defaultVal = this.getJsb().getSync().updateCheckInterval;
 		}
-		
+
 		this.setSyncCheckInterval(defaultVal);
 	},
-	
+
 	setSyncCheckInterval: function(to){
 		var self = this;
 		var bUpdateServer = false;
@@ -4216,7 +4250,7 @@ JSB({
 		if(JSB.isObject(this.getJsb().getSync()) && !JSB.isNull(this.getJsb().getSync().updateClient)){
 			bUpdateClient = this.getJsb().getSync().updateClient;
 		}
-		if(!this.getJsb().getSync() 
+		if(!this.getJsb().getSync()
 			|| (JSB.isClient() && !bUpdateServer)
 			|| (!JSB.isClient() && !bUpdateClient) ){
 			return;
@@ -4237,7 +4271,7 @@ JSB({
 			}, self.syncCheckInterval, 'doSync_' + self.getId());
 		}
 	},
-	
+
 	updateSyncState: function(){
 		// update local state
 		var timeStamp = Date.now();
@@ -4300,7 +4334,7 @@ JSB({
 					if(JSB().isNull(syncInfoScope.data[i])){
 						syncInfoScope.data[i] = {};
 						updated = true;
-					} 
+					}
 					updated |= updateSyncScope(timeStamp, i, realScope[i], syncInfoScope.data[i]);
 				}
 				// removed
@@ -4324,7 +4358,7 @@ JSB({
 					return false;
 				}
 			}
-			
+
 			if(updated){
 				syncInfoScope.existed = true;
 				syncInfoScope.timeStamp = timeStamp;
@@ -4332,17 +4366,17 @@ JSB({
 			return updated;
 
 		}
-		
+
 		for(var scopeName in this.$_syncScopes){
 			updated |= updateSyncScope(timeStamp, scopeName, this[scopeName], this.$_syncScopes[scopeName]);
 		}
-		
+
 		return updated;
 	},
 
 	getSyncSlice: function(timeStamp) {
 		var slice = {}, minStamp = null, maxStamp = null;
-		
+
 		function getScopeSlice(timeStamp, syncScope, realScope){
 			if(syncScope.timeStamp < timeStamp){
 				return null;
@@ -4373,7 +4407,7 @@ JSB({
 				} else if(syncScope.type == 3) {
 					// bean
 					slice.d = {
-						jsb: syncScope.value.jsb.$name, 
+						jsb: syncScope.value.jsb.$name,
 						id: JSB().isClient() ? (syncScope.value.$_bindKey || syncScope.value.getId()) : syncScope.value.getId()
 					};
 				} else {
@@ -4387,7 +4421,7 @@ JSB({
 			};
 
 		}
-		
+
 		for(var scopeName in this.$_syncScopes){
 			var s = getScopeSlice(timeStamp, this.$_syncScopes[scopeName], this[scopeName]);
 			if(JSB().isPlainObject(s)){
@@ -4422,7 +4456,7 @@ JSB({
 				callback.call(self);
 			}
 		}
-		
+
 		function applyScopeSlice(name, syncSlice, parentRealScope, callback){
 			if(!syncSlice.ex){
 				// remove
@@ -4464,7 +4498,7 @@ JSB({
 								delete completeMap[pn];
 							}
 						})(pName);
-						
+
 					}
 				}
 				scope.iterateComplete = true;
@@ -4506,7 +4540,7 @@ JSB({
 								delete completeMap[pn];
 							}
 						})(pName);
-						
+
 					}
 				}
 				scope.iterateComplete = true;
@@ -4534,7 +4568,7 @@ JSB({
 			}
 
 		}
-		
+
 		for(var sName in slice){
 			completeMap[sName] = false;
 			(function(name){
@@ -4561,23 +4595,23 @@ JSB({
 	getId: function(){
 		return this.id;
 	},
-	
+
 	setId: function(id){
 		JSB().unregister(this);
 		JSB().register(this, id);
 	},
-	
+
 	getName: function(){
 		return this.getJsb().$name;
 	},
-	
+
 	_extendSyncInfo: function(syncInfo){
 		syncInfo.isChanged = function(path){
 			var matchedScopes = [this];
 			var parts = path.split('.');
 			for(var i in parts){
 				var p = parts[i];
-				
+
 				var newScopes = [];
 				for(var j in matchedScopes){
 					var curPtr = matchedScopes[j];
@@ -4607,27 +4641,27 @@ JSB({
 				}
 				matchedScopes = newScopes;
 			}
-			
+
 			return true;
 		}
 	},
-	
+
 	_onBeforeSync: function(syncInfo){
 		var si = JSB().clone(syncInfo);
 		this._extendSyncInfo(si);
 		return this.onBeforeSync(si);
 	},
-	
+
 	_onAfterSync: function(syncInfo){
 		var si = JSB().clone(syncInfo);
 		this._extendSyncInfo(si);
 		return this.onAfterSync(si);
 	},
-	
+
 	onAfterSync: function(syncInfo){},
-	
+
 	onSyncCheck: function(){},
-	
+
 	remote: function(){
 		if($jsb.isClient()){
 			return this.server();
@@ -4635,14 +4669,14 @@ JSB({
 			return this.client();
 		}
 	},
-	
+
 	existTrigger: function(key){
 		if($this.$_ecMap && $this.$_ecMap[key]){
 			return true;
 		}
 		return false;
 	},
-	
+
 	_ensureTriggerMap: function(){
 		if(!$this.$_ecMap){
 			$this.lock('trigger.map');
@@ -4652,7 +4686,7 @@ JSB({
 			$this.unlock('trigger.map');
 		}
 	},
-	
+
 	_ensureTriggerKey: function(key){
 		$this._ensureTriggerMap();
 		if(!$this.$_ecMap[key]){
@@ -4663,7 +4697,7 @@ JSB({
 			$this.unlock('trigger.map');
 		}
 	},
-	
+
 	ensureTrigger: function(keyArr, callback, valOrCondOpt){
 		$this._ensureTriggerMap();
 		var bKeyArr = true;
@@ -4691,7 +4725,7 @@ JSB({
 			}
 		}
 	},
-	
+
 	matchTrigger: function(keyArr, valOrCondOpt){
 		$this._ensureTriggerMap();
 		if(!JSB.isArray(keyArr)){
@@ -4721,10 +4755,10 @@ JSB({
 				break;
 			}
 		}
-		
+
 		return bMatched;
 	},
-	
+
 	setTrigger: function(key, valOpt){
 		$this._ensureTriggerKey(key);
 		if(!JSB.isDefined(valOpt)){
@@ -4733,7 +4767,7 @@ JSB({
 		$this.$_ecMap[key].val = valOpt;
 		for(var i = $this.$_ecMap[key].cArr.length - 1; i >= 0; i--){
 			var cDesc = $this.$_ecMap[key].cArr[i];
-			
+
 			var bMatched = false;
 			if(JSB.isFunction(cDesc.cond)){
 				bMatched = cDesc.cond.call($this, $this.$_ecMap[key].val);
@@ -4747,7 +4781,7 @@ JSB({
 					if(otherKey == key){
 						continue;
 					}
-					
+
 					if(JSB.isFunction(cDesc.cond)){
 						if(!cDesc.cond.call($this, $this.$_ecMap[otherKey].val)){
 							bMatched = false;
@@ -4788,7 +4822,7 @@ JSB({
 			}
 		}
 	},
-	
+
 	resetTrigger: function(keyArr){
 		$this._ensureTriggerMap();
 		if(!JSB.isArray(keyArr)){
@@ -4802,7 +4836,7 @@ JSB({
 			}
 		}
 	},
-	
+
 	removeTrigger: function(keyArr){
 		$this._ensureTriggerMap();
 		if(!JSB.isArray(keyArr)){
@@ -4817,7 +4851,7 @@ JSB({
 			}
 		}
 	},
-	
+
 	$client:{
 		$bootstrap: function(){
 			// use 'this' to access members
@@ -4831,7 +4865,7 @@ JSB({
 			this.$_syncState = 0;
 			this.setupSync();
 		},
-		
+
 		server: function(){
 //			return $server;
 			var f = function(){
@@ -4844,11 +4878,11 @@ JSB({
 		bind: function(key){
 			this.$_bindKey = key;
 		},
-		
+
 		isSynchronized: function(){
 			return this.$_synchronized || !this.getJsb().getSync() || $jsb.isNull(this.$_syncScopes);
 		},
-		
+
 		ensureSynchronized: function(callback, syncState){
 			if($jsb.isNull(syncState)){
 				syncState = null;
@@ -4863,7 +4897,7 @@ JSB({
 			}
 			this.$_syncCallbacks.push({callback: callback, syncState: syncState});
 		},
-		
+
 		matchSynchronized: function(syncState){
 			if($jsb.isNull(syncState)){
 				this.$_synchronized = true;
@@ -4885,17 +4919,17 @@ JSB({
 				}
 			}
 		},
-		
+
 		doSync: function(){
 			if(this.isDestroyed() || JSB().isNull(this.$_syncScopes)){
 				return;
 			}
 			var self = this;
 			var syncInfo = null;
-			
+
 			var bForceSync = false;
 			var callback = null;
-			
+
 			// parse args
 			for(var i in arguments){
 				var arg = arguments[i];
@@ -4905,14 +4939,14 @@ JSB({
 					callback = arg;
 				}
 			}
-			
+
 			if(JSB().isNull(this.$_lastDownloadSyncTimeStamp)){
 				this.$_lastDownloadSyncTimeStamp = 0;
 			}
 			if(JSB().isNull(this.$_lastUploadSyncTimeStamp)){
 				this.$_lastUploadSyncTimeStamp = 0;
 			}
-			
+
 			// build local slice
 			this.onSyncCheck();
 			var bNeedSync = this.updateSyncState();
@@ -4923,13 +4957,13 @@ JSB({
 					this.$_lastUploadSyncTimeStamp = Date.now();
 				}
 				var ts = this.$_lastDownloadSyncTimeStamp + 1;
-				
+
 				this.server().requestSyncInfo(ts, slice, function(resp, err){
 					var syncBeans = {};
 					var syncContainer = {
 						curSyncBeans: syncBeans
 					};
-					
+
 					function _syncIteration(s){
 						if(Object.keys(syncContainer.curSyncBeans).length === 0){
 							$this.matchSynchronized();
@@ -4951,15 +4985,15 @@ JSB({
 										cCnt.ready++;
 										if(cCnt.ready >= sCnt){
 											var sbMap = {};
-											
+
 											for(var ssid in syncContainer.curSyncBeans){
 												var robj = syncContainer.curSyncBeans[ssid];
-												
+
 												if(!robj.isSynchronized() && robj.$_syncState <= $this.$_syncState){
 													sbMap[ssid] = robj;
 												}
 											}
-											
+
 											syncContainer.curSyncBeans = sbMap;
 											_syncIteration(s + 1);
 										}
@@ -4967,9 +5001,9 @@ JSB({
 								})(sid);
 							}
 						}
-						
+
 					}
-					
+
 					function _syncComplete(){
 						_syncIteration(1);
 					}
@@ -4978,7 +5012,7 @@ JSB({
 						_syncComplete();
 						return;
 					}
-					
+
 					if(!JSB().isNull(resp.maxStamp)){
 						self.$_lastDownloadSyncTimeStamp = parseInt(resp.maxStamp);
 						if(!JSB().isNull(resp.minStamp) && self._onBeforeSync(resp.slice)){
@@ -4996,7 +5030,7 @@ JSB({
 					} else {
 						_syncComplete();
 					}
-					
+
 				});
 			} else {
 				if(callback){
@@ -5004,11 +5038,12 @@ JSB({
 				}
 			}
 		},
-		
+
 		// on client side
 		rpc: function(procName, params, callback, opts){
 			var self = this;
 			var sync = (opts && opts.sync) || false;
+			var plain = (opts && opts.plain) || false;
 			var tJsb = this.getJsb();
 			/*var callCtx = tJsb.saveCallingContext();*/
 			if(!this.$_bindKey){
@@ -5018,7 +5053,7 @@ JSB({
 				jsb: tJsb.$name,
 				instance: this.$_bindKey,
 				proc: procName,
-				params: JSB().substComplexObjectInRpcResult(params),
+				params: JSB().substComplexObjectInRpcResult(params, plain),
 				sync: (sync ? true: false)
 			}, function(res){
 				if(self.isDestroyed()){
@@ -5030,12 +5065,12 @@ JSB({
 					args[0] = r;
 					if(callback){
 						/*tJsb.putCallingContext(callCtx);*/
-						callback.apply(inst, args);	
+						callback.apply(inst, args);
 					}
 				});
 			} );
 		},
-		
+
 		ajax: function(url, params, callback, opts){
 			var pUrl = url;
 			if(pUrl.indexOf(':') == -1){
@@ -5051,19 +5086,19 @@ JSB({
 			}
 			return bUpdateClient;
 		},
-		
+
 		callbackAttr: function(proc){
 			return JSB().callbackAttr(proc, this);
 		}
 
 	},
-	
+
 	$server: {
 		$constructor: function(){
 			JSB().register(this);
 			this.setupSync();
 		},
-		
+
 		client: function(){
 //			return $client;
 			var f = function(){
@@ -5072,7 +5107,7 @@ JSB({
 			f.prototype = this.jsb.$_clientProcs;
 			return new f();
 		},
-		
+
 		server: function(node, opts){
 			var f = function(){
 				this.__instance = $this;
@@ -5090,9 +5125,9 @@ JSB({
 			}
 			return bUpdateServer;
 		},
-		
+
 		onSyncRequest: function(){},
-		
+
 		doSync: function(callback){
 			if(this.isDestroyed() || JSB().isNull(this.$_syncScopes)){
 				return;
@@ -5106,7 +5141,7 @@ JSB({
 				callback.call(this);
 			}
 		},
-		
+
 		requestSyncInfo: function(timeSlice, syncInfo){
 			var self = this;
 			if(JSB().isNull(this.$_syncScopes)){
@@ -5114,7 +5149,7 @@ JSB({
 			}
 			// perform onSync event call
 			this.onSyncRequest();
-/*			
+/*
 			// perform updateSyncState if required
 			var curTimeStamp = new Date().getTime();
 			var bNeedUpdate = this.updateSyncState();
@@ -5133,9 +5168,9 @@ JSB({
 				retSlice.maxStamp = Date.now();
 				needUpdate |= this.updateSyncState();
 			}
-			
+
 			if(needUpdate){
-/*				
+/*
 				if(!JSB.isDefined(this.sscount)){
 					this.sscount = 0;
 				}
@@ -5144,20 +5179,20 @@ JSB({
 					debugger;
 					this.updateSyncState()
 				}
-*/				
+*/
 				JSB.defer(function(){
-					self.client().doSync(true);	
+					self.client().doSync(true);
 				}, 0);
 			}
 			return retSlice;
 		},
-		
+
 		// on server side
 		rpc: function(procName, params, callback, opts){
 			var self = this;
 			var node = opts && opts.node;
 			var session = opts && opts.session;
-			
+
 			if(JSB.isDefined(node) && (!node || node == JSB.getClusterProvider().getNodeAddress())){
 				// execute on locale node (self-call)
 				try {
@@ -5176,13 +5211,13 @@ JSB({
 			}
 			var tJsb = this.getJsb();
 			/*var callCtx = tJsb.saveCallingContext();*/
-			
+
 			var execCmd = {
 				instance: this,
 				proc: procName,
-				params: JSB().substComplexObjectInRpcResult(params)
+				params: JSB().substComplexObjectInRpcResult(params, opts.plain)
 			};
-			
+
 			if(JSB.isDefined(node)){
 				// execute on remote node
 				execCmd.session = session || JSB().getCurrentSession();
@@ -5233,27 +5268,27 @@ JSB({
 JSB({
 	$name: 'JSB.Repository',
 	$singleton: true,
-	
+
 	items: {},
 	loadList: {},
 	pathMapIndex: {},
 	stages: [],
-	
+
 	$constructor: function(){
 		JSB().setRepository(this);
 		JSB().onLoad(function(){
 			$this.checkCompleteStage(this);
 		});
 	},
-	
+
 	ensureLoaded: function(callback){
 		this.ensureTrigger('loaded', callback, function(val){return val >= 2;});
 	},
-	
+
 	ensureSystemLoaded: function(callback){
 		this.ensureTrigger('loaded', callback, function(val){return val >= 1;});
 	},
-	
+
 	registerPath: function(beanCfg){
 		var name = beanCfg.$name;
 		if(JSB.isSystem(name)){
@@ -5270,7 +5305,7 @@ JSB({
 			this.pathMapIndex[pathFile] = name;
 		}
 	},
-	
+
 	register: function(beanCfg, opts){
 		if(!beanCfg){
 			return;
@@ -5302,7 +5337,7 @@ JSB({
 		this.loadList[name] = true;
 		if(locker)locker.unlock('_jsb_repo');
 	},
-	
+
 	registerLoaded: function(beanCfg, jsb){
 		var name = beanCfg.$name;
 		var entry = this.items[name];
@@ -5313,7 +5348,7 @@ JSB({
 		entry.jsb = jsb;
 		this.registerPath(beanCfg);
 	},
-	
+
 	load: function(stage){
 		var locker = JSB().getLocker();
 		var loadArr = Object.keys(this.loadList);
@@ -5323,7 +5358,7 @@ JSB({
 			this.stages[stage][loadArr[i]] = true;
 		}
 		if(locker)locker.unlock('_jsb_repo_stages');
-		
+
 		for(var i = 0; i < loadArr.length; i++){
 			var name = loadArr[i];
 			var entry = this.items[name];
@@ -5331,14 +5366,14 @@ JSB({
 			var cfg = entry.cfg;
 			// do load
 			JSB(cfg);
-			
+
 			if(locker)locker.lock('_jsb_repo');
 			delete this.loadList[name];
 			if(locker)locker.unlock('_jsb_repo');
 		}
-		
+
 	},
-	
+
 	checkCompleteStage: function(jsbObj){
 		var name = jsbObj.getDescriptor().$name;
 		var entry = this.items[name];
@@ -5356,11 +5391,11 @@ JSB({
 			}
 		}
 	},
-	
+
 	get: function(name){
 		return this.items[name];
 	},
-	
+
 	getByPath: function(path){
 		var name = this.pathMapIndex[path];
 		if(!name){
@@ -5376,23 +5411,23 @@ JSB({
 JSB({
 	$name:'JSB.MessageBus',
 	$singleton: true,
-	
+
 	msgIdx: {},
 	objIdx: {},
 	callIdx: {},
-	
+
 	$constructor: function(){
 		$base();
 		JSB().setMessageBus(this);
 	},
-		
+
 	/* methods */
-	
+
 	_resolveMessage: function(msg, opts){
 		if($jsb.isArray(msg)){
 			throw new Error('Message objects can only be a string or JSON object');
 		}
-		
+
 		if(!$jsb.isString(msg)){
 			throw new Error('Expecting string message');
 		}
@@ -5402,7 +5437,7 @@ JSB({
 		if(opts){
 			$jsb.merge(msgObj, opts);
 		}
-/*		
+/*
 		if(!msgObj.session){
 			msgObj.session = false;
 			msgObj.local = true;
@@ -5410,11 +5445,11 @@ JSB({
 			msgObj.session = true;
 			msgObj.local = false;
 		}
-*/		
-		
+*/
+
 		return msgObj;
 	},
-	
+
 	_subscribe: function(w, msgObj, callback){
 		var msg = msgObj.message;
 		if(!w.getId()){
@@ -5428,9 +5463,9 @@ JSB({
 			c: callback,
 			target: w
 		}, msgObj);
-		
+
 		$this.lock();
-		
+
 		// msgIdx
 		if($jsb.isNull($this.msgIdx[msg])){
 			$this.msgIdx[msg] = {};
@@ -5439,43 +5474,43 @@ JSB({
 			$this.msgIdx[msg][objId] = [];
 		}
 		$this.msgIdx[msg][objId].push(msgDesc);
-		
+
 		// objIdx
 		if($jsb.isNull($this.objIdx[objId])){
 			$this.objIdx[objId] = {};
 		}
 		$this.objIdx[objId][msg] = true;
-		
+
 		// callIdx
 		$this.callIdx[msgObj.callId] = msgDesc;
-		
+
 		$this.unlock();
-		
+
 		if(msgObj.session && !msgObj.sessionRemote){
 			// subscribe remote
 			if($this.remote()._subscribe){
 				$this.remote()._subscribe(w, JSB.merge({}, msgObj, {sessionRemote: true}));
 			}
 		}
-		
+
 		if(JSB.isServer()){
 			if(msgObj.cluster && !msgObj.clusterRemote){
 				// subscribe remote
 				$this._subscribeRemoteNodes(w, msgObj);
 			}
-			
+
 		}
 	},
-	
+
 	_unsubscribe: function(w, msgObj){
 		var msg = msgObj.message;
 		var objId = w.getSession() + '/' + w.getId();
-		
+
 		var remoteSessionLst = [];
 		var remoteClusterLst = [];
-		
+
 		this.lock();
-		
+
 		// remove from msgIdx
 		if($this.msgIdx[msg] && $this.msgIdx[msg][objId]){
 			for(var i = 0; i < $this.msgIdx[msg][objId].length; i++){
@@ -5503,7 +5538,7 @@ JSB({
 				delete $this.msgIdx[msg];
 			}
 		}
-		
+
 		// remove from objIdx
 		if($this.objIdx[objId] && $this.objIdx[objId][msg]){
 			delete $this.objIdx[objId][msg];
@@ -5511,9 +5546,9 @@ JSB({
 				delete $this.objIdx[objId];
 			}
 		}
-		
+
 		this.unlock();
-		
+
 		// remove from remote lists
 		for(var i = 0; i < remoteSessionLst.length; i++){
 			var msgDesc = remoteSessionLst[i];
@@ -5528,11 +5563,11 @@ JSB({
 			}
 		}
 	},
-	
+
 	subscribe: function(w, msgObj, arg1, arg2){
 		var callback = null, opts = null;
 		if($jsb.isObject(arg1)){
-			opts = arg1, 
+			opts = arg1,
 			callback = arg2;
 		} else {
 			callback = arg1;
@@ -5550,7 +5585,7 @@ JSB({
 			this._subscribe(w, this._resolveMessage(msgObj, opts), callback);
 		}
 	},
-		
+
 	unsubscribe: function(w, msgObj){
 		if(!msgObj){
 			// combine all messages from object
@@ -5568,7 +5603,7 @@ JSB({
 			this._unsubscribe(w, this._resolveMessage(msgObj));
 		}
 	},
-	
+
 	dispatch: function(callId, w, msg, params){
 		var ret = undefined;
 		var subDesc = this.callIdx[callId];
@@ -5604,14 +5639,14 @@ JSB({
 		}
 		return ret;
 	},
-	
+
 	publish: function(w, msgObj, params, arg1, arg2){
 		if($jsb.isArray(msgObj)){
 			throw new Error('Publishing array of messages is not supported');
 		}
 		var callback = null, opts = null;
 		if($jsb.isObject(arg1)){
-			opts = arg1, 
+			opts = arg1,
 			callback = arg2;
 		} else {
 			callback = arg1;
@@ -5649,7 +5684,7 @@ JSB({
 		if(opts && opts.sort && $jsb.isFunction(opts.sort)){
 			subQueue.sort(opts.sort);
 		}
-		
+
 		var localIds = [];
 		var sessionRemoteIds = [];
 		var clusterRemoteIds = [];
@@ -5676,7 +5711,7 @@ JSB({
 				}
 			}
 		}
-		
+
 		function storeDispatchResult(ret, subDesc){
 			if(!$jsb.isNull(ret)){
 				if(!response[subDesc.target.getId()]){
@@ -5685,9 +5720,9 @@ JSB({
 				response[subDesc.target.getId()].push(ret);
 			}
 		}
-		
+
 		var cs = {bStopFlag: false, sessionComplete: 0, clusterComplete: 0};
-		
+
 		function checkComplete(){
 			if(cs.bStopFlag || (cs.sessionComplete == sessionRemoteIds.length && cs.clusterComplete == clusterRemoteIds.length)){
 				if(callback){
@@ -5697,7 +5732,7 @@ JSB({
 			}
 			return false;
 		}
-		
+
 		// dispatch local
 		for(var i = 0; i < localIds.length && !cs.bStopFlag; i++){
 			var subDesc = $this.callIdx[localIds[i]];
@@ -5714,11 +5749,11 @@ JSB({
 				}
 			}
 		}
-		
+
 		if(checkComplete()){
 			return response;
 		}
-		
+
 		// dispatch session remote
 		if(sessionRemoteIds.length > 0){
 			for(var i = 0; i < sessionRemoteIds.length && !cs.bStopFlag; i++){
@@ -5744,7 +5779,7 @@ JSB({
 				})(i);
 			}
 		}
-		
+
 		// dispatch cluster remote
 		if(clusterRemoteIds.length > 0){
 			for(var i = 0; i < clusterRemoteIds.length && !cs.bStopFlag; i++){
@@ -5771,10 +5806,10 @@ JSB({
 			}
 		}
 	},
-	
+
 	$server: {
 		cluster: null,
-		
+
 		$constructor: function(){
 			$base();
 			JSB().setMessageBus(this);
@@ -5785,14 +5820,14 @@ JSB({
 				}
 			});
 		},
-		
+
 		_collectClusterSubscriptionsFromNodes: function(){
 			var otherMembers = $this.cluster.getMembers(true);
 			for(var addr in otherMembers){
 				$this.server(addr)._invokeClusterSubscriptions(this.cluster.getNodeAddress());
 			}
 		},
-		
+
 		_invokeClusterSubscriptions: function(addr){
 			var remoteClusterLst = [];
 			// combine
@@ -5812,7 +5847,7 @@ JSB({
 				}
 			}
 		},
-		
+
 		_subscribeRemoteNodes: function(w, msgObj){
 			if(!this.cluster.isActive()){
 				return;
@@ -5823,7 +5858,7 @@ JSB({
 				this.server(mAddr, {session: w.getSession()})._subscribe(w, nMsgObj);
 			}
 		},
-		
+
 		_unsubscribeRemoteNodes: function(w, msgObj){
 			if(!this.cluster.isActive()){
 				return;
@@ -5844,12 +5879,12 @@ JSB({
 	$constructor: function(){
 		JSB().addLibraryScope('Base64', this);
 	},
-	
+
 	$client: {
 		_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-		
+
 		encode: function(bytes){
-			
+
 			function Uint8ArrayToBase64(bytes) {
 				var base64    = '';
 				var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -5897,10 +5932,10 @@ JSB({
 
 					base64 += encodings[a] + encodings[b] + encodings[c] + '=';
 				}
-				
+
 				return base64;
 			}
-			
+
 			var binary = '';
 			var buffer = null;
 			if($jsb.isArrayBuffer(bytes)){
@@ -5920,7 +5955,7 @@ JSB({
 			}
 		    return JSB().Window.btoa( binary );
 		},
-		
+
 		decode: function(base64){
 			function removePaddingChars(input){
 				var lkey = $this._keyStr.indexOf(input.charAt(input.length - 1));
@@ -5929,45 +5964,45 @@ JSB({
 				}
 				return input;
 			}
-			
+
 			base64 = removePaddingChars(base64);
 			base64 = removePaddingChars(base64);
-			
+
 			var decodedSize = (base64.length / 4) * 3;
 			var bytes = new Uint8Array(decodedSize);
-			
+
 			base64 = base64.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-			
+
 			var enc1, enc2, enc3, enc4;
 			var chr1, chr2, chr3;
-			
-			for(var i = 0, j = 0; i < decodedSize; i += 3){	
+
+			for(var i = 0, j = 0; i < decodedSize; i += 3){
 				//get the 3 octects in 4 ascii chars
 				enc1 = this._keyStr.indexOf(base64.charAt(j++));
 				enc2 = this._keyStr.indexOf(base64.charAt(j++));
 				enc3 = this._keyStr.indexOf(base64.charAt(j++));
 				enc4 = this._keyStr.indexOf(base64.charAt(j++));
-		
+
 				chr1 = (enc1 << 2) | (enc2 >> 4);
 				chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
 				chr3 = ((enc3 & 3) << 6) | enc4;
-		
-				bytes[i] = chr1;			
+
+				bytes[i] = chr1;
 				if (enc3 != 64) bytes[i+1] = chr2;
 				if (enc4 != 64) bytes[i+2] = chr3;
 			}
-/*			
+/*
 			var binary =  JSB().Window.atob(base64);
 		    var len = binary.length;
 		    var bytes = new Uint8Array( len );
 		    for (var i = 0; i < len; i++)        {
 		        bytes[i] = binary.charCodeAt(i);
 		    }
-*/		    
+*/
 		    return bytes.buffer;
 		}
 	},
-	
+
 	$server: {
 		$require: ['java:org.jsbeans.helpers.BufferHelper'],
 		encode: function(bytes){
@@ -5983,7 +6018,7 @@ JSB({
 			}
 			return '' + BufferHelper.base64Encode(buffer);
 		},
-		
+
 		decode: function(str){
 			return BufferHelper.base64Decode(str);
 		}
@@ -6010,7 +6045,7 @@ JSB({
 		$constructor: function(){
 			JSB().setLogger(this);
 		},
-		
+
 		_prepareObj: function(obj){
 			if($jsb.isObject(obj) || $jsb.isError(obj)){
 				if(obj.message){
@@ -6043,12 +6078,12 @@ JSB({
 				return obj;
 			}
 		},
-		
+
 		_createTimeString: function(){
 			var t = new Date();
 			return '' + t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate() + ' ' + t.getHours() + ':' + t.getMinutes() + ':' + t.getSeconds() + ',' + t.getMilliseconds();
 		},
-		
+
 		info: function(str){
 			console.log(this._createTimeString() + ' [INFO] ' + this._prepareObj(str));
 		},
@@ -6077,23 +6112,23 @@ JSB({
 			JSB().setProvider(this);
 			this.enableServerClientCallTracking(true);
 		},
-		
+
 		options: {
 			minDeferTimeout: 5000,	// 5 sec
 			maxDeferTimeout: 60000,	// 60 sec
-			
+
 			minScInterval: 1,
 			maxScInterval: 4096,
 			defScInterval: 256
 		},
-		
+
 		queueToSend: {},
 		queueToCheck: {},
 		rpcEntryMap: {},
 		rpcTimeout: null,
 		batchStartTime: null,
 		lastTrackId: null,
-		
+
 		// vars
 		cmdTimeoutVal: 0,
 		bulkTimeoutVal: 300,
@@ -6109,7 +6144,7 @@ JSB({
 			}
 			return "";
 		},
-		
+
 		setServerBase: function(base){
 			if(!JSB().isString(base)){
 				return;
@@ -6131,7 +6166,7 @@ JSB({
 				this.basePath += '/';
 			}
 		},
-		
+
 		loadObject: function(className, callback){
 			this.ajax(this.getServerBase() + 'jsb', {
 				cmd: 'get',
@@ -6166,19 +6201,19 @@ JSB({
 				}
 			});
 		},
-		
+
 		xhr: function(xhrObj){
-			
+
 			function setRunTag(runTag){
 				if(!runTag){
 					return;
 				}
 				if($this.runTag && runTag && $this.runTag != runTag){
 					$this.publish('JSB.AjaxProvider.serverReloaded', {oldTag: $this.runTag, newTag: runTag});
-				} 
+				}
 				$this.runTag = runTag;
 			}
-			
+
 			function getXHR(){
 				var xmlhttp;
 				try {
@@ -6205,7 +6240,7 @@ JSB({
 			if(!xhrObj.dataType){
 				xhrObj.dataType = 'text';
 			}
-			
+
 			// prepare params
 			var params = '';
 			if(JSB.isObject(xhrObj.data)){
@@ -6222,7 +6257,7 @@ JSB({
 			} else {
 				params = xhrObj.data;
 			}
-			
+
 			// combine url and params if GET
 			if(xhrObj.type == 'GET' || xhrObj.dataType == 'jsonp'){
 				if(url.indexOf('?') == -1){
@@ -6234,7 +6269,7 @@ JSB({
 				params = null;
 			}
 
-			
+
 			if(xhrObj.dataType == 'jsonp'){
 				// prepare result callback
 				var cName = 'c' + JSB().generateUid();
@@ -6246,25 +6281,25 @@ JSB({
 					// parse result
 					xhrObj.success(resdata, 200, null);
 				}
-				
+
 				if(url.indexOf('?') == -1){
 					url += '?';
 				} else {
 					url += '&';
 				}
 				url += 'callback=JSB().scriptCallbacks.' + cName;
-				
+
 				// send via script tag
 				var _s = document.createElement("script");
 			    _s.type = "text/javascript";
 			    if(url.indexOf('http') == -1){
-			    	_s.src = self.getProvider().getServerBase() + url;	 
+			    	_s.src = self.getProvider().getServerBase() + url;
 			    } else {
 			    	_s.src = url;
 			    }
 			    var _oHead = document.getElementsByTagName('HEAD').item(0);
 			    _oHead.appendChild( _s);
-				
+
 			} else {
 				// send via xhr
 				var to = null;
@@ -6298,7 +6333,7 @@ JSB({
 						}
 					}
 				}
-				
+
 				if(JSB.isDefined(xhrObj.timeout) && xhrObj.timeout > 0){
 					to = window.setTimeout(function(){
 						xhr.abort();
@@ -6307,11 +6342,11 @@ JSB({
 						}
 					}, xhrObj.timeout);
 				}
-				
+
 				xhr.send(params);
 			}
 		},
-		
+
 		ajax: function(url, params, callback, opts){
 			var self = this;
 			var timeout = opts && opts.timeout;
@@ -6373,11 +6408,11 @@ JSB({
 								$this.setTrigger(triggerKey, {
 									status: 'success',
 									data: data
-								})	
+								})
 							} else {
 								callback('success', data);
 							}
-							
+
 						},
 						error: function(xhr, status, err){
 							if(xhr.status == 404 || xhr.status == 401){
@@ -6386,7 +6421,7 @@ JSB({
 									$this.setTrigger(triggerKey, {
 										status: 'error',
 										data: xhr
-									})	
+									})
 								} else {
 									callback('error', xhr);
 								}
@@ -6402,13 +6437,13 @@ JSB({
 						}
 					});
 				}
-				
+
 				if(needRequest){
 					doXHR();
 				}
 			}
 		},
-/*		
+/*
 		decodeObject: function(obj){
 			if( typeof(obj) === 'object' ){
 				for( var key in obj ) {
@@ -6445,12 +6480,12 @@ JSB({
 							debugger;
 						}
 					}
-					
+
 				}
 			}
 		},
-*/		
-		
+*/
+
 		// on clinet side
 		enqueueRpc: function(cmd, callback){
 			var id = JSB().generateUid();
@@ -6461,14 +6496,14 @@ JSB({
 			this.updateRpc();
 			return id;
 		},
-		
+
 		updateRpc: function(){
 			var self = this;
 			if(this.batchStartTime == null ){
 				this.batchStartTime = Date.now();
 			} else if(Date.now() - this.batchStartTime > this.bulkTimeoutVal){
 				return;
-			}	
+			}
 			if(this.rpcTimeout != null){
 				JSB().Window.clearTimeout(this.rpcTimeout);
 			}
@@ -6478,7 +6513,7 @@ JSB({
 				self.rpcTimeout = null;
 			}, this.cmdTimeoutVal);
 		},
-		
+
 		translateStreaming: function(entry){
 			var p = entry.cmd.params;
 			if(p && p.__di){
@@ -6493,12 +6528,12 @@ JSB({
 				}
 			}
 		},
-		
+
 		doRpc: function(){
 			var self = this;
 			var rpcBatch = [];
 
-			// place new queries into batch 
+			// place new queries into batch
 			for(var id in this.queueToSend){
 				var entry = this.queueToSend[id];
 				this.translateStreaming(entry);
@@ -6506,7 +6541,7 @@ JSB({
 				this.rpcEntryMap[id] = entry;
 			}
 			this.queueToSend = {};
-			
+
 			if( rpcBatch.length > 0 ){
 				// split batch into several batches
 				var lastOffset = 0;
@@ -6516,7 +6551,7 @@ JSB({
 						break;
 					}
 					lastOffset += curBatch.length;
-					
+
 					var cmdStr = JSON.stringify(curBatch);
 					this.ajax(this.getServerBase() + 'jsb', {
 						cmd: 'rpc',
@@ -6535,10 +6570,10 @@ JSB({
 						}
 					});
 				}
-				
+
 			}
 		},
-		
+
 		handleRpcResponse: function(rpcResp){
 			var self = this;
 			var needEnforce = false;
@@ -6581,7 +6616,7 @@ JSB({
 				}, this.updateRpcTimeout);
 			}
 		},
-		
+
 		enforceServerClientCallTracking: function(){
 			var newInterval = this.serverClientCallTrackInterval;
 			if(newInterval > this.options.defScInterval){
@@ -6594,7 +6629,7 @@ JSB({
 			}
 			this.enableServerClientCallTracking(newInterval);
 		},
-		
+
 		slowDownServerClientCallTracking: function(){
 			var newInterval = this.serverClientCallTrackInterval * 1.5;
 			if(newInterval > this.options.maxScInterval){
@@ -6602,91 +6637,93 @@ JSB({
 			}
 			this.enableServerClientCallTracking(newInterval);
 		},
-		
+
 		enableServerClientCallTracking: function(trackInterval){
 			var self = this;
-			
+
 			if(JSB.isNull(trackInterval)){
 				trackInterval = this.options.maxScInterval;
 			}
-			
+
 			if(trackInterval == false){
 				trackInterval = 0;
 			}
-			
+
 			if(trackInterval == true){
 				trackInterval = this.options.maxScInterval;
 				this.serverClientCallTrackInterval = trackInterval;
 				_doTrack();
 				return;
 			}
-			
+
 			if(this.serverClientCallTrackInterval == trackInterval){
 				return;
 			}
-			
+
 			if(this.serverClientCallTrackInterval && trackInterval > this.serverClientCallTrackInterval){
 				this.serverClientCallTrackInterval = trackInterval;
 				return;
 			}
-			
+
 			this.serverClientCallTrackInterval = trackInterval;
-			
+
 			function _doTrack(){
 				self.rpc('getServerClientCallSlice', [self.lastTrackId], function(res){
-					self.lastTrackId = res.lastId;
-					var entries = res.slice;
-					if(entries.length === 0){
-						self.slowDownServerClientCallTracking();
-					} else {
-						self.enforceServerClientCallTracking();
-					}
-					// do something with slice
-					for(var i = 0; i < entries.length; i++){
-						var entry = entries[i];
-						for(var j = 0; j < entry.clientIds.length; j++){
-							var clientId = entry.clientIds[j];
-							var clientInstance = JSB().getInstance(clientId);
-							if(clientInstance && clientInstance[entry.proc]){
-								(function(cInst, proc, params, respond, id, cId){
-									function doCall(p){
-										JSB.defer(function(){
-											var result = null;
-											var fail = null;
-											try {
-												if(JSB().isArray(p)){
-													result = cInst[proc].apply(cInst, p);
-												} else {
-													result = cInst[proc].call(cInst, p);
+					try {
+						self.lastTrackId = res.lastId;
+						var entries = res.slice;
+						if(entries.length === 0){
+							self.slowDownServerClientCallTracking();
+						} else {
+							self.enforceServerClientCallTracking();
+						}
+						// do something with slice
+						for(var i = 0; i < entries.length; i++){
+							var entry = entries[i];
+							for(var j = 0; j < entry.clientIds.length; j++){
+								var clientId = entry.clientIds[j];
+								var clientInstance = JSB().getInstance(clientId);
+								if(clientInstance && clientInstance[entry.proc]){
+									(function(cInst, proc, params, respond, id, cId){
+										function doCall(p){
+											JSB.defer(function(){
+												var result = null;
+												var fail = null;
+												try {
+													if(JSB().isArray(p)){
+														result = cInst[proc].apply(cInst, p);
+													} else {
+														result = cInst[proc].call(cInst, p);
+													}
+												} catch(e){
+													result = null;
+													fail = e;
 												}
-											} catch(e){
-												result = null;
-												fail = e;
-											}
-											if(respond){
-												self.rpc('submitServerClientCallResult', {
-													id: id,
-													clientId: cId,
-													result: result,
-													fail: fail
-												}, null, {sync:true});
-											}
-										}, 0);
-									}
-									JSB().injectComplexObjectInRpcResult(params, doCall);
-								})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
+												if(respond){
+													self.rpc('submitServerClientCallResult', {
+														id: id,
+														clientId: cId,
+														result: result,
+														fail: fail
+													}, null, {sync:true});
+												}
+											}, 0);
+										}
+										JSB().injectComplexObjectInRpcResult(params, doCall);
+									})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
+								}
 							}
-						} 
+						}
+					} finally {
+						if(self.serverClientCallTrackInterval){
+							JSB().defer(function(){
+								_doTrack();
+							}, self.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
+						}
 					}
-					
-					if(self.serverClientCallTrackInterval){
-						JSB().defer(function(){
-							_doTrack();
-						}, self.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
-					}
-				}, {sync: true});
+				}, {sync: true, plain:true});
 			}
-			
+
 			if(self.serverClientCallTrackInterval){
 				JSB().defer(function(){
 					_doTrack();
@@ -6695,15 +6732,15 @@ JSB({
 		}
 
 	},
-	
+
 	$server: {
 		rpcQueueFirst: null,
 		rpcQueueLast: null,
 		rpcMap: {},
 		uploadMap: {},
-		
+
 		maxBatchSize: 10,
-		
+
 		$constructor: function(){
 			$base();
 			if(JSB().getProvider()){
@@ -6712,13 +6749,13 @@ JSB({
 			JSB().setProvider(this);
 			this.enableRpcCleanup(true);
 		},
-		
+
 		performUpload: function(streamId){
 			JSB.getLogger().debug('performUpload: ' + streamId);
 			var scope = (function(){return this;}).call(null);
 			var javaStream = scope[streamId];
 			delete scope[streamId];
-			
+
 			// create proxy file stream
 			var StreamClass = JSB().get('JSB.IO.Stream').getClass();
 			var ProxyStreamClass = JSB().get('JSB.IO.ProxyStream').getClass();
@@ -6730,7 +6767,7 @@ JSB({
 			if(!fs.exists(uploadFileDir)){
 				fs.createDirectory(uploadFileDir, true);
 			}
-				
+
 			var uploadFilePath = fs.join(uploadFileDir, streamId + '.upload');
 			var writeStream = fs.open(uploadFilePath, {write:true, binary:true});
 			var readStream = fs.open(uploadFilePath, {read:true, binary:true});
@@ -6759,9 +6796,9 @@ JSB({
 				proxyStream.complete();
 				$this.setTrigger('uploadMap' + streamId);
 			}, 0);
-			
+
 		},
-		
+
 		ensureUpload: function(streamId, callback){
 			var key = 'uploadMap' + streamId;
 			this.ensureTrigger(key, function(){
@@ -6773,15 +6810,19 @@ JSB({
 				callback.call($this, javaStream);
 			});
 		},
-		
+
 		performRpc: function(jsoName, instanceId, procName, params, rpcId){
 			var np = {};
-			var ret = null, fail = null;
-			
+			var ret = null, fail = null, plain = false;
+
 			$jsb.injectComplexObjectInRpcResult(params, function(r){
 				np.res = r;
 				try {
 					ret = $this.executeClientRpc(jsoName, instanceId, procName, np.res);
+					if(JSB.isRpcResponse(ret)){
+						plain = ret.isPlain();
+						ret = ret.getValue();
+					}
 				} catch(e){
 					fail = e;
 					if($jsb.getLogger()){
@@ -6789,7 +6830,7 @@ JSB({
 					}
 					if(!rpcId){
 						throw e;
-					} 
+					}
 				}
 				if(rpcId){
 					var respPacket = {
@@ -6804,10 +6845,14 @@ JSB({
 								respPacket.error = fail;
 								respPacket.success = false;
 							} else {
+								if(JSB.isRpcResponse(ret)){
+									plain = ret.isPlain();
+									ret = ret.getValue();
+								}
 								respPacket.result = ret;
 								respPacket.success = true;
 							}
-							$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
+							$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession(), plain: plain});
 						});
 					} else {
 						if(fail){
@@ -6817,11 +6862,11 @@ JSB({
 							respPacket.result = ret;
 							respPacket.success = true;
 						}
-						$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
+						$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession(), plain: plain});
 					}
 				}
 			});
-			
+
 			if(!rpcId){
 				if(!JSB.isDefined(np.res)){
 					throw new Error("Synchronous RPC don't support streamed transfers");
@@ -6829,8 +6874,8 @@ JSB({
 				if(JSB.isFuture(ret)){
 					throw new Error("Synchronous RPC don't support futures");
 				}
-				return $jsb.substComplexObjectInRpcResult(ret);
-			} 
+				return $jsb.substComplexObjectInRpcResult(ret, plain);
+			}
 		},
 
 
@@ -6839,11 +6884,11 @@ JSB({
 			if(!serverInstance){
 				throw new Error('Unable to find Bean server instance: ' + jsbName + '(' + instanceId + ')');
 			}
-			
+
 			if(!serverInstance[procName]){
 				throw new Error('Failed to call method "' + procName + '" in bean "' + jsbName + '". Method not exists');
 			}
-			
+
 			var res = null;
 
 			if(JSB().isArray(params)){
@@ -6853,13 +6898,13 @@ JSB({
 			}
 			return res;
 		},
-		
+
 		executeServerRpc: function(jsbName, instanceId, procName, params){
 			var serverInstance = JSB().constructServerInstanceFromServerId(jsbName, instanceId);
 			if(!serverInstance){
 				throw new Error('Unable to find Bean server instance: ' + jsbName + '(' + instanceId + ')');
 			}
-			
+
 			if(!serverInstance[procName]){
 				throw new Error('Failed to call method "' + procName + '" in bean "' + jsbName + '". Method not exists');
 			}
@@ -6873,18 +6918,18 @@ JSB({
 			}
 			return serverInstance[procName].call(serverInstance, params);
 		},
-		
+
 		enableRpcCleanup: function(b){
 			var self = this;
 			var cleanupInterval = 60000;	// 1 min
 			var invalidateInterval = 300000;	// 5 min
-			
+
 			if(this.rpcCleanupEnabled == b){
 				return;
 			}
-			
+
 			this.rpcCleanupEnabled = b;
-			
+
 			function _doCleanup(){
 				if(self.rpcQueueFirst){
 					// perform cleanup
@@ -6914,12 +6959,12 @@ JSB({
 					}, cleanupInterval, '_jsb_rpcCleanup');
 				}
 			}
-			
+
 			if(b){
 				_doCleanup();
 			}
 		},
-		
+
 		// on server side
 		enqueueRpc: function(cmd){
 			// cmd.instance
@@ -6935,7 +6980,7 @@ JSB({
 				session: cmd.session,
 				next: null
 			};
-			
+
 			var locker = JSB().getLocker();
 			locker.lock('_jsb_rpcQueue');
 			if(this.rpcQueueLast && this.rpcQueueLast.timestamp >= entry.timestamp){
@@ -6951,13 +6996,13 @@ JSB({
 			} else {
 				this.rpcQueueLast = this.rpcQueueFirst;
 			}
-			
+
 			locker.unlock('_jsb_rpcQueue');
 		},
-		
+
 		getServerClientCallSlice: function(fromId){
 			var slice = [];
-			
+
 			if(!fromId){
 				if(this.rpcQueueLast){
 					return {
@@ -6971,7 +7016,7 @@ JSB({
 					};
 				}
 			}
-			
+
 			var lastId = fromId;
 			var fromEntry = this.rpcMap[fromId];
 			if(fromEntry){
@@ -6997,11 +7042,12 @@ JSB({
 				}
 				fromEntry = fromEntry.next;
 			}
-			
-			return {
+
+			// create response without complex objects to increase RPC result transfer speed
+			return JSB.createRpcResponse({
 				lastId: lastId,
 				slice: slice
-			};
+			},{plain:true});
 		},
 		
 		submitServerClientCallResult: function(obj){
