@@ -98,30 +98,6 @@ if(!(function(){return this;}).call(null).JSB){
 			ownLast: checkOwnLast()
 		},
 
-		RpcResponse: function(val, opts){
-			this.value = val;
-			this.options = opts || {};
-			
-			this.setPlain = function(){
-				this.options.plain = true;
-			}
-			
-			this.setComplex = function(){
-				this.options.plain = false;
-			}
-			
-			this.isPlain = function(){
-				return this.options.plain || false;
-			}
-			
-			this.isComplex = function(){
-				return !this.isPlain();
-			}
-			
-			this.getValue = function(){
-				return this.value;
-			}
-		},
 
 		isClient: function(){
 			if(this.isNull(this._isClient)){
@@ -1474,10 +1450,6 @@ if(!(function(){return this;}).call(null).JSB){
 			return this.isInstanceOf(obj, 'JSB.Future');
 		},
 		
-		isRpcResponse: function(obj){
-			return obj instanceof JSB().RpcResponse;
-		},
-		
 		isBean: function(obj, skipCheckPlain){
 			if(!skipCheckPlain && !this.isPlainObject(obj)){
 				return false;
@@ -2082,10 +2054,6 @@ if(!(function(){return this;}).call(null).JSB){
 		
 		createFuture: function(opts){
 			return new (this.getClass('JSB.Future'))(opts);
-		},
-		
-		createRpcResponse: function(val, opts){
-			return new (JSB().RpcResponse)(val, opts);
 		},
 		
 		classTree: function(qName){
@@ -3395,7 +3363,7 @@ if(!(function(){return this;}).call(null).JSB){
 			generateForkJoinTask(params);
 		},
 
-		substComplexObjectInRpcResult: function(res, bSkip){
+		substComplexObjectInRpcResult: function(res){
 			var self = this;
 			var reverseBindMap = this.getReverseBindMap();
 			var isServer = this.isServer();
@@ -3550,7 +3518,7 @@ if(!(function(){return this;}).call(null).JSB){
 				if(rType === "[object Array]"){
 					// parse array
 					var nobj = [];
-					for(var f = 0; f < res.length; f++){
+					for(var f in res){
 						path.push(f);
 						nobj[f] = _substComplexObjectInRpcResult(res[f]);
 						path.pop();
@@ -3603,12 +3571,10 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			
 			// prepare response
-			var dt = bSkip ? res:_substComplexObjectInRpcResult(res);
+			var dt = _substComplexObjectInRpcResult(res);
 			var dictVals = [];
-			if(!bSkip){
-				for(var dk in dict){
-					dictVals.push(dict[dk]);
-				}
+			for(var dk in dict){
+				dictVals.push(dict[dk]);
 			}
 			
 			return {__dt:dt, __di:dictVals};
@@ -5043,7 +5009,6 @@ JSB({
 		rpc: function(procName, params, callback, opts){
 			var self = this;
 			var sync = (opts && opts.sync) || false;
-			var plain = (opts && opts.plain) || false;
 			var tJsb = this.getJsb();
 			/*var callCtx = tJsb.saveCallingContext();*/
 			if(!this.$_bindKey){
@@ -5053,7 +5018,7 @@ JSB({
 				jsb: tJsb.$name,
 				instance: this.$_bindKey,
 				proc: procName,
-				params: JSB().substComplexObjectInRpcResult(params, plain),
+				params: JSB().substComplexObjectInRpcResult(params),
 				sync: (sync ? true: false)
 			}, function(res){
 				if(self.isDestroyed()){
@@ -5215,7 +5180,7 @@ JSB({
 			var execCmd = {
 				instance: this,
 				proc: procName,
-				params: JSB().substComplexObjectInRpcResult(params, opts.plain)
+				params: JSB().substComplexObjectInRpcResult(params)
 			};
 			
 			if(JSB.isDefined(node)){
@@ -6669,59 +6634,57 @@ JSB({
 			
 			function _doTrack(){
 				self.rpc('getServerClientCallSlice', [self.lastTrackId], function(res){
-					try {
-						self.lastTrackId = res.lastId;
-						var entries = res.slice;
-						if(entries.length === 0){
-							self.slowDownServerClientCallTracking();
-						} else {
-							self.enforceServerClientCallTracking();
-						}
-						// do something with slice
-						for(var i = 0; i < entries.length; i++){
-							var entry = entries[i];
-							for(var j = 0; j < entry.clientIds.length; j++){
-								var clientId = entry.clientIds[j];
-								var clientInstance = JSB().getInstance(clientId);
-								if(clientInstance && clientInstance[entry.proc]){
-									(function(cInst, proc, params, respond, id, cId){
-										function doCall(p){
-											JSB.defer(function(){
-												var result = null;
-												var fail = null;
-												try {
-													if(JSB().isArray(p)){
-														result = cInst[proc].apply(cInst, p);
-													} else {
-														result = cInst[proc].call(cInst, p);
-													}
-												} catch(e){
-													result = null;
-													fail = e;
-												}
-												if(respond){
-													self.rpc('submitServerClientCallResult', {
-														id: id,
-														clientId: cId,
-														result: result,
-														fail: fail
-													}, null, {sync:true});
-												}
-											}, 0);
-										}
-										JSB().injectComplexObjectInRpcResult(params, doCall);
-									})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
-								}
-							} 
-						}
-					} finally {
-						if(self.serverClientCallTrackInterval){
-							JSB().defer(function(){
-								_doTrack();
-							}, self.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
-						}
+					self.lastTrackId = res.lastId;
+					var entries = res.slice;
+					if(entries.length === 0){
+						self.slowDownServerClientCallTracking();
+					} else {
+						self.enforceServerClientCallTracking();
 					}
-				}, {sync: true, plain:true});
+					// do something with slice
+					for(var i = 0; i < entries.length; i++){
+						var entry = entries[i];
+						for(var j = 0; j < entry.clientIds.length; j++){
+							var clientId = entry.clientIds[j];
+							var clientInstance = JSB().getInstance(clientId);
+							if(clientInstance && clientInstance[entry.proc]){
+								(function(cInst, proc, params, respond, id, cId){
+									function doCall(p){
+										JSB.defer(function(){
+											var result = null;
+											var fail = null;
+											try {
+												if(JSB().isArray(p)){
+													result = cInst[proc].apply(cInst, p);
+												} else {
+													result = cInst[proc].call(cInst, p);
+												}
+											} catch(e){
+												result = null;
+												fail = e;
+											}
+											if(respond){
+												self.rpc('submitServerClientCallResult', {
+													id: id,
+													clientId: cId,
+													result: result,
+													fail: fail
+												}, null, {sync:true});
+											}
+										}, 0);
+									}
+									JSB().injectComplexObjectInRpcResult(params, doCall);
+								})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
+							}
+						} 
+					}
+					
+					if(self.serverClientCallTrackInterval){
+						JSB().defer(function(){
+							_doTrack();
+						}, self.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
+					}
+				}, {sync: true});
 			}
 			
 			if(self.serverClientCallTrackInterval){
@@ -6813,16 +6776,12 @@ JSB({
 		
 		performRpc: function(jsoName, instanceId, procName, params, rpcId){
 			var np = {};
-			var ret = null, fail = null, plain = false;
+			var ret = null, fail = null;
 			
 			$jsb.injectComplexObjectInRpcResult(params, function(r){
 				np.res = r;
 				try {
 					ret = $this.executeClientRpc(jsoName, instanceId, procName, np.res);
-					if(JSB.isRpcResponse(ret)){
-						plain = ret.isPlain();
-						ret = ret.getValue();
-					}
 				} catch(e){
 					fail = e;
 					if($jsb.getLogger()){
@@ -6845,14 +6804,10 @@ JSB({
 								respPacket.error = fail;
 								respPacket.success = false;
 							} else {
-								if(JSB.isRpcResponse(ret)){
-									plain = ret.isPlain();
-									ret = ret.getValue();
-								}
 								respPacket.result = ret;
 								respPacket.success = true;
 							}
-							$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession(), plain: plain});
+							$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
 						});
 					} else {
 						if(fail){
@@ -6862,7 +6817,7 @@ JSB({
 							respPacket.result = ret;
 							respPacket.success = true;
 						}
-						$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession(), plain: plain});
+						$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
 					}
 				}
 			});
@@ -6874,7 +6829,7 @@ JSB({
 				if(JSB.isFuture(ret)){
 					throw new Error("Synchronous RPC don't support futures");
 				}
-				return $jsb.substComplexObjectInRpcResult(ret, plain);
+				return $jsb.substComplexObjectInRpcResult(ret);
 			} 
 		},
 
@@ -7043,11 +6998,10 @@ JSB({
 				fromEntry = fromEntry.next;
 			}
 			
-			// create response without complex objects to increase RPC result transfer speed
-			return JSB.createRpcResponse({
+			return {
 				lastId: lastId,
 				slice: slice
-			},{plain:true});
+			};
 		},
 		
 		submitServerClientCallResult: function(obj){
