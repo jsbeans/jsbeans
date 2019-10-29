@@ -31,7 +31,7 @@
 	{{? htmlSection.favicon}}
 	<link rel="shortcut icon" type="image/png" href="{{=htmlSection.favicon}}"/>
 	{{?}}
- 	<script type="text/javascript" src="/jsbeans.jsb"></script>
+ 	<script type="text/javascript" src="/jsbeans.jsb?refid={{=this.getId()}}"></script>
  	
  	<style>
  		body {
