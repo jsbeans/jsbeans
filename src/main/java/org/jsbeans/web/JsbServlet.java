@@ -88,12 +88,12 @@ public class JsbServlet extends HttpServlet {
                 jObj = jsoResult.getResult();
             }
 
-            String jso = jObj.toJS(bEncode);
+            String jsbCode = jObj.toJS(bEncode);
             if (isDebug == null || !isDebug.booleanValue()) {
-                jso = JsMinifier.minify(jso, true);
+            	jsbCode = JsMinifier.minify(jsbCode, true);
             }
 
-            return jso;
+            return jsbCode;
         } catch (Exception e) {
             return null;    // say not found error
         }

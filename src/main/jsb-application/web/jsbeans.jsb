@@ -81,7 +81,9 @@
 			
 			this.cachedContent[path] = code;
 			
-			return code;
+			return Web.response(code, {
+				contentType: 'text/javascript'
+			});
 		},
 		
 		combineRequires: function(refType, reqMap){

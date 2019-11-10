@@ -188,8 +188,8 @@
             <groupId>com.google.javascript</groupId>
             <artifactId>closure-compiler</artifactId>
             <!--artifactId>closure-compiler-unshaded</artifactId-->
-            <!--             <version>v20130411</version> -->
-            <version>v20170626</version>
+            <!--             <version>v20170626</version> -->
+            <version>v20190415</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>

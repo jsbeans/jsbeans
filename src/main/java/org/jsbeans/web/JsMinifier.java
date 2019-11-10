@@ -25,11 +25,13 @@ public class JsMinifier {
         String prefixComment = "";
         CompilerOptions options = new CompilerOptions();
         CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(options);
-        options.setLanguageIn(LanguageMode.ECMASCRIPT5);
+        options.setEmitUseStrict(false);
+        // options.setLanguageIn(LanguageMode.ECMASCRIPT5);
         
         if (src.startsWith("/*")) {
             int endCommentPos = src.indexOf("*/");
             prefixComment = src.substring(0, endCommentPos + 2);
+            src = src.substring(endCommentPos + 3, src.length());
         }
         if (bPrepare) {
             src = "var a = " + src + ";";
@@ -42,7 +44,12 @@ public class JsMinifier {
                 int firstIdx = rr.indexOf('=');
                 rr = rr.substring(firstIdx + 1, rr.length() - 1);
             }
-            return prefixComment + rr;
+            if(prefixComment.length() > 0){
+            	return prefixComment + "\r\n" + rr;	
+            } else {
+            	return rr;
+            }
+            
         }
 
         throw new IllegalArgumentException("Unable to minify input source");
