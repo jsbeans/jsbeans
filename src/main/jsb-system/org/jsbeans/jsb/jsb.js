@@ -3281,7 +3281,11 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 			if(this.isNull(this.forkJoinHandles)){
-				this.forkJoinHandles = {};
+				locker.lock('_jsb_fork_allocHandles');
+				if(this.isNull(this.forkJoinHandles)){
+					this.forkJoinHandles = {};
+				}
+				locker.unlock('_jsb_fork_allocHandles');
 			}
 			// create handle
 			var h = this.generateUid();

@@ -15,6 +15,7 @@ import com.google.javascript.jscomp.CompilerOptions;
 import com.google.javascript.jscomp.CompilerOptions.LanguageMode;
 import com.google.javascript.jscomp.Result;
 import com.google.javascript.jscomp.SourceFile;
+import com.google.javascript.jscomp.parsing.parser.FeatureSet;
 
 import java.io.IOException;
 
@@ -25,6 +26,7 @@ public class JsMinifier {
         CompilerOptions options = new CompilerOptions();
         CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(options);
         options.setLanguageIn(LanguageMode.ECMASCRIPT5);
+        
         if (src.startsWith("/*")) {
             int endCommentPos = src.indexOf("*/");
             prefixComment = src.substring(0, endCommentPos + 2);
