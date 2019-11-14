@@ -140,7 +140,7 @@
 							cssObj[self.getStyleProperty('transform')] = '';
 							
 							elt.css(cssObj);
-							node.setPosition(newPt.x, newPt.y);
+							node.setPosition(newPt.x, newPt.y, true);
 							delete waitMap[node.getId()];
 							if(Object.keys(waitMap).length === 0){
 								self.busy = false;
