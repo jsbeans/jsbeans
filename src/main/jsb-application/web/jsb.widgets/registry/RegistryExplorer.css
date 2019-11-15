@@ -5,7 +5,7 @@
 }
 
 .registryExplorer ._dwp_treeViewNode.category {
-	margin: 4px 0;
+	margin: 2px 0;
 }
 
 .registryExplorer > ._dwp_treeview > .jsb-scrollBox ._dwp_childContainer > ._dwp_treeViewNode {
@@ -17,7 +17,6 @@
     padding-left: 18px;
     font-size: 13px;
     color: #8c4200;
-    font-family: arial;
 }
 
 .registryExplorer > ._dwp_treeview > .jsb-scrollBox > ._dwp_treeViewContainer ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_itemContainer > .category:before {
@@ -33,7 +32,7 @@
 }
 
 .registryExplorer > ._dwp_treeview > .jsb-scrollBox > ._dwp_treeViewContainer ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_itemContainer > .renderer {
-	padding: 4px 2px;
+	padding: 1px 2px;
 }
 
 .dragHelper {

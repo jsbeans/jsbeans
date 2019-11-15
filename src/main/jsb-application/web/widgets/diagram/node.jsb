@@ -49,7 +49,7 @@
 			}
 
 			if(this.options.size) {
-			    this.setSize(this.options.size);
+			    this.setSize(this.options.size, true);
 			}
 			
 			// install drag handles
@@ -70,11 +70,15 @@
 				if(!$this.getElement().is(':visible')){
 					return;
 				}
+				var r = $this.getRect()
+				if($this.options.size && r.w == $this.options.size.width && r.h == $this.options.size.height){
+					return;
+				}
 				$this.updateConnectors();
 				$this.updateLinks();
 				$this.diagram.updateLayout($this);
 				if($this.options.onSizeChanged){
-					$this.options.onSizeChanged.call($this, $this.getRect());
+					$this.options.onSizeChanged.call($this, r);
 				}
 			};
 			
@@ -138,15 +142,22 @@
 //			console.log('setPosition X:' + this.position.x + '; Y:' + this.position.y);
 		},
 
-		setSize: function(size) {
+		setSize: function(size, hideEvent) {
 		    var element = this.getElement();
+		    
+		    if(!this.options.size){
+		    	this.options.size = {};	
+		    }
+		    
 
 		    if(JSB.isDefined(size.width)) {
 		        element.width(size.width);
+		        this.options.size.width = size.width;
             }
 
 		    if(JSB.isDefined(size.height)) {
 		        element.height(size.height);
+		        this.options.size.height = size.height;
             }
 		},
 
