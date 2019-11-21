@@ -12,8 +12,9 @@
     $name:'JSB.Net.HttpConnection',
 
     $server: {
-    	$require: ['JSB.System.Log', 
-    	           'JSB.IO.Stream'],
+    	$require: [	'java:org.jsbeans.helpers.BufferHelper',
+    				'JSB.System.Log', 
+    				'JSB.IO.Stream'],
     	
         $constructor: function(options){
             this.URL = Packages.java.net.URL;
@@ -269,11 +270,16 @@
             		return inputStream;
             	}
                 var result = this.HttpHelper.streamRead(inputStream, this.options.responseType, bytes);
-                if (this.options.responseType === 'json') result = JSON.parse(result); // eval
-//                    this.log.trace('read() result: ', result);
+                if (this.options.responseType === 'json') {
+                	return JSON.parse(result); // eval
+                } else if(this.options.responseType === 'bytes'){
+                	var ab = new ArrayBuffer(result.length);
+                	BufferHelper.copyToArrayBuffer(result, 0, ab, 0, result.length);
+                	return ab;
+                }
+
                 return result;
             } catch(e) {
-//                    this.log.trace('[ERROR] read(): ', e);
                 return null;
             }
         },
