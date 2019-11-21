@@ -1,0 +1,80 @@
+.jsb-scrollPanel {
+    height: 21px;
+    border-radius: 3px;
+    padding: 2px;
+	background: #e8e8e8;
+}
+
+.jsb-scrollPanel > .scroll {
+    position: absolute;
+    height: 100%;
+    width: 18px;
+    top: 0;
+    padding: 6px 5px;
+    background: lightgrey;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.7;
+	border-radius: 3px;
+}
+
+.jsb-scrollPanel > .scroll:hover {
+    opacity: 1;
+}
+
+.jsb-scrollPanel.horizontal > .prevScroll {
+    left: 0;
+}
+
+.jsb-scrollPanel.horizontal > .nextScroll {
+    right: 0;
+}
+
+.jsb-scrollPanel.vertical > .prevScroll {
+    top: 0;
+}
+
+.jsb-scrollPanel.vertical > .nextScroll {
+    bottom: 0;
+}
+
+.jsb-scrollPanel > .scroll:after {
+    position: absolute;
+    content: "";
+	width: 0;
+	height: 0;
+	font-size: 13px;
+}
+
+.jsb-scrollPanel.horizontal > .prevScroll:after {
+	border-top: 5px solid transparent;
+	border-right: 8px solid #555;
+	border-bottom: 5px solid transparent;
+}
+
+.jsb-scrollPanel.horizontal > .nextScroll:after {
+    border-top: 5px solid transparent;
+    border-left: 8px solid #555;
+    border-bottom: 5px solid transparent;
+}
+
+.jsb-scrollPanel.vertical > .prevScroll:after {}
+
+.jsb-scrollPanel.vertical > .nextScroll:after {}
+
+.jsb-scrollPanel > .panel {
+    white-space: nowrap;
+    position: absolute;
+    transition: left 0.8s;
+    left: 0;
+    min-width: 100%;
+}
+
+.jsb-scrollPanel > .panel.moving {
+    transition: none;
+}
+
+.jsb-scrollPanel > .panel li {
+    vertical-align: middle;
+    display: inline-block;
+}
