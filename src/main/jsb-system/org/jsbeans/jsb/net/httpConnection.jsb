@@ -269,16 +269,24 @@
             	if(this.options.responseType == 'stream'){
             		return inputStream;
             	}
-                var result = this.HttpHelper.streamRead(inputStream, this.options.responseType, bytes);
-                if (this.options.responseType === 'json') {
-                	return JSON.parse(result); // eval
-                } else if(this.options.responseType === 'bytes'){
-                	var ab = new ArrayBuffer(result.length);
-                	BufferHelper.copyToArrayBuffer(result, 0, ab, 0, result.length);
-                	return ab;
-                }
+            	if(this.options.responseType === 'bytes'){
+            		var stream = new Stream(inputStream);
+            		var ab = null;
+            		if(bytes > 0){
+            			ab = stream.read(null, 0, bytes);
+            		} else {
+            			ab = stream.read();
+            		}
+            		stream.close();
+            		return ab;
+            	} else {
+                    var result = this.HttpHelper.streamRead(inputStream, this.options.responseType, bytes);
+                    if (this.options.responseType === 'json') {
+                    	return JSON.parse(result); // eval
+                    }
+                    return result;
+            	}
 
-                return result;
             } catch(e) {
                 return null;
             }

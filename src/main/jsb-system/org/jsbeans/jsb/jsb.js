@@ -1898,6 +1898,8 @@ if(!(function(){return this;}).call(null).JSB){
 							!this.isJavaObject(copy) &&
 							!(copy instanceof JSB) &&
 							!this.isDate(copy) &&
+							!this.isArrayBuffer(copy) &&
+							!this.isArrayBufferView(copy) &&
 							!this.isInstanceOf(copy, 'JSB.Object') &&
 							(!JSB().isClient() || (!(copy instanceof HTMLElement))&&(!(copy == document)))) {
 							if (copyIsArray) {
