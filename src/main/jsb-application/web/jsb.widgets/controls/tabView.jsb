@@ -9,33 +9,24 @@
  */
 
 {
-	$name:'JSB.Widgets.TabView',
+	$name: 'JSB.Widgets.TabView',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
 		$require: ['css:tabView.css'],
-		$constructor: function(opts){
-			$base(opts);
-			this.init();
-		},
-		
-		options: {
-			allowCloseTab: true,
-			allowNewTab: true,
-			tabPosition: 'top',
-			showTabs: true
-		},
-		
+
 		currentTab: null,
 		tabs: {},
-		
-		init: function(){
+
+		$constructor: function(opts){
+			$base(opts);
+
 			var self = this;
 			this.addClass('_dwp_tabview');
-			
+
 			if(this.options.tabPosition == 'bottom'){
 				this.addClass('_dwp_tabBottom');
 			}
-			
+
 			if(this.options.tabPosition == 'left'){
 				this.addClass('_dwp_tabLeft');
 			}
@@ -43,7 +34,7 @@
 			if(this.options.tabPosition == 'right'){
 				this.addClass('_dwp_tabRight');
 			}
-			
+
 			if(!this.options.tabPosition || this.options.tabPosition == 'top'){
 				this.addClass('_dwp_tabTop');
 			}
@@ -51,7 +42,7 @@
 			// create tab pane
 			this.tabPane = this.$('<div class="_dwp_tabPane"></div>');
 			this.append(this.tabPane);
-			
+
 			// create scrollbar
 			this.tabScrollBar = $this.$('<div class="_jsb_tabScrollbar"></div>');
 			this.leftArrow = this.$('<div class="_jsb_handle left"></div>');
@@ -65,12 +56,12 @@
 				$this.scrollTab('front');
 			});
 			this.tabPane.append(this.tabScrollBar);
-			
+
 			// create scrollable pane
 			this.tabScrollPane = $this.$('<ul class="_jsb_tabScrollPane"></ul>');
 			this.tabPane.append(this.tabScrollPane);
-			
-			
+
+
 			if(this.options.allowNewTab){
 				this.newTab = this.$('<li class="_dwp_newTab"><div class="_dwp_icon"></div></li>');
 				this.tabScrollPane.append(this.newTab);
@@ -87,91 +78,41 @@
 			// create client area
 			this.clientPane = this.$('<div class="_dwp_clientPane"></div>');
 			this.append(this.clientPane);
-			
+
 			if(this.options.showTabs){
 				this.tabPane.resize(function(){
 					if(!$this.tabPane.is(':visible')){
 						return;
 					}
-					
+
 					$this.updateSizes();
 				});
 			}
 		},
 		
-		scrollTab: function(dir){
-			var tabElt = this.tabScrollPane.get(0);
-			var newScroll = 0;
-			if(this.options.tabPosition == 'top' || this.options.tabPosition == 'bottom') {
-				var scrollSize = Math.round($this.tabScrollBar.width() / 2);
-				if(dir == 'front'){
-					newScroll = tabElt.scrollLeft + scrollSize;
-					if(tabElt.scrollWidth - newScroll < tabElt.offsetWidth){
-						newScroll = tabElt.scrollWidth - tabElt.offsetWidth;
-					}
-					tabElt.scrollLeft = newScroll;
-				} else {
-					newScroll = tabElt.scrollLeft - scrollSize;
-					if(newScroll < 0){
-						newScroll = 0;
-					}
-					tabElt.scrollLeft = newScroll;
-				}
-			} else {
-				// TODO:
-			}
-			this.updateTabScroll(newScroll);
-		},
-		
-		updateTabScroll: function(newScroll){
-			var tabElt = this.tabScrollPane.get(0);
-			if(JSB.isNull(newScroll)){
-				newScroll = tabElt.scrollLeft;
-			}
-			if(this.options.tabPosition == 'top' || this.options.tabPosition == 'bottom'){
-				if(tabElt.scrollWidth > tabElt.offsetWidth){
-					this.tabPane.addClass('scrollable');
-					
-					if(newScroll > 0){
-						$this.tabScrollBar.addClass('hasLeft');
-					} else {
-						$this.tabScrollBar.removeClass('hasLeft');
-					}
-					if(tabElt.scrollWidth - newScroll > tabElt.offsetWidth){
-						$this.tabScrollBar.addClass('hasRight');
-					} else {
-						$this.tabScrollBar.removeClass('hasRight');
-					}
-					
-				} else {
-					this.tabPane.removeClass('scrollable');
-				}
-			} else {
-				// TODO: for vertical orientation
-			}
+		options: {
+			allowCloseTab: true,
+			allowNewTab: true,
+			tabPosition: 'top',
+			showTabs: true
 		},
 
-		
-		containsTab: function(tab){
-			var entry = this.resolveTab(tab);
-			return !JSB().isNull(entry);
+		activateTab: function(uid){
+		    this.tabs[uid].ctrl = new this.tabs[uid].cls();
+		    this.tabs[uid].wrap.append(this.tabs[uid].ctrl.getElement());
 		},
-		
-		getTabs: function(){
-			return this.tabs;
-		},
-		
+
 		addTab: function(title, cls, opts){
 			var self = this;
 			opts = opts || {};
 			var uid = opts.id || JSB().generateUid();
-			
+
 			// add tab
 			var tab = this.$('<li class="_dwp_tab" clientId="'+uid+'"></li>');
 			tab.append('<div class="_dwp_icon"></div>');
 			tab.append(this.$('<div class="_dwp_tabText"></div>').append(title));
 			if(this.options.allowCloseTab || opts.allowCloseTab){
-				var closeBtn = this.$('<div class="_dwp_closeBtn"></div>'); 
+				var closeBtn = this.$('<div class="_dwp_closeBtn"></div>');
 				tab.append(closeBtn);
 				closeBtn.click(function(evt){
 					var id = self.$(evt.currentTarget).parent().attr('clientId');
@@ -226,30 +167,97 @@
 			}
 
 			this.clientPane.append(clientWrap);
-			
+
 			if(!(this.options.dontSwitchOnCreate || opts.dontSwitchOnCreate)){
 				this.switchTab(uid);
 			}
-			
+
 			if(opts.disabled){
 				this.enableTab(self.tabs[uid], false);
 			}
-			
+
 			return self.tabs[uid];
 		},
 
-		activateTab: function(uid){
-		    this.tabs[uid].ctrl = new this.tabs[uid].cls();
-		    this.tabs[uid].wrap.append(this.tabs[uid].ctrl.getElement());
+		clear: function(){
+			for(var i in this.tabs){
+				if(this.tabs[i].ctrl && JSB().isInstanceOf(this.tabs[i].ctrl, 'JSB.Widgets.Control')) {
+					this.tabs[i].ctrl.destroy();
+				}
+			}
+			this.tabs = {};
+			this.clientPane.empty();
+			this.tabPane.empty();
 		},
-		
+
+		containsTab: function(tab){
+			var entry = this.resolveTab(tab);
+			return !JSB().isNull(entry);
+		},
+
+		enableTab: function(tab, b){
+			var entry = this.resolveTab(tab);
+			if(b){
+				entry.tab.removeClass('disabled');
+			} else {
+				entry.tab.addClass('disabled');
+			}
+		},
+
+		getCurrentTab: function(){
+			return this.currentTab;
+		},
+
+		getTabs: function(){
+			return this.tabs;
+		},
+
+		isEnabled: function(tab){
+			var entry = this.resolveTab(tab);
+			if(entry.tab.hasClass('disabled')){
+				return false;
+			}
+			return true;
+		},
+
+		removeTab: function(tab){
+			var entry = this.resolveTab(tab);
+			var activeTab = this.tabPane.find('.active');
+			var needSwitch = (entry.tab.attr('clientId') == activeTab.attr('clientId'));
+			if(!JSB().isNull(entry.opts.onRemoveCallback)){
+				entry.opts.onRemoveCallback(entry.ctrl, tab);
+			}
+			if(!JSB().isNull(this.options.onRemoveTab)){
+				this.options.onRemove(tab);
+			}
+			entry.wrap.remove();
+			entry.tab.remove();
+			if(entry.ctrl && JSB().isInstanceOf(entry.ctrl, 'JSB.Widgets.Control')) {
+				entry.ctrl.destroy();
+			}
+
+			delete this.tabs[entry.id];
+			if(needSwitch){
+				for(var t in this.tabs){
+					this.switchTab(t);
+					break;
+				}
+			}
+		},
+
+		renameTab: function(oldName, newName){
+			var entry = this.resolveTab(oldName);
+			entry.tab.find('._dwp_tabText').text(newName);
+			entry.title = newName;
+		},
+
 		resolveTab: function(tab){
 			if(JSB().isString(tab)){
 				// check for id
 				if(!JSB().isNull(this.tabs[tab])){
 					return this.tabs[tab];
 				}
-				
+
 				// check for name
 				for(var i in this.tabs){
 					var e = this.tabs[i];
@@ -270,7 +278,31 @@
 			}
 			return null;
 		},
-		
+
+		scrollTab: function(dir){
+			var tabElt = this.tabScrollPane.get(0);
+			var newScroll = 0;
+			if(this.options.tabPosition == 'top' || this.options.tabPosition == 'bottom') {
+				var scrollSize = Math.round($this.tabScrollBar.width() / 2);
+				if(dir == 'front'){
+					newScroll = tabElt.scrollLeft + scrollSize;
+					if(tabElt.scrollWidth - newScroll < tabElt.offsetWidth){
+						newScroll = tabElt.scrollWidth - tabElt.offsetWidth;
+					}
+					tabElt.scrollLeft = newScroll;
+				} else {
+					newScroll = tabElt.scrollLeft - scrollSize;
+					if(newScroll < 0){
+						newScroll = 0;
+					}
+					tabElt.scrollLeft = newScroll;
+				}
+			} else {
+				// TODO:
+			}
+			this.updateTabScroll(newScroll);
+		},
+
 		showTab: function(tab, b){
 			var entry = this.resolveTab(tab);
 			if(b){
@@ -279,24 +311,21 @@
 				entry.tab.addClass('hidden');
 			}
 		},
-		
-		enableTab: function(tab, b){
-			var entry = this.resolveTab(tab);
-			if(b){
-				entry.tab.removeClass('disabled');
-			} else {
-				entry.tab.addClass('disabled');
+
+		sortTabs: function(callback){
+			var itemArr = [];
+
+			for(var uid in this.tabs){
+				itemArr.push(this.tabs[uid]);
+			}
+			itemArr.sort(callback);
+
+			// rebuild according to new order
+			for(var i = 0; i < itemArr.length; i++ ){
+				this.tabScrollPane.append(itemArr[i].tab);
 			}
 		},
-		
-		isEnabled: function(tab){
-			var entry = this.resolveTab(tab);
-			if(entry.tab.hasClass('disabled')){
-				return false;
-			}
-			return true;
-		},
-		
+
 		switchTab: function(tab){
 			var self = this;
 			var entry = this.resolveTab(tab);
@@ -318,59 +347,13 @@
 			if(this.options.onSwitchTab){
 				this.options.onSwitchTab.call(self, tab);
 			}
-			
+
 			return self.currentTab;
 		},
-		
-		getCurrentTab: function(){
-			return this.currentTab;
-		},
-		
-		removeTab: function(tab){
-			var entry = this.resolveTab(tab);
-			var activeTab = this.tabPane.find('.active');
-			var needSwitch = (entry.tab.attr('clientId') == activeTab.attr('clientId'));
-			if(!JSB().isNull(entry.opts.onRemoveCallback)){
-				entry.opts.onRemoveCallback(entry.ctrl, tab);
-			}
-			if(!JSB().isNull(this.options.onRemoveTab)){
-				this.options.onRemove(tab);
-			}
-			entry.wrap.remove();
-			entry.tab.remove();
-			if(entry.ctrl && JSB().isInstanceOf(entry.ctrl, 'JSB.Widgets.Control')) {
-				entry.ctrl.destroy();
-			}
-			
-			delete this.tabs[entry.id];
-			if(needSwitch){
-				for(var t in this.tabs){
-					this.switchTab(t);
-					break;
-				}
-			}
-		},
-		
-		renameTab: function(oldName, newName){
-			var entry = this.resolveTab(oldName);
-			entry.tab.find('._dwp_tabText').text(newName);
-			entry.title = newName;
-		},
-		
-		clear: function(){
-			for(var i in this.tabs){
-				if(this.tabs[i].ctrl && JSB().isInstanceOf(this.tabs[i].ctrl, 'JSB.Widgets.Control')) {
-					this.tabs[i].ctrl.destroy();
-				}
-			}
-			this.tabs = {};
-			this.clientPane.empty();
-			this.tabPane.empty();
-		},
-		
+
 		updateSizes: function(){
 			var tabPaneRc = this.tabPane.get(0).getBoundingClientRect();
-			
+
 			var css = {};
 			var tabScrollCss = {};
 			if(this.options.tabPosition == 'bottom'){
@@ -378,7 +361,7 @@
 					top: 0,
 					bottom: tabPaneRc.height,
 					left: 0,
-					right: 0 
+					right: 0
 				};
 				tabScrollCss = {
 					left: 0,
@@ -386,13 +369,13 @@
 					bottom: 0,
 					height: tabPaneRc.height
 				};
-				
+
 			} else if(this.options.tabPosition == 'left'){
 				css = {
 					top: 0,
 					bottom: 0,
 					left: tabPaneRc.width,
-					right: 0 
+					right: 0
 				};
 				tabScrollCss = {
 					top: 0,
@@ -405,7 +388,7 @@
 					top: 0,
 					bottom: 0,
 					left: 0,
-					right: tabPaneRc.width 
+					right: tabPaneRc.width
 				};
 				tabScrollCss = {
 					top: 0,
@@ -419,7 +402,7 @@
 					top: tabPaneRc.height,
 					bottom: 0,
 					left: 0,
-					right: 0 
+					right: 0
 				};
 				tabScrollCss = {
 					left: 0,
@@ -434,19 +417,32 @@
 			// check tab pane width for scrolling
 			this.updateTabScroll();
 		},
-		
-		
-		sortTabs: function(callback){
-			var itemArr = [];
-			
-			for(var uid in this.tabs){
-				itemArr.push(this.tabs[uid]);
+
+		updateTabScroll: function(newScroll){
+			var tabElt = this.tabScrollPane.get(0);
+			if(JSB.isNull(newScroll)){
+				newScroll = tabElt.scrollLeft;
 			}
-			itemArr.sort(callback);
-			
-			// rebuild according to new order
-			for(var i = 0; i < itemArr.length; i++ ){
-				this.tabScrollPane.append(itemArr[i].tab);
+			if(this.options.tabPosition == 'top' || this.options.tabPosition == 'bottom'){
+				if(tabElt.scrollWidth > tabElt.offsetWidth){
+					this.tabPane.addClass('scrollable');
+					
+					if(newScroll > 0){
+						$this.tabScrollBar.addClass('hasLeft');
+					} else {
+						$this.tabScrollBar.removeClass('hasLeft');
+					}
+					if(tabElt.scrollWidth - newScroll > tabElt.offsetWidth){
+						$this.tabScrollBar.addClass('hasRight');
+					} else {
+						$this.tabScrollBar.removeClass('hasRight');
+					}
+					
+				} else {
+					this.tabPane.removeClass('scrollable');
+				}
+			} else {
+				// TODO: for vertical orientation
 			}
 		}
 	}

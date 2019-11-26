@@ -8,228 +8,347 @@
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2019гг.
  */
 
+ /**
+  * @name         JSB.Controls.TabView
+  * @module       JSB.Controls
+  * @description  Компонент для отображения контента в нескольких вкладках
+  * @author       Leonid Simakov
+  * @copyright    (c) 2019 Leonid Simakov <lasimakov@gmail.com>
+  * @copyright    (c) 2019 Special Information Systems, LLC <info@sis.ru>
+  * @license      MIT Licence
+  */
+
 {
-	$name:'JSB.Controls.TabView',
+	$name: 'JSB.Controls.TabView',
 	$parent: 'JSB.Controls.Control',
 	$client: {
-		$require: ['css:tabView.css'],
+		$require: ['JSB.Controls.ScrollPanel',
+		           'css:tabView.css'],
+
+        _currentTab: null,
+        _tabPane: null,
+        _tabs: {},
+        _contentPane: null,
 		
-		$constructor: function(opts){
+		$constructor: function(opts) {
 			$base(opts);
+
 			this.addClass('jsb-tabview');
 
-			// todo: styles for another tab position
-            this.tabPane = this.$('<ul class="tabPane ' + this.options.tabPosition + '"></ul>');
-            this.append(this.tabPane);
+			this.addClass(this.options.tabPosition + 'TabPosition');
 
-            // todo: add new tab
+			if(this.options.scrollTab) {
+			    this._tabPane = new ScrollPanel({
+			        cssClass: 'tabPane',
+			        position: this.options.tabPosition === 'top' || this.options.tabPosition === 'bottom' ? 'horizontal' : 'vertical',
+			        onClick: function(id) {
+			            $this.switchTab(id);
+			        }
+			    });
+			} else {
+                this._tabPane = this.$('<ul class="tabPane"></ul>');
+            }
 
-            this.clientPane = this.$('<div class="clientPane"></div>');
-            this.append(this.clientPane);
+            this._contentPane = this.$('<div class="contentPane"></div>');
+            this.append(this._contentPane);
 
-            if(!this.options.showTabs){
-                this.tabPane.addClass('hidden');
+            if(this.options.tabPosition === 'left' || this.options.tabPosition === 'top') {
+                this.prepend(this._tabPane);
+            } else {
+                this.append(this._tabPane);
+            }
+
+            if(!this.options.showTabs) {
+                this._tabPane.addClass('hidden');
             }
 		},
 
 		options: {
+		    /*
+		    todo:
+            allowCloseTab: true,
+            allowNewTab: true,
+		    */
+
+		    scrollTab: false,
 			tabPosition: 'top',
-			showTabs: true
+			showTabs: true,
+			switchOnCreate: false
 		},
 
-		currentTab: null,
-		tabs: {},
+	    /**
+	    * Добавление новой вкладки
+	    *
+	    * @param {object} options - объект опций новой вкладки
+	    * @param {*} options.content - содержимое вкладки
+	    * @param {boolean} [options.hasIcon] - содержит ли заголовок вкладки иконку
+	    * @param {number|string} options.id - уникальный идентификатор вкладки
+	    * @param {string} options.title - заголовок вкладки
+	    */
+		addTab: function(options) {
+			var icon = this.$('<i class="icon"></i>'),
+			    id = options.id || JSB().generateUid(),
+                tab = this.$('<li clientId="' + id + '"></li>'),
+                title = this.$('<span class="title">' + title + '</span>');
 
-		activateTab: function(uid){
-		    this.tabs[uid].ctrl = new this.tabs[uid].cls();
-		    this.tabs[uid].wrap.append(this.tabs[uid].ctrl.getElement());
-		},
+            tab.append(title);
 
-		addTab: function(title, cls, opts){
-			opts = opts || {};
-			var uid = opts.id || JSB().generateUid();
+            if(options.hasIcon) {
+                tab.prepend(icon);
+            }
 
-			// add tab
-			var tab = this.$('<li clientId="'+uid+'"><div class="icon"></div><div class="title">' + title + '</div></li>');
-			this.tabPane.append(tab);
-
-			tab.click(function(evt){
-                $this.switchTab(uid);
+			tab.click(function(evt) {
+                $this.switchTab(id);
 			});
 
-			// add client
-			var clientWrap = this.$('<div key="'+uid+'" class="clientPaneWrapper"></div>');
-			clientWrap.css({display:'none'});
+			this._tabs[id] = {
+			    iconElement: icon,
+			    options: options,
+			    tabElement: tab,
+			    titleElement: title
+			};
 
-			if(JSB.isFunction(cls)){
-                this.tabs[uid] = {
-                    id: uid,
-                    title: title,
-                    tab: tab,
-                    wrap: clientWrap,
-                    cls: cls,
-                    opts: opts
+			if(this.options.scrollTab) {
+			    this._tabPane.addElement({
+			        element: tab,
+			        key: id
+			    });
+			} else {
+			    this._tabPane.append(tab);
+            }
+
+			if(this.options.switchOnCreate) {
+			    this.switchTab(id);
+			}
+
+			if(options.disabled) {
+				this.enableTab(id, false);
+			}
+
+			return this._tabs[id];
+		},
+
+	    /**
+	    * Очистить компонент
+	    */
+		clear: function() {
+            this._currentTab = null;
+
+            if(this.options.scrollTab) {
+                this._tabPane.clear();
+            } else {
+                this._tabPane.empty();
+            }
+
+            this._tabs = {};
+            this._contentPane.empty();
+		},
+
+	    /**
+	    * Сделать вкладку активной/неактивной
+	    *
+	    * @param {number|string} id - идентификатор вкладки
+	    * @param {boolean} isEnable - вкладка активна?
+	    */
+		enableTab: function(id, isEnable) {
+		    var tab = this._getTab(id);
+
+			if(b) {
+			    tab.tabElement.removeClass('disabled');
+			} else {
+				tab.tabElement.addClass('disabled');
+			}
+		},
+
+	    /**
+	    * Вернуть текущую вкладку
+	    *
+	    * @return {object} объект-описание активной вкладки
+	    */
+		getCurrentTab: function() {
+			return this._currentTab;
+		},
+
+	    /**
+	    * Вернуть контент вкладки
+	    *
+	    * @return {*} контент вкладки
+	    */
+		getTabContent: function(id) {
+		    return this._getTab(id).options.content;
+		},
+
+		getTabPane: function() {
+		    return this._tabPane;
+		},
+
+		hasTab: function(id) {
+		    return this._getTab(id) ? true : false;
+		},
+
+	    /**
+	    * Удаляет вкладку
+	    *
+	    * @param {number|string} id - идентификатор вкладки
+	    */
+		removeTab: function(id) {
+		    var currentTab = this.getCurrentTab(),
+		        tab = this._getTab(id);
+
+		    if(currentTab.id === id) {
+		        for(let i in this._getTab()) {
+		            this.switchTab(i);
+		            break;
+		        }
+		    }
+
+		    if(JSB.isFunction(tab.options.content.destroy)) {
+		        tab.options.content.destroy();
+		    }
+
+		    if(this.options.scrollTab) {
+		        this._tabPane.removeElement(id);
+		    } else {
+		        tab.titleElement.remove();
+            }
+
+		    delete this._tabs[id];
+		},
+
+	    /**
+	    * Установить иконку вкладки
+	    *
+	    * @param {number|string} id - идентификатор вкладки
+	    * @param {string} title - иконка вкладки
+	    */
+		setTabIcon: function(id, icon) {
+		    var tab = this._getTab(id);
+
+		    tab.iconElement.css('background-image', 'url(' + icon + ')');
+		},
+
+	    /**
+	    * Установить заголовок вкладки
+	    *
+	    * @param {number|string} id - идентификатор вкладки
+	    * @param {string} title - заголовок вкладки
+	    */
+		setTabTitle: function(id, title) {
+		    var tab = this._getTab(id);
+
+		    tab.titleElement.text(title);
+		},
+
+	    /**
+	    * Сделать все вкладки видимыми/невидимыми
+	    *
+	    * @param {boolean} isShow - видимость
+	    */
+		showAll: function(isShow) {
+		    var tabs = this._getTab();
+
+		    for(let i in tabs) {
+		        this.showTab(i, isShow);
+		    }
+		},
+
+	    /**
+	    * Сделать вкладку видимой/невидимой
+	    *
+	    * @param {number|string} id - идентификатор вкладки
+	    * @param {boolean} isShow - вкладка видна?
+	    */
+		showTab: function(id, isShow) {
+		    var tab = this._getTab(id);
+
+			if(isShow) {
+			    tab.tabElement.removeClass('hidden');
+			} else {
+				tab.tabElement.addClass('hidden');
+			}
+		},
+
+	    /**
+	    * Сортирует табы
+	    *
+	    * @param {function} [sortCallback] - функция сортировки. Если не указана, то сортирует по заголовкам табов
+	    */
+		sort: function(sortCallback) {
+            if(!sortCallback) {
+                sortCallback = function(a, b) {
+                    if(a.title > b.title) return 1;
+                    if(a.title < b.title) return -1;
+                    return 0;
                 };
-			} else {
-			    clientWrap.append(cls.getElement());
+            }
 
-                this.tabs[uid] = {
-                    id: uid,
-                    title: title,
-                    tab: tab,
-                    wrap: clientWrap,
-                    ctrl: cls,
-                    opts: opts
-                };
-			}
+            if(this.options.scrollTab) {
+                this._tabPane.sort(sortCallback);
+            } else {
+                let tabsArr = [],
+                    tabs = this._getTab();
 
-			this.clientPane.append(clientWrap);
+                for(let i in tabs) {
+                    tabs[i].tabElement.detach();
+                    tabsArr.push(tabs[i]);
+                }
 
-			if(!(this.options.dontSwitchOnCreate || opts.dontSwitchOnCreate)){
-				this.switchTab(uid);
-			}
+                tabsArr.sort(sortCallback);
 
-			if(opts.disabled){
-				this.enableTab(this.tabs[uid], false);
-			}
-
-			return this.tabs[uid];
+                for(let i = 0; i < tabsArr.length; i++) {
+                    this._tabPane.append(tabsArr[i].tabElement);
+                }
+            }
 		},
 
-		clear: function(){
-			for(var i in this.tabs){
-				if(this.tabs[i].ctrl && JSB().isInstanceOf(this.tabs[i].ctrl, 'JSB.Widgets.Control')) {
-					this.tabs[i].ctrl.destroy();
-				}
-			}
-			this.tabs = {};
-			this.clientPane.empty();
-			this.tabPane.empty();
-		},
+	    /**
+	    * Делает текущей вкладку с указанным id
+	    *
+	    * @param {number|string} id - идентификатор вкладки
+	    */
+		switchTab: function(id) {
+			var currentTab = this.getCurrentTab(),
+			    tab = this._getTab(id);
 
-		containsTab: function(tab){
-			var entry = this.resolveTab(tab);
-			return !JSB().isNull(entry);
-		},
+            if(currentTab) {
+                if(currentTab.id === id) {
+                    return;
+                }
 
-		enableTab: function(tab, b){
-			var entry = this.resolveTab(tab);
-			if(b){
-				entry.tab.removeClass('disabled');
-			} else {
-				entry.tab.addClass('disabled');
-			}
-		},
+                currentTab.tabElement.removeClass('active');
 
-		getCurrentTab: function(){
-			return this.currentTab;
-		},
+                currentTab.options.content.detach();
+            }
 
-		removeTab: function(tab){
-			var entry = this.resolveTab(tab);
-			var activeTab = this.tabPane.find('.active');
-			var needSwitch = (entry.tab.attr('clientId') == activeTab.attr('clientId'));
-			if(!JSB().isNull(entry.opts.onRemoveCallback)){
-				entry.opts.onRemoveCallback(entry.ctrl, tab);
-			}
-			if(!JSB().isNull(this.options.onRemoveTab)){
-				this.options.onRemove(tab);
-			}
-			entry.wrap.remove();
-			entry.tab.remove();
-			if(entry.ctrl && JSB().isInstanceOf(entry.ctrl, 'JSB.Widgets.Control')) {
-				entry.ctrl.destroy();
-			}
+            tab.tabElement.addClass('active');
 
-			delete this.tabs[entry.id];
-			if(needSwitch){
-				for(var t in this.tabs){
-					this.switchTab(t);
-					break;
-				}
+            // если контент - конструктор элемента, то сперва создадим элемент
+            if(JSB.isFunction(tab.options.content)) {
+                tab.options.content = new tab.options.content();
+            }
+
+            this._contentPane.append(tab.options.content);
+
+            this._currentTab = tab;
+
+			if(this.options.onSwitchTab) {
+				this.options.onSwitchTab.call(this, id);
 			}
 		},
 
-		renameTab: function(oldName, newName){
-			var entry = this.resolveTab(oldName);
-			entry.tab.find('.title').text(newName);
-			entry.title = newName;
-		},
+	    /**
+	    * Получить вкладку
+	    *
+	    * @param {number|string} [id] - идентификатор вкладки. Если не указан, то вернёт карту вкладок
+	    *
+	    * @return {object} объект-описание активной вкладки | карта вкладок
+	    */
+		_getTab: function(id) {
+		    if(JSB.isDefined(id)) {
+		        return this._tabs[id];
+		    }
 
-		resolveTab: function(tab){
-			if(JSB().isString(tab)){
-				// check for id
-				if(!JSB().isNull(this.tabs[tab])){
-					return this.tabs[tab];
-				}
-
-				// check for name
-				for(var i in this.tabs){
-					var e = this.tabs[i];
-					if(e.title == tab){
-						return e;
-					}
-				}
-			} else {
-				if(!JSB().isNull(tab.id) && !JSB().isNull(tab.tab)){
-					return tab;
-				}
-				for(var i in this.tabs){
-					var e = this.tabs[i];
-					if(e.tab.get(0) == tab.get(0)){
-						return e;
-					}
-				}
-			}
-			return null;
-		},
-
-		showTab: function(tab, b){
-			var entry = this.resolveTab(tab);
-			if(b){
-				entry.tab.removeClass('hidden');
-			} else {
-				entry.tab.addClass('hidden');
-			}
-		},
-
-		sortTabs: function(callback){
-			var itemArr = [];
-
-			for(var uid in this.tabs){
-				itemArr.push(this.tabs[uid]);
-			}
-			itemArr.sort(callback);
-
-			// rebuild according to new order
-			for(var i = 0; i < itemArr.length; i++ ){
-				this.tabPane.append(itemArr[i].tab);
-			}
-		},
-
-		switchTab: function(tab){
-			var entry = this.resolveTab(tab);
-
-			var activeTab = this.tabPane.find('.active');
-			if(entry.tab.attr('clientId') == activeTab.attr('clientId')){
-				return;
-			}
-			activeTab.removeClass('active');
-			entry.tab.addClass('active');
-
-			var showArea = this.clientPane.find('.clientPaneWrapper[key="' + entry.tab.attr('clientId') + '"]');
-			showArea.css('display','');
-			this.clientPane.find('.clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').css('display','none');
-			this.currentTab = entry;
-
-			if(!entry.ctrl){
-			    this.activateTab(entry.id);
-			}
-			if(this.options.onSwitchTab){
-				this.options.onSwitchTab.call(this, tab);
-			}
-
-			return this.currentTab;
+		    return this._tabs;
 		}
 	}
 }

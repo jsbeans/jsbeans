@@ -29,10 +29,10 @@
 
 			this.addClass('jsb-navigator');
 
-			this.options.onclick = function(key, index) {
+			this.options.onClick = function(key, index) {
 			    $this.gotoElement(key);
 
-			    opts.onclick.call($this, key, index);
+			    opts.onClick.call($this, key, index);
 			};
         },
 

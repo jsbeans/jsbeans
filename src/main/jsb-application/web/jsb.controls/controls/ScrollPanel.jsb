@@ -198,7 +198,7 @@
 
         options: {
             position: 'horizontal',
-            onclick: null
+            onClick: null
         },
 
         addElement: function(el) {
@@ -215,7 +215,7 @@
                 element: element
             });
 
-            if(JSB.isFunction(this.options.onclick)) {
+            if(JSB.isFunction(this.options.onClick)) {
                 element.click(function(){
                     if($this._moved){
                         $this._moved = false;
@@ -226,11 +226,15 @@
                         return;
                     }
 
-                    $this.options.onclick.call($this, el.key, index - 1);
+                    $this.options.onClick.call($this, el.key, index - 1);
                 });
             }
 
             this._panel.append(element);
+        },
+
+        clear: function() {
+            this._panel.empty();
         },
 
         getPanel: function() {
@@ -242,6 +246,10 @@
         },
 
         removeElement: function(key) {
+            // todo
+        },
+
+        sort: function() {
             // todo
         }
     }
