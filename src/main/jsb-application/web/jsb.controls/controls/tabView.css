@@ -13,31 +13,67 @@
     background: rgba(230, 230, 230, 1);
 }
 
-.jsb-tabview.topTabPosition > .tabPane {
+.jsb-tabview.topTabPosition > .tabPane,
+.jsb-tabview.bottomTabPosition > .tabPane {
 	left: 0;
 	right: 0;
-	top: 0;
 	padding: 3px 6px 0 6px;
     height: 40px;
+}
+
+.jsb-tabview.topTabPosition > .tabPane {
+    top: 0;
     border-bottom: 1px solid #ddd;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li {
-    float: right;
+.jsb-tabview.bottomTabPosition > .tabPane {
+    bottom: 0;
+    border-top: 1px solid #ddd;
+}
+
+.jsb-tabview.leftTabPosition > .tabPane,
+.jsb-tabview.rightTabPosition > .tabPane {
+    display: inline-block;
+	top: 0;
+	bottom: 0;
+	padding: 3px 6px 0 6px;
+    width: 70px;
+}
+
+.jsb-tabview.leftTabPosition > .tabPane {
+	left: 0;
+	margin: 0 -1px 0 0;
+    border-right: 1px solid #ddd;
+}
+
+.jsb-tabview.rightTabPosition > .tabPane {
+    right: 0;
+    border-left: 1px solid #ddd;
+}
+
+.jsb-tabview > .tabPane > li {
 	min-width: 25px;
 	min-height: 25px;
 	cursor: pointer;
-    display: inline-block;
-    margin: 1px -1px 0px;
-    padding: 4px 10px;
-    text-align: center;
+	text-align: center;
     color: #aaa;
     border: 0px solid #d4d4d4;
     border-width: 1px 1px 0px 1px;
     background: #f7f7f7;
-    border-radius: 6px 6px 0 0;
+    transition: background 200ms, color 200ms;
+}
+
+.jsb-tabview.topTabPosition > .tabPane > li,
+.jsb-tabview.bottomTabPosition > .tabPane > li {
+    display: inline-block;
+    float: right;
+    padding: 4px 10px;
     height: 35px;
-	transition: background 200ms, color 200ms;
+}
+
+.jsb-tabview.topTabPosition > .tabPane > li {
+    margin: 1px -1px 0px;
+    border-radius: 6px 6px 0 0;
 }
 
 .jsb-tabview.topTabPosition > .tabPane > li > * {
@@ -50,7 +86,7 @@
 }
 
 .jsb-tabview.topTabPosition > .tabPane > li > .title {
-    font-weight: normal;
+    word-break: break-word;
 }
 
 .jsb-tabview.topTabPosition > .tabPane > li.disabled {
@@ -79,7 +115,16 @@
 	vertical-align: middle;
 }
 
-.jsb-tabview > .contentPane {
+.jsb-tabview.topTabPosition > .contentPane,
+.jsb-tabview.bottomTabPosition > .contentPane {
     width: 100%;
     height: calc(100% - 40px);
+}
+
+.jsb-tabview.leftTabPosition > .contentPane,
+.jsb-tabview.rightTabPosition > .contentPane {
+    display: inline-block;
+    width: calc(100% - 70px);
+    height: 100%;
+    vertical-align: top;
 }

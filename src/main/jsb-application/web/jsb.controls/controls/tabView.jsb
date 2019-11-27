@@ -89,7 +89,7 @@
 			var icon = this.$('<i class="icon"></i>'),
 			    id = options.id || JSB().generateUid(),
                 tab = this.$('<li clientId="' + id + '"></li>'),
-                title = this.$('<span class="title">' + title + '</span>');
+                title = this.$('<span class="title">' + options.title + '</span>');
 
             tab.append(title);
 
