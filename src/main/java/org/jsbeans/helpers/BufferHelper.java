@@ -41,6 +41,10 @@ public class BufferHelper {
 			NativeArray array = (NativeArray) obj;
 			nab = new NativeArrayBuffer(array.size());
 			System.arraycopy(array.toArray(), 0, nab.getBuffer(), 0, array.size());
+		} else if(obj!=null && obj.getClass().isArray()){
+			int length = ((byte [])obj).length;
+			nab = new NativeArrayBuffer(length);
+			System.arraycopy(obj, 0, nab.getBuffer(), 0, length);
 		}
 		return nab;
 	}
