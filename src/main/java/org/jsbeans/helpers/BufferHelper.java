@@ -11,6 +11,7 @@
 package org.jsbeans.helpers;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -30,7 +31,7 @@ public class BufferHelper {
 		}
 	}
 	
-	public static NativeArrayBuffer toArrayBuffer(Object obj) throws UnsupportedEncodingException{
+	public static NativeArrayBuffer toArrayBuffer(Object obj) throws UnsupportedEncodingException, IllegalAccessException, InstantiationException, InvocationTargetException{
 		NativeArrayBuffer nab = null;
 		if(obj instanceof String){
 			String str = (String)obj;
@@ -40,6 +41,7 @@ public class BufferHelper {
 		} else if(obj instanceof NativeArray){
 			NativeArray array = (NativeArray) obj;
 			nab = new NativeArrayBuffer(array.size());
+			
 			System.arraycopy(array.toArray(), 0, nab.getBuffer(), 0, array.size());
 		} else if(obj!=null && obj.getClass().isArray()){
 			int length = ((byte [])obj).length;
