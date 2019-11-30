@@ -23,7 +23,6 @@
 		
 		layout: function(items){
 			var self = this;
-			
 			var rects = {};
 			var rChanged = {};
 			for(var nId in this.diagram.nodes){

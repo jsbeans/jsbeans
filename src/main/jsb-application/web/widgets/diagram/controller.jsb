@@ -20,6 +20,7 @@
 		nodeMovePt: null,
 		isSelecting: false,
 		isNodeMoving: false,
+		nodeMoveMap: null,
 		
 
 		$constructor: function(d){
@@ -275,7 +276,8 @@
 						this.nodeMovePt = null;
 						this.preventClick = true;
 						params.event.stopPropagation();
-						this.diagram.updateLayout(this.diagram.getSelected());
+						this.diagram.updateLayout($this.nodeMoveMap);
+						$this.nodeMoveMap = null;
 					}
 					
 					if(this.isNodeResizing){
@@ -401,6 +403,9 @@
 						var node = selMap[nodeId];
 						node.setPosition({x: this.storedPositions[nodeId].x + offset.x, y: this.storedPositions[nodeId].y + offset.y});
 					}
+					
+					// store selMap
+					$this.nodeMoveMap = selMap;
 				}
 				
 				if(this.isNodeResizing){
