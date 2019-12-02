@@ -256,6 +256,8 @@
 			}
 			
 			this.onHide = params.onHide;
+
+			this.embeddedWidget.onShow();
 			
 			this.publish('toolShow', params);
 			

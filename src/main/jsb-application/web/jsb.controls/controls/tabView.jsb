@@ -160,6 +160,10 @@
 			}
 		},
 
+		getContentPane: function() {
+		    return this._contentPane;
+		},
+
 	    /**
 	    * Вернуть текущую вкладку
 	    *

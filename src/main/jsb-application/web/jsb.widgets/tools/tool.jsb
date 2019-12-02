@@ -30,7 +30,9 @@
 			return this.wrapper;
 		},
 
-		onHide: function(bCanceled){},
+		onHide: function(bCanceled) {},
+
+		onShow: function() {},
 
 		setData: function(data){
 			this.data = data;
