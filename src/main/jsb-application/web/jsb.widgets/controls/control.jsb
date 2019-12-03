@@ -237,16 +237,27 @@
 			return this.getElement().attr.apply(this.getElement(), arguments);
 		},
 		
-		isContentReady: function(sel){
+		isContentReady: function(sel, shouldExists){
 			if(!sel){
 				sel = '*[jsb]';
 			}
 			var ctrls = this.find(sel);
+			if(shouldExists){
+				if(ctrls.length === 0){
+					return false;
+				}
+				if(JSB.isNumber(shouldExists)){
+					if(ctrls.length != shouldExists){
+						return false;
+					}
+				}
+			}
 			for(var i = 0; i < ctrls.length; i++){
 				if(!this.$(ctrls[i]).attr('_id')){
 					return false;
 				}
 			}
+			
 			return true;
 		},
 		

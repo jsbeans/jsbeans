@@ -115,7 +115,7 @@
 				}
 				return;
 			}
-			elt.attr('_inject', true);
+			elt.attr('_inject', 1);
 			var jsoName = elt.attr('jsb');
 			if(!jsoName || jsoName.length === 0){
 				throw 'JSB injection failed due to missing "jsb" attribute: ' + this.$('<div></div>').append(elt.clone()).html();
@@ -199,8 +199,11 @@
 							
 							// return _id attr back
 							elt.attr('_id', eltId);
+							elt.attr('_inject', 2);
 							
-							if(readyCallback) readyCallback(ctrlObj);
+							if(readyCallback) {
+								readyCallback(ctrlObj);
+							}
 							return;
 						}
 						var c = contentToAdd.shift();
@@ -229,7 +232,10 @@
 					if(initProc){
 						initProc.call(ctrlObj);
 					}
-					if(readyCallback) readyCallback(ctrlObj);
+					elt.attr('_inject', 2);
+					if(readyCallback) {
+						readyCallback(ctrlObj);
+					}
 				}
 			});
 		},

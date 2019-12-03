@@ -34,6 +34,18 @@ if(!(function(){return this;}).call(null).JSB){
 			cfg.$parent = 'JSB.Object';
 		}
 		
+		// store in objects
+		if(!this.isString(cfg.$name)){
+			throw new Error("Class name required to create managed object");
+		}
+
+		if(this.objects[cfg.$name]){
+			return;	// already created or in progress
+		} else {
+			// add to objects
+			this.objects[cfg.$name] = this;
+		}
+		
 		// insert into repo
 		var repo = this.getRepository();
 		if(repo){
@@ -508,16 +520,7 @@ if(!(function(){return this;}).call(null).JSB){
 			if(cfg.$format == 'jso'){
 				throw new Error('Unable to create bean "' + cfg.$name + '" due to JSO format is no longer supported');
 			}
-			if(!this.isString(cfg.$name)){
-				throw new Error("Class name required to create managed object");
-			}
-
-			if(this.objects[cfg.$name]){
-				return;	// already created or in progress
-			} else {
-				// add to objects
-				this.objects[cfg.$name] = this;
-			}
+			
 
 			var _kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require', '$format', '$common'];
 			var self = this;
@@ -2262,16 +2265,21 @@ if(!(function(){return this;}).call(null).JSB){
 
 				// load object from the server
 				if(this.isClient() && (!this.objects[name] || forceUpdate) && queueLength == 1){
-					if(this.isNull(this.initQueue) || this.isNull(this.initQueue[name])){
+					if(!this.initQueue || !this.initQueue[name]){
 						if(this.provider){
 							if(!this.isNull(this.loadQueue) && !this.isNull(this.loadQueue[name]) && !forceUpdate){
 								return;
 							}
-							this.provider.loadObject(name);
-							if(this.isNull(this.loadQueue)){
-								this.loadQueue = {}
-							}
-							this.loadQueue[name] = true;
+							this.defer(function(){
+								if(self.objects[name] || (self.initQueue && self.initQueue[name]) || (self.loadQueue && self.loadQueue[name])){
+									return;
+								}
+								self.provider.loadObject(name);
+								if(!self.loadQueue){
+									self.loadQueue = {}
+								}
+								self.loadQueue[name] = true;
+							}, 0);
 						} else {
 							this.objectsToLoad.push(name);
 						}
@@ -3111,15 +3119,10 @@ if(!(function(){return this;}).call(null).JSB){
 
 		defer: function( deferProc, timeout, key ){
 			var self = this;
-			if(!this.isNumber(timeout)){
-				timeout = 100;
-			}
 			if(key && this.deferTimeoutMap[key]){
 				JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
 			}
-			/*var callCtx = this.saveCallingContext();*/
-			var deferTimeout = JSB().Window.setTimeout(function(){
-				/*self.putCallingContext(callCtx);*/
+			var toProc = function(){
 				if(key && self.deferTimeoutMap[key]){
 					var locker = self.getLocker();
 					if(locker){
@@ -3132,16 +3135,21 @@ if(!(function(){return this;}).call(null).JSB){
 
 				}
 				deferProc.call(self);
-			}, timeout);
+			}
+			if(!this.isNumber(timeout)){
+				timeout = 100;
+			}
 			if(key){
 				var locker = self.getLocker();
 				if(locker){
 					locker.lock('__deferTimeoutMap');
 				}
-				this.deferTimeoutMap[key] = deferTimeout;
+				this.deferTimeoutMap[key] = JSB().Window.setTimeout(toProc, timeout);
 				if(locker){
 					locker.unlock('__deferTimeoutMap');
 				}
+			} else {
+				JSB().Window.setTimeout(toProc, timeout);
 			}
 		},
 
@@ -3153,7 +3161,7 @@ if(!(function(){return this;}).call(null).JSB){
 			if(key && this.intervalMap[key]){
 				JSB().Window.clearInterval(this.intervalMap[key]);
 			}
-			var intervalHandle = JSB().Window.setInterval(function(){
+			var toProc = function(){
 				/*self.putCallingContext(callCtx);*/
 				if(key && self.intervalMap[key]){
 					var locker = self.getLocker();
@@ -3167,16 +3175,18 @@ if(!(function(){return this;}).call(null).JSB){
 
 				}
 				proc.call(self);
-			}, interval);
+			};
 			if(key){
 				var locker = self.getLocker();
 				if(locker){
 					locker.lock('__intervalMap');
 				}
-				this.intervalMap[key] = intervalHandle;
+				this.intervalMap[key] = JSB().Window.setInterval(toProc, interval);;
 				if(locker){
 					locker.unlock('__intervalMap');
 				}
+			} else {
+				JSB().Window.setInterval(toProc, interval);
 			}
 		},
 
@@ -3210,29 +3220,31 @@ if(!(function(){return this;}).call(null).JSB){
 				if(untilRes){
 					deferProc();
 				} else {
-					var deferTimeout = JSB().Window.setTimeout(toProc, interval);
 					if(key){
 						var locker = self.getLocker();
 						if(locker){
 							locker.lock('__deferTimeoutMap');
 						}
-						self.deferTimeoutMap[key] = deferTimeout;
+						self.deferTimeoutMap[key] = JSB().Window.setTimeout(toProc, interval);
 						if(locker){
 							locker.unlock('__deferTimeoutMap');
 						}
+					} else {
+						JSB().Window.setTimeout(toProc, interval);
 					}
 				}
 			}
-			var deferTimeout = JSB().Window.setTimeout(toProc, interval);
 			if(key){
 				var locker = self.getLocker();
 				if(locker){
 					locker.lock('__deferTimeoutMap');
 				}
-				this.deferTimeoutMap[key] = deferTimeout;
+				this.deferTimeoutMap[key] = JSB().Window.setTimeout(toProc, interval);
 				if(locker){
 					locker.unlock('__deferTimeoutMap');
 				}
+			} else {
+				JSB().Window.setTimeout(toProc, interval);
 			}
 		},
 
@@ -6609,7 +6621,7 @@ JSB({
 			}
 			if(needEnforce){
 				JSB.defer(function(){
-					self.enforceServerClientCallTracking();
+					self.enforceServerClientCallTracking(true);
 				}, 0, '_jsb_enforceScc' + this.getId());
 			}
 			var doUpdate = false;
@@ -6623,7 +6635,10 @@ JSB({
 			}
 		},
 
-		enforceServerClientCallTracking: function(){
+		enforceServerClientCallTracking: function(bEnable){
+			if(!this.serverClientCallTrackInterval){
+				return;
+			}
 			var newInterval = this.serverClientCallTrackInterval;
 			if(newInterval > this.options.defScInterval){
 				newInterval = this.options.defScInterval;
@@ -6633,15 +6648,24 @@ JSB({
 					newInterval = this.options.minScInterval;
 				}
 			}
-			this.enableServerClientCallTracking(newInterval);
+			if(this.serverClientCallTrackInterval != newInterval){
+				if(bEnable){
+					this.enableServerClientCallTracking(newInterval);
+				} else {
+					this.serverClientCallTrackInterval = newInterval;
+				}
+			}
 		},
 
 		slowDownServerClientCallTracking: function(){
+			if(!this.serverClientCallTrackInterval){
+				return;
+			}
 			var newInterval = this.serverClientCallTrackInterval * 1.5;
 			if(newInterval > this.options.maxScInterval){
 				newInterval = this.options.maxScInterval;
 			}
-			this.enableServerClientCallTracking(newInterval);
+			this.serverClientCallTrackInterval = newInterval;
 		},
 
 		enableServerClientCallTracking: function(trackInterval){
@@ -6657,8 +6681,13 @@ JSB({
 
 			if(trackInterval == true){
 				trackInterval = this.options.maxScInterval;
-				this.serverClientCallTrackInterval = trackInterval;
+				$this.serverClientCallTrackInterval = trackInterval;
 				_doTrack();
+/*				
+				JSB().defer(function(){
+					_doTrack();
+				}, $this.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
+*/				
 				return;
 			}
 
@@ -6674,15 +6703,14 @@ JSB({
 			this.serverClientCallTrackInterval = trackInterval;
 
 			function _doTrack(){
+				if($this._tracking){
+					return;
+				}
+				$this._tracking = true;
 				self.rpc('getServerClientCallSlice', [self.lastTrackId], function(res){
+					self.lastTrackId = res.lastId;
+					var entries = res.slice;
 					try {
-						self.lastTrackId = res.lastId;
-						var entries = res.slice;
-						if(entries.length === 0){
-							self.slowDownServerClientCallTracking();
-						} else {
-							self.enforceServerClientCallTracking();
-						}
 						// do something with slice
 						for(var i = 0; i < entries.length; i++){
 							var entry = entries[i];
@@ -6721,11 +6749,19 @@ JSB({
 							}
 						}
 					} finally {
+						
 						if(self.serverClientCallTrackInterval){
+							if(entries.length === 0){
+								self.slowDownServerClientCallTracking();
+							} else {
+								self.enforceServerClientCallTracking();
+							}
+
 							JSB().defer(function(){
 								_doTrack();
 							}, self.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
 						}
+						$this._tracking = false;
 					}
 				}, {sync: true, plain:true});
 			}
