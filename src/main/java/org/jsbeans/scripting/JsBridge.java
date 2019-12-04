@@ -32,7 +32,6 @@ import scala.concurrent.Future;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JsBridge {
@@ -397,7 +396,8 @@ public class JsBridge {
         jsHubSvc.tell(msg, ActorRef.noSender());
     }
 
-    public Object ask(NativeObject askObject) {
+    @SuppressWarnings("deprecation")
+	public Object ask(NativeObject askObject) {
 /*		
 		synchronized(mutex){
 			askCounter++;
