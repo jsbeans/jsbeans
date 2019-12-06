@@ -43,10 +43,10 @@
 		},
 		
 		destroy: function(){
-			$base();
 			if(!this.closed){
 				this.close();
 			}
+			$base();
 		},
 		
 		_setStream: function(obj){
