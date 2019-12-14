@@ -281,7 +281,13 @@
         }
     },
 
-	colorAt: function (number){
+	colorAt: function (number, format) {
+	    // based on https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? ( parseInt(result[1], 16) + ',' + parseInt(result[2], 16) + ',' + parseInt(result[3], 16) ) : null;
+        }
+
         if (isNaN(number)) {
             throw new TypeError(number + ' is not a number');
         }
@@ -298,6 +304,13 @@
 
             for(var i = 0; i < this.colorMap.length; i++){
                 if(this.colorMap[i].innerMin <= number && this.colorMap[i].innerMax >= number){
+                    if(format === 'rgb') {
+                        return {
+                            color: hexToRgb(this.colorMap[i].color),
+                            group: i
+                        }
+                    }
+
                     return {
                         color: this.colorMap[i].color,
                         group: i
@@ -306,10 +319,19 @@
             }
         } else {
             if (this.gradients.length === 1) {
+                if(format === 'rgb') {
+                    return hexToRgb(this.gradients[0].colourAt(number));
+                }
+
                 return this.gradients[0].colourAt(number);
             } else {
                 var segment = (this.maxNum - this.minNum)/(this.gradients.length);
                 var index = Math.min(Math.floor((Math.max(number, this.minNum) - this.minNum)/segment), this.gradients.length - 1);
+
+                if(format === 'rgb') {
+                    return hexToRgb(this.gradients[index].colourAt(number));
+                }
+
                 return this.gradients[index].colourAt(number);
             }
         }
