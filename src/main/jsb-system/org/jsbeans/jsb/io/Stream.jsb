@@ -218,11 +218,15 @@
 		close: function(){
 			if(!this.closed){
 				if(!JSB.isNull(this.input)){
-					this.input.close();
+					try {
+						this.input.close();
+					} catch(e){}
 					this.input = null;
 				}
 				if(!JSB.isNull(this.output)){
-					this.output.close();
+					try {
+						this.output.close();
+					} catch(e){}
 					this.output = null;
 				}
 				if(this.buffer){
