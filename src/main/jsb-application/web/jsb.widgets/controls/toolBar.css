@@ -28,8 +28,8 @@
 }
 
 ._dwp_toolBar ul._dwp_tbContainer li._dwp_toolBarItem.allowHover:hover {
-    background: rgb(220, 220, 220);
-    border: 1px solid rgb(158, 158, 158);
+	background: #c1dcf1;
+    border: 1px solid #8fa8cc;
 }
 
 ._dwp_toolBar ul._dwp_tbContainer li._dwp_toolBarItem.checked {

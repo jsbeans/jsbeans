@@ -21,7 +21,9 @@
 		           
 		options: {
 			showItems: false,
-			showButton: true
+			showButton: true,
+			
+			onInitAction: null,
 		},
 		
 		_actions: {},
@@ -111,6 +113,12 @@
 				if(!expose.fixed && $this.options.showButton){
 					continue;
 				}
+				if($this.options.onInitAction){
+					var bInit = $this.options.onInitAction.call($this, action);
+					if(JSB.isDefined(bInit) && !bInit){
+						continue;
+					}
+				}
 				var renderer = $this._renderers[actId];
 				if(!renderer){
 					renderer = $this._renderers[actId] = RendererRepository.createRendererFor(action, {fixed: true});
@@ -148,6 +156,12 @@
 				var expose = action.getJsb().getDescriptor().$expose;
 				if(expose.fixed && $this.options.showItems){
 					continue;
+				}
+				if($this.options.onInitAction){
+					var bInit = $this.options.onInitAction.call($this, action);
+					if(JSB.isDefined(bInit) && !bInit){
+						continue;
+					}
 				}
 				var renderer = $this._renderers[actId];
 				if(!renderer){
