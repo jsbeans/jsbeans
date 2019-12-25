@@ -16,6 +16,7 @@
 	$server: {
 		$require: ['JSB.Web',
 		           'JSB.System.Config',
+		           'JSB.System.Kernel',
 		           'java:org.jsbeans.web.JsMinifier'],
 		
 		cachedContent: {},
@@ -56,7 +57,11 @@
 			
 			// insert engine
 			code += Web.getJsbCode();
-			
+
+			// insert session & param name
+			code += 'JSB().setCurrentSession("' + Kernel.session() + '");';
+			code += 'JSB().setSessionIdParameterName("' + Web.getSessionIdPathParameterName() + '");';
+
 			// insert server version to avoid browser cache
 			code += 'JSB().setServerVersion("' + Config.get('build.version') + '");';
 			

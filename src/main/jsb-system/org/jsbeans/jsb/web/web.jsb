@@ -55,6 +55,8 @@
 		           'java:org.jsbeans.web.JsMinifier',
 		           'java:org.jsbeans.web.JsbServlet',
 		           'java:org.jsbeans.web.WebCache'],
+		           
+		_appContext: null,
 
 		$constructor: function(){
 			JSB().onLoad(function(){
@@ -101,7 +103,18 @@
 		
 		getResponse: function(){
 			return (function(){return this;}).call(null)['__response'];
-		}
+		},
+		
+		_setAppContext: function(ctx){
+			this._appContext = ctx;
+		},
 
+		getCookieName: function(){
+			return '' + this._appContext.getSessionHandler().getSessionManager().getSessionCookieConfig().getName();
+		},
+		
+		getSessionIdPathParameterName: function(){
+			return '' + this._appContext.getSessionHandler().getSessionManager().getSessionIdPathParameterName();
+		}
 	}
 }

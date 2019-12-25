@@ -9,10 +9,9 @@
  */
 
 {
-	$name:'JSB.HttpJsb',
+	$name:'JSB.Web.HttpJsb',
 	$server: {
-		$require: ['JSB.System.Kernel','JSB.System.Log', 'JSB.Web'],
-
+		$require: ['JSB.System.Kernel','JSB.System.Log', 'JSB.Web', 'JSB.Crypt.MD5'],
 		$singleton: true,
 		
 		$constructor: function(){
@@ -34,7 +33,7 @@
 				throw 'Bean "' + repoEntry.jsb.$name + '" does not allow to be called via HTTP. Use "$http" option in bean declaration.';
 			}
 */			
-			var instanceId = '__httpCall__' + repoEntry.jsb.$name;
+			var instanceId = params && params.length > 1 ? MD5.md5(params[1]) : '__httpCall__' + repoEntry.jsb.$name;
 			if(repoEntry.jsb.getKeywordOption('$fixedId') && params && params.length > 0 && params[0]['id']){
 				instanceId = params[0]['id'];
 			}

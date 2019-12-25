@@ -15,6 +15,15 @@ package org.jsbeans.web;
 
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import akka.util.Timeout;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+
+import java.net.URLEncoder;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.servlet.SessionTrackingMode;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -24,8 +33,12 @@ import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
+import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.ConfigHelper;
+import org.jsbeans.scripting.ExecuteScriptMessage;
+import org.jsbeans.scripting.ExecutionStatus;
 import org.jsbeans.scripting.JsHub;
+import org.jsbeans.scripting.UpdateStatusMessage;
 import org.jsbeans.scripting.jsb.JsbRegistryService;
 import org.jsbeans.security.SecurityService;
 import org.jsbeans.services.DependsOn;
@@ -93,6 +106,16 @@ public class HttpService extends Service {
         context.setContextPath("/");
         SessionManager sm = context.getSessionHandler().getSessionManager();
         sm.getSessionCookieConfig().setName("_jsbSession_" + portVal.toString());
+        sm.setSessionIdPathParameterName("_jsbsession_");
+        
+/*        
+        Set<SessionTrackingMode> hs = new HashSet<SessionTrackingMode>();
+        hs.add(SessionTrackingMode.SSL);
+        sm.setSessionTrackingModes(hs);
+        
+        Set<SessionTrackingMode> ss = sm.getDefaultSessionTrackingModes();
+        Set<SessionTrackingMode> ss2 = sm.getEffectiveSessionTrackingModes();
+*/
         
         // prevent directory browsing
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
@@ -115,6 +138,15 @@ public class HttpService extends Service {
             }
     	}
 
+        
+        Timeout timeout = ActorHelper.getServiceCommTimeout();
+        ExecuteScriptMessage msg = new ExecuteScriptMessage("JSB.getInstance('JSB.Web')._setAppContext(__appContext);", false);
+        msg.addWrapped("__appContext", context);
+        Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), msg, timeout);
+        try {
+			Await.result(future, timeout.duration());
+		} catch (Exception e1) {
+		}
         
         try {
             this.getLog().debug(String.format("Starting Jetty web server at %d", portVal.intValue()));

@@ -13,6 +13,8 @@
 	$parent: 'JSB.Widgets.Widget',
 	$http: true,
 	$server:{
+		$require: ['JSB.System.Kernel', 'JSB.Web'],
+		
 		get: function(params){
 			var htmlSection = this.getJsb()['$html'];
 			$this.publish('JSB.Widgets.Page.get');
@@ -31,7 +33,7 @@
 	{{? htmlSection.favicon}}
 	<link rel="shortcut icon" type="image/png" href="{{=htmlSection.favicon}}"/>
 	{{?}}
- 	<script type="text/javascript" src="/jsbeans.jsb?refid={{=this.getId()}}"></script>
+ 	<script type="text/javascript" src="/jsbeans.jsb?refid={{=this.getId()}}&{{=Web.getSessionIdPathParameterName()}}={{=Kernel.session()}}"></script>
  	
  	<style>
  		body {

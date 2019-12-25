@@ -105,6 +105,8 @@ if(!(function(){return this;}).call(null).JSB){
 /*		fieldMaps: {},*/
 		fieldArrs: {},
 		syncScopes: {},
+		_session: null,
+		_sessionIdParameterName: null,
 		
 		support: {
 			ownLast: checkOwnLast()
@@ -145,6 +147,18 @@ if(!(function(){return this;}).call(null).JSB){
 
 		isServer: function(){
 			return !this.isClient();
+		},
+		
+		isIframe: function(){
+			if(this.isServer()){
+				throw new Error('This function should not be called on server side');
+			}
+			try {
+		        return window.self !== window.top;
+		    } catch (e) {
+		        return true;
+		    }
+		    return false;
 		},
 
 		eval: function(script, scopeVars, fName){
@@ -200,13 +214,17 @@ if(!(function(){return this;}).call(null).JSB){
 
 		getCurrentSession: function(){
 			if(!this.isServer()){
-				return '';
+				return this._session;
 			}
 			var session = Bridge.getCurrentSession();
 			if(session){
 				return '' + session;
 			}
 			return '';
+		},
+		
+		setCurrentSession: function(s){
+			this._session = s;
 		},
 
 		getSync: function(){
@@ -376,6 +394,14 @@ if(!(function(){return this;}).call(null).JSB){
 
 		getServerVersion: function(){
 			return this.serverVersion;
+		},
+		
+		setSessionIdParameterName: function(pName){
+			this._sessionIdParameterName = pName;
+		},
+		
+		getSessionIdParameterName: function(){
+			return this._sessionIdParameterName;
 		},
 
 		getBasePath: function(){
@@ -6309,6 +6335,16 @@ JSB({
 				}
 				url += params;
 				params = null;
+			}
+
+			// append session id in url param in case of iframe
+			if(JSB().isIframe()){
+				if(url.indexOf('?') == -1){
+					url += '?';
+				} else {
+					url += '&';
+				}
+				url += JSB().getSessionIdParameterName() + '=' + JSB().getCurrentSession();
 			}
 
 

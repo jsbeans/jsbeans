@@ -219,7 +219,7 @@ public class HttpJsbServlet extends HttpServlet {
         if(beanPath.endsWith("download.jsb")){
         	timeout = ActorHelper.getInfiniteTimeout();
         }
-        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ var Web = JSB.getInstance('JSB.Web'); var result = JSB.getInstance('JSB.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s')]); var opts = {}; if(result instanceof Web.Response){opts = result.opts; result = result.data; } return {exec: result, opts: opts};})()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8")), false);
+        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ var Web = JSB.getInstance('JSB.Web'); var result = JSB.getInstance('JSB.Web.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s')]); var opts = {}; if(result instanceof Web.Response){opts = result.opts; result = result.data; } return {exec: result, opts: opts};})()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8")), false);
         msg.setUserToken(token);
         msg.setScopePath(session);
         msg.setClientAddr(clientAddr);
