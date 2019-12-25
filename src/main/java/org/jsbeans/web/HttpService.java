@@ -112,10 +112,10 @@ public class HttpService extends Service {
         Set<SessionTrackingMode> hs = new HashSet<SessionTrackingMode>();
         hs.add(SessionTrackingMode.SSL);
         sm.setSessionTrackingModes(hs);
-        
+*/        
         Set<SessionTrackingMode> ss = sm.getDefaultSessionTrackingModes();
         Set<SessionTrackingMode> ss2 = sm.getEffectiveSessionTrackingModes();
-*/
+
         
         // prevent directory browsing
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");

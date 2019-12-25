@@ -6337,6 +6337,7 @@ JSB({
 				params = null;
 			}
 
+/*			
 			// append session id in url param in case of iframe
 			if(JSB().isIframe()){
 				if(url.indexOf('?') == -1){
@@ -6346,7 +6347,7 @@ JSB({
 				}
 				url += JSB().getSessionIdParameterName() + '=' + JSB().getCurrentSession();
 			}
-
+*/
 
 			if(xhrObj.dataType == 'jsonp'){
 				// prepare result callback

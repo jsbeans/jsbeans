@@ -59,7 +59,7 @@
 			code += Web.getJsbCode();
 
 			// insert session & param name
-			code += 'JSB().setCurrentSession("' + Kernel.session() + '");';
+			code += 'JSB().setCurrentSession("' + JSB.getCurrentSession() + '");';
 			code += 'JSB().setSessionIdParameterName("' + Web.getSessionIdPathParameterName() + '");';
 
 			// insert server version to avoid browser cache
