@@ -97,7 +97,8 @@ public class HttpJsbServlet extends HttpServlet {
                 @Override
                 public UpdateStatusMessage run() throws Exception {
                     String params = pObj.toJson();
-                    return HttpJsbServlet.this.execCmd(beanPath, proc, params, session, req.getRemoteAddr(), user, rid, getFullURL(req), token, req, resp);
+                    String clientIp = WebHelper.extractRealIpFromRequest(req);
+                    return HttpJsbServlet.this.execCmd(beanPath, proc, params, session, clientIp, user, rid, getFullURL(req), token, req, resp);
                 }
             });
            	this.responseResult(respObj, req, resp, rid);

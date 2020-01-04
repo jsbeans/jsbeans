@@ -94,7 +94,8 @@ public class ApiServlet extends HttpServlet {
 
                 String params = pObj.toJson();
 
-                UpdateStatusMessage respObj = this.execCmd(procPath, params, session, req.getRemoteAddr(), user, rid, getFullURL(req), token);
+                String clientIp = WebHelper.extractRealIpFromRequest(req);
+                UpdateStatusMessage respObj = this.execCmd(procPath, params, session, clientIp, user, rid, getFullURL(req), token);
                 this.responseResult(respObj, req, resp, rid);
 
             } else {
@@ -119,7 +120,8 @@ public class ApiServlet extends HttpServlet {
                 }
 
                 if ("exec".equals(cmd)) {
-                    UpdateStatusMessage respObj = this.execCmd(proc, params, session, req.getRemoteAddr(), user, rid, getFullURL(req), token);
+                	String clientIp = WebHelper.extractRealIpFromRequest(req);
+                    UpdateStatusMessage respObj = this.execCmd(proc, params, session, clientIp, user, rid, getFullURL(req), token);
                     this.responseResult(respObj, req, resp, rid);
                 }
             }

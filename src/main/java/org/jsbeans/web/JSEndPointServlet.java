@@ -103,11 +103,13 @@ public class JSEndPointServlet extends HttpServlet {
             String token = req.getParameter("token");
             Object userTokenObj = req.getSession().getAttribute("token");
             String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
+            String clientIp = WebHelper.extractRealIpFromRequest(req);
             Timeout timeout = ActorHelper.getServiceCommTimeout();
             ExecuteScriptMessage execMsg = new ExecuteScriptMessage(JsbTemplateEngine.perform(script, null), true);
             execMsg.setScopePath(req.getSession().getId());
             execMsg.setUserToken(userToken);
-            execMsg.setClientAddr(req.getRemoteAddr());
+            
+            execMsg.setClientAddr(clientIp);
             Principal p = req.getUserPrincipal();
             if (p != null) {
                 execMsg.setUser(p.getName());

@@ -132,13 +132,14 @@ public class JsbServlet extends HttpServlet {
         }
         Object userTokenObj = req.getSession().getAttribute("token");
         String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
-
+        String clientIp = WebHelper.extractRealIpFromRequest(req);
+        
         if ("get".equals(cmd)) {
-            this.handleGetJsoCommand(ac, req.getRemoteAddr(), userName, rid, userToken);
+            this.handleGetJsoCommand(ac, clientIp, userName, rid, userToken);
         } else if ("rpc".equals(cmd)) {
-            this.handleRpcCommand(ac, req.getRemoteAddr(), userName, rid, userToken);
+            this.handleRpcCommand(ac, clientIp, userName, rid, userToken);
         } else if("upload".equals(cmd)) {
-        	this.handleUploadCommand(ac, req.getRemoteAddr(), userName, rid, userToken);
+        	this.handleUploadCommand(ac, clientIp, userName, rid, userToken);
         }
     }
 

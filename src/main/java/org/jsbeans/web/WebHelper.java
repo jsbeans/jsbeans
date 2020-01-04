@@ -28,4 +28,16 @@ public class WebHelper {
 
         return hMap.toJson();
     }
+    
+    public static String extractRealIpFromRequest(HttpServletRequest req) {
+    	String realIp = req.getHeader("X-Real-IP");
+    	if(realIp == null || realIp.length() == 0) {
+    		realIp = req.getHeader("X-Forwarded-For");
+    	}
+    	if(realIp == null || realIp.length() == 0) {
+    		realIp = req.getRemoteAddr();
+    	}
+    	
+    	return realIp;
+    }
 }

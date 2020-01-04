@@ -41,8 +41,14 @@ public class AuthFilter implements Filter {
 
             @Override
             public String getRemoteAddr() {
-                String realIP = super.getHeader("X-Real-IP");
-                return realIP != null ? realIP : super.getRemoteAddr();
+            	String realIp = super.getHeader("X-Real-IP");
+            	if(realIp == null || realIp.length() == 0) {
+            		realIp = super.getHeader("X-Forwarded-For");
+            	}
+            	if(realIp == null || realIp.length() == 0) {
+            		realIp = super.getRemoteAddr();
+            	}
+                return realIp;
             }
 
             @Override
