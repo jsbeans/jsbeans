@@ -15,6 +15,8 @@ import akka.actor.ActorSelection;
 import akka.actor.Cancellable;
 import akka.actor.Scheduler;
 import akka.util.Timeout;
+
+import org.eclipse.wst.jsdt.debug.rhino.debugger.RhinoDebugger;
 import org.jboss.netty.channel.ChannelException;
 import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
@@ -32,7 +34,6 @@ import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
-import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsonObject;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.tools.debugger.Main;
@@ -44,6 +45,7 @@ import javax.security.auth.Subject;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.PrivilegedExceptionAction;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -244,6 +246,14 @@ public class JsHub extends Service {
 
         if (openDebugger) {
             this.openDebugger(new DebuggerMessage());
+/*            
+            try {
+				this.enableEclipseDebugger();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+*/			
         }
 
         this.completeInitialization();
@@ -289,6 +299,22 @@ public class JsHub extends Service {
             debugger.dispose();
             debugger = null;
         }
+    }
+    
+    private void enableEclipseDebugger() throws Exception {
+    	int port = 9999;
+    	String transport = "socket";
+    	boolean suspend = false; // suspend until debugger attaches itself
+    	boolean trace = false; // trace-log the debug agent
+    	
+    	final String configString = MessageFormat.format(
+			"transport={0},suspend={1},address={2}",
+			new Object[] { transport, suspend ? "y" : "n",
+				String.valueOf(port), trace ? "y" : "n" });
+    	
+		RhinoDebugger d = new RhinoDebugger(configString);
+		d.start();
+		getContextFactory().addListener(d);
     }
 
 

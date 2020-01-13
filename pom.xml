@@ -44,7 +44,7 @@
             <email>da@sis.ru</email>
         </developer>
     </developers>
-
+    
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -59,6 +59,13 @@
         <!-- define application js-beans location in jar and result build directory-->
         <org.jsbeans.application.path>jsb-application</org.jsbeans.application.path>
     </properties>
+    
+	<repositories>
+		<repository>
+			<id>org.eclipse.wst.jsdt</id>
+			<url>https://maven.wso2.org/nexus/content/repositories/thirdparty</url>
+		</repository>
+	</repositories>
 
     <dependencies>
         <dependency>
@@ -87,6 +94,18 @@
             <artifactId>rhino</artifactId>
             <version>1.7.11</version>
         </dependency>
+        
+        <dependency>
+    		<groupId>org.eclipse.wst.jsdt</groupId>
+    		<artifactId>org.eclipse.wst.jsdt.debug.rhino.debugger</artifactId>
+    		<version>1.0.300.v201109150503</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.eclipse.wst.jsdt</groupId>
+    		<artifactId>org.eclipse.wst.jsdt.debug.transport</artifactId>
+    		<version>1.0.100.v201109150330</version>
+		</dependency>
+		
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
