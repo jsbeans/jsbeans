@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-JARS="$(cat .classpath_jars)"
+JARS="$(cat .classpath_jars |sed 's/\\/\//g')"
 
 mkdir -p logs
 java -XX:+UseConcMarkSweepGC -XX:+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadingEnabled \

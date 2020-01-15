@@ -35,6 +35,7 @@ import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.ConfigHelper;
+import org.jsbeans.messages.Message;
 import org.jsbeans.scripting.ExecuteScriptMessage;
 import org.jsbeans.scripting.ExecutionStatus;
 import org.jsbeans.scripting.JsHub;
@@ -44,6 +45,7 @@ import org.jsbeans.security.SecurityService;
 import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
 import org.jsbeans.services.ServiceManagerService;
+import org.jsbeans.services.ServiceManagerService.Initialized;
 
 //import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
@@ -155,6 +157,7 @@ public class HttpService extends Service {
             throw new PlatformException(e);
         }
         this.getLog().debug("Web server started");
+        
     }
 
 
@@ -162,10 +165,13 @@ public class HttpService extends Service {
     protected void onMessage(Object msg) throws PlatformException {
         if (msg instanceof ServiceManagerService.Initialized) {
             startJettyServer();
+            Core.getActorSystem().eventStream().publish(new Initialized());
         } else {
             unhandled(msg);
         }
     }
 
-
+    public static class Initialized implements Message {
+		private static final long serialVersionUID = -618525700041876036L;
+    }
 }
