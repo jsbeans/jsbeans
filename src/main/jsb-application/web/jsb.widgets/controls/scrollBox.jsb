@@ -140,6 +140,7 @@
 				interactiveScrollbars: true,
 				bounce: false,
 				disableMouse: JSB().isNull(self.options.disableMouse) ? true : self.options.disableMouse,
+				disablePointer: JSB().isNull(self.options.disablePointer) ? true : self.options.disablePointer,
 				mouseWheelSpeed: 40,
 				fadeScrollbars: JSB().isNull(self.options.fadeScrollbars) ? false : self.options.fadeScrollbars,
 				click: JSB().isNull(self.options.click) ? false : self.options.click,
