@@ -89,7 +89,7 @@ public class BasicPassAuthFilter implements Filter {
                     return new Principal() {
                         @Override
                         public String getName() {
-                        	return ConfigHelper.getConfigString("kernel.security.admin.user");
+                        	return ConfigHelper.getConfigString("kernel.security.unauthorized.user");
                         }
                     };
                 }
