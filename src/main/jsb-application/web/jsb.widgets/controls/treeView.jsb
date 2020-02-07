@@ -222,7 +222,7 @@
 			return selItem;
 		},
 		
-		selectItem: function(key, evt){
+		selectItem: function(key, evt, hideEvt){
 			var self = this;
 			var selectedCls = 'selected';
 			var itemWrapper = this.rootElt.find('.' +selectedCls);
@@ -246,7 +246,10 @@
 						selItem.push(self.itemMap[k]);
 					}
 				}
-				self.options.onSelectionChanged.call($this, selKey, selItem, evt);
+
+				if(!hideEvt) {
+				    self.options.onSelectionChanged.call($this, selKey, selItem, evt);
+                }
 			}
 			
 			if(this.options.selectMulti){
@@ -256,7 +259,11 @@
 						if(this.$(itemWrapper[i]).attr('key') == key){
 							// remove key selection
 							this.$(itemWrapper[i]).removeClass(selectedCls);
-							$this.options.onNodeSelected.call($this, key, false, evt);
+
+							if(!hideEvt) {
+							    $this.options.onNodeSelected.call($this, key, false, evt);
+							}
+
 							callChanged();
 							return;
 						}
@@ -269,7 +276,10 @@
 					itemWrapper.removeClass(selectedCls);
 					for(var i = 0; i < itemWrapper.length; i++ ){
 						var wKey = this.$(itemWrapper[i]).attr('key');
-						$this.options.onNodeSelected.call($this, wKey, false, evt);
+
+						if(!hideEvt) {
+						    $this.options.onNodeSelected.call($this, wKey, false, evt);
+                        }
 					}
 				}
 			} else {
@@ -278,7 +288,11 @@
 					if(oldKey == key){
 						return;
 					}
-					$this.options.onNodeSelected.call($this, oldKey, false, evt);
+
+					if(!hideEvt) {
+					    $this.options.onNodeSelected.call($this, oldKey, false, evt);
+                    }
+
 					itemWrapper.removeClass(selectedCls);
 				}
 			}
@@ -286,13 +300,16 @@
 				itemWrapper = this.rootElt.find('li._dwp_treeViewNode[key="'+key+'"]');
 				if(itemWrapper.length > 0){
 					itemWrapper.addClass(selectedCls);
-					$this.options.onNodeSelected.call($this, key, true, evt);
+
+					if(!hideEvt) {
+					    $this.options.onNodeSelected.call($this, key, true, evt);
+                    }
 				}
 				
 				this.selStack.push(key);
 			}
-			
-			callChanged();
+
+            callChanged();
 		},
 
 		clear: function(){
@@ -306,7 +323,11 @@
 		},
 		
 		get: function(key){
-			return this.itemMap[key];
+		    if(JSB.isDefined(key)) {
+                return this.itemMap[key];
+		    } else {
+		        return this.itemMap;
+		    }
 		},
 		
 		getChildNodes: function(key){

@@ -63,6 +63,10 @@
                     return true;
                 }
 
+                if(isNaN($this.getValue())) {
+                    return false;
+                }
+
                 if(JSB.isFunction($this.options.validator)) {
                     var validateResult = $this.options.validator.call($this, $this.getValue(), $this._value);
 

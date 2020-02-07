@@ -160,6 +160,14 @@
 			}
 		},
 
+		filter: function(filterCallback) {
+		    var tabs = this._getTab();
+
+		    for(let i in tabs) {
+		        filterCallback.call(this, i, tabs[i]);
+		    }
+		},
+
 		getContentPane: function() {
 		    return this._contentPane;
 		},
