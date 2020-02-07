@@ -51,6 +51,24 @@ jsb-init-help(){
     echo
 }
 
+string_delim_upper() {
+    str="$1"
+    delim="$2"
+    IFS=$delim read -ra names <<< "$str"
+    classname=
+    for name in "${names[@]}"
+    do
+        classname="${classname}$(echo "$name" | sed 's/.*/\u&/')"
+    done
+    echo "$classname"
+}
+
+prepare_class_name() {
+    name=$(string_delim_upper "$1" '-')
+    name=$(string_delim_upper "$name" '.')
+    echo $name
+}
+
 jsb-init(){
     if [[ -n "$jsb_assembly" ]]; then
         jsb-init-assembly
@@ -69,12 +87,12 @@ jsb-init(){
     module_group="${names[0]}"
     module_name="${names[1]}"
     module_version="${names[2]-"0.1-SNAPSHOT"}"
-	module_cname=$module_name
-	module_grouppath=$(echo "$module_group" | sed "s/\./\//")
+	  module_cname="$(prepare_class_name "$module_name")"
+	  module_grouppath=$(echo "$module_group" | sed "s/\./\//")
 
-	[[ -z "$module_group" ]]   && { echo 'ERROR: Module group is undefined, use argument group:name:version' 1>&2; exit 1; }
-	[[ -z "$module_name" ]]    && { echo 'ERROR: Module name is undefined, use argument group:name:version' 1>&2; exit 1; }
-	[[ -z "$module_version" ]] && { echo 'ERROR: Module version is undefined, use argument group:name:version' 1>&2; exit 1; }
+	  [[ -z "$module_group" ]]   && { echo 'ERROR: Module group is undefined, use argument group:name:version' 1>&2; exit 1; }
+    [[ -z "$module_name" ]]    && { echo 'ERROR: Module name is undefined, use argument group:name:version' 1>&2; exit 1; }
+    [[ -z "$module_version" ]] && { echo 'ERROR: Module version is undefined, use argument group:name:version' 1>&2; exit 1; }
 
     if [[ -n "${jsb_dir}" ]]; then
         if [[ "${jsb_dir}" == yes ]]; then
@@ -95,29 +113,29 @@ jsb-init-package(){
     cp -pnR $JSBEANS_HOME/project-templates/package/* .
 
     # patch pom.xml
-	sed -i "s/org\.jsbeans\.modules\.module-template/${module_group}/g" pom.xml
-	sed -i "s/module-template/${module_name}/g" pom.xml
-	sed -i "s/module-version/${module_version}/g" pom.xml
+    sed -i "s/org\.jsbeans\.modules\.module-template/${module_group}/g" pom.xml
+    sed -i "s/module-template/${module_name}/g" pom.xml
+    sed -i "s/module-version/${module_version}/g" pom.xml
 
 }
 
 jsb-init-module(){
-	cp -pnR $JSBEANS_HOME/project-templates/module/* .
-	cp -pnR $JSBEANS_HOME/project-templates/module/* .
+    cp -pnR $JSBEANS_HOME/project-templates/module/* .
+    cp -pnR $JSBEANS_HOME/project-templates/module/* .
 
     # patch pom.xml
-	sed -i "s/org\.jsbeans\.modules\.module-template/${module_group}/g" pom.xml
-	sed -i "s/module-template/${module_name}/g" pom.xml
-	sed -i "s/module-version/${module_version}/g" pom.xml
+    sed -i "s/org\.jsbeans\.modules\.module-template/${module_group}/g" pom.xml
+    sed -i "s/module-template/${module_name}/g" pom.xml
+    sed -i "s/module-version/${module_version}/g" pom.xml
 
 
-	# patch java Activator
+	  # patch java Activator
     sed -i "s/org\.jsbeans\.modules\.module-template/${module_group}/g" src/main/java/ModuleTemplateActivator.java
-    sed -i "s/ModuleTemplate/${module_name}/g" src/main/java/ModuleTemplateActivator.java
+    sed -i "s/ModuleTemplate/${module_cname}/g" src/main/java/ModuleTemplateActivator.java
     sed -i "s/module-template/${module_name}/g" src/main/java/ModuleTemplateActivator.java
     mkdir -p src/main/java/${module_grouppath}
     if [[ ! -f src/main/java/${module_grouppath}/${module_name}Activator.java ]]; then
-        mv src/main/java/ModuleTemplateActivator.java src/main/java/${module_grouppath}/${module_name}Activator.java
+        mv src/main/java/ModuleTemplateActivator.java src/main/java/${module_grouppath}/${module_cname}Activator.java
     else
         rm src/main/java/ModuleTemplateActivator.java
     fi

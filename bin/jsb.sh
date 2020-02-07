@@ -80,7 +80,7 @@ do
         --*)
             name=$arg
             var_name=jsb_${name:2}
-            var_name=$(echo "$var_name" | sed 's/\-/_/')
+            var_name=$(echo "$var_name" | sed 's/\-?=/_/')
             if [[ -z "$(echo "$name" | grep "=")" ]]; then
                 var_name=${var_name}=yes;
             fi
