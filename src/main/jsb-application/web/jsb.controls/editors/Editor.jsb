@@ -53,11 +53,22 @@
                 this.setValue(this.options.value);
             }
 
-            var changeDeferId = 'jsb-editor.change' + $this.getId(),
-                isOnChangeFunc = JSB.isFunction($this.options.onChange);
+            var isOnChangeFunc = JSB.isFunction($this.options.onChange);
+
+            function hasChanges() {
+                var curValue = $this.getValue();
+
+                if(curValue === $this._value) {
+                    $this._value = curValue;
+
+                    return false;
+                } else {
+                    return true;
+                }
+            }
 
             function validate() {
-                if($this.getValue() === $this._value) {
+                if(hasChanges()) {
                     $this._editor.removeClass('invalid');
 
                     return true;
@@ -72,16 +83,12 @@
 
                     if(validateResult) {
                         $this._editor.removeClass('invalid');
-
-                        $this._value = $this.getValue();
                     } else {
                         $this._editor.addClass('invalid');
                     }
 
                     return validateResult;
                 } else {
-                    $this._value = $this.getValue();
-
                     return true;
                 }
             }
@@ -91,16 +98,12 @@
                     $this._startEditValue = $this._value;
                 }
 
-                JSB.defer(function(){
-                    if(isOnChangeFunc && validate()) {
-                        $this.options.onChange.call($this, $this.getValue());
-                    }
-                }, 500, changeDeferId);
+                if(isOnChangeFunc && validate()) {
+                    $this.options.onChange.call($this, $this.getValue());
+                }
             }
 
             function onEditComplete() {
-                JSB.cancelDefer(changeDeferId);
-
                 if($this._startEditValue !== $this._value && JSB.isFunction($this.options.onEditComplete)) {
                     $this.options.onEditComplete.call($this, $this.getValue(), !$this._editor.hasClass('invalid'));
                 }
@@ -109,7 +112,9 @@
             }
 
             this._editor.change(function() {
-                onChange();
+                if(hasChanges()) {
+                    onChange();
+                }
             });
 
             this._editor.keyup(function(evt) {
@@ -117,18 +122,23 @@
                     return;
                 }
 
+                if(hasChanges()) {
+                    onChange();
+                }
+
                 if(evt.keyCode === 13 || evt.keyCode === 27) {  // enter, escape
                     validate();
 
                     onEditComplete();
-                } else {
-                    onChange();
                 }
             });
 
             this._editor.focusout(function() {
-                validate();
-                onEditComplete();
+                if(hasChanges()) {
+                    validate();
+                    onChange();
+                    onEditComplete();
+                }
             });
 
             this._editor.click(function(evt) {
