@@ -18,6 +18,8 @@
 
 	$client: {
 	    _dataScheme: null,
+	    _masterColGroup: null,
+	    _topColGroup: null,
 
 		$constructor: function(opts){
 			$base(opts);
@@ -102,8 +104,13 @@
 		    	}
 		    });
 */
-            this.getElement().resize(function(){
-                $this._updateSizes();
+            this.getElement().resize(function() {
+                var height = $this.getElement().height();
+
+                $this._colResizeHandleContainer.get(0).style['margin-top'] = -height + 'px';
+
+                $this._colResizeHandleContainer.children('.col-resize-handle').height(height);
+                //$this._updateSizes();
             });
         },
 
@@ -112,7 +119,7 @@
             colHeader: true,
             columns: null,
             fixWidth: false,
-            maxColWidth: 300,
+            //maxColWidth: 300,
             minColWidth: 100,
             noDataMessage: 'Нет данных',
             resizeColumns: true,
@@ -201,6 +208,8 @@
                         type: 'array'
                     }
                 }
+
+                $this._createHeader();
             }
 
             if(JSB.isArray(data)) {  // array
@@ -299,8 +308,6 @@
 
             this.addArray(data, undefined, opts);
 
-            this.updateDimensions();
-
             if(this.options.preloader && this._masterTable.height() < this.getElement().height()){
                 this.options.preloader.call(this);
             }
@@ -333,13 +340,133 @@
             tr.detach().appendTo(this._masterTable);
         },
 
-        updateDimensions: function() {
-            // задержка, т.к. элементы не всегда успевают отрисоваться и выдают неверные размеры
-            JSB.defer(function() {
-                $this._updateColGroups();
+        _createHeader: function() {
+            var masterColGroup = this.$('<colgroup></colgroup>'),
+                topColGroup = this.$('<colgroup></colgroup>'),
+                colWidth = Math.ceil(this.getElement().width() / this._dataScheme.scheme.length),
+                headerTR = this.$('<tr class="grid-header-row"></tr>');
 
-                $this._updateSizes();
-            }, 0, 'grid.updateDimensions.id:' + this.getId());
+            this._masterTable.prepend(masterColGroup);
+            this._topTable.prepend(topColGroup);
+
+            function getColWidth(index) {
+                return $this.$(masterColGroup.children()[index]).width();
+            }
+
+            function setColWidth(index, width) {
+                $this.$(masterColGroup.children()[index]).width(width);
+                $this.$(topColGroup.children()[index]).width(width);
+            }
+
+            if(colWidth < this.options.minColWidth) {
+                colWidth = this.options.minColWidth;
+            }
+
+            for(var i = 0; i < this._dataScheme.scheme.length; i++) {
+                var colKey = this._dataScheme.scheme[i],
+                    col = '<col colKey="' + colKey + '" style="width: ' + colWidth + 'px">',
+                    masterCol = this.$(col),
+                    topCol = this.$(col);
+
+                masterColGroup.append(masterCol);
+                topColGroup.append(topCol);
+
+                if(this.options.colHeader){
+                    var th = this.$('<th class="grid-header-col"></th>');
+
+                    this.options.headerRenderer(th, colKey);
+
+                    headerTR.append(th);
+                }
+
+                if(this.options.resizeColumns) {
+                    if(this.options.fixWidth || i === this._dataScheme.scheme.length - 1) {
+                        continue;
+                    }
+
+                    var resizeHandle = this.$('<div class="col-resize-handle"></div>');
+                    this._colResizeHandleContainer.append(resizeHandle);
+
+                    resizeHandle.get(0).style.left = (i + 1) * colWidth + 'px';
+
+                    (function(index) {
+                        var curLeft;
+
+                        resizeHandle.draggable({
+                            appendTo: $this.getElement(),
+                            addClasses: false,
+                            axis: 'x',
+                            classes: {
+                                'ui-draggable-dragging': 'active'
+                            },
+                            helper: 'clone',
+                            start: function(evt, ui) {
+                                var left = $this.$(this).css('left');
+
+                                curLeft = Number(left.substr(0, left.length - 2));
+                            },
+                            drag: function(evt, ui) {
+                                $this.$(this).css('left', curLeft + ui.position.left - ui.originalPosition.left);
+                            },
+                            stop: function(evt, ui) {
+                                var widthDif = ui.position.left - ui.originalPosition.left;
+
+                                if(widthDif === 0) {
+                                    return;
+                                }
+
+                                if($this.options.fixWidth) {
+                                    var curWidth = getColWidth(index);
+
+                                    if(widthDif > 0) {
+                                        var curDif = widthDif;
+
+                                        for(var i = index + 1; i < masterColGroup.children().length; i++) {
+                                            var curColWidth = getColWidth(i);
+
+                                            if(curColWidth - curDif < $this.options.minColWidth) {
+                                                curDif -= (curColWidth - $this.options.minColWidth);
+
+                                                setColWidth(i, $this.options.minColWidth);
+                                            } else {
+                                                setColWidth(i, curColWidth - curDif);
+
+                                                curDif = 0;
+
+                                                break;
+                                            }
+                                        }
+
+                                        if(curDif > 0) {
+                                            setColWidth(index, curWidth + widthDif - curDif);
+                                        } else {
+                                            setColWidth(index, curWidth + widthDif);
+                                        }
+                                    } else {
+                                        if(curWidth + widthDif < $this.options.minColWidth) {
+                                            setColWidth(index + 1, getColWidth(index + 1) + curWidth - $this.options.minColWidth);
+
+                                            setColWidth(index, $this.options.minColWidth);
+                                        } else {
+                                            setColWidth(index + 1, getColWidth(index + 1) - widthDif);
+
+                                            setColWidth(index, curWidth + widthDif);
+                                        }
+                                    }
+                                } else {
+                                    setColWidth(index, getColWidth(index) + widthDif);
+                                }
+
+                                $this._resizeColumnHandles();
+                            }
+                        });
+                    })(i);
+                }
+            }
+
+            if(this.options.colHeader){
+                this._topTable.append(headerTR);
+            }
         },
 
         _defaultHeaderRenderer: function(th, index){
@@ -430,210 +557,6 @@
             for(var i = 0; i < resizeHandles.length; i++) {
                 left += this.$(cols[i]).width();
                 resizeHandles[i].style.left = left + 'px';
-            }
-        },
-
-        _updateColGroups: function() {
-            var firstRow = this._masterTable.find("tr:first-child > td"),
-                masterColGroup = this.$('<colgroup></colgroup>'),
-                topColGroup = this.$('<colgroup></colgroup>'),
-                tableWidth = 0,
-                headerTR = this.$('<tr class="grid-header-row"></tr>');
-
-            this._masterTable.prepend(masterColGroup);
-            this._topTable.prepend(topColGroup);
-
-            function getColWidth(index) {
-                return $this.$(masterColGroup.children()[index]).width();
-            }
-
-            function setColWidth(index, width) {
-                $this.$(masterColGroup.children()[index]).width(width);
-                $this.$(topColGroup.children()[index]).width(width);
-            }
-
-            for(var i = 0; i < firstRow.length; i++) {
-                var col = this.$(firstRow[i]),
-                    colWidth = col.width(),
-                    colKey = col.attr('colKey'),
-                    style;
-
-                if(colWidth > this.options.maxColWidth){
-                    style = this.options.maxColWidth;
-                } else if(colWidth < this.options.minColWidth){
-                    style = this.options.minColWidth;
-                } else {
-                    style = colWidth;
-                }
-
-                var col = '<col colKey="' + colKey + '" style="width: ' + Math.ceil(style) + 'px">',
-                    masterCol = this.$(col),
-                    topCol = this.$(col);
-
-                tableWidth += style;
-
-                masterColGroup.append(masterCol);
-                topColGroup.append(topCol);
-
-                if(this.options.colHeader){
-                    var th = this.$('<th class="grid-header-col"></th>');
-
-                    this.options.headerRenderer(th, colKey);
-
-                    headerTR.append(th);
-                }
-
-                if(this.options.resizeColumns) {
-                    if(this.options.fixWidth && i === firstRow.length - 1) {
-                        continue;
-                    }
-
-                    var resizeHandle = this.$('<div class="col-resize-handle"></div>');
-                    this._colResizeHandleContainer.append(resizeHandle);
-
-                    resizeHandle.get(0).style.left = tableWidth + 'px';
-
-                    (function(index) {
-                        var curLeft;
-
-                        resizeHandle.draggable({
-                            appendTo: $this.getElement(),
-                            addClasses: false,
-                            axis: 'x',
-                            classes: {
-                                'ui-draggable-dragging': 'active'
-                            },
-                            helper: 'clone',
-                            start: function(evt, ui) {
-                                var left = $this.$(this).css('left');
-
-                                curLeft = Number(left.substr(0, left.length - 2));
-                            },
-                            drag: function(evt, ui) {
-                                $this.$(this).css('left', curLeft + ui.position.left - ui.originalPosition.left);
-                            },
-                            stop: function(evt, ui) {
-                                var widthDif = ui.position.left - ui.originalPosition.left;
-
-                                if(widthDif === 0) {
-                                    return;
-                                }
-
-                                if($this.options.fixWidth) {
-                                    var curWidth = getColWidth(index);
-
-                                    if(widthDif > 0) {
-                                        var curDif = widthDif;
-
-                                        for(var i = index + 1; i < masterColGroup.children().length; i++) {
-                                            var curColWidth = getColWidth(i);
-
-                                            if(curColWidth - curDif < $this.options.minColWidth) {
-                                                curDif -= (curColWidth - $this.options.minColWidth);
-
-                                                setColWidth(i, $this.options.minColWidth);
-                                            } else {
-                                                setColWidth(i, curColWidth - curDif);
-
-                                                curDif = 0;
-
-                                                break;
-                                            }
-                                        }
-
-                                        if(curDif > 0) {
-                                            setColWidth(index, curWidth + widthDif - curDif);
-                                        } else {
-                                            setColWidth(index, curWidth + widthDif);
-                                        }
-                                    } else {
-                                        if(curWidth + widthDif < $this.options.minColWidth) {
-                                            setColWidth(index + 1, getColWidth(index + 1) + curWidth - $this.options.minColWidth);
-
-                                            setColWidth(index, $this.options.minColWidth);
-                                        } else {
-                                            setColWidth(index + 1, getColWidth(index + 1) - widthDif);
-
-                                            setColWidth(index, curWidth + widthDif);
-                                        }
-                                    }
-                                } else {
-                                    setColWidth(index, getColWidth(index) + widthDif);
-                                }
-
-                                $this._resizeColumnHandles();
-                            }
-                        });
-                    })(i);
-                }
-            }
-
-            if(this.options.colHeader){
-                this._topTable.append(headerTR);
-            }
-        },
-
-        _updateSizes: function() {
-        	var masterWidth = this._masterTable.width();
-        	JSB.defer(function(){
-        		var nw = $this._masterTable.width();
-        		if(nw != masterWidth){
-        			$this._updateSizes();
-        		}
-        	}, 100, '_updateSizes_additional_check_' + $this.getId());
-            this._topContainer.width(masterWidth);
-
-            $this._masterContainer.get(0).style['margin-top'] = $this._topTable.height() + 'px';
-            $this._masterContainer.get(0).style['height'] = 'calc(100% - ' + $this._topTable.height() + 'px)';
-
-            this._colResizeHandleContainer.get(0).style['margin-top'] = -this.getElement().height() + 'px';
-
-            this._colResizeHandleContainer.children('.col-resize-handle').height(this.getElement().height());
-
-            var masterContainer = this._masterContainer.get(0),
-                masterTableCols = this._masterTable.find('colgroup > col');
-
-            function resize() {
-                var availableWidth = (masterContainer.clientWidth - $this._masterTable.width() - ($this._masterTable.width() - $this._masterTable.innerWidth())),
-                    dif = Math.floor(availableWidth / masterTableCols.length),
-                    mod = availableWidth - masterTableCols.length * dif;
-
-                function increaseCols(cols){
-                    for(var i = 0; i < cols.length; i++){
-                        var col = $this.$(cols[i]),
-                            colWidth = col.width();
-
-                        if(colWidth + dif < $this.options.minColWidth) {
-                            col.width($this.options.minColWidth);
-
-                            continue;
-                        }
-
-                        if(i === col.length - 1) {
-                            col.width(colWidth + dif + mod);
-                        } else {
-                            col.width(colWidth + dif);
-                        }
-                    }
-                }
-
-                increaseCols(masterTableCols);
-                increaseCols($this._topTable.find('colgroup > col'));
-
-                $this._resizeColumnHandles();
-            }
-
-            if(this._masterTable.width() < masterContainer.clientWidth) {
-                resize();
-
-                // после ресайза мог исчезнуть скроллбар, проверим
-                if(this._masterTable.width() < masterContainer.clientWidth) {
-                    resize();
-                }
-            }
-
-            if(this.options.fixWidth && this._masterTable.width() > masterContainer.clientWidth) {
-                resize();
             }
         }
     }
