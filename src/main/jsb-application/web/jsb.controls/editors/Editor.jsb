@@ -14,7 +14,6 @@
 	$client: {
 		$require: ['css:Editor.css'],
 
-		_startEditValue: undefined,
 	    _value: null,
 
 	    $constructor: function(opts) {
@@ -94,21 +93,15 @@
             }
 
             function onChange() {
-                if(!JSB.isDefined($this._startEditValue)) {
-                    $this._startEditValue = $this._value;
-                }
-
                 if(isOnChangeFunc && validate()) {
                     $this.options.onChange.call($this, $this.getValue());
                 }
             }
 
             function onEditComplete() {
-                if($this._startEditValue !== $this._value && JSB.isFunction($this.options.onEditComplete)) {
+                if(JSB.isFunction($this.options.onEditComplete)) {
                     $this.options.onEditComplete.call($this, $this.getValue(), !$this._editor.hasClass('invalid'));
                 }
-
-                $this._startEditValue = undefined;
             }
 
             this._editor.change(function() {
@@ -124,6 +117,8 @@
 
                 if(hasChanges()) {
                     onChange();
+                } else {
+                    return;
                 }
 
                 if(evt.keyCode === 13 || evt.keyCode === 27) {  // enter, escape
