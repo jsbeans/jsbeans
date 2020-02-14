@@ -1296,7 +1296,7 @@ if(!(function(){return this;}).call(null).JSB){
 		},
 
 		isNumber: function(obj){
-			return typeof(obj) === 'number' && !JSB.isNaN(obj);
+			return typeof(obj) === 'number' && !isNaN(obj);
 		},
 
 		isNaN: function(obj){
