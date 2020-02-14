@@ -132,8 +132,9 @@
                 if(hasChanges()) {
                     validate();
                     onChange();
-                    onEditComplete();
                 }
+
+                onEditComplete();
             });
 
             this._editor.click(function(evt) {
