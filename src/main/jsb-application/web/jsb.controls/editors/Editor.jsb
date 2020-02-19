@@ -67,12 +67,6 @@
             }
 
             function validate() {
-                if(hasChanges()) {
-                    $this._editor.removeClass('invalid');
-
-                    return true;
-                }
-
                 if(isNaN($this.getValue())) {
                     return false;
                 }
@@ -117,8 +111,6 @@
 
                 if(hasChanges()) {
                     onChange();
-                } else {
-                    return;
                 }
 
                 if(evt.keyCode === 13 || evt.keyCode === 27) {  // enter, escape
