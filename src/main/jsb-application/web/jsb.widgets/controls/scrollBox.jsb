@@ -12,15 +12,20 @@
 	$name:'JSB.Widgets.ScrollBox',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
-		$require: ['css:scrollBox.css'],
+		$require: ['css:scrollBox.css', 
+		           'script:../../tpl/iscroll/iscroll-probe.js'],
+		           
 		$constructor: function(opts){
 			$base(opts);
 			if(opts && opts.cssClass){
 			    this.addClass(opts.cssClass);
 			}
+			$this.init();
+/*			
 			JSB().loadScript('tpl/iscroll/iscroll-probe.js', function(){
 				$this.init();
 			});
+*/			
 		},
 		
 		options: {
@@ -132,23 +137,25 @@
 
 		installScroll: function(){
 			var self = this;
-			this.scroll = new IScroll(this.getElement().get(0), JSB().merge(this.options, {
-				scrollX: JSB().isNull(self.options.scrollX) ? true : self.options.scrollX,
-				scrollY: JSB().isNull(self.options.scrollY) ? true : self.options.scrollY,
+			JSB().merge(this.options, {
+				scrollX: JSB.isNull(self.options.scrollX) ? true : self.options.scrollX,
+				scrollY: JSB.isNull(self.options.scrollY) ? true : self.options.scrollY,
 				mouseWheel: false,
 				scrollbars: self.options.scrollbars,
 				interactiveScrollbars: true,
 				bounce: false,
-				disableMouse: JSB().isNull(self.options.disableMouse) ? true : self.options.disableMouse,
-				disablePointer: JSB().isNull(self.options.disablePointer) ? true : self.options.disablePointer,
+				disableMouse: JSB.isDefined(self.options.disableMouse)? self.options.disableMouse : true,
+				disablePointer: JSB.isDefined(self.options.disablePointer)? self.options.disablePointer : true,
 				mouseWheelSpeed: 40,
-				fadeScrollbars: JSB().isNull(self.options.fadeScrollbars) ? false : self.options.fadeScrollbars,
-				click: JSB().isNull(self.options.click) ? false : self.options.click,
+				fadeScrollbars: JSB.isNull(self.options.fadeScrollbars) ? false : self.options.fadeScrollbars,
+				click: JSB.isNull(self.options.click) ? false : self.options.click,
 				preventDefault: self.options.preventDefault || false,
 				freeScroll: true,
 				resize: true,
 				probeType: 3
-			}));
+			});
+			
+			this.scroll = new IScroll(this.getElement().get(0), this.options);
 			this.scroll.on('scrollEnd', function(){
 				var nX = Math.round(this.x); 
 				var nY = Math.round(this.y);

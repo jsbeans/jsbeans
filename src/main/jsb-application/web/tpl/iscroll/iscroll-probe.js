@@ -329,7 +329,7 @@ function IScroll (el, options) {
 
 // INSERT POINT: OPTIONS
 		disablePointer : !utils.hasPointer,
-		disableTouch : utils.hasPointer || !utils.hasTouch,
+		disableTouch : /*utils.hasPointer ||*/ !utils.hasTouch,	/* disableTouch autodetect bug fixed */
 		disableMouse : utils.hasPointer || utils.hasTouch,
 		startX: 0,
 		startY: 0,
@@ -349,11 +349,11 @@ function IScroll (el, options) {
 		useTransform: true,
 		bindToWrapper: typeof window.onmousedown === "undefined"
 	};
-
+	
 	for ( var i in options ) {
 		this.options[i] = options[i];
 	}
-
+	
 	// Normalize options
 	this.translateZ = this.options.HWCompositing && utils.hasPerspective ? ' translateZ(0)' : '';
 
@@ -799,7 +799,7 @@ IScroll.prototype = {
 		this.directionX = 0;
 		this.directionY = 0;
 		
-		if(utils.hasPointer && !this.options.disablePointer) {
+		if(utils.hasPointer && !this.options.disablePointer || utils.hasTouch && !this.options.disableTouch) {
 			// The wrapper should have `touchAction` property for using pointerEvent.
 			this.wrapper.style[utils.style.touchAction] = utils.getTouchAction(this.options.eventPassthrough, true);
 

@@ -329,7 +329,7 @@ function IScroll (el, options) {
 
 // INSERT POINT: OPTIONS
 		disablePointer : !utils.hasPointer,
-		disableTouch : utils.hasPointer || !utils.hasTouch,
+		disableTouch : /*utils.hasPointer ||*/ !utils.hasTouch, /* disableTouch autodetect bug fixed */
 		disableMouse : utils.hasPointer || utils.hasTouch,
 		startX: 0,
 		startY: 0,
