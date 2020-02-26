@@ -67,7 +67,7 @@
             }
 
             function validate() {
-                if(isNaN($this.getValue())) {
+                if($this.getType === 'number' && isNaN($this.getValue())) {
                     return false;
                 }
 
