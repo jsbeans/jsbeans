@@ -104,7 +104,7 @@
 		},
 
 		detach: function(){
-		    // todo
+		    return this.getElement().detach();
 		},
 
 		enable: function(b){

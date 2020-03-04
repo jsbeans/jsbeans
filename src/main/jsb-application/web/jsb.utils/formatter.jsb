@@ -197,5 +197,23 @@
         }
         ret.push(str);
         return ret.join('');
+    },
+
+    format2: function(format, values) {
+        var string = '';
+
+        for(let i = 0; i < format.length; i++) {
+            if(format[i].type === 'text') {
+                string += format[i].value;
+            } else {
+                if(format[i].valueType === 'number') {
+                    string += this._numberFormat(values[format[i].key], format[i].decimals, null, format[i].thousandDelimiter);
+                } else {
+                    string += format[i].value;
+                }
+            }
+        }
+
+        return string;
     }
 }
