@@ -23,6 +23,7 @@
 			              'org.jsbeans.types.JsonElement',
 			              'org.jsbeans.types.XQuery',
 			              'org.jsbeans.types.Xml',
+			              'org.jsbeans.types.Sql',
 			              'org.jsbeans.types.SparqlString',
 			              'org.jsbeans.types.Html',
 			              'org.jsbeans.types.Css'], this);
@@ -49,6 +50,9 @@
 			var theme = 'eclipse';
 			if(this.options.valueType == 'org.jsbeans.types.SparqlString'){
 				mode = 'application/x-sparql-query';
+			}
+			if(this.options.valueType == 'org.jsbeans.types.Sql'){
+				mode = 'text/x-sql';
 			}
 			if(this.options.valueType == 'org.jsbeans.types.XQuery'){
 				mode = 'xquery';
@@ -156,30 +160,36 @@
 						$this.init(mode, theme);
 						$this.ready = true;
 					});
-				} else if($this.options.valueType == 'org.jsbeans.types.Html' || $this.options.valueType == 'org.jsbeans.types.Xml'){
-					JSB.loadScript([
-					                  'tpl/codemirror/mode/htmlmixed/htmlmixed.js',
-					                  'tpl/codemirror/mode/xml/xml.js',
-					                  'tpl/codemirror/mode/javascript/javascript.js',
-					                  'tpl/codemirror/mode/css/css.js',
-					                  'tpl/codemirror/addon/hint/show-hint.js',
-					                  'tpl/codemirror/addon/hint/html-hint.js',
-					                  'tpl/codemirror/addon/hint/xml-hint.js',
-					                  'tpl/codemirror/addon/hint/css-hint.js'
-					                  ], function(){
+				} else if($this.options.valueType == 'org.jsbeans.types.Html' 
+					|| $this.options.valueType == 'org.jsbeans.types.Xml'){
+					JSB.loadScript(['tpl/codemirror/mode/htmlmixed/htmlmixed.js',
+					                'tpl/codemirror/mode/xml/xml.js',
+					                'tpl/codemirror/mode/javascript/javascript.js',
+					                'tpl/codemirror/mode/css/css.js',
+					                'tpl/codemirror/addon/hint/show-hint.js',
+					                'tpl/codemirror/addon/hint/html-hint.js',
+					                'tpl/codemirror/addon/hint/xml-hint.js',
+					                'tpl/codemirror/addon/hint/css-hint.js'], function(){
 
 						$this.init(mode, theme, {});
 						$this.ready = true;
-					});
+					}, true);
 				} else if($this.options.valueType == 'org.jsbeans.types.Css') {
-					JSB.loadScript('tpl/codemirror/mode/css/css.js', function(){
-						JSB.loadScript('tpl/codemirror/addon/hint/show-hint.js', function(){
-							JSB.loadScript('tpl/codemirror/addon/hint/css-hint.js', function(){
-								$this.init(mode, theme, {});
-								$this.ready = true;
-							});
-						});
-					});
+					JSB.loadScript(['tpl/codemirror/mode/css/css.js',
+					                'tpl/codemirror/addon/hint/show-hint.js',
+					                'tpl/codemirror/addon/hint/css-hint.js'], function(){
+						
+						$this.init(mode, theme, {});
+						$this.ready = true;
+					}, true);
+				} else if($this.options.valueType == 'org.jsbeans.types.Sql') {
+					JSB.loadScript(['tpl/codemirror/mode/sql/sql.js',
+					                'tpl/codemirror/addon/hint/show-hint.js',
+					                'tpl/codemirror/addon/hint/sql-hint.js'], function(){
+						
+						$this.init(mode, theme, {});
+						$this.ready = true;
+					}, true);
 				}
 			});
 		},
