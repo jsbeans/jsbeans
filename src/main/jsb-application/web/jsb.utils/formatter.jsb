@@ -209,7 +209,7 @@
                 if(format[i].valueType === 'number') {
                     string += this._numberFormat(values[format[i].key], format[i].decimals, null, format[i].thousandDelimiter);
                 } else {
-                    string += format[i].value;
+                    string += values[format[i].key];
                 }
             }
         }
