@@ -4885,7 +4885,13 @@ JSB({
 					$this.lock(mtx);
 					$this.$_ecMap[key].cArr.splice(i, 1);
 					$this.unlock(mtx);
-					cDesc.exec.call($this, cDesc.bKeyArr ? vals : vals[0]);
+					
+					// Executing on separate thread to avoid waiter fails
+					(function(cDesc, vals){
+						JSB.defer(function(){
+							cDesc.exec.call($this, cDesc.bKeyArr ? vals : vals[0])
+						}, 0);
+					})(cDesc, vals);
 				}
 			}
 		}
