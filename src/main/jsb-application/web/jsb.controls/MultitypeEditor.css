@@ -29,6 +29,10 @@
     border-radius: 5px;
 }
 
+.jsb-multitypeEditor[valType="text"] > .value {
+    white-space: pre;
+}
+
 .jsb-multitypeEditor:not([valType="null"]) > .value:hover {
     border: 2px solid #5f75a552;
     background: aliceblue;

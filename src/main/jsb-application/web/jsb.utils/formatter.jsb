@@ -207,7 +207,9 @@
                 string += format[i].value;
             } else {
                 if(format[i].valueType === 'number') {
-                    string += this._numberFormat(values[format[i].key], format[i].decimals, null, format[i].thousandDelimiter);
+                    if(values[format[i].key] !== null && values[format[i].key] !== undefined) {
+                        string += this._numberFormat(values[format[i].key], format[i].decimals, null, format[i].thousandDelimiter);
+                    }
                 } else {
                     string += values[format[i].key];
                 }
