@@ -169,18 +169,18 @@
 				if(JSB.isFuture(res)){
 					res.wait(function(res, fail){
 						if(fail){
-							$this.respondRpc(packet, undefined, JSB().substComplexObjectInRpcResult(fail));	
+							$this.respondRpc(packet, undefined, JSB().unwindComplexObjects(fail));	
 						} else {
-							$this.respondRpc(packet, JSB().substComplexObjectInRpcResult(res));
+							$this.respondRpc(packet, JSB().unwindComplexObjects(res));
 						}
 					});
 					return;
 				}
-				$this.respondRpc(packet, JSB().substComplexObjectInRpcResult(res));
+				$this.respondRpc(packet, JSB().unwindComplexObjects(res));
 
 			} catch(e){
 				fail = e;
-				$this.respondRpc(packet, undefined, JSB().substComplexObjectInRpcResult(fail));
+				$this.respondRpc(packet, undefined, JSB().unwindComplexObjects(fail));
 			}
 		},
 		

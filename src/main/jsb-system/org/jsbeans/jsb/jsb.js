@@ -3463,13 +3463,13 @@ if(!(function(){return this;}).call(null).JSB){
 			generateForkJoinTask(params);
 		},
 
-		substComplexObjectInRpcResult: function(res, bSkip){
+		unwindComplexObjects: function(res, bSkip){
 			var self = this;
 			var reverseBindMap = this.getReverseBindMap();
 			var isServer = this.isServer();
 			var dict = {};
 			var path = [];
-			function _substComplexObjectInRpcResult(res){
+			function _unwindComplexObjects(res){
 				if(res == null || res == undefined){
 					return res;
 				}
@@ -3620,7 +3620,7 @@ if(!(function(){return this;}).call(null).JSB){
 					var nobj = [];
 					for(var f = 0; f < res.length; f++){
 						path.push(f);
-						nobj[f] = _substComplexObjectInRpcResult(res[f]);
+						nobj[f] = _unwindComplexObjects(res[f]);
 						path.pop();
 					}
 					return nobj;
@@ -3662,7 +3662,7 @@ if(!(function(){return this;}).call(null).JSB){
 					var nobj = {};
 					for(var f in res){
 						path.push(f);
-						nobj[f] = _substComplexObjectInRpcResult(res[f]);
+						nobj[f] = _unwindComplexObjects(res[f]);
 						path.pop();
 					}
 					return nobj;
@@ -3671,7 +3671,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 
 			// prepare response
-			var dt = bSkip ? res:_substComplexObjectInRpcResult(res);
+			var dt = bSkip ? res:_unwindComplexObjects(res);
 			var dictVals = [];
 			if(!bSkip){
 				for(var dk in dict){
@@ -3682,10 +3682,10 @@ if(!(function(){return this;}).call(null).JSB){
 			return {__dt:dt, __di:dictVals};
 		},
 
-		injectComplexObjectInRpcResult: function(res, callback, opts){
+		injectComplexObjects: function(res, callback, opts){
 			var self = this;
 			if(!res || !JSB.isArray(res.__di)){
-				// didn't use subst before
+				// didn't use unwind before
 				if(callback){
 					callback(res);
 				}
@@ -5127,7 +5127,7 @@ JSB({
 				jsb: tJsb.$name,
 				instance: this.$_bindKey,
 				proc: procName,
-				params: JSB().substComplexObjectInRpcResult(params, plain),
+				params: JSB().unwindComplexObjects(params, plain),
 				sync: (sync ? true: false)
 			}, function(res){
 				if(self.isDestroyed()){
@@ -5135,7 +5135,7 @@ JSB({
 				}
 				var inst = this;
 				var args = arguments;
-				JSB().injectComplexObjectInRpcResult(res, function(r){
+				JSB().injectComplexObjects(res, function(r){
 					args[0] = r;
 					if(callback){
 						/*tJsb.putCallingContext(callCtx);*/
@@ -5289,7 +5289,7 @@ JSB({
 			var execCmd = {
 				instance: this,
 				proc: procName,
-				params: JSB().substComplexObjectInRpcResult(params, opts.plain)
+				params: JSB().unwindComplexObjects(params, opts.plain)
 			};
 
 			if(JSB.isDefined(node)){
@@ -5299,13 +5299,13 @@ JSB({
 					var inst = this;
 					var args = arguments;
 					if(fail){
-						JSB().injectComplexObjectInRpcResult(fail, function(r){
+						JSB().injectComplexObjects(fail, function(r){
 							args[1] = r;
 							/*tJsb.putCallingContext(callCtx);*/
 							callback.apply(inst, args);
 						}, {serverRemote: true});
 					} else {
-						JSB().injectComplexObjectInRpcResult(res, function(r){
+						JSB().injectComplexObjects(res, function(r){
 							args[0] = r;
 							/*tJsb.putCallingContext(callCtx);*/
 							callback.apply(inst, args);
@@ -5320,13 +5320,13 @@ JSB({
 					var inst = this;
 					var args = arguments;
 					if(fail){
-						JSB().injectComplexObjectInRpcResult(fail, function(r){
+						JSB().injectComplexObjects(fail, function(r){
 							args[1] = r;
 							/*tJsb.putCallingContext(callCtx);*/
 							callback.apply(inst, args);
 						}, {serverRemote: false});
 					} else {
-						JSB().injectComplexObjectInRpcResult(res, function(r){
+						JSB().injectComplexObjects(res, function(r){
 							args[0] = r;
 							/*tJsb.putCallingContext(callCtx);*/
 							callback.apply(inst, args);
@@ -6810,7 +6810,7 @@ JSB({
 												}
 											}, 0);
 										}
-										JSB().injectComplexObjectInRpcResult(params, doCall);
+										JSB().injectComplexObjects(params, doCall);
 									})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
 								}
 							}
@@ -6924,7 +6924,7 @@ JSB({
 			var np = {};
 			var ret = null, fail = null, plain = false;
 
-			$jsb.injectComplexObjectInRpcResult(params, function(r){
+			$jsb.injectComplexObjects(params, function(r){
 				np.res = r;
 				try {
 					ret = $this.executeClientRpc(jsoName, instanceId, procName, np.res);
@@ -6983,7 +6983,7 @@ JSB({
 				if(JSB.isFuture(ret)){
 					throw new Error("Synchronous RPC don't support futures");
 				}
-				return $jsb.substComplexObjectInRpcResult(ret, plain);
+				return $jsb.unwindComplexObjects(ret, plain);
 			}
 		},
 
@@ -7018,7 +7018,7 @@ JSB({
 				throw new Error('Failed to call method "' + procName + '" in bean "' + jsbName + '". Method not exists');
 			}
 			var np = {};
-			$jsb.injectComplexObjectInRpcResult(params, function(r){
+			$jsb.injectComplexObjects(params, function(r){
 				np.res = r;
 			},{serverRemote: true});
 			params = np.res;
