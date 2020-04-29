@@ -49,7 +49,7 @@
                 this.setOptions(this.options.options, true);
             }
 
-	        if(this.options.value){
+	        if(JSB.isDefined(this.options.value)){
 	            this.setValue(this.options.value, this.options.valueKey, true);
 	        }
 
