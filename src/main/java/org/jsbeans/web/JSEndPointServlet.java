@@ -105,7 +105,7 @@ public class JSEndPointServlet extends HttpServlet {
             String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
             String clientIp = WebHelper.extractRealIpFromRequest(req);
             Timeout timeout = ActorHelper.getServiceCommTimeout();
-            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(JsbTemplateEngine.perform(script, null), true);
+            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(JsbTemplateEngine.perform(script, null, null), true);
             execMsg.setScopePath(req.getSession().getId());
             execMsg.setUserToken(userToken);
             

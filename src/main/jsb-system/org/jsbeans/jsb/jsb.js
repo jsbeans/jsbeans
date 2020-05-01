@@ -2847,8 +2847,10 @@ if(!(function(){return this;}).call(null).JSB){
 				scriptArr.push(curl);
 			}
 			for(var i = 0; i < scriptArr.length; i++){
-				if(this instanceof JSB){
+				if(this instanceof JSB && scriptArr[i] && scriptArr[i][0] != '/' && scriptArr[i][0] != '\\'){
 					scriptArr[i] = this.getBasePath() + scriptArr[i];
+				} else if(scriptArr[i] && (scriptArr[i][0] == '/' || scriptArr[i][0] == '\\')){
+					scriptArr[i] = scriptArr[i].substr(1);
 				}
 				scriptArr[i] = self.injectServerVersion(scriptArr[i]);
 			}

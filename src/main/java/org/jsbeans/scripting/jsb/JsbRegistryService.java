@@ -168,12 +168,17 @@ public class JsbRegistryService extends Service {
                 // obtain relative folder
                 String relPath = "";
                 String relPathWithFile = "";
+                String webFolder = "";
+                if(jsoFile.endsWith("Gauge.jsb")) {
+                	"".toCharArray();
+                }
                 for (String fld : ConfigHelper.getWebFolders()) {
                     try {
-                        Path webPath = jsoFile.endsWith(".jsb") ? new File(fld).toPath().normalize() : (new File(folder)).toPath().normalize();
+                    	Path webPath = jsoFile.endsWith(".jsb") ? new File(fld).toPath().normalize() : (new File(folder)).toPath().normalize();
                         Path fPath = Paths.get(jsoFile);
                         
                         relPath = isServer ? "server" : FileHelper.getFolderByPath(webPath.relativize(fPath).toString()).replaceAll("\\\\", "/");
+                        webFolder = isServer ? "server" : webPath.toString().replaceAll("\\\\", "/");
                         if(relPath.equals("/")){
                         	relPathWithFile = fPath.getFileName().toString();
                         } else {
@@ -184,7 +189,7 @@ public class JsbRegistryService extends Service {
                     }
                 }
 
-                String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s',$_fullPath:'%s',$_fullPathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile), relPath, relPathWithFile, fullPath,  fullPathFile);
+                String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s',$_fullPath:'%s',$_fullPathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile, webFolder), relPath, relPathWithFile, fullPath,  fullPathFile);
                 ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
                 if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                     scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));

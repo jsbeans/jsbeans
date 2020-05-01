@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 public class JsbTemplateEngine {
 
-    public static String perform(String script, String jsoFile) throws Exception {
+    public static String perform(String script, String jsoFile, String webFolder) throws Exception {
         for(int curPos = 0; curPos < script.length(); ){
         	if(curPos < script.length() - 1 
         		&& script.charAt(curPos) == '/' && script.charAt(curPos + 1) == '*'
@@ -80,7 +80,7 @@ public class JsbTemplateEngine {
         			endSpecificPos = script.length();
         		}
         		String specificText = script.substring(curPos + 1, endSpecificPos);
-        		String newSpecificText = performSpecific(specificText, jsoFile);
+        		String newSpecificText = performSpecific(specificText, jsoFile, webFolder);
         		String newScript = script.substring(0, curPos) + newSpecificText;
         		if(endSpecificPos < script.length()){
         			newScript += script.substring(endSpecificPos + 1);
@@ -96,7 +96,7 @@ public class JsbTemplateEngine {
         return script;
     }
     
-    private static String performSpecific(String text, String jsoFile) throws Exception{
+    private static String performSpecific(String text, String jsoFile, String webFolder) throws Exception{
     	String newText = "";
     	if(text.length() > 0 && text.charAt(0) == '#'){
     		Pattern p = Pattern.compile("\\#(\\w+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
@@ -126,10 +126,19 @@ public class JsbTemplateEngine {
     				Pattern p2 = Pattern.compile("\\#include\\s+[\\'\\\"]([^\\'\\\"]+)[\\'\\\"]", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     		        Matcher m2 = p2.matcher(text);
     		        if(m2.find()){
+    		        	String incPath = "";
     		        	MatchResult mr2 = m2.toMatchResult();
     		            String includeFilePath = mr2.group(1).trim();
     		            String folderPath = FileHelper.getFolderByPath(jsoFile);
-    		            String incPath = FileHelper.normalizePath(folderPath + "/" + includeFilePath);
+    		            if(includeFilePath.startsWith("/") || includeFilePath.startsWith("\\")) {
+    		            	if(webFolder == null) {
+    		            		throw new PlatformException(String.format("Failed to load '%s' relative file for non web beans", includeFilePath));
+    		            	}
+    		            	// relate to web folder
+	    		            incPath = FileHelper.normalizePath(webFolder + includeFilePath);
+    		            } else {
+	    		            incPath = FileHelper.normalizePath(folderPath + "/" + includeFilePath);
+    		            }
     		            newText = FileHelper.readStringFromFile(incPath);
     		            // replace found
     		            if (newText == null) {
