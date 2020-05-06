@@ -94,6 +94,7 @@
 
 	    options: {
 	        clearBtn: false,
+	        cloneOptions: false,
 	        editSelectValues: false
 	    },
 
@@ -185,7 +186,18 @@
 
                     if(JSB.isObject(options[i])){
                         el = this.$('<li key="' + options[i].key + '"></li>');
-                        el.append(options[i].value);
+
+                        if(this.options.cloneOptions) {
+                            if(options[i].value instanceof jQuery) {
+                                el.append(options[i].value.clone());
+                            } else if(options[i].value.get(0) instanceof Node) {
+                                el.append(options[i].value.cloneNode());
+                            } else {
+                                el.append(JSB.clone(options[i].value));
+                            }
+                        }
+
+
                         key = options[i].key;
                         val = options[i].value;
                     } else {

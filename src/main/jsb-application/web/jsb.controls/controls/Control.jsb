@@ -122,11 +122,11 @@
         },
 
         getOption: function(opt) {
-            if(opt) {
-                return this.options[opt];
-            } else {
-                return this.options;
-            }
+            return this.options[opt];
+        },
+
+        getOptions: function() {
+            return this.options;
         },
 
 		hasClass: function(cls){

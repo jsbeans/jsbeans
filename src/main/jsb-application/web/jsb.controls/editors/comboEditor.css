@@ -12,11 +12,10 @@
 
 .jsb-comboEditor > i.dropDownBtn {
     position: absolute;
-    top: 50%;
-    right: 5px;
-    margin-top: 1px;
+    top: 0;
+    right: 0;
     cursor: pointer;
-    font-size: 13px;
+    padding: 10px 6px;
 }
 
 .jsb-comboEditor > i.dropDownBtn:after {

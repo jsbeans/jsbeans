@@ -52,6 +52,10 @@
                 this.setValue(this.options.value);
             }
 
+            if($this.options.contentSize) {
+                this._editor.attr('size', this.getValue().length || 1);
+            }
+
             var isOnChangeFunc = JSB.isFunction($this.options.onChange);
 
             function hasChanges() {
@@ -87,6 +91,10 @@
             }
 
             function onChange() {
+                if($this.options.contentSize) {
+                    $this._editor.attr('size', $this.getValue().length || 1);
+                }
+
                 if(isOnChangeFunc && validate()) {
                     $this.options.onChange.call($this, $this.getValue());
                 }
@@ -135,6 +143,7 @@
 	    },
 
 	    options: {
+	        contentSize: false,
 	        defaultValue: null,
 	        label: undefined,
 	        placeholder: null,
