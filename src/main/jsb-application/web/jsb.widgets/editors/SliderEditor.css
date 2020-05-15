@@ -1,0 +1,29 @@
+@CHARSET "UTF-8";
+
+._jsb_sliderEditor {
+	padding: 6px;
+	white-space: nowrap;
+}
+
+._jsb_sliderEditor ._jsb_slider {
+	display: inline-block;
+	width: 200px;
+}
+
+._jsb_sliderEditor ._jsb_slider a {
+	cursor: pointer;
+}
+
+._jsb_sliderEditor ._jsb_slider a ._jsb_sliderSubtitle {
+	font-size: x-small;
+	position: absolute;
+	top: 18px;
+	left: 2px;
+	font-weight: bold;
+	color: #6B2B00;
+}
+
+._jsb_sliderEditor ._jsb_label {
+	display: inline-block;
+    margin-left: 4px;
+}
