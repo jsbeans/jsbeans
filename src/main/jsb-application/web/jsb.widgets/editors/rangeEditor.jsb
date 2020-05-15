@@ -13,6 +13,7 @@
 	$parent: 'JSB.Widgets.Editor',
 	
 	$require: {
+	    Slider: 'jQuery.UI.Slider',
 		Value: 'JSB.Widgets.RangeValue'
 	},
 	$bootstrap: function(){
