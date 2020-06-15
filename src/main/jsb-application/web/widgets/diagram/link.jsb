@@ -18,6 +18,7 @@
 		target: null,
 		path: null,
 		joints: [],
+		_attrs: {},
 		
 		options: {
 			cellRoundMax: 2,
@@ -72,6 +73,15 @@
 				}
 			});
 			
+		},
+		
+		setAttribute: function(a, val){
+			if(JSB.isNull(val)){
+				delete this._attrs[a];
+				this.group.attr(a, null);
+			}
+			this._attrs[a] = val;
+			this.group.attr(a, val);
 		},
 		
 		destroy: function(){
@@ -268,6 +278,11 @@
 				this.group = this.diagram.svg.append('g')
 					.classed('link', true)
 					.attr('key', this.key);
+				if($this._attrs){
+					for(var a in $this._attrs){
+						this.group.attr(a, $this._attrs[a]);
+					}
+				}
 				this.path = this.group.append('path');
 				this.sourceHead = null;
 				this.targetHead = null;
