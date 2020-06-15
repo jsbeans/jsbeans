@@ -91,6 +91,10 @@
                 tab = this.$('<li clientId="' + id + '"></li>'),
                 title = this.$('<span class="title">' + options.title + '</span>');
 
+            if(options.desc) {
+                title.attr('title', options.desc);
+            }
+
             tab.append(title);
 
             if(options.hasIcon) {
@@ -187,7 +191,11 @@
 	    * @return {*} контент вкладки
 	    */
 		getTabContent: function(id) {
-		    return this._getTab(id).options.content;
+		    let tab = this._getTab(id);
+
+		    if(tab) {
+		        return tab.options.content;
+		    }
 		},
 
 		getTabPane: function() {
