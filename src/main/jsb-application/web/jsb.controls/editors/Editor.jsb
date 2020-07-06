@@ -70,32 +70,12 @@
                 }
             }
 
-            function validate() {
-                if($this.getType === 'number' && isNaN($this.getValue())) {
-                    return false;
-                }
-
-                if(JSB.isFunction($this.options.validator)) {
-                    var validateResult = $this.options.validator.call($this, $this.getValue(), $this._value);
-
-                    if(validateResult) {
-                        $this._editor.removeClass('invalid');
-                    } else {
-                        $this._editor.addClass('invalid');
-                    }
-
-                    return validateResult;
-                } else {
-                    return true;
-                }
-            }
-
             function onChange() {
                 if($this.options.contentSize) {
                     $this._editor.attr('size', $this.getValue().length || 1);
                 }
 
-                if(isOnChangeFunc && validate()) {
+                if(isOnChangeFunc && $this.validate($this.options.validator)) {
                     $this.options.onChange.call($this, $this.getValue());
                 }
             }
@@ -105,12 +85,6 @@
                     $this.options.onEditComplete.call($this, $this.getValue(), !$this._editor.hasClass('invalid'));
                 }
             }
-
-            this._editor.change(function() {
-                if(hasChanges()) {
-                    onChange();
-                }
-            });
 
             this._editor.keyup(function(evt) {
                 if(evt.keyCode === 37 || evt.keyCode === 38 || evt.keyCode === 39 || evt.keyCode === 40) {  // arrows
@@ -122,7 +96,7 @@
                 }
 
                 if(evt.keyCode === 13 || evt.keyCode === 27) {  // enter, escape
-                    validate();
+                    $this.validate($this.options.validator);
 
                     onEditComplete();
                 }
@@ -130,7 +104,6 @@
 
             this._editor.focusout(function() {
                 if(hasChanges()) {
-                    validate();
                     onChange();
                 }
 
@@ -261,6 +234,28 @@
 	            this._editor.val(value);
 	            this._value = value;
 	        }
+	    },
+
+	    validate: function(validateFunc) {
+            if(this.getType === 'number' && isNaN(this.getValue())) {
+                return false;
+            }
+
+            if(JSB.isFunction(validateFunc)) {
+                var validateResult = validateFunc.call(this, this.getValue(), this._value);
+
+                if(validateResult) {
+                    this._editor.removeClass('invalid');
+                } else {
+                    this._editor.addClass('invalid');
+                }
+
+                return validateResult;
+            } else {
+                this._editor.removeClass('invalid');
+
+                return true;
+            }
 	    }
 	}
 }
