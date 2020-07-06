@@ -12,17 +12,18 @@
 	$name:'JSB.Widgets.ToolWrapper',
 	$parent:'JSB.Widgets.Control',
 	$client: {
-		$require: ['jQuery.UI.Droppable', 'css:toolWrapper.css'],
+		$require: ['jQuery.UI.Droppable',
+		           'script:/../../../tpl/d3/d3.min.js',
+		           'css:toolWrapper.css'],
+
 		$constructor: function(toolId, toolMgr, w, opts){
-			var self = this;
 			$base(opts);
+
 			this.toolId = toolId;
 			this.toolManager = toolMgr;
 			this.embeddedWidget = w;
-			JSB().loadScript('tpl/d3/d3.min.js');
-			JSB().waitForObjectExist('window.d3',function(){
-				self.init();	
-			});
+
+			this.init();
 		},
 		
 		options: {
