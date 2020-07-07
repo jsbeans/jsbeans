@@ -734,7 +734,7 @@
 				} else {
 					JSB().defer(function(){
 						self.trackPosition();
-					});
+					}, 10, '__jsb_tw_trackPosMtx_' + $this.getId());
 				}
 			}
 		},
