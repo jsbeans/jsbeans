@@ -96,13 +96,11 @@
                 }
 
                 if(evt.keyCode === 13 || evt.keyCode === 27) {  // enter, escape
-                    $this.validate($this.options.validator);
-
-                    onEditComplete();
+                    $this._editor.blur();
                 }
             });
 
-            this._editor.focusout(function() {
+            this._editor.focusout(function(evt) {
                 if(hasChanges()) {
                     onChange();
                 }
