@@ -20,19 +20,128 @@
 	    };
 	},
 
-	_lang: {},
+	_lang: {
+	    invalidDate: 'Неверный формат даты',
+        shortMonths: [ "Янв" , "Фев" , "Мар" , "Апр" , "Май" , "Июн" , "Июл" , "Авг" , "Сен" , "Окт" , "Ноя" , "Дек"],
+        thousandsSep: " ",
+        shortWeekdays: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+        weekdays: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
+	},
 
     _pick: function () {
         var args = arguments,
             i,
             arg,
             length = args.length;
+
         for (i = 0; i < length; i++) {
             arg = args[i];
             if (arg !== undefined && arg !== null) {
                 return arg;
             }
         }
+    },
+
+    /**
+     * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970)
+     * into a human readable date string. The format is a subset of the formats
+     * for PHP's [strftime](http://www.php.net/manual/en/function.strftime.php)
+     * function.
+     *
+     * @function _dateFormat
+     *
+     * @param {string} [format]
+     *        The desired format where various time representations are
+     *        prefixed with %.
+     *
+     * @param {number} timestamp
+     *        The JavaScript timestamp.
+     *
+     * @param {boolean} [capitalize=false]
+     *        Upper case first letter in the return.
+     *
+     * @return {string}
+     *         The formatted date.
+     */
+    _dateFormat: function (format, timestamp, capitalize) {
+        if (isNaN(timestamp)) {
+            return this._lang.invalidDate || '';
+        }
+
+        format = this._pick(format, '%Y-%m-%d %H:%M:%S');
+
+        var time = this,
+            date = new Date(timestamp),
+            parsedDate = this._parseDate(date)
+            lang = this._lang,
+            langWeekdays = lang.weekdays,
+            shortWeekdays = lang.shortWeekdays,
+            pad = this._pad,
+            // List all format keys. Custom formats can be added from the
+            // outside.
+            replacements = {
+                // Day
+                // Short weekday, like 'Mon'
+                a: shortWeekdays ?
+                    shortWeekdays[parsedDate.day] :
+                    langWeekdays[parsedDate.day].substr(0, 3),
+                // Long weekday, like 'Monday'
+                A: langWeekdays[parsedDate.day],
+                // Two digit day of the month, 01 to 31
+                d: pad(parsedDate.dayOfMonth),
+                // Day of the month, 1 through 31
+                e: pad(parsedDate.dayOfMonth, 2, ' '),
+                w: parsedDate.day,
+                // Week (none implemented)
+                // 'W': weekNumber(),
+                // Month
+                // Short month, like 'Jan'
+                b: lang.shortMonths[parsedDate.month],
+                // Long month, like 'January'
+                B: lang.months[parsedDate.month],
+                // Two digit month number, 01 through 12
+                m: pad(parsedDate.month + 1),
+                // Month number, 1 through 12 (#8150)
+                o: parsedDate.month + 1,
+                // Year
+                // Two digits year, like 09 for 2009
+                y: parsedDate.fullYear.toString().substr(2, 2),
+                // Four digits year, like 2009
+                Y: parsedDate.fullYear,
+                // Time
+                // Two digits hours in 24h format, 00 through 23
+                H: pad(parsedDate.hours),
+                // Hours in 24h format, 0 through 23
+                k: parsedDate.hours,
+                // Two digits hours in 12h format, 00 through 11
+                I: pad((parsedDate.hours % 12) || 12),
+                // Hours in 12h format, 1 through 12
+                l: (parsedDate.hours % 12) || 12,
+                // Two digits minutes, 00 through 59
+                M: pad(time.get('Minutes', date)),
+                // Upper case AM or PM
+                p: parsedDate.hours < 12 ? 'AM' : 'PM',
+                // Lower case AM or PM
+                P: parsedDate.hours < 12 ? 'am' : 'pm',
+                // Two digits seconds, 00 through  59
+                S: pad(date.getSeconds()),
+                // Milliseconds (naming from Ruby)
+                L: pad(Math.floor(timestamp % 1000), 3)
+            };
+
+        // Do the replaces
+        replacements.forEach(function (val, key) {
+            // Regex would do it in one line, but this is faster
+            while (format.indexOf('%' + key) !== -1) {
+                format = format.replace('%' + key, typeof val === 'function' ? val.call(this, timestamp) : val);
+            }
+        });
+
+        // Optionally capitalize the string and return
+        return capitalize ?
+            (format.substr(0, 1).toUpperCase() +
+                format.substr(1)) :
+            format;
     },
 
 	// H.numberFormat
@@ -139,10 +248,44 @@
                 );
             }
         } else {
-            // todo
-            // val = (time || H.time).dateFormat(format, val);
+            val = time.dateFormat(format, val);
         }
         return val;
+    },
+
+    /**
+     * Left-pad a string to a given length by adding a character repetetively.
+     *
+     * @function _pad
+     *
+     * @param {number} number
+     *        The input string or number.
+     *
+     * @param {number} [length]
+     *        The desired string length.
+     *
+     * @param {string} [padder=0]
+     *        The character to pad with.
+     *
+     * @return {string}
+     *         The padded string.
+     */
+    _pad: function(number, length, padder) {
+        return new Array((length || 2) +
+            1 -
+            String(number)
+                .replace('-', '')
+                .length).join(padder || '0') + number;
+    },
+
+    _parseDate: function(date) {
+        return {
+            hours: date.getUTCHours(),
+            day: date.getUTCDay(),
+            dayOfMonth: date.getUTCDate(),
+            month: date.getUTCMonth(),
+            fullYear: date.getUTCFullYear()
+        };
     },
 
     // H.format
