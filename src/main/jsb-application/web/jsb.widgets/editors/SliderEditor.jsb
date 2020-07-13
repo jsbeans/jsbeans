@@ -36,9 +36,9 @@
 			    value: opts.value || 0,
 			    step: opts.step || 1,
 			    slide: function(event, ui){
-			    	self.updateValue();
+			    	self.updateValue(ui.value);
 			    	if($this.options.onChange){
-                        $this.options.onChange.call($this, $this.getData());
+                        $this.options.onChange.call($this, ui.value);
                     }
 			    }
 			});
@@ -46,8 +46,14 @@
 			this.updateValue();
 		},
 		
-		updateValue: function(){
-			var value = this.slider.slider('value');
+		updateValue: function(val){
+			var value = null;
+			if(JSB.isDefined(val)){
+				value = val;
+				this.setData(val);
+			} else {
+				value = this.slider.slider('value');
+			}
 			var str = value;
 			if($this.options.onFormat){
 				str = $this.options.onFormat.call($this, value);
