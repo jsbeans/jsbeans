@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.12 | jsbeans.org | MIT Licence | (c) 2011-2019 Special Information Systems, LLC */
+/*! jsBeans v2.6.13 | jsbeans.org | MIT Licence | (c) 2011-2020 Special Information Systems, LLC */
 if(!(function(){return this;}).call(null).JSB){
 (function(){
 	
@@ -578,7 +578,7 @@ if(!(function(){return this;}).call(null).JSB){
 
 			this._prepareSections(parent);
 
-			// inherit parent's jso options
+			// inherit parent's jsb options
 			var entry = this.currentSection();
 			if(parent){
 				var pe = parent.currentSection();
@@ -595,7 +595,7 @@ if(!(function(){return this;}).call(null).JSB){
 				var reqBeans = {};
 
 				// collect all requires with smaller readyState
-				var skipPrefixes = ['java:', 'css:', 'script:'];
+				var skipPrefixes = ['java:', 'css:', 'script:', 'module:'];
 				for(var req in self._requireMap){
 					var needSkip = false;
 					for(var i = 0; i < skipPrefixes.length; i++){
@@ -656,9 +656,6 @@ if(!(function(){return this;}).call(null).JSB){
 
 
 				function _reqIteration(s){
-/*					if(s > 1000){
-						debugger;
-					}*/
 					if(Object.keys(reqContainer.curReqBeans).length === 0){
 						self._readyState = 2;
 						_matchReqSynchronized();
@@ -767,7 +764,7 @@ if(!(function(){return this;}).call(null).JSB){
 							var rObj = {};
 							// generate alias
 							var alias = e;
-							if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0 && alias.lastIndexOf('.') >= 0){
+							if(alias.indexOf('script:') != 0 && alias.indexOf('module:') != 0 && alias.indexOf('css:') != 0 && alias.lastIndexOf('.') >= 0){
 								alias = alias.substr(alias.lastIndexOf('.') + 1);
 							}
 							rObj[alias] = e;
@@ -785,7 +782,7 @@ if(!(function(){return this;}).call(null).JSB){
 									if(!self.isString(alias)){
 										throw new Error('Invalid alias "' + JSON.stringify(alias) + '" in bean "'+self.$name+'" requirement');
 									}
-									if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0 && !/^[A-Za-z_][A-Za-z_\d]*$/.test(alias)){
+									if(alias.indexOf('script:') != 0 && alias.indexOf('module:') != 0 && alias.indexOf('css:') != 0 && !/^[A-Za-z_][A-Za-z_\d]*$/.test(alias)){
 										throw new Error('Invalid alias "' + alias + '" in bean "'+self.$name+'" requirement');
 									}
 									if(reverseRequireMap[alias]){
@@ -793,7 +790,7 @@ if(!(function(){return this;}).call(null).JSB){
 									}
 									requireMap[requiredJsb] = alias;
 									reverseRequireMap[alias] = requiredJsb;
-									if(alias.indexOf('script:') == 0 || alias.indexOf('css:') == 0){
+									if(alias.indexOf('script:') == 0 || alias.indexOf('module:') == 0 || alias.indexOf('css:') == 0){
 										requireArr.push(alias);
 									}
 
@@ -826,7 +823,7 @@ if(!(function(){return this;}).call(null).JSB){
 								rcWrap._requireCnt--;
 								if(locker)locker.unlock('_jsb_lookupRequires_' + self.$name);
 
-								if(alias.indexOf('script:') != 0 && alias.indexOf('css:') != 0){
+								if(alias.indexOf('script:') != 0 && alias.indexOf('module:') != 0 && alias.indexOf('css:') != 0){
 									requireVals[alias] = cls;
 								}
 
@@ -1123,7 +1120,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			var wMap = {};
 			// collect all requires with smaller readyState
-			var skipPrefixes = ['java:', 'css:', 'script:'];
+			var skipPrefixes = ['java:', 'css:', 'script:', 'module:'];
 			for(var req in this._requireMap){
 				var needSkip = false;
 				for(var i = 0; i < skipPrefixes.length; i++){
@@ -1972,7 +1969,7 @@ if(!(function(){return this;}).call(null).JSB){
 				var msg = 'ERROR: Failed to create instance of bean: "'+this.$name+'" due to some of its requires has not been initialized:';
 				for(var rName in this._requireMap){
 					// skip java requires
-					var skipPrefixes = ['java:', 'css:', 'script:'];
+					var skipPrefixes = ['java:', 'css:', 'script:', 'module:'];
 					var needSkip = false;
 					for(var i = 0; i < skipPrefixes.length; i++){
 						if(rName.toLowerCase().indexOf(skipPrefixes[i]) == 0){
@@ -2250,7 +2247,17 @@ if(!(function(){return this;}).call(null).JSB){
 					var fileName = name.substr(7).trim();
 					this.loadScript(fileName, function(){
 						callback.call(self, null);
-					})
+					});
+				}
+			} else if(name.toLowerCase().indexOf('module:') == 0){
+				if(this.isServer()){
+					// do nothing with load
+					callback.call(self, null);
+				} else {
+					var fileName = name.substr(7).trim();
+					this.loadScript(fileName, function(){
+						callback.call(self, null);
+					}, {module:true});
 				}
 			} else {
 				this.lookup(name, function(cls){
@@ -2837,7 +2844,7 @@ if(!(function(){return this;}).call(null).JSB){
 			return url;
 		},
 
-		loadScript: function(curl, callback, bChain){
+		loadScript: function(curl, callback, opts){
 			var self = this;
 
 			var scriptArr = [];
@@ -2875,7 +2882,11 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 
 				var _s = document.createElement("script");
-			    _s.type = "text/javascript";
+				if(opts && opts.module){
+					_s.type = "module";
+				} else {
+					_s.type = "text/javascript";
+				}
 			    if(url.indexOf('http') == -1){
 			        var serverBase = self.getProvider().getServerBase();
                     if(serverBase
@@ -2930,7 +2941,7 @@ if(!(function(){return this;}).call(null).JSB){
 
 			var checkArr = JSB().clone(scriptArr);
 
-			if(bChain){
+			if(opts && opts.chain){
 				function loadNext(){
 					if(checkArr.length > 0){
 						loadOneScript(checkArr[0], function(){
