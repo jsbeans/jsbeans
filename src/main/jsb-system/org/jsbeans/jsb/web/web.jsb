@@ -98,11 +98,11 @@
 		},
 		
 		getRequest: function(){
-			return (function(){return this;}).call(null)['__request'];
+			return JSB.getThreadLocal().get('__request');
 		},
 		
 		getResponse: function(){
-			return (function(){return this;}).call(null)['__response'];
+			return JSB.getThreadLocal().get('__response');
 		},
 		
 		_setAppContext: function(ctx){

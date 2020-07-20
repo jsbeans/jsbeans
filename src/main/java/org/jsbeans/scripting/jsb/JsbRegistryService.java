@@ -434,9 +434,9 @@ public class JsbRegistryService extends Service {
         String userToken = msg.getUserToken();
         String clientRequestId = msg.getClientRequestId();
 		try {
-			String script = String.format( "JSB().getProvider().performUpload('%s');", streamId );
+			String script = String.format( "JSB().getProvider().performUpload('%s', JSB.getThreadLocal().get('__stream'));", streamId );
             ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
-            execMsg.addWrapped(streamId, msg.getStream());
+            execMsg.addThreadLocal("__stream", msg.getStream());
             execMsg.setScopePath(sessionId);
             execMsg.setClientAddr(clientAddr);
             execMsg.setUser(user);

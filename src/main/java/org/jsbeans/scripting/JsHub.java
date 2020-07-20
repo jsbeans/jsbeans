@@ -769,6 +769,14 @@ public class JsHub extends Service {
                     cx.putThreadLocal("clientRequestId", msg.getClientRequestId());
                     cx.putThreadLocal("scope", scope);
                     cx.putThreadLocal("_jsbCallingContext", null);
+                    
+                    // add thread local entries
+                    if(msg.getThreadLocal() != null){
+                    	for (String key : msg.getThreadLocal().keySet()) {
+                            Object obj = msg.getThreadLocal().get(key);
+                            cx.putThreadLocal(key, obj);
+                        }
+                    }
 
                     cx.setWrapFactory(new InterceptWrapFactory());
 

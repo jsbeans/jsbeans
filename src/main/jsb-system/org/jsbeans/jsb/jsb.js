@@ -6872,12 +6872,9 @@ JSB({
 			this.enableRpcCleanup(true);
 		},
 
-		performUpload: function(streamId){
+		performUpload: function(streamId, javaStream){
 			JSB.getLogger().debug('performUpload: ' + streamId);
-			var scope = (function(){return this;}).call(null);
-			var javaStream = scope[streamId];
-			delete scope[streamId];
-
+			
 			// create proxy file stream
 			var StreamClass = JSB().get('JSB.IO.Stream').getClass();
 			var ProxyStreamClass = JSB().get('JSB.IO.ProxyStream').getClass();

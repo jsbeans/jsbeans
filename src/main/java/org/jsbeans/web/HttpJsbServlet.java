@@ -226,8 +226,8 @@ public class HttpJsbServlet extends HttpServlet {
         msg.setClientAddr(clientAddr);
         msg.setUser(user);
         msg.setClientRequestId(rid);
-        msg.addWrapped("__request", req);
-        msg.addWrapped("__response", resp);
+        msg.addThreadLocal("__request", req);
+        msg.addThreadLocal("__response", resp);
         Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), msg, timeout);
         UpdateStatusMessage respObj = null;
         try {

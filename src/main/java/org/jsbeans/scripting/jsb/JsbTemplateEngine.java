@@ -108,8 +108,8 @@ public class JsbTemplateEngine {
     				String templateBody = text.substring(4);
     				
     	            // call JsHub
-    	            ExecuteScriptMessage execMsg = new ExecuteScriptMessage("var t = '' + this.template; Template.doT.template(t);", false);
-    	            execMsg.addWrapped("template", templateBody);
+    	            ExecuteScriptMessage execMsg = new ExecuteScriptMessage("var t = '' + JSB.getThreadLocal().get('template'); Template.doT.template(t);", false);
+    	            execMsg.addThreadLocal("template", templateBody);
     	            Timeout timeout = ActorHelper.getServiceCommTimeout();
 
     	            Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, timeout);

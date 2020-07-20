@@ -142,8 +142,8 @@ public class HttpService extends Service {
 
         
         Timeout timeout = ActorHelper.getServiceCommTimeout();
-        ExecuteScriptMessage msg = new ExecuteScriptMessage("JSB.getInstance('JSB.Web')._setAppContext(__appContext);", false);
-        msg.addWrapped("__appContext", context);
+        ExecuteScriptMessage msg = new ExecuteScriptMessage("JSB.getInstance('JSB.Web')._setAppContext(JSB.getThreadLocal().get('__appContext'));", false);
+        msg.addThreadLocal("__appContext", context);
         Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), msg, timeout);
         try {
 			Await.result(future, timeout.duration());

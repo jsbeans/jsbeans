@@ -31,6 +31,7 @@ public class ExecuteScriptMessage implements Message {
     private String token = null;
     private Object[] args;
     private Map<String, Object> wrappedObjects = null;
+    private Map<String, Object> tlsObjects = null;
     private boolean temporaryScope = false;
     private String user = null;
     private AccessControlContext accessControlContext;
@@ -168,6 +169,25 @@ public class ExecuteScriptMessage implements Message {
         if (this.wrappedObjects != null) {
             this.wrappedObjects.clear();
             this.wrappedObjects = null;
+        }
+    }
+    
+    public void addThreadLocal(String key, Object obj) {
+        if (this.tlsObjects == null) {
+            this.tlsObjects = new HashMap<String, Object>();
+        }
+
+        this.tlsObjects.put(key, obj);
+    }
+
+    public Map<String, Object> getThreadLocal() {
+        return this.tlsObjects;
+    }
+
+    public void clearThreadLocal() {
+        if (this.tlsObjects != null) {
+            this.tlsObjects.clear();
+            this.tlsObjects = null;
         }
     }
 
