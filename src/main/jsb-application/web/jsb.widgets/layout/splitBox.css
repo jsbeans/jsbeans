@@ -9,7 +9,8 @@
 ._dwp_splitbox ._dwp_splitPane {
 	position: absolute;
 	box-sizing: border-box;
-	overflow: hidden;
+	
+	/* overflow: hidden; */ /* Commented out due to chrome bug */
 }
 
 ._dwp_splitbox ._dwp_splitPane.vertical {
