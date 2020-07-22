@@ -86,8 +86,8 @@
 			
 			this.cachedContent[path] = code;
 			
-			return Web.response(code, {
-				contentType: 'text/javascript'
+			return Web.respond(code, {
+				contentType: 'text/javascript;charset=utf-8'
 			});
 		},
 		

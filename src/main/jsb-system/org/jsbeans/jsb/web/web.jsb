@@ -93,7 +93,7 @@
 			return null;
 		},
 		
-		response: function(data, opts){
+		respond: function(data, opts){
 			return new this.Response(data, opts);
 		},
 		
