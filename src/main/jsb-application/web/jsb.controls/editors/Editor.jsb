@@ -56,16 +56,14 @@
                 this._editor.attr('size', this.getValue().length || 1);
             }
 
-            var isOnChangeFunc = JSB.isFunction($this.options.onChange);
-
             function hasChanges() {
                 var curValue = $this.getValue();
 
                 if(curValue === $this._value) {
-                    $this._value = curValue;
-
                     return false;
                 } else {
+                    $this._value = curValue;
+
                     return true;
                 }
             }
@@ -75,7 +73,11 @@
                     $this._editor.attr('size', $this.getValue().length || 1);
                 }
 
-                if(isOnChangeFunc && $this.validate($this.options.validator)) {
+                if($this.options.validator) {
+                    $this.validate($this.options.validator)
+                }
+
+                if($this.options.onChange) {
                     $this.options.onChange.call($this, $this.getValue());
                 }
             }
@@ -87,7 +89,8 @@
             }
 
             this._editor.keyup(function(evt) {
-                if(evt.keyCode === 37 || evt.keyCode === 38 || evt.keyCode === 39 || evt.keyCode === 40) {  // arrows
+                if(evt.keyCode === 37 || evt.keyCode === 38 || evt.keyCode === 39 || evt.keyCode === 40 ||  // arrows
+                   evt.keyCode === 35 || evt.keyCode === 36) {  // home, end
                     return;
                 }
 

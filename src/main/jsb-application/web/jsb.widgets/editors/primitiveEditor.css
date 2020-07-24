@@ -36,6 +36,8 @@
     min-height: initial;
     height: 100%;
     margin: 0;
+
+    outline: none;
 }
 
 ._dwp_primitiveEditor textarea {
