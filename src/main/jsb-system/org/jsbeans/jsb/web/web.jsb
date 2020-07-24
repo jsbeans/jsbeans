@@ -45,6 +45,20 @@
 			}
 
 			document.cookie = updatedCookie;
+		},
+		
+		getLocalItem: function(key){
+			if(!key || !JSB.isString(key)){
+				throw new Error('Invalid key passed');
+			}
+			return window.localStorage.getItem(key);
+		},
+		
+		setLocalItem: function(key, val, opts){
+			if(!key || !JSB.isString(key)){
+				throw new Error('Invalid key passed');
+			}
+			return window.localStorage.setItem(key, val);
 		}
 	},
 	$server: {
