@@ -1160,6 +1160,10 @@
 
 		getTool: function(){
 		    return this.embeddedWidget;
+		},
+
+		getTargetElement: function() {
+		    return this.options.target.selector;
 		}
 	}
 }
