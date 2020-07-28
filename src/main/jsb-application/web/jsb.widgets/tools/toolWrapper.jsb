@@ -1163,7 +1163,7 @@
 		},
 
 		getTargetElement: function() {
-		    return this.options.target.selector;
+		    return this.params.target;
 		}
 	}
 }
