@@ -46,12 +46,8 @@
     </logger>
 
     <logger name="ru.avicomp">
-        <level value="DEBUG"/>
+        <level value="INFO"/>
     </logger>
-    <logger name="org.semanticweb">
-        <level value="DEBUG"/>
-    </logger>
-
 
     <!-- System (Akka, Scala, Logback, Reflections, Jetty ...) loggers -->
     <logger name="akka" >
@@ -67,10 +63,6 @@
     <logger name="org.reflections" >
         <level value="WARN"/>
     </logger>
-    <logger name="net.sf.ehcache" >
-        <level value="WARN"/>
-    </logger>
-
     <logger name="org.eclipse.jetty" >
         <level value="WARN"/>
     </logger>
@@ -87,7 +79,7 @@
     </logger>
 
     <logger name="org.jsbeans.scripting">
-        <level value="DEBUG"/>
+        <level value="INFO"/>
         <appender-ref ref="FILE-SCRIPTING"/>
     </logger>
     <logger name="org.jsbeans.security">
@@ -96,7 +88,7 @@
     </logger>
 
     <logger name="org.jsbeans.cluster.ClusteredDispatcherService">
-        <level value="DEBUG"/>
+        <level value="INFO"/>
     </logger>
 
     <root>
