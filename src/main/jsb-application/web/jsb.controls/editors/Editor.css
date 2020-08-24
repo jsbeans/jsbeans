@@ -21,6 +21,11 @@
     outline: none;
 }
 
+.jsb-editor > input[type="text"]:focus {
+    box-shadow: 0 0 0 2px #8fa8cc;
+	border: 1px solid #8fa8cc;
+}
+
 .jsb-editor > input[type="color"] {
     -webkit-appearance: square-button;
     width: 44px;
