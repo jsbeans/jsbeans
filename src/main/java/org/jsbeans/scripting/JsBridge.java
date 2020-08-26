@@ -174,7 +174,7 @@ public class JsBridge {
     		if(value instanceof Class<?>){
     			value = wf.wrapJavaClass(ctx, scope, (Class<?>)value);
     		} else {
-    			value = wf.wrap(ctx, scope, value, (Class<?>)value);
+    			value = wf.wrap(ctx, scope, value, /*(Class<?>)value*/ null);
     		}
     	}
     	org.mozilla.javascript.ScriptableObject.putConstProperty(scope, name, value);

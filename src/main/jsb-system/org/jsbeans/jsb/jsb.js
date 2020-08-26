@@ -161,7 +161,7 @@ if(!(function(){return this;}).call(null).JSB){
 		    return false;
 		},
 
-		eval: function(script, scopeVars, fName){
+		eval: function(script, scopeVars, opts){
 			if(this.isClient()){
 				// generate scope vars
 				for(var varName in scopeVars){
@@ -174,7 +174,15 @@ if(!(function(){return this;}).call(null).JSB){
 				for(var varName in scopeVars){
 					Bridge.putPropertyInScope(ctx, scope, varName, scopeVars[varName]);
 				}
-				var res = ctx.evaluateString(scope, '('+script+')', '' + scopeVars['$jsb'].$name + '.' + fName, 1, null);
+				var scopeName = '';
+				if(opts && opts.contextName && scopeVars && scopeVars['$jsb'] && scopeVars['$jsb'].$name){
+					scopeName = '' + scopeVars['$jsb'].$name + '.' + opts.contextName;
+				}
+				
+				var wf = ctx.getWrapFactory();
+				wf.setJavaPrimitiveWrap(false);
+				
+				var res = ctx.evaluateString(scope, '('+script+')', scopeName, 1, null);
 				return res;
 			}
 		},
@@ -1011,7 +1019,7 @@ if(!(function(){return this;}).call(null).JSB){
 						procStr = procDecl + procStr.substr(declM[0].length);
 
 						try {
-							return self.eval(procStr,scopeVars, fName);
+							return self.eval(procStr,scopeVars, {contextName: fName});
 						} catch(e){
 							debugger;
 							if(self.isClient()){
