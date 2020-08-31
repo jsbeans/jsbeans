@@ -296,8 +296,8 @@
 		sort: function(sortCallback) {
             if(!sortCallback) {
                 sortCallback = function(a, b) {
-                    if(a.title > b.title) return 1;
-                    if(a.title < b.title) return -1;
+                    if(a.options.title > b.options.title) return 1;
+                    if(a.options.title < b.options.title) return -1;
                     return 0;
                 };
             }
