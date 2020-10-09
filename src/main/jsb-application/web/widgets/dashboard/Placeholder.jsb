@@ -57,6 +57,9 @@
 					activate: function(evt, ui){
 						ui.draggable.bind('drag', dragCallback);
 						$this.dragUi = ui;
+						if($this.options.onDragStart){
+							$this.options.onDragStart.call($this);
+						}
 					},
 					tolerance: 'pointer',
 					drop: function(evt, ui){

@@ -4,7 +4,9 @@
 	position: relative;
 	border: 1px dotted #5b8a96;
     border-radius: 6px;
-	background: rgba(129, 174, 197, 0.5);
+	background: rgba(129, 174, 197, 0.7);
+	
+	transition: 200ms;
 }
 
 ._jsb_dashboardPlaceholder.hidden {
@@ -12,7 +14,7 @@
 }
 
 ._jsb_dashboardPlaceholder.acceptDraggable {
-	background-color: rgba(156, 92, 29, 0.3);
+	background-color: rgba(156, 92, 29, 0.7);
     border-color: rgba(105, 45, 0, 0.5);
 }
 

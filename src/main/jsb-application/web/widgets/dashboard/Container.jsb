@@ -62,11 +62,11 @@
 									dragAccept = true;
 								}
 							}
-							
+/*							
 							if(dragAccept){
 								$this.enableDragging(true);
 							}
-							
+*/							
 							return dragAccept;
 						},
 						onDragDrop: function(d, callback){
@@ -82,6 +82,9 @@
 							if($this.options.onDragDrop){
 								$this.options.onDragDrop.call($this, d, callback);
 							}
+						},
+						onDragStart: function(){
+							$this.enableDragging(true);
 						},
 						onDragStop: function(){
 							$this.enableDragging(false);
