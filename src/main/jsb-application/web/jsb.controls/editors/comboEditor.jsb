@@ -159,7 +159,7 @@
                 this._optionsList = {};
                 this.dropDown.empty();
 	        }
-
+debugger
 	        if(JSB.isObject(options)){
 	            for(var i in options){
 	                var el = this.$('<li key="' + i + '"></li>');
@@ -195,8 +195,9 @@
                             } else {
                                 el.append(JSB.clone(options[i].value));
                             }
+                        } else {
+                            el.append(options[i].value);
                         }
-
 
                         key = options[i].key;
                         val = options[i].value;
