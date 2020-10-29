@@ -159,7 +159,7 @@
                 this._optionsList = {};
                 this.dropDown.empty();
 	        }
-debugger
+
 	        if(JSB.isObject(options)){
 	            for(var i in options){
 	                var el = this.$('<li key="' + i + '"></li>');
