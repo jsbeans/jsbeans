@@ -11,8 +11,10 @@
 {
 	$name: 'JSB.Widgets.CheckboxTreeView',
 	$parent: 'JSB.Widgets.TreeView',
-	//$require: ['JSB.Widgets.CheckBox'],
+
 	$client: {
+	    $require: ['JSB.Controls.Checkbox'],
+
 		options:{
 			allowSelect: false
 		},
