@@ -270,6 +270,11 @@
 				return;
 			}
 			
+			if(this.replacingMark){
+				this.replacingMark.remove();
+				this.replacingMark = null;
+			}
+			
 			// create replacing placeholder mark
 			this.replacingMark = this.$('<div id="'+this.getId()+'_rmark"></div>');
 			this.getElement().after(this.replacingMark);
