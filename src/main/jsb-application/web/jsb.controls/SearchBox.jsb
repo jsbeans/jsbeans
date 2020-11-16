@@ -79,6 +79,7 @@
 	    clear: function(){
 	        this.editor.val('');
 	        this._value = '';
+	        this.removeClass('open');
 	    },
 
 	    getValue: function(){

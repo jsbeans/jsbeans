@@ -320,28 +320,22 @@
 			});
 		},
 		
-		installDragHandle: function(key, opts){
-			var self = this;
-			this.resolveSelector(opts.selector, function(sel){
-				self.dragHandles[key] = JSB.merge({}, opts, {
-					selector: sel,
-					key: key,
-					type: 'drag'
-				});
-				self._installHandle(key, self.dragHandles[key]);
-			});
+		installDragHandle: function(key, opts) {
+            this.dragHandles[key] = JSB.merge({}, opts, {
+                key: key,
+                type: 'drag'
+            });
+
+            this._installHandle(key, this.dragHandles[key]);
 		},
 		
-		installResizeHandle: function(key, opts){
-			var self = this;
-			this.resolveSelector(opts.selector, function(sel){
-				self.resizeHandles[key] = JSB.merge({}, opts,{
-					selector: sel,
-					key: key,
-					type: 'resize'
-				});
-				self._installHandle(key, self.resizeHandles[key]);
-			});
+		installResizeHandle: function(key, opts) {
+            this.resizeHandles[key] = JSB.merge({}, opts, {
+                key: key,
+                type: 'resize'
+            });
+
+            this._installHandle(key, this.resizeHandles[key]);
 		},
 		
 		installSelectHandle: function(key, opts){

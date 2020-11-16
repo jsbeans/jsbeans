@@ -280,8 +280,12 @@
 						$this.nodeMoveMap = null;
 					}
 					
-					if(this.isNodeResizing){
+					if(this.isNodeResizing) {
 						this.isNodeResizing = false;
+
+						if(params.handle.type == 'resize' && params.handle.onResize) {
+						    params.handle.onResize.call(sender);
+						}
 					}
 					
 				} else if(params.event.which == 3){
