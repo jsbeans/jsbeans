@@ -162,7 +162,7 @@ if(!(function(){return this;}).call(null).JSB){
 		},
 
 		eval: function(script, scopeVars, opts){
-			if(this.isClient()){
+			if(this.isClient() || (opts && opts.native)){
 				// generate scope vars
 				for(var varName in scopeVars){
 					eval('var ' + varName + ' = scopeVars["' + varName + '"];');
