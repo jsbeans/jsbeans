@@ -52,7 +52,6 @@
 					// call processExecResultAsync after future raise
 					result.await(function(ret, fail){
 						if(fail){
-							debugger;
 							servlet.processExecResultAsync(null, fail, context);
 						} else {
 							if(ret instanceof Web.Response){
@@ -67,10 +66,14 @@
 					});
 				} else {
 					// call processExecResultAsync immediately
-					servlet.processExecResultAsync({
-						exec: result, 
-						opts: opts
-					}, null, context);
+					if(JSB.isDefined(result)){
+						servlet.processExecResultAsync({
+							exec: result, 
+							opts: opts
+						}, null, context);
+					} else {
+						servlet.processExecResultAsync(null, null, context);
+					}
 				}
 			} catch(e){
 				servlet.processExecResultAsync(null, e, context);

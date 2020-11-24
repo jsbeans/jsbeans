@@ -170,7 +170,10 @@ public class HttpJsbServlet extends HttpServlet {
                 if (contentDisposition != null) {
                     ((HttpServletResponse)resp).addHeader("Content-disposition", contentDisposition);
                 }
-                this.responseBytes(((JsObject)respObj.result).getAttribute("exec").toByteArray(), req, resp);
+                JsObject data = ((JsObject)respObj.result).getAttribute("exec");
+                if(data.getResultType() != JsObjectType.NULL){
+                	this.responseBytes(data.toByteArray(), req, resp);
+                }
             } else {
                 this.responseBytes(new byte[]{}, req, resp);
                 throw new PlatformException(respObj.error);
@@ -202,17 +205,23 @@ public class HttpJsbServlet extends HttpServlet {
     
     public void processExecResultAsync(Object resultObj, Object fail, AsyncContext ac) throws UnsupportedEncodingException, IOException{
     	UpdateStatusMessage respObj = new UpdateStatusMessage("");
-    	if(fail != null){
-    		// response error
-    		this.responseError(fail.toString(), ac.getRequest(), ac.getResponse());
-    	} else {
-    		respObj.error = null;
-	    	respObj.result = new JsObjectSerializerHelper().serializeNative(resultObj);
-	    	respObj.status = ExecutionStatus.SUCCESS;
-	    	this.responseResult(respObj, ac.getRequest(), ac.getResponse());
+    	try {
+	    	if(fail != null){
+	    		// response error
+	    		this.responseError(fail.toString(), ac.getRequest(), ac.getResponse());
+	    	} else {
+	    		if(resultObj != null){
+		    		respObj.error = null;
+	    			respObj.result = new JsObjectSerializerHelper().serializeNative(resultObj);
+			    	respObj.status = ExecutionStatus.SUCCESS;
+			    	this.responseResult(respObj, ac.getRequest(), ac.getResponse());
+	    		}
+	    	}
+    	} finally {
+    		ac.complete();
     	}
     	
-    	ac.complete();
+    	
     }
 
     private void execCmd(String beanPath, String proc, String params, String session, String clientAddr, String user, String rid, String uri, String token, AsyncContext ac) throws UnsupportedEncodingException {

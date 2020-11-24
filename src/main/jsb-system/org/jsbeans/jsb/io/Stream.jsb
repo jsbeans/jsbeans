@@ -197,7 +197,10 @@
 					opts.onProgress(copied);
 				}
 			}
-			output.flush();
+			if(!opts || !opts.noFlush){
+				output.flush();	
+			}
+			
 			return this;
 		},
 		
@@ -215,18 +218,22 @@
 			return this.input.skip(num);
 		},
 		
-		close: function(){
+		close: function(bDontCloseNative){
 			if(!this.closed){
 				if(!JSB.isNull(this.input)){
-					try {
-						this.input.close();
-					} catch(e){}
+					if(!bDontCloseNative){
+						try {
+							this.input.close();
+						} catch(e){}
+					}
 					this.input = null;
 				}
 				if(!JSB.isNull(this.output)){
-					try {
-						this.output.close();
-					} catch(e){}
+					if(!bDontCloseNative){
+						try {
+							this.output.close();
+						} catch(e){}
+					}
 					this.output = null;
 				}
 				if(this.buffer){
