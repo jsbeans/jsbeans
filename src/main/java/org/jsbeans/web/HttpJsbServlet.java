@@ -18,24 +18,22 @@ import org.jsbeans.scripting.ExecutionStatus;
 import org.jsbeans.scripting.JsHub;
 import org.jsbeans.scripting.UpdateStatusMessage;
 import org.jsbeans.serialization.GsonWrapper;
+import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import org.jsbeans.types.JsonElement;
 import org.jsbeans.types.JsonObject;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
-
 import javax.security.auth.Subject;
-import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
@@ -58,6 +56,9 @@ public class HttpJsbServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String rid = WebHelper.extractHeadersFromRequest(req);
+        final AsyncContext ac = req.startAsync(req, resp);
+        ac.setTimeout(0);	// disable async timeout - use future timeout
+
         try {
             final String session = req.getSession().getId();
             final Object tokenObj = req.getSession().getAttribute("token");
@@ -93,31 +94,33 @@ public class HttpJsbServlet extends HttpServlet {
             Subject subj = principal != null
                     ? new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet())
                     : null;
-            UpdateStatusMessage respObj = Subject.doAs(subj, new PrivilegedExceptionAction<UpdateStatusMessage>() {
+                    
+            Subject.doAs(subj, new PrivilegedExceptionAction<String>() {
                 @Override
-                public UpdateStatusMessage run() throws Exception {
+                public String run() throws Exception {
                     String params = pObj.toJson();
                     String clientIp = WebHelper.extractRealIpFromRequest(req);
-                    return HttpJsbServlet.this.execCmd(beanPath, proc, params, session, clientIp, user, rid, getFullURL(req), token, req, resp);
+                    HttpJsbServlet.this.execCmd(beanPath, proc, params, session, clientIp, user, rid, getFullURL(req), token, ac);
+                    return null;
                 }
             });
-           	this.responseResult(respObj, req, resp, rid);
 
         } catch (Exception ex) {
-            this.responseError(ex, req, resp, rid);
+            this.responseError(ex.getMessage(), req, resp);
+            ac.complete();
         }
     }
 
-    public void responseError(Throwable th, HttpServletRequest req, HttpServletResponse resp, String rid) throws UnsupportedEncodingException, IOException {
+    public void responseError(String error, ServletRequest req, ServletResponse resp) throws UnsupportedEncodingException, IOException {
         JsObject jObj = new JsObject(JsObjectType.JSONOBJECT);
         jObj.addToObject("success", false);
         jObj.addToObject("result", "");
-        jObj.addToObject("error", th.getMessage());
+        jObj.addToObject("error", error);
 
         this.responseJson(jObj, req, resp);
     }
 
-    public void responseResult(UpdateStatusMessage respObj, HttpServletRequest req, HttpServletResponse resp, String rid) throws IOException {
+    public void responseResult(UpdateStatusMessage respObj, ServletRequest req, ServletResponse resp) throws IOException {
         String mode = req.getParameter("mode");
         String contentType = null, encoding = null, contentDisposition = null;
         if (mode == null || mode.trim().length() == 0) {
@@ -154,25 +157,8 @@ public class HttpJsbServlet extends HttpServlet {
         }
 
         if (mode.equalsIgnoreCase("json")) {
-
-            JsObject jObj = new JsObject(JsObjectType.JSONOBJECT);
-
-            jObj.addToObject("success", respObj.status == ExecutionStatus.SUCCESS);
-            if (respObj.status == ExecutionStatus.FAIL) {
-                jObj.addToObject("error", respObj.error);
-            } else {
-                jObj.addToObject("error", "");
-            }
-            if (respObj != null && respObj.result != null) {
-                JsObject execObj = ((JsObject)respObj.result).getAttribute("exec");
-                jObj.addToObject("result", execObj);
-            } else {
-                jObj.addToObject("result", "");
-            }
-
-            this.responseJson(jObj, req, resp);
-
-
+        	JsObject execObj = ((JsObject)respObj.result).getAttribute("exec");
+        	this.responseJson(execObj, req, resp);
         } else if (mode.equalsIgnoreCase("binary") || mode.equalsIgnoreCase("bytes") || mode.equalsIgnoreCase("text") || mode.equalsIgnoreCase("html")) {
             if (respObj.status == ExecutionStatus.SUCCESS) {
                 if (contentType != null) {
@@ -182,7 +168,7 @@ public class HttpJsbServlet extends HttpServlet {
                     resp.setCharacterEncoding(encoding);
                 }
                 if (contentDisposition != null) {
-                    resp.addHeader("Content-disposition", contentDisposition);
+                    ((HttpServletResponse)resp).addHeader("Content-disposition", contentDisposition);
                 }
                 this.responseBytes(((JsObject)respObj.result).getAttribute("exec").toByteArray(), req, resp);
             } else {
@@ -193,12 +179,12 @@ public class HttpJsbServlet extends HttpServlet {
 
     }
 
-    private void responseBytes(byte[] byteArr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    private void responseBytes(byte[] byteArr, ServletRequest req, ServletResponse resp) throws IOException {
         resp.setCharacterEncoding("UTF-8");
         resp.getOutputStream().write(byteArr);
     }
 
-    private void responseJson(JsObject jObj, HttpServletRequest req, HttpServletResponse resp) throws UnsupportedEncodingException, IOException {
+    private void responseJson(JsObject jObj, ServletRequest req, ServletResponse resp) throws UnsupportedEncodingException, IOException {
         String result = jObj.toJS(false);
 
         if (result != null && result.length() > 0) {
@@ -210,35 +196,42 @@ public class HttpJsbServlet extends HttpServlet {
             resp.getOutputStream().write(result.getBytes("UTF-8"));
         } else {
             // respond error (404)
-            resp.sendError(404);
+        	((HttpServletResponse)resp).sendError(404);
         }
-
+    }
+    
+    public void processExecResultAsync(Object resultObj, Object fail, AsyncContext ac) throws UnsupportedEncodingException, IOException{
+    	UpdateStatusMessage respObj = new UpdateStatusMessage("");
+    	if(fail != null){
+    		// response error
+    		this.responseError(fail.toString(), ac.getRequest(), ac.getResponse());
+    	} else {
+    		respObj.error = null;
+	    	respObj.result = new JsObjectSerializerHelper().serializeNative(resultObj);
+	    	respObj.status = ExecutionStatus.SUCCESS;
+	    	this.responseResult(respObj, ac.getRequest(), ac.getResponse());
+    	}
+    	
+    	ac.complete();
     }
 
-    private UpdateStatusMessage execCmd(String beanPath, String proc, String params, String session, String clientAddr, String user, String rid, String uri, String token, HttpServletRequest req, HttpServletResponse resp) throws UnsupportedEncodingException {
+    private void execCmd(String beanPath, String proc, String params, String session, String clientAddr, String user, String rid, String uri, String token, AsyncContext ac) throws UnsupportedEncodingException {
         Timeout timeout = ActorHelper.getServiceCommTimeout();
         if(beanPath.endsWith("download.jsb")){
         	timeout = ActorHelper.getInfiniteTimeout();
         }
-        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ var Web = JSB.getInstance('JSB.Web'); var result = JSB.getInstance('JSB.Web.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s')]); var opts = {}; if(result instanceof Web.Response){opts = result.opts; result = result.data; } return {exec: result, opts: opts};})()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8")), false);
+        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ return JSB.getInstance('JSB.Web.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s')]); })()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8")), false);
         msg.setUserToken(token);
         msg.setScopePath(session);
         msg.setClientAddr(clientAddr);
         msg.setUser(user);
         msg.setClientRequestId(rid);
-        msg.addThreadLocal("__request", req);
-        msg.addThreadLocal("__response", resp);
-        Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), msg, timeout);
-        UpdateStatusMessage respObj = null;
-        try {
-            respObj = (UpdateStatusMessage) Await.result(future, timeout.duration());
-        } catch (Exception e) {
-            respObj = new UpdateStatusMessage("");
-            respObj.error = e.getMessage();
-            respObj.status = ExecutionStatus.FAIL;
-        }
-
-        return respObj;
+        msg.addThreadLocal("__request", ac.getRequest());
+        msg.addThreadLocal("__response", ac.getResponse());
+        msg.addThreadLocal("__context", ac);
+        msg.addThreadLocal("__servlet", this);
+        
+        ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), msg, timeout);	// HttpJsb.exec will call processExecResultAsync
     }
 
 
