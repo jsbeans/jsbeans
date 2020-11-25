@@ -1580,7 +1580,7 @@ if(!(function(){return this;}).call(null).JSB){
 			return parentJso.getSubclassOfDistance(str, deep + 1);
 		},
 
-		isEqual: function(b1, b2){
+		isEqual: function(b1, b2, options){
 			if(b1 == b2){
 				return true;
 			}
@@ -1629,7 +1629,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				if(true/*this.isClient()*/){
 					for(var i = 0; i < b1.length; i++){
-						if(!this.isEqual(b1[i], b2[i])){
+						if(!this.isEqual(b1[i], b2[i], options)){
 							return false;
 						}
 					}
@@ -1640,7 +1640,7 @@ if(!(function(){return this;}).call(null).JSB){
 			} else if(this.isBean(b1) || this.isBean(b2)){
 				return b1 == b2;
 			} else if(this.isObject(b1)){
-				if(Object.keys(b1).length != Object.keys(b2).length){
+				if((!options || options && !options.checkObjectProperties) && Object.keys(b1).length != Object.keys(b2).length){
 					return false;
 				}
 				for(var key in b1){
@@ -1650,7 +1650,7 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 						return false;
 					}
-					if(!this.isEqual(b1[key], b2[key])){
+					if(!this.isEqual(b1[key], b2[key], options)){
 						return false;
 					}
 				}
