@@ -209,14 +209,12 @@ public class HttpJsbServlet extends HttpServlet {
 	    	if(fail != null){
 	    		// response error
 	    		this.responseError(fail.toString(), ac.getRequest(), ac.getResponse());
-	    	} else {
-	    		if(resultObj != null){
-		    		respObj.error = null;
-	    			respObj.result = new JsObjectSerializerHelper().serializeNative(resultObj);
-			    	respObj.status = ExecutionStatus.SUCCESS;
-			    	this.responseResult(respObj, ac.getRequest(), ac.getResponse());
-	    		}
-	    	}
+	    	} else if(resultObj != null){
+	    		respObj.error = null;
+    			respObj.result = new JsObjectSerializerHelper().serializeNative(resultObj);
+		    	respObj.status = ExecutionStatus.SUCCESS;
+		    	this.responseResult(respObj, ac.getRequest(), ac.getResponse());
+    		}
     	} finally {
     		ac.complete();
     	}
