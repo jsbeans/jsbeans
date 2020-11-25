@@ -119,6 +119,14 @@
 			return JSB.getThreadLocal().get('__response');
 		},
 		
+		getContext: function(){
+			return JSB.getThreadLocal().get('__context');
+		},
+		
+		getServlet: function(){
+			return JSB.getThreadLocal().get('__servlet');
+		},
+		
 		_setAppContext: function(ctx){
 			this._appContext = ctx;
 		},

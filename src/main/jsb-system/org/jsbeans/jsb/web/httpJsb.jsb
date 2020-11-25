@@ -37,7 +37,47 @@
 			if(repoEntry.jsb.getKeywordOption('$fixedId') && params && params.length > 0 && params[0]['id']){
 				instanceId = params[0]['id'];
 			}
-			return $jsb.getProvider().executeClientRpc(repoEntry.jsb.$name, instanceId, proc, params);
+			var request = Web.getRequest();
+			var response = Web.getResponse();
+			var servlet = Web.getServlet();
+			var context = Web.getContext();
+			try {
+				var result = $jsb.getProvider().executeClientRpc(repoEntry.jsb.$name, instanceId, proc, params);
+				var opts = {}; 
+				if(result instanceof Web.Response){
+					opts = result.opts; 
+					result = result.data; 
+				}
+				if(JSB.isFuture(result)){
+					// call processExecResultAsync after future raise
+					result.await(function(ret, fail){
+						if(fail){
+							servlet.processExecResultAsync(null, fail, context);
+						} else {
+							if(ret instanceof Web.Response){
+								opts = ret.opts; 
+								ret = ret.data; 
+							}
+							servlet.processExecResultAsync({
+								exec: ret, 
+								opts: opts
+							}, null, context);
+						}
+					});
+				} else {
+					// call processExecResultAsync immediately
+					if(JSB.isDefined(result)){
+						servlet.processExecResultAsync({
+							exec: result, 
+							opts: opts
+						}, null, context);
+					} else {
+						servlet.processExecResultAsync(null, null, context);
+					}
+				}
+			} catch(e){
+				servlet.processExecResultAsync(null, e, context);
+			}
 		}
 		
 	}

@@ -44,7 +44,6 @@
         <filter-name>BasicPassAuthFilter</filter-name>
         <servlet-name>JsbServlet</servlet-name>
         <servlet-name>HttpJsbServlet</servlet-name>
-        <servlet-name>ApiServlet</servlet-name>
         <servlet-name>JSEndPointServlet</servlet-name>
     </filter-mapping>
     <servlet>
@@ -60,19 +59,10 @@
     </servlet-mapping>
     <servlet>
         <description></description>
-        <display-name>ApiServlet</display-name>
-        <servlet-name>ApiServlet</servlet-name>
-        <servlet-class>org.jsbeans.web.ApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ApiServlet</servlet-name>
-        <url-pattern>/api/*</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <description></description>
         <display-name>HttpJsbServlet</display-name>
         <servlet-name>HttpJsbServlet</servlet-name>
         <servlet-class>org.jsbeans.web.HttpJsbServlet</servlet-class>
+        <async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
         <servlet-name>HttpJsbServlet</servlet-name>
