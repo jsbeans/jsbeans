@@ -27,6 +27,7 @@
 		},
 		
 		_actions: {},
+		_options: {},
 		_renderers: {},
 		_fixedItems: [],
 		_buttonItems: [],
@@ -61,7 +62,7 @@
 							dock: 'bottom'
 						},
 						callback: function(key, item, evt){
-							$this.executeAction($this._actions[key], evt);
+							$this.executeAction($this._actions[key]||$this._options[key], evt);
 						}
 					});
 				}
@@ -97,6 +98,10 @@
 					$this.setTrigger('ready');
 				});
 			});
+		},
+		
+		appendOption: function(opt){
+			$this._options[opt.getId()] = opt;
 		},
 		
 		updateItems: function(){
@@ -138,6 +143,31 @@
 				});
 			}
 			
+			for(var optId in $this._options){
+				var option = $this._options[optId];
+				var expose = option.getOptions();
+				if(!expose.fixed && $this.options.showButton){
+					continue;
+				}
+				var renderer = $this._renderers[optId];
+				if(!renderer){
+					renderer = $this._renderers[optId] = RendererRepository.createRendererFor(option, {fixed: true});
+				}
+				$this._fixedItems.push({
+					key: optId,
+					element: renderer.getElement()
+				});
+				var itemElt = $this.$('<li class="item option"></li>');
+				itemElt.attr('key', optId);
+				itemElt.append(renderer.getElement());
+				$this.menuItems.append(itemElt);
+				itemElt.click(function(evt){
+					var elt = $this.$(evt.currentTarget);
+					var optId = elt.attr('key');
+					$this.executeAction($this._options[optId], evt);
+				});
+			}
+			
 			if($this._fixedItems.length > 0){
 				this.addClass('showItems');	
 			} else {
@@ -173,6 +203,22 @@
 				});
 			}
 			
+			for(var optId in $this._options){
+				var option = $this._options[optId];
+				var expose = option.getOptions();
+				if(expose.fixed && $this.options.showItems){
+					continue;
+				}
+				var renderer = $this._renderers[optId];
+				if(!renderer){
+					renderer = $this._renderers[optId] = RendererRepository.createRendererFor(option);
+				}
+				$this._buttonItems.push({
+					key: optId,
+					element: renderer.getElement()
+				});
+			}
+			
 			
 			if(Object.keys($this._buttonItems).length > 0){
 				$this.addClass('showButton');	
@@ -186,12 +232,14 @@
 		},
 		
 		executeAction: function(action, evt){
-			if(action){
+			if(action && JSB.isInstanceOf(action, 'JSB.Widgets.MenuAction')){
 				action.execute({
 					category: $this.options.category, 
 					context: $this.options.context, 
 					event: evt,
 					sender: $this});
+			} else if(action && JSB.isInstanceOf(action, 'JSB.Widgets.MenuOption')){
+				action.execute();
 			}
 		}
 		

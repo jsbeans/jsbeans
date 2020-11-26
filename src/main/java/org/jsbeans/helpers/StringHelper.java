@@ -56,5 +56,19 @@ public class StringHelper {
         
         return md5Hex;
     }
+    
+    public static String SHA1(String st) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    	MessageDigest md = MessageDigest.getInstance("SHA-1");
+    	md.reset();
+    	byte[] digest = md.digest(st.getBytes("UTF-8"));
+    	BigInteger bigInt = new BigInteger(1, digest);
+        String sha1Hex = bigInt.toString(16);
+
+        while( sha1Hex.length() < 32 ){
+        	sha1Hex = "0" + sha1Hex;
+        }
+        
+        return sha1Hex;
+    }
 
 }
