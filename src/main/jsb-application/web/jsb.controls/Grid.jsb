@@ -119,6 +119,7 @@
             colHeader: true,
             columns: null,
             fixWidth: false,
+            jsonArrayLimit: 20,
             //maxColWidth: 300,
             minColWidth: 100,
             noDataMessage: 'Нет данных',
