@@ -170,7 +170,7 @@
         			if(argStr.length > 0){
         				argStr += '&';
         			}
-        			argStr += f + '=';
+        			argStr += encodeURIComponent(f) + '=';
         			if(JSB.isString(json[f])){
         				argStr += encodeURIComponent(json[f]);
         			} else if(JSB.isPlainObject(json[f]) || JSB.isArray(json[f])){
