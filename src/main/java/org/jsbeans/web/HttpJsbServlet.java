@@ -31,6 +31,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -58,7 +60,6 @@ public class HttpJsbServlet extends HttpServlet {
         String rid = WebHelper.extractHeadersFromRequest(req);
         final AsyncContext ac = req.startAsync(req, resp);
         ac.setTimeout(0);	// disable async timeout - use future timeout
-
         try {
             final String session = req.getSession().getId();
             final Object tokenObj = req.getSession().getAttribute("token");
@@ -69,11 +70,28 @@ public class HttpJsbServlet extends HttpServlet {
             // construct proc 
             final String proc = req.getMethod().toLowerCase();
             
+            
             // construct bean path
             final String beanPath = req.getServletPath().toLowerCase();
             
             // construct params json
-            final JsonObject pObj = new JsonObject();
+            JsonObject pObj = null;
+            
+            if(proc.equals("post")){
+	            try {
+		            StringBuffer jb = new StringBuffer();
+		            String line = null;
+		            BufferedReader reader = req.getReader();
+		            while ((line = reader.readLine()) != null){
+		            	jb.append(line);
+		            }
+		            pObj = GsonWrapper.fromJson(jb.toString(), JsonObject.class);
+	            } catch(Exception e){}
+            }
+
+            if(pObj == null){
+            	pObj = new JsonObject();
+            }
 
             Map<String, String[]> pMap = req.getParameterMap();
             for (String pName : pMap.keySet()) {
@@ -94,11 +112,12 @@ public class HttpJsbServlet extends HttpServlet {
             Subject subj = principal != null
                     ? new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet())
                     : null;
-                    
+
+            final JsonObject fpObj = pObj;
             Subject.doAs(subj, new PrivilegedExceptionAction<String>() {
                 @Override
                 public String run() throws Exception {
-                    String params = pObj.toJson();
+                    String params = fpObj.toJson();
                     String clientIp = WebHelper.extractRealIpFromRequest(req);
                     HttpJsbServlet.this.execCmd(beanPath, proc, params, session, clientIp, user, rid, getFullURL(req), token, ac);
                     return null;
@@ -132,6 +151,7 @@ public class HttpJsbServlet extends HttpServlet {
                 }
             }
         }
+        
 
         if (respObj != null && respObj.result != null) {
             JsObject execOpts = ((JsObject)respObj.result).getAttribute("opts");

@@ -4094,6 +4094,12 @@ if(!(function(){return this;}).call(null).JSB){
 
 			return names;
 		},
+		
+		hasMethod: function(mtdName){
+			var cls = this.getClass();
+			var scope = cls.prototype;
+			return JSB.isFunction(scope[mtdName])
+		},
 
 		createMethodInterceptor: function(mtdName, inetrceptorCallback){
 			var cls = this.getClass();

@@ -42,6 +42,30 @@
 			var servlet = Web.getServlet();
 			var context = Web.getContext();
 			try {
+				if(proc == 'options'){
+					var hMtd = request.getHeader("Access-Control-Request-Method");
+					if(hMtd){
+						var mtd = '' + hMtd;
+						// check whether method existed
+						var jsb = JSB.get(repoEntry.jsb.$name);
+						if(jsb && jsb.hasMethod(mtd.toLowerCase())){
+							response.addHeader("Access-Control-Allow-Methods", mtd);
+						}
+					} else {
+						// return standard headers
+						response.addHeader("Allow", 'OPTIONS, GET, HEAD, POST');
+					}
+					var headers = request.getHeader("Access-Control-Request-Headers");
+					if(headers){
+						response.addHeader("Access-Control-Allow-Headers", ''+headers);
+					}
+					
+					// allow CORS
+					response.addHeader("Access-Control-Allow-Origin", '*');
+					
+					servlet.processExecResultAsync(null, null, context);
+					return;
+				}
 				var result = $jsb.getProvider().executeClientRpc(repoEntry.jsb.$name, instanceId, proc, params);
 				var opts = {}; 
 				if(result instanceof Web.Response){
