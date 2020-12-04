@@ -243,10 +243,7 @@ public class HttpJsbServlet extends HttpServlet {
     }
 
     private void execCmd(String beanPath, String proc, String params, String session, String clientAddr, String user, String rid, String uri, String token, AsyncContext ac) throws UnsupportedEncodingException {
-        Timeout timeout = ActorHelper.getServiceCommTimeout();
-        if(beanPath.endsWith("download.jsb")){
-        	timeout = ActorHelper.getInfiniteTimeout();
-        }
+        Timeout timeout = ActorHelper.getInfiniteTimeout();
         ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ return JSB.getInstance('JSB.Web.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s')]); })()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8")), false);
         msg.setUserToken(token);
         msg.setScopePath(session);
