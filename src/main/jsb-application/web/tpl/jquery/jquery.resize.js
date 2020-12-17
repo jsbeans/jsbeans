@@ -7,13 +7,27 @@
  * http://benalman.com/about/license/
  */
 (function($,h,c){
-	var elemets = $([]), filtered = null; 
+	var elemets = $([]), filtered = null;
 	var e = $.resize = $.extend($.resize,{});
 	var timeoutHandle;
 	e.delay = 100;
 	e.minDelay = 50;
-	e.maxDelay = 800;
+	e.maxDelay = 100;
 	e.throttleWindow = true;
+	if(window.ResizeObserver){
+		e.ro = new ResizeObserver(function(entries, observer) {
+		    for(var i = 0; i < entries.length; i++){
+		    	var entry = entries[i];
+		    	var elt = $(entry.target);
+		    	if(elt.is(':visible')){
+			    	var o = $.data(entry.target,"resize-special-event");
+			    	if(o.w !== entry.contentRect.width || o.h !== entry.contentRect.height){
+			    		elt.trigger('resize',[o.w=entry.contentRect.width,o.h=entry.contentRect.height]);	
+			    	}
+		    	}
+		    }
+		});
+	}
 	$.event.special.resize={
 		setup:function(){
 			if(!e.throttleWindow && this.setTimeout){
@@ -21,11 +35,22 @@
 			}
 			var elt = $(this);
 			elemets = elemets.add(elt);
-			$.data(this, "resize-special-event", {w:elt.width(),h:elt.height()});
-			filtered = elemets.filter(':visible');
-			if(elemets.length === 1){
-				checkResize();
+			var o = {w:elt.width(),h:elt.height()};
+			$.data(this, "resize-special-event", o);
+			
+			if(e.ro){
+				try {
+					e.ro.observe(this);	
+				} catch(e){
+					debugger;
+				}
+			} else {
+				filtered = elemets.filter(':visible');
+				if(elemets.length === 1){
+					checkResize();
+				}
 			}
+			
 		},
 		
 		teardown:function(){
@@ -67,14 +92,15 @@
 			filtered.each(function(){
 				var elt = $(this);
 				visCount++;
-				var m = elt.width(),l = elt.height(), o = $.data(this,"resize-special-event");
+				var o = $.data(this,"resize-special-event");
 				if(!o){
 					o = {w:0,h:0};
 					$.data(this, "resize-special-event", o);
 				}
-				if(m!==o.w||l!==o.h){
+				var w = elt.width(), h = elt.height();
+				if(w!==o.w||h!==o.h){
 					trigCount++;
-					elt.trigger('resize',[o.w=m,o.h=l]);
+					elt.trigger('resize',[o.w=w,o.h=h]);
 				}
 			});
 			if(trigCount){
@@ -84,12 +110,13 @@
 				}
 			} else {
 				e.delay *= 2;
-				filtered = elemets.filter(':visible');
 				if(e.delay > e.maxDelay){
+					filtered = elemets.filter(':visible');
 					e.delay = e.maxDelay;
 				}
 			}
 			checkResize();
 		},e.delay);
 	}
+	
 })(jQuery,this);

@@ -355,7 +355,7 @@
 		setPan: function(pt){
 			this.options.panX = pt.x;
 			this.options.panY = pt.y;
-			this.updateViewport();
+			this.updateViewport({dontUpdateDimensions:true});
 		},
 		
 		getZoom: function(){
@@ -370,7 +370,7 @@
 				zoom = this.options.maxZoom;
 			}
 			this.options.zoom = zoom;
-			this.updateViewport();
+			this.updateViewport({dontUpdateDimensions:true});
 		},
 		
 		setupEventHandlers: function(){
@@ -446,14 +446,21 @@
 			return ctrl;
 		},
 		
-		updateViewport: function(){
-			var self = this;
-			var dRect = self.getElement().get(0).getBoundingClientRect();
-			var w = dRect.right - dRect.left;
-			var h = dRect.bottom - dRect.top;
-			self.svg.attr('width', w);
-			self.svg.attr('height', h);
-			
+		updateViewport: function(opts){
+			var w, h;
+			if(!opts || !opts.dontUpdateDimensions){
+				var dRect = this.getElement().get(0).getBoundingClientRect();
+				w = dRect.right - dRect.left;
+				h = dRect.bottom - dRect.top;
+				this.svg.attr('width', w);
+				this.svg.attr('height', h);
+				$this.lastWidth = w;
+				$this.lastHeight = h;
+			} else {
+				w = $this.lastWidth;
+				h = $this.lastHeight;
+			}
+			$this.sheetRc = this.sheet.get(0).getBoundingClientRect();
 			var panOffset = {
 				x: Math.round((this.options.panX - this.options.panX * (1 - this.options.zoom)) / this.options.zoom),
 				y: Math.round((this.options.panY - this.options.panY * (1 - this.options.zoom)) / this.options.zoom)
@@ -466,24 +473,23 @@
 				h: Math.round(h / this.options.zoom)
 			}
 			
-			self.svg.attr('viewBox', '' + viewBox.x + ' ' + viewBox.y + ' ' + viewBox.w + ' ' + viewBox.h);
-			self.sheet.css({
+			this.svg.attr('viewBox', '' + viewBox.x + ' ' + viewBox.y + ' ' + viewBox.w + ' ' + viewBox.h);
+			this.sheet.css({
 				'transform': 'scale('+this.options.zoom+') translate('+panOffset.x+'px, '+panOffset.y+'px)'
 			});
-			$this.sheetRc = self.sheet.get(0).getBoundingClientRect();
 			
 			var gridSideX = Math.ceil((w / 2 + Math.abs(this.options.panX)) / this.options.zoom / 50 ) * 50;
 			var gridSideY = Math.ceil((h / 2 + Math.abs(this.options.panY)) / this.options.zoom / 50 ) * 50;
-			self.toolContainer.css({
+			this.toolContainer.css({
 				'transform': 'scale('+this.options.zoom+') translate('+panOffset.x+'px, '+panOffset.y+'px)'
 			});
-			self.grid.css({
+			this.grid.css({
 				left: -gridSideX,
 				top: -gridSideY,
 				width: gridSideX * 2,
 				height: gridSideY * 2
 			});
-			self.updateFixedLinks();
+			this.updateFixedLinks();
 		},
 		
 		setupLayout: function(key, opts, callback){
