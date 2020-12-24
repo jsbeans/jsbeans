@@ -3374,48 +3374,63 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			// create handle
 			var h = this.generateUid();
+			
+			var forkFunc = function(idx){
+				var res = null;
+				try {
+					var p = null;
+					if(param){
+						p = param[idx];
+					}
+					res = proc.call(self, p, function(res){
+						locker.lock('_jsb_fork_' + h);
+						self.forkJoinHandles[h].items[idx] = res;
+						self.forkJoinHandles[h].ready++;
+						self.forkJoinHandles[h].lastForkIdx = idx;
+						locker.unlock('_jsb_fork_' + h);
+						self._checkJoinCallback(h);
+					});
+
+				} catch(e){
+					res = e;
+					JSB.getLogger().error(e);
+				}
+				if(res !== undefined){
+					locker.lock('_jsb_fork_' + h);
+					self.forkJoinHandles[h].items[idx] = res;
+					self.forkJoinHandles[h].ready++;
+					self.forkJoinHandles[h].lastForkIdx = idx;
+					locker.unlock('_jsb_fork_' + h);
+					self._checkJoinCallback(h);
+				}
+			}
+			
 			this.forkJoinHandles[h] = {
 				count: count,
 				ready: 0,
 				items: [],
-				callback: null
+				callback: null,
+				forkFunc: forkFunc,
+				opts:opts,
+				lastForkIdx:null
 			};
-
-			for(var i = 0; i < count; i++ ){
-				(function(idx){
-					var forkFunc = function(){
-						var res = null;
-						try {
-							var p = null;
-							if(param){
-								p = param[idx];
-							}
-							res = proc.call(self, p, function(res){
-								locker.lock('_jsb_fork_' + h);
-								self.forkJoinHandles[h].items[idx] = res;
-								self.forkJoinHandles[h].ready++;
-								locker.unlock('_jsb_fork_' + h);
-								self._checkJoinCallback(h);
-							});
-
-						} catch(e){
-							res = e;
-							JSB.getLogger().error(e);
+			
+			if(opts && opts.consistently){
+				if(count > 0){
+					forkFunc(0);	
+				}
+			} else {
+				for(var i = 0; i < count; i++ ){
+					(function(idx){
+						if(opts && opts.singleThreaded){
+							forkFunc(idx);
+						} else {
+							JSB().defer(function(){
+								forkFunc(idx);	
+							}, 0);
 						}
-						if(res !== undefined){
-							locker.lock('_jsb_fork_' + h);
-							self.forkJoinHandles[h].items[idx] = res;
-							self.forkJoinHandles[h].ready++;
-							locker.unlock('_jsb_fork_' + h);
-							self._checkJoinCallback(h);
-						}
-					}
-					if(opts && opts.singleThreaded){
-						forkFunc();
-					} else {
-						JSB().defer(forkFunc, 0);
-					}
-				})(i);
+					})(i);
+				}
 			}
 
 			return h;
@@ -3438,6 +3453,8 @@ if(!(function(){return this;}).call(null).JSB){
 					// remove handle
 					locker.clearLock('_jsb_fork_' + forkHandle);
 					delete this.forkJoinHandles[forkHandle];
+				} else if(this.forkJoinHandles[forkHandle].opts && this.forkJoinHandles[forkHandle].opts.consistently){
+					this.forkJoinHandles[forkHandle].forkFunc(this.forkJoinHandles[forkHandle].lastForkIdx+1);
 				}
 			}
 		},
