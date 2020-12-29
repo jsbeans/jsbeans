@@ -13,7 +13,7 @@
 	$parent: 'JSB.Controls.Control',
 	$client: {
 		$require: ['css:scrollBox.css'],
-		
+
 		_oldScroll:{
 			x: 0,
 			y: 0
@@ -30,59 +30,71 @@
             if(!this.options.yAxisScroll){
                 this.getElement().css('overflow-y', 'hidden');
             }
-			
-			this.getElement().scroll(function(evt){
-				var scrollHeight = evt.target.scrollHeight,
-					scrollWidth = evt.target.scrollWidth,
-					scrollTop = evt.target.scrollTop,
-					scrollLeft = evt.target.scrollLeft,
-					clientHeight = evt.target.clientHeight,
-					clientWidth = evt.target.clientWidth;
 
-                if(JSB().isFunction($this.events.onScroll)){
-                    $this.events.onScroll.call($this, evt);
-                }
-				
-				// for content preloader    todo: not fire when scroll up
-				if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad)) {
-					$this.events.preLoad.call($this, evt);
-                }
-				
-				// maxY
-				if(scrollHeight - scrollTop - clientHeight === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMaxY)) {
-					$this.events.onMaxY.call($this, evt);
-                }
-				
-				// minY
-				if(scrollTop === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMinY)) {
-					$this.events.onMinY.call($this, evt);
-                }
-				
-				// maxX
-				if(scrollWidth - scrollLeft - clientWidth === 0 & $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMaxX)) {
-					$this.events.onMaxX.call($this, evt);
-                }
-				
-				// minX
-				if(scrollLeft === 0 && $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMinX)) {
-					$this.events.onMinX.call($this, evt);
-                }
-				
-				$this._oldScroll.x = scrollLeft;
-				$this._oldScroll.y = scrollTop;
-			});
+            let hasEvents = this.events.onMaxX ||
+                            this.events.onMinX ||
+                            this.events.onMaxY ||
+                            this.events.onMinY ||
+                            this.events.preLoad ||
+                            this.events.onScroll ||
+                            this.events.onChangeVisible;
+
+			if(hasEvents) {
+                this.getElement().scroll(function(evt) {
+                    var scrollHeight = evt.target.scrollHeight,
+                        scrollWidth = evt.target.scrollWidth,
+                        scrollTop = evt.target.scrollTop,
+                        scrollLeft = evt.target.scrollLeft,
+                        clientHeight = evt.target.clientHeight,
+                        clientWidth = evt.target.clientWidth;
+
+                    if(JSB().isFunction($this.events.onScroll)){
+                        $this.events.onScroll.call($this, evt);
+                    }
+
+                    // for content preloader    todo: not fire when scroll up
+                    if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad)) {
+                        $this.events.preLoad.call($this, evt);
+                    }
+
+                    // maxY
+                    if(scrollHeight - scrollTop - clientHeight === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMaxY)) {
+                        $this.events.onMaxY.call($this, evt);
+                    }
+
+                    // minY
+                    if(scrollTop === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMinY)) {
+                        $this.events.onMinY.call($this, evt);
+                    }
+
+                    // maxX
+                    if(scrollWidth - scrollLeft - clientWidth === 0 & $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMaxX)) {
+                        $this.events.onMaxX.call($this, evt);
+                    }
+
+                    // minX
+                    if(scrollLeft === 0 && $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMinX)) {
+                        $this.events.onMinX.call($this, evt);
+                    }
+
+                    $this._oldScroll.x = scrollLeft;
+                    $this._oldScroll.y = scrollTop;
+                });
+            }
 
             this.getElement().mousewheel(function(evt){
                 evt.stopPropagation();
             });
 
-			this.getElement().resize(function(evt){
-                if(!$this.getElement().is(':visible')){
-                    return;
-                }
+            if(this.options.onChangeVisible) {
+                this.getElement().resize(function(evt){
+                    if(!$this.getElement().is(':visible')){
+                        return;
+                    }
 
-                $this.updateVisibleArea();
-			});
+                    $this.updateVisibleArea();
+                });
+            }
 		},
 		
 		events:{
@@ -103,7 +115,7 @@
 		/**
          * Очищает элемент.
          */
-		clear: function(){
+		clear: function() {
 			this.getElement().empty();
 		},
 
@@ -182,21 +194,19 @@
                 this.getElement().scrollTop(y);
         },
 
-        updateVisibleArea: function(){
-            if(JSB().isNull(this.events.onChangeVisible)){
-                return;
-            }
-
-            var wholeSize = {
+        updateVisibleArea: function() {
+            let wholeSize = {
                 width: this.getElement().width(),
                 height: this.getElement().height(),
             };
-            var visibleRect = {
+
+            let visibleRect = {
                 left: -this.getElement().x,
                 top: -this.getElement().y,
                 right: -this.getElement().x + this.getElement().width(),
                 bottom: -this.getElement().y + this.getElement().height(),
             };
+
             this.options.onChangeVisible.call(visibleRect, wholeSize);
         }
 	}

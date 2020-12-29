@@ -1,0 +1,10 @@
+.jsb-scrollBox > .itemsContainer {
+    position: relative;
+    width: 100%;
+}
+
+.jsb-scrollBox > .itemsContainer > * {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
