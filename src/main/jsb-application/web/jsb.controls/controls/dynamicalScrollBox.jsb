@@ -93,7 +93,9 @@
          * Очищает элемент.
          */
 		clear: function() {
-			this._itemsContainer.empty();
+			this.getItems().forEach((item) => {
+			    item.element.detach();
+			});
 
 			this._itemsContainer.height(0);
 
