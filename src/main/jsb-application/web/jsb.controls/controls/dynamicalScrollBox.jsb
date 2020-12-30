@@ -14,6 +14,7 @@
 	$client: {
 	    $require: ['css:dynamicalScrollBox.css'],
 
+		_controlHeight: 0,
 		_items: [],
 		_itemsContainer: null,
 
@@ -53,6 +54,10 @@
                     }
                 });
             });
+
+            this.getElement().resize(() => {
+                this._controlHeight = this.getElement().height();
+            });
 		},
 
         options: {
@@ -74,7 +79,7 @@
 
             this._itemsContainer.height(curHeight + this.options.itemHeight);
 
-            if(curHeight - this._itemsContainer.scrollTop() < this.getElement().height()) {
+            if(curHeight - this._itemsContainer.scrollTop() < this._controlHeight) {
                 this._itemsContainer.append(item.element);
             }
 
