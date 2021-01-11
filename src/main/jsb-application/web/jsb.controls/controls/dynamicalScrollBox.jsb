@@ -24,6 +24,8 @@
 			this._itemsContainer = this.$('<div class="itemsContainer"></div>');
 			this.append(this._itemsContainer);
 
+			this._controlHeight = this.getElement().height();
+
             this.getElement().scroll((evt) => {
                 let scrollTop = evt.target.scrollTop,
                     visibleHeight = evt.target.clientHeight;
@@ -69,6 +71,14 @@
 
             if(item.hidden) {
                 return this;
+            }
+
+            if(this._controlHeight === 0) {
+                let elementHeight = this.getElement().height();
+
+                if(elementHeight > this._controlHeight) {
+                    this._controlHeight = elementHeight;
+                }
             }
 
             let curHeight = this._itemsContainer.height();
