@@ -162,7 +162,8 @@ public class HttpHelper {
     }
 
     private static String readString(InputStream is) {
-        return new String(readBytes(is));
+    	byte[] bArr = readBytes(is);
+        return new String(bArr);
     }
 
     private static void prepareDefaultOptions(JsonObject options) {
