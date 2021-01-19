@@ -43,6 +43,8 @@ public class JsbServlet extends HttpServlet {
     private static final long serialVersionUID = -4914554821670876067L;
 
     private static Boolean isDebug = ConfigHelper.getConfigBoolean("web.debug");
+    private static Boolean bES5Compatible = ConfigHelper.getConfigBoolean("web.es5Compatible");
+    private static Boolean bMinifyScripts = ConfigHelper.getConfigBoolean("web.minifyScripts");
 
     private static String prepareGetJsoResponse(LookupJsoMessage jsoResult, boolean onlyBody, boolean bEncode) {
         JsObject jObj = new JsObject(JsObjectType.JSONOBJECT);
@@ -89,8 +91,8 @@ public class JsbServlet extends HttpServlet {
             }
 
             String jsbCode = jObj.toJS(bEncode);
-            if(true/*isDebug == null || !isDebug.booleanValue()*/) {
-            	jsbCode = JsMinifier.minify(jsbCode, true, true);
+            if((bMinifyScripts != null && bMinifyScripts.booleanValue()) || (bES5Compatible != null && bES5Compatible.booleanValue())) {
+            	jsbCode = JsMinifier.minify(jsbCode, true, bMinifyScripts != null && bMinifyScripts.booleanValue(), bES5Compatible != null && bES5Compatible.booleanValue());
             }
 
             return jsbCode;

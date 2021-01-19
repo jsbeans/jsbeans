@@ -21,10 +21,14 @@ import java.io.IOException;
 
 public class JsMinifier {
 
-    public static String minify(String src, boolean bPrepare, boolean bProduceES5) throws IOException {
+    public static String minify(String src, boolean bPrepare, boolean bMinify, boolean bProduceES5) throws IOException {
         String prefixComment = "";
         CompilerOptions options = new CompilerOptions();
-        CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(options);
+        if(bMinify){
+        	CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(options);
+        } else {
+        	CompilationLevel.BUNDLE.setOptionsForCompilationLevel(options);
+        }
         options.setEmitUseStrict(false);
         if(bProduceES5){
         	options.setLanguageOut(LanguageMode.ECMASCRIPT5);
