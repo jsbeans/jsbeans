@@ -89,8 +89,8 @@ public class JsbServlet extends HttpServlet {
             }
 
             String jsbCode = jObj.toJS(bEncode);
-            if (isDebug == null || !isDebug.booleanValue()) {
-            	jsbCode = JsMinifier.minify(jsbCode, true);
+            if(true/*isDebug == null || !isDebug.booleanValue()*/) {
+            	jsbCode = JsMinifier.minify(jsbCode, true, true);
             }
 
             return jsbCode;

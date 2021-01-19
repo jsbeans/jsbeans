@@ -208,7 +208,8 @@
             <artifactId>closure-compiler</artifactId>
             <!--artifactId>closure-compiler-unshaded</artifactId-->
             <!--             <version>v20170626</version> -->
-            <version>v20190415</version>
+            <!--  <version>v20190415</version> -->
+            <version>v20210106</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
