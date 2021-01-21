@@ -84,6 +84,7 @@
             let curHeight = this._itemsContainer.height();
 
             item.element.css({
+                height: this.options.itemHeight + 'px',
                 top: curHeight
             });
 

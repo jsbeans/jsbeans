@@ -8,6 +8,7 @@
 	position: relative;
 	min-width: 20px;
     min-height: 20px;
+    height: 100%;
 }
 
 .jsb-checkbox > .caption > .check-elem {
@@ -63,6 +64,7 @@
 
 .jsb-checkbox > .caption > .check-elem + .label {
     text-align: left;
+    height: 100%;
 }
 
 .jsb-checkbox > .content {
