@@ -303,6 +303,9 @@
 		},
 		
 		move: function(from, to, bForce){
+			if(!this.exists(from)){
+				throw new Error('Failed to move missing file: "'+from+'"');
+			}
 			var sourcePath = this._resolvePath(from);
 		    var targetPath = this._resolvePath(to);
 		    
