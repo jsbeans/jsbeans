@@ -59,6 +59,10 @@
 
             this.getElement().resize(() => {
                 this._controlHeight = this.getElement().height();
+
+                JSB.defer(() => {
+                    this.refresh();
+                }, 500, 'dynamicalScrollBox_' + this.getId());
             });
 		},
 
