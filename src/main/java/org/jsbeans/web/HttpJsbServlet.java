@@ -11,6 +11,8 @@
 package org.jsbeans.web;
 
 import akka.util.Timeout;
+
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.scripting.ExecuteScriptMessage;
@@ -23,6 +25,8 @@ import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import org.jsbeans.types.JsonElement;
 import org.jsbeans.types.JsonObject;
+import org.jsbeans.types.JsonPrimitive;
+
 import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
@@ -75,9 +79,11 @@ public class HttpJsbServlet extends HttpServlet {
             final String beanPath = req.getServletPath().toLowerCase();
             
             // construct params json
-            JsonObject pObj = null;
+           	JsonObject pObj = null;
+           	JsonObject postObj = null;
             
             if(proc.equals("post")){
+                
 	            try {
 		            StringBuffer jb = new StringBuffer();
 		            String line = null;
@@ -85,13 +91,31 @@ public class HttpJsbServlet extends HttpServlet {
 		            while ((line = reader.readLine()) != null){
 		            	jb.append(line);
 		            }
-		            pObj = GsonWrapper.fromJson(jb.toString(), JsonObject.class);
+		            
+		            JsonElement jElt = GsonWrapper.fromJson(jb.toString(), JsonElement.class);
+		            if(jElt instanceof JsonPrimitive){
+		            	String unescapedStr = StringEscapeUtils.unescapeJava(jb.toString());
+		            	while(unescapedStr.startsWith("\"")){
+		            		unescapedStr = unescapedStr.substring(1);
+		            	}
+		            	while(unescapedStr.endsWith("\"")){
+		            		unescapedStr = unescapedStr.substring(0, unescapedStr.length() - 1);
+		            	}
+		            	jElt = GsonWrapper.fromJson(unescapedStr, JsonElement.class);
+		            }
+		            if(jElt instanceof JsonObject){
+		            	postObj = (JsonObject) jElt;
+		            }
+		             
 	            } catch(Exception e){}
             }
-
-            if(pObj == null){
+            
+            if(postObj != null){
+            	pObj = postObj.clone();
+            } else {
             	pObj = new JsonObject();
             }
+
 
             Map<String, String[]> pMap = req.getParameterMap();
             for (String pName : pMap.keySet()) {
@@ -114,12 +138,18 @@ public class HttpJsbServlet extends HttpServlet {
                     : null;
 
             final JsonObject fpObj = pObj;
+            final JsonObject fPostObj = postObj;
             Subject.doAs(subj, new PrivilegedExceptionAction<String>() {
                 @Override
                 public String run() throws Exception {
                     String params = fpObj.toJson();
+                    String postBody = null;
+                    if(fPostObj != null){
+                    	postBody = fPostObj.toJson();	
+                    }
+                    
                     String clientIp = WebHelper.extractRealIpFromRequest(req);
-                    HttpJsbServlet.this.execCmd(beanPath, proc, params, session, clientIp, user, rid, getFullURL(req), token, ac);
+                    HttpJsbServlet.this.execCmd(beanPath, proc, params, postBody, session, clientIp, user, rid, getFullURL(req), token, ac);
                     return null;
                 }
             });
@@ -242,9 +272,9 @@ public class HttpJsbServlet extends HttpServlet {
     	
     }
 
-    private void execCmd(String beanPath, String proc, String params, String session, String clientAddr, String user, String rid, String uri, String token, AsyncContext ac) throws UnsupportedEncodingException {
+    private void execCmd(String beanPath, String proc, String params, String postBody, String session, String clientAddr, String user, String rid, String uri, String token, AsyncContext ac) throws UnsupportedEncodingException {
         Timeout timeout = ActorHelper.getInfiniteTimeout();
-        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ return JSB.getInstance('JSB.Web.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s')]); })()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8")), false);
+        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ return JSB.getInstance('JSB.Web.HttpJsb').exec('%s','%s', [%s, decodeURIComponent('%s'), %s]); })()", beanPath, proc, params, URLEncoder.encode(uri, "UTF-8"), postBody), false);
         msg.setUserToken(token);
         msg.setScopePath(session);
         msg.setClientAddr(clientAddr);
