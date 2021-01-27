@@ -18,6 +18,7 @@
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){
 			obj.register([
 			              'org.jsbeans.types.JavaScript',
+			              'org.jsbeans.types.Python',
 			              'org.jsbeans.types.JsonObject',
 			              'org.jsbeans.types.JsonArray',
 			              'org.jsbeans.types.JsonElement',
@@ -50,15 +51,12 @@
 			var theme = 'eclipse';
 			if(this.options.valueType == 'org.jsbeans.types.SparqlString'){
 				mode = 'application/x-sparql-query';
-			}
-			if(this.options.valueType == 'org.jsbeans.types.Sql'){
+			} else if(this.options.valueType == 'org.jsbeans.types.Sql'){
 				mode = 'text/x-sql';
-			}
-			if(this.options.valueType == 'org.jsbeans.types.XQuery'){
+			} else if(this.options.valueType == 'org.jsbeans.types.XQuery'){
 				mode = 'xquery';
 				theme = 'xq-light';
-			}
-			if(this.options.valueType == 'org.jsbeans.types.Html' 
+			} else if(this.options.valueType == 'org.jsbeans.types.Html' 
 				|| this.options.valueType == 'org.jsbeans.types.Xml'){
 				mode = {
 					name: 'htmlmixed',
@@ -67,9 +65,10 @@
 						{matches: /(text|application)\/(x-)?vb(a|script)/i, mode: "vbscript"}
 					]
 				};
-			}
-			if(this.options.valueType == 'org.jsbeans.types.Css'){
+			} else if(this.options.valueType == 'org.jsbeans.types.Css'){
 				mode = 'text/css';
+			} else if(this.options.valueType == 'org.jsbeans.types.Python'){
+				mode = 'python';
 			}
 			/*
 			if(this.options.valueType == 'org.jsbeans.types.JsonObject'){
@@ -190,6 +189,14 @@
 						$this.init(mode, theme, {});
 						$this.ready = true;
 					}, true);
+				} else if($this.options.valueType == 'org.jsbeans.types.Python') {
+					JSB.loadScript(['tpl/codemirror/mode/python/python.js',
+					                'tpl/codemirror/addon/hint/show-hint.js',
+					                'tpl/codemirror/addon/hint/python-hint.js'], function(){
+						
+						$this.init(mode, theme, {});
+						$this.ready = true;
+					}, true);
 				}
 			});
 		},
@@ -237,7 +244,6 @@
 				viewportMargin: 10,
 				theme: theme,
 				indentUnit: 4,
-				tabMode: "spaces",
 				matchBrackets: true,
 				tabSize: 4,
 				indentWithTabs: true,
