@@ -5831,7 +5831,7 @@ JSB({
 		}
 
 		function storeDispatchResult(ret, subDesc){
-			if(!$jsb.isNull(ret)){
+			if($jsb.isDefined(ret)){
 				if(!response[subDesc.target.getId()]){
 					response[subDesc.target.getId()] = [];
 				}

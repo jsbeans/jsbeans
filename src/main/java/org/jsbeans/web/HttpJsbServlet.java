@@ -79,8 +79,7 @@ public class HttpJsbServlet extends HttpServlet {
             final String beanPath = req.getServletPath().toLowerCase();
             
             // construct params json
-           	JsonObject pObj = null;
-           	JsonObject postObj = null;
+            JsonElement postObj = null;
             
             if(proc.equals("post")){
                 
@@ -103,19 +102,12 @@ public class HttpJsbServlet extends HttpServlet {
 		            	}
 		            	jElt = GsonWrapper.fromJson(unescapedStr, JsonElement.class);
 		            }
-		            if(jElt instanceof JsonObject){
-		            	postObj = (JsonObject) jElt;
-		            }
+		            postObj = jElt;
 		             
 	            } catch(Exception e){}
             }
             
-            if(postObj != null){
-            	pObj = postObj.clone();
-            } else {
-            	pObj = new JsonObject();
-            }
-
+            JsonObject pObj = new JsonObject();
 
             Map<String, String[]> pMap = req.getParameterMap();
             for (String pName : pMap.keySet()) {
@@ -138,14 +130,14 @@ public class HttpJsbServlet extends HttpServlet {
                     : null;
 
             final JsonObject fpObj = pObj;
-            final JsonObject fPostObj = postObj;
+            final JsonElement fPostObj = postObj;
             Subject.doAs(subj, new PrivilegedExceptionAction<String>() {
                 @Override
                 public String run() throws Exception {
                     String params = fpObj.toJson();
                     String postBody = null;
                     if(fPostObj != null){
-                    	postBody = fPostObj.toJson();	
+                    	postBody = fPostObj.toString();	
                     }
                     
                     String clientIp = WebHelper.extractRealIpFromRequest(req);

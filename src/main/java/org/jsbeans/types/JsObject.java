@@ -144,12 +144,14 @@ public class JsObject implements Serializable {
     public byte[] toByteArray() throws UnsupportedEncodingException {
         byte[] bArr = null;
         switch(this.getResultType()){
+/*        
         case JSONARRAY:
         	bArr = new byte[this.dataJsonArray.size()];
             for (int i = 0; i < this.dataJsonArray.size(); i++) {
                 bArr[i] = (byte) this.dataJsonArray.get(i).getInt();
             }
         	break;
+*/        	
         case STRING:
         	 bArr = this.dataStr.getBytes();
         	break;
