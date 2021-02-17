@@ -223,16 +223,12 @@
 
         getResponseCode: function(){
             this.sendCompleted();
-            var code = 0+this.httpConnection.getResponseCode();
-//                this.log.trace('getResponseCode() code: ' + code);
-            return code;
+            return 0 + this.httpConnection.getResponseCode();
         },
 
         getResponseMessage: function(){
             this.sendCompleted();
-            var m = ''+this.httpConnection.getResponseMessage();
-//                this.log.trace('getResponseMessage() message: ' + m);
-            return m;
+            return '' + this.httpConnection.getResponseMessage();
         },
 
         getError: function(){
@@ -283,6 +279,8 @@
                     var result = this.HttpHelper.streamRead(inputStream, this.options.responseType, bytes);
                     if (this.options.responseType === 'json') {
                     	return JSON.parse(result); // eval
+                    } else if(this.options.responseType === 'string'){
+                    	return '' + result;
                     }
                     return result;
             	}
