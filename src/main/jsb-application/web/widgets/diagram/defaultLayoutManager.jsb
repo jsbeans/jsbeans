@@ -31,6 +31,9 @@
 				if(nodeRect.w === 0 || nodeRect.h === 0){
 					continue;
 				}
+				if(this.getOption(node, 'exclude')){
+					continue;
+				}
 				rects[nId] = nodeRect;
 				var expandOpt = this.getOption(node, 'nodeExpand');
 				if(expandOpt){
