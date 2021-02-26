@@ -10,9 +10,13 @@
 
 {
     $name:'JSB.Net.Http',
-	$require: ['JSB.Net.HttpConnection'],
+	$require: ['JSB.Net.HttpConnection', 'java:org.jsbeans.helpers.HttpHelper'],
     $server: {
         $singleton: true,
+        
+        $constructor: function(){
+        	HttpHelper.ignoreSSLClient();
+        },
 
         example: function(){
             // simple GET string
