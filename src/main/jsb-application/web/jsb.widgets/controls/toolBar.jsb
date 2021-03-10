@@ -149,6 +149,14 @@
 			return itemObj;
 		},
 		
+		clear: function(){
+			this.itemMap = {};
+			this.itemList = [];
+			this.groups = {};
+			this.groupItems = {};
+			this.itemContainer.empty();
+		},
+		
 		insertItem: function(item, beforeKey, afterKey){
 			var itemObj = this._createItem(item);
 			var beforeItem = null, afterItem = null;
