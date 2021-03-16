@@ -5217,10 +5217,10 @@ JSB({
 			this.setupSync();
 		},
 
-		client: function(){
-//			return $client;
+		client: function(opts){
 			var f = function(){
 				this.__instance = $this;
+				this.__opts = opts;
 			};
 			f.prototype = this.jsb.$_clientProcs;
 			return new f();
