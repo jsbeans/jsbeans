@@ -6989,6 +6989,9 @@ JSB({
 						result: null,
 						error: null,
 					};
+					var rpcOpts = {
+						session:JSB.getCurrentSession()
+					};
 					if(JSB.isFuture(ret)){
 						ret.await(function(ret, fail){
 							if(fail){
@@ -7002,7 +7005,8 @@ JSB({
 								respPacket.result = ret;
 								respPacket.success = true;
 							}
-							$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession(), plain: plain});
+							rpcOpts.plain = plain;
+							$this.rpc('handleRpcResponse', [[respPacket]], null, rpcOpts);
 						});
 					} else {
 						if(fail){
@@ -7012,7 +7016,8 @@ JSB({
 							respPacket.result = ret;
 							respPacket.success = true;
 						}
-						$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession(), plain: plain});
+						rpcOpts.plain = plain;
+						$this.rpc('handleRpcResponse', [[respPacket]], null, rpcOpts);
 					}
 				}
 			});
@@ -7248,7 +7253,7 @@ JSB({
 			opts: opts
 		};
 		JSB.defer(function(){
-			if(!JSB.isDefined($this.waiters[wId])){
+			if(!JSB.isDefined($this.waiters[wId]) || $this.fired){
 				return;
 			}
 			var wDesc = $this.waiters[wId];
