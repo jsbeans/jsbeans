@@ -257,8 +257,6 @@
 			}
 			
 			this.onHide = params.onHide;
-
-			this.embeddedWidget.onShow();
 			
 			this.publish('toolShow', params);
 			
@@ -276,6 +274,8 @@
 			if( !JSB().isNull(this.embeddedWidget)){
 				this.embeddedWidget.setFocus();
 			}
+
+			this.embeddedWidget.onShow();
 			
 			if(self.options.hideInterval > 0){
 				// track target's mouse over and out

@@ -273,9 +273,6 @@
 				chosenInstance.show(JSB.merge({
 					scope: scope 
 				}, params));
-				if(!JSB.isNull(params.onShow)){
-					params.onShow.call(self);
-				}
 			} else {
 				JSB().deferUntil(function(){
 					if(!chosenInstance.prepareShow){
@@ -284,9 +281,6 @@
 					chosenInstance.show(JSB.merge({
 						scope: scope 
 					}, params));
-					if(!JSB.isNull(params.onShow)){
-						params.onShow.call(self);
-					}
 				},function(){
 					return readyToShow();
 				}, 10);

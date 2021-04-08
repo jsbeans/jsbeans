@@ -94,6 +94,7 @@
 
             this._optionsList = {};
             this.currentVal.empty();
+            this.dropDown.empty();
 	    },
 
 	    getValue: function(){
