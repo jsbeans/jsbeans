@@ -42,7 +42,7 @@
 				try {
 					e.ro.observe(this);	
 				} catch(e){
-					debugger;
+					//debugger;
 				}
 			} else {
 				filtered = elemets.filter(':visible');

@@ -4877,7 +4877,10 @@ JSB({
 			valOpt = true;	// default value
 		}
 		$this.$_ecMap[key].val = valOpt;
-		for(var i = $this.$_ecMap[key].cArr.length - 1; i >= 0; i--){
+
+		var i = 0;
+		while (i < $this.$_ecMap[key].cArr.length) {
+		//for(var i = $this.$_ecMap[key].cArr.length - 1; i >= 0; i--){
 			var cDesc = $this.$_ecMap[key].cArr[i];
 
 			var bMatched = false;
@@ -4936,7 +4939,11 @@ JSB({
 							cDesc.exec.call($this, cDesc.bKeyArr ? vals : vals[0])
 						}, 0);
 					})(cDesc, vals);
+				} else {
+				    i++;
 				}
+			} else {
+			    i++;
 			}
 		}
 	},
