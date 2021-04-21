@@ -18,17 +18,8 @@ import akka.event.LoggingAdapter;
 import akka.util.Timeout;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
-
-import java.net.URLEncoder;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.servlet.SessionTrackingMode;
-
-import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.http.HttpCookie.SameSite;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.SessionManager;
-import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jsbeans.Core;
@@ -37,15 +28,12 @@ import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.messages.Message;
 import org.jsbeans.scripting.ExecuteScriptMessage;
-import org.jsbeans.scripting.ExecutionStatus;
 import org.jsbeans.scripting.JsHub;
-import org.jsbeans.scripting.UpdateStatusMessage;
 import org.jsbeans.scripting.jsb.JsbRegistryService;
 import org.jsbeans.security.SecurityService;
 import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
 import org.jsbeans.services.ServiceManagerService;
-import org.jsbeans.services.ServiceManagerService.Initialized;
 
 //import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
@@ -106,24 +94,27 @@ public class HttpService extends Service {
 
 //        context.setDescriptor(webXml);
         context.setContextPath("/");
-        SessionManager sm = context.getSessionHandler().getSessionManager();
-        sm.getSessionCookieConfig().setName("_jsbSession_" + portVal.toString());
-        sm.setSessionIdPathParameterName("_jsbsession_");
+        context.getSessionHandler().setSessionCookie("_jsbSession_" + portVal.toString());
+        context.getSessionHandler().setSessionIdPathParameterName("_jsbsession_");
+        context.getSessionHandler().setSameSite(SameSite.NONE);
+        context.getSessionHandler().getSessionCookieConfig().setSecure(true);
         
 /*        
         Set<SessionTrackingMode> hs = new HashSet<SessionTrackingMode>();
         hs.add(SessionTrackingMode.SSL);
         sm.setSessionTrackingModes(hs);
 */        
+/*        
         Set<SessionTrackingMode> ss = sm.getDefaultSessionTrackingModes();
         Set<SessionTrackingMode> ss2 = sm.getEffectiveSessionTrackingModes();
-
+*/
         
         // prevent directory browsing
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
 
         server.setHandler(context);
         
+/*        
         // set requestHeaderSize for long cross-domain GET requests
         if(ConfigHelper.has(WEB_REQUEST_HEADER_SIZE)){
     		int requestHeaderSize = ConfigHelper.getConfigInt(WEB_REQUEST_HEADER_SIZE);
@@ -139,7 +130,7 @@ public class HttpService extends Service {
             	c.setResponseBufferSize(responseBufferSize);
             }
     	}
-
+*/
         
         Timeout timeout = ActorHelper.getServiceCommTimeout();
         ExecuteScriptMessage msg = new ExecuteScriptMessage("JSB.getInstance('JSB.Web')._setAppContext(JSB.getThreadLocal().get('__appContext'));", false);

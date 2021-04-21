@@ -132,11 +132,13 @@
 		},
 
 		getCookieName: function(){
-			return '' + this._appContext.getSessionHandler().getSessionManager().getSessionCookieConfig().getName();
+/*			return '' + this._appContext.getSessionHandler().getSessionManager().getSessionCookieConfig().getName(); */
+			return '' + this._appContext.getSessionHandler().getSessionCookie();
 		},
 		
 		getSessionIdPathParameterName: function(){
-			return '' + this._appContext.getSessionHandler().getSessionManager().getSessionIdPathParameterName();
+/*			return '' + this._appContext.getSessionHandler().getSessionManager().getSessionIdPathParameterName(); */
+			return '' + this._appContext.getSessionHandler().getSessionIdPathParameterName();
 		}
 	}
 }
