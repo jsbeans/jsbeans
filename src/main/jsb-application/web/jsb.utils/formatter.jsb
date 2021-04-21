@@ -145,7 +145,7 @@
     },
 
 	// H.numberFormat
-    _numberFormat: function (number, decimals, decimalPoint, thousandsSep) {
+    numberFormat: function (number, decimals, decimalPoint, thousandsSep) {
         number = +number || 0;
         decimals = +decimals;
 
@@ -240,7 +240,7 @@
             decimals = format.match(decRegex);
             decimals = decimals ? decimals[1] : -1;
             if (val !== null) {
-                val = this._numberFormat(
+                val = this.numberFormat(
                     val,
                     decimals,
                     lang.decimalPoint,
@@ -351,7 +351,7 @@
             } else {
                 if(format[i].valueType === 'number') {
                     if(values[format[i].key] !== null && values[format[i].key] !== undefined) {
-                        string += this._numberFormat(values[format[i].key], format[i].decimals, null, format[i].thousandDelimiter);
+                        string += this.numberFormat(values[format[i].key], format[i].decimals, null, format[i].thousandDelimiter);
                     }
                 } else {
                     string += values[format[i].key];

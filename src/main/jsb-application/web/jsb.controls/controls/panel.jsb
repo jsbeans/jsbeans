@@ -30,6 +30,10 @@
             this.elements.content = this.$('<div class="content"></div>');
             this.getElement().append(this.elements.content);
 
+            if(this.options.hideBorder) {
+                this.addClass('hideBorder');
+            }
+
             if(this.options.title){
                 this.elements.title = this.$('<h1><span>' + this.options.title + '</span></h1>');
                 this.elements.header.append(this.elements.title);

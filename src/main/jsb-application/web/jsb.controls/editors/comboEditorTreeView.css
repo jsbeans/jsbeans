@@ -1,0 +1,94 @@
+.jsb-comboEditorTreeView {
+    display: inline-block;
+    position: relative;
+    width: 200px;
+    height: 34px;
+    border: 1px solid #ccc;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    overflow: visible;
+    padding-right: 20px;
+}
+
+.jsb-comboEditorTreeView > i.dropDownBtn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    padding: 10px 6px;
+}
+
+.jsb-comboEditorTreeView > i.dropDownBtn:after {
+    content: "";
+    width: 0;
+    height: 0;
+	font-size: 11px;
+    border-width: 4px 4px 0 4px;
+    border-style: solid;
+    border-color: black transparent;
+}
+
+.jsb-comboEditorTreeView > i.clearBtn {
+    position: absolute;
+    right: 15px;
+    top: calc(50% - 8px);
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url("data:image/svg+xml,%3Csvg role='img' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 512'%3E%3Cpath fill='red' d='M207.6 256l107.72-107.72c6.23-6.23 6.23-16.34 0-22.58l-25.03-25.03c-6.23-6.23-16.34-6.23-22.58 0L160 208.4 52.28 100.68c-6.23-6.23-16.34-6.23-22.58 0L4.68 125.7c-6.23 6.23-6.23 16.34 0 22.58L112.4 256 4.68 363.72c-6.23 6.23-6.23 16.34 0 22.58l25.03 25.03c6.23 6.23 16.34 6.23 22.58 0L160 303.6l107.72 107.72c6.23 6.23 16.34 6.23 22.58 0l25.03-25.03c6.23-6.23 6.23-16.34 0-22.58L207.6 256z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.jsb-comboEditorTreeView > i.dropDownBtn.hidden + i.clearBtn {
+    right: 2px;
+}
+
+.jsb-comboEditorTreeView > .curVal {
+    width: 100%;
+    height: 100%;
+    cursor: text;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+.jsb-comboEditorTreeView > .curVal > .simpleValue {
+    color: #555;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+.jsb-comboEditorTreeView > .curVal > input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+    padding: 0 4px;
+    outline: none;
+}
+
+.jsb-comboEditorTreeView > .dropDown {
+    position: absolute;
+    right: 0;
+    top: 32px;
+    min-height: 4px;
+    z-index: 10;
+    background: white;
+    border: 1px solid lightgrey;
+    max-height: 250px;
+    max-width: 400px;
+    overflow-y: hidden;
+}
+
+.jsb-comboEditorTreeView ._dwp_nodeHeader {
+    width: 100%;
+}

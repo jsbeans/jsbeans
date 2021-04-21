@@ -16,6 +16,10 @@
     font-weight: 400;
 }
 
+.jsb-panel.hideBorder {
+    border: none;
+}
+
 .jsb-panel * {
     box-sizing: border-box;
 }
