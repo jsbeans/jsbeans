@@ -44,6 +44,7 @@ import org.jsbeans.services.ServiceManagerService;
 public class HttpService extends Service {
 //    private static final String WEB_FOLDER_KEY = "web.folder";
     private static final String WEB_PORT_KEY = "web.http.port";
+    private static final String WEB_SECURE_KEY = "web.secure";
     private static final String WEB_XML = "web.config";
     private static final String WEB_REQUEST_HEADER_SIZE = "web.http.requestHeaderSize";
     private static final String WEB_RESPONSE_BUFFER_SIZE = "web.http.responseBufferSize";
@@ -96,8 +97,11 @@ public class HttpService extends Service {
         context.setContextPath("/");
         context.getSessionHandler().setSessionCookie("_jsbSession_" + portVal.toString());
         context.getSessionHandler().setSessionIdPathParameterName("_jsbsession_");
-        context.getSessionHandler().setSameSite(SameSite.NONE);
-        context.getSessionHandler().getSessionCookieConfig().setSecure(true);
+        
+        if(ConfigHelper.has(WEB_SECURE_KEY) && ConfigHelper.getConfigBoolean(WEB_SECURE_KEY)){
+            context.getSessionHandler().setSameSite(SameSite.NONE);
+            context.getSessionHandler().getSessionCookieConfig().setSecure(true);
+        }
         
 /*        
         Set<SessionTrackingMode> hs = new HashSet<SessionTrackingMode>();
