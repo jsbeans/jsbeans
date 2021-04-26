@@ -6424,6 +6424,9 @@ JSB({
 					url += '&';
 				}
 				url += 'callback=JSB().scriptCallbacks.' + cName;
+				
+				// append session id param
+				url += '&' + JSB().getSessionIdParameterName() + '=' + JSB().getCurrentSession();
 
 				// send via script tag
 				var _s = document.createElement("script");
