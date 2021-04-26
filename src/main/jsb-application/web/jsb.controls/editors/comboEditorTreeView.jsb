@@ -6,8 +6,9 @@
 		$require: ['JSB.Widgets.TreeView',
 		           'css:comboEditorTreeView.css'],
 
+	    _currentValue: undefined,
 	    _dropDownElement: null,
-	    _options: [],
+	    _options: {},
 	    _value: null,
 	    _values: {},
 
@@ -28,6 +29,14 @@
 
                 this.clearBtn.click(function(){
                     $this.setValue();
+                });
+
+                this.getElement().mouseenter(() => {
+                    this.clearBtn.addClass('show');
+                });
+
+                this.getElement().mouseleave(() => {
+                    this.clearBtn.removeClass('show');
                 });
             }
 
@@ -147,31 +156,21 @@
 	            }
 	        });
 
-	        function createNodes(arr, parentKey) {
-	            arr.forEach(item => {
-	                if(!item.key) {
-	                    item.key = JSB.generateUid();
-	                }
+	        for(let i in this._options) {
+	            let item = this._options[i];
 
-	                if(!item.element) {
-                        if($this.options.itemRender) {
-                            item.element = $this.options.itemRender.call($this, item);
-                        } else {
-                            item.element = item.value || item.key;
-                        }
+                if(!item.element) {
+                    if(this.options.itemRender) {
+                        item.element = this.options.itemRender.call(this, item);
+                    } else {
+                        item.element = item.value || item.key;
                     }
+                }
 
-	                tree.addNode(item, parentKey);
+                tree.addNode(item, item.parentKey);
 
-	                $this._values[item.value] = item;
-
-	                if(item.children) {
-	                    createNodes(item.children, item.key);
-	                }
-	            });
+                this._values[item.value] = item;
 	        }
-
-	        createNodes(this._options);
 
 	        this._dropDownElement.append(tree);
 	    },
@@ -181,8 +180,28 @@
 	    },
 
 	    setOptions: function(options) {
+            function prepareOptions(options, parentKey) {
+	            options.forEach(item => {
+	                if(!item.key) {
+	                    item.key = JSB.generateUid();
+	                }
+
+	                item.parentKey = parentKey;
+
+	                $this._options[item.value] = item;
+
+	                if(item.children) {
+	                    prepareOptions(item.children, item.key);
+	                }
+	            });
+            }
+
             this._dropDownElement && this._dropDownElement.remove();
-            this._options = options;
+            this._options = {};
+
+            prepareOptions(options);
+
+            this.setValue(this._currentValue, true);
 
 	        if(options.length) {
 	            this.dropDownBtn.removeClass('hidden');
@@ -196,12 +215,14 @@
 
             this.currentVal.empty();
 
+            this._currentValue = val;
+
             if(JSB.isDefined(val)) {    // edit
-                if(this._values[val]) {
+                if(this._options[val]) {
                     if(this.options.itemRender) {
-                        this.currentVal.append(this.options.itemRender.call(this, this._values[val]));
+                        this.currentVal.append(this.options.itemRender.call(this, this._options[val]));
                     } else {
-                        this.currentVal.append(this._values[val].element);
+                        this.currentVal.append(this._options[val].element.clone());
                     }
                 } else {
                     this.currentVal.append('<div class="simpleValue">' + val + '</div>');
@@ -217,7 +238,7 @@
 	        }
 
 	        if(!hEvt && JSB.isFunction(this.options.onChange)) {
-	            this.options.onChange.call(this, val, this._values[val]);
+	            this.options.onChange.call(this, val, this._options[val]);
 	        }
 	    }
 	}

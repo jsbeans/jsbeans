@@ -27,3 +27,14 @@
 	display: inline-block;
     margin-left: 8px;
 }
+
+._jsb_sliderEditor.minWidth > ._jsb_slider {
+    width: 100%;
+}
+
+._jsb_sliderEditor.minWidth > ._jsb_label {
+    display: block;
+    margin: 0;
+    margin-top: 5px;
+    text-align: center;
+}

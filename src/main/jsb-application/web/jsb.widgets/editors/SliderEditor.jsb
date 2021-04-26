@@ -22,6 +22,7 @@
 	},
 	$client: {
 		$require: ['css:SliderEditor.css'],
+
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -71,6 +72,5 @@
 		getData: function(){
 			return this.slider.slider('value');
 		}
-
 	}
 }
