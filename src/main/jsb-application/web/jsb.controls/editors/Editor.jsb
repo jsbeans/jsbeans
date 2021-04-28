@@ -234,6 +234,10 @@
 	        if(JSB.isDefined(value)) {
 	            this._editor.val(value);
 	            this._value = value;
+
+                if(this.options.contentSize) {
+                    this._editor.attr('size', this.getValue().length || 1);
+                }
 	        }
 	    },
 

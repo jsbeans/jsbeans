@@ -13,17 +13,6 @@
 	box-sizing: border-box;
 }
 
-.multiEditor .CodeMirror .CodeMirror-scroll {
-	max-height: inherit;
-	box-sizing: border-box;
-/*	overflow: hidden;*/
-}
-
-.multiEditor .CodeMirror .CodeMirror-hscrollbar,
-.multiEditor .CodeMirror .CodeMirror-vscrollbar {
-/*	overflow: hidden; */
-}
-
 .multiEditor div.CodeMirror span.CodeMirror-matchingbracket {
 	outline: none;
 	color: #f00 !important;
