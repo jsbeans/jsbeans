@@ -19,6 +19,7 @@ import akka.util.Timeout;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import org.eclipse.jetty.http.HttpCookie.SameSite;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -72,7 +73,7 @@ public class HttpService extends Service {
                 : "WEB-INF/web.xml";
 
         Server server = new Server(portVal);
-        server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", -1);
+        
 /*		
         SelectChannelConnector c = new SelectChannelConnector();
 		c.setForwarded(true);
@@ -115,8 +116,15 @@ public class HttpService extends Service {
         
         // prevent directory browsing
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
+        
+        // set requestHeaderSize for long POST-requests
+        if(ConfigHelper.has(WEB_REQUEST_HEADER_SIZE)){
+        	context.setMaxFormContentSize(ConfigHelper.getConfigInt(WEB_REQUEST_HEADER_SIZE));
+        	server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", ConfigHelper.getConfigInt(WEB_REQUEST_HEADER_SIZE));
+        }      
 
         server.setHandler(context);
+        
         
 /*        
         // set requestHeaderSize for long cross-domain GET requests
@@ -126,7 +134,7 @@ public class HttpService extends Service {
             	c.setRequestHeaderSize(requestHeaderSize);
             }
     	}
-        
+/*        
         // set responseBufferSize for large response
         if(ConfigHelper.has(WEB_RESPONSE_BUFFER_SIZE)){
     		int responseBufferSize = ConfigHelper.getConfigInt(WEB_RESPONSE_BUFFER_SIZE);
