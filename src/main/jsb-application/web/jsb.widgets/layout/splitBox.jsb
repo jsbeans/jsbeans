@@ -46,7 +46,7 @@
 					$this.splitterPositions[i] = splitPos;
 					// append splitter
 					if(i < posArr.length - 1){
-						pos = Math.floor(splitPos * 100) + '%';
+						var pos = Math.floor(splitPos * 100) + '%';
 						var splitter = $this.$('<div class="_dwp_splitter '+$this.options.type+'" idx="'+i+'"><div class="gripIcon"></div></div>');
 						$this.splitters[i] = splitter; 
 						if($this.options.type == 'vertical'){
