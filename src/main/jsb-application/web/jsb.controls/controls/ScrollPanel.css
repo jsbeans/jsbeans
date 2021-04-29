@@ -2,6 +2,7 @@
     border-radius: 3px;
     padding: 2px;
 	background: #e8e8e8;
+	overflow: hidden;
 }
 
 .jsb-scrollPanel.horizontal {
@@ -66,12 +67,14 @@
 	border-top: 5px solid transparent;
 	border-right: 8px solid #555;
 	border-bottom: 5px solid transparent;
+	margin-top: calc(50% - 6px);
 }
 
 .jsb-scrollPanel.horizontal > .nextScroll:after {
     border-top: 5px solid transparent;
     border-left: 8px solid #555;
     border-bottom: 5px solid transparent;
+    margin-top: calc(50% - 6px);
 }
 
 .jsb-scrollPanel.vertical > .prevScroll:after {

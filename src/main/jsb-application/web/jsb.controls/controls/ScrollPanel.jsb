@@ -63,7 +63,7 @@
 			    let pos;
 
 			    if(isHorizontal) {
-			        pos = $this._panel.position().left + 30;
+			        pos = $this._panel.position().left + 120;
 			    } else {
 			        pos = $this._panel.position().top + 30;
 			    }
@@ -83,22 +83,20 @@
 			    let pos;
 
 			    if(isHorizontal) {
-			        pos = $this._panel.position().left + 30;
+			        pos = $this._panel.position().left - 120;
 
-			        if(pos < $this.getElement().outerWidth() - $this._panel.width()) {
-			            pos = $this.getElement().outerWidth() - $this._panel.width();
-			        }
+                    if(pos < $this.getElement().width() - $this._panel.outerWidth()) {
+                        pos = $this.getElement().width() - $this._panel.outerWidth();
+                    }
+
+			        $this._panel.css({left: pos});
 			    } else {
 			        pos = $this._panel.position().top - 30;
 
 			        if(pos < $this.getElement().outerHeight() - $this._panel.height()) {
 			            pos = $this.getElement().outerHeight() - $this._panel.height();
 			        }
-			    }
 
-			    if(isHorizontal) {
-			        $this._panel.css({left: pos});
-			    } else {
 			        $this._panel.css({top: pos});
 			    }
 
@@ -191,7 +189,17 @@
                 });
 			}
 
-            this._panel.bind('mousewheel', function(e) {
+            this._panel.bind('mousewheel', (e) => {
+                if(isHorizontal) {
+                    if(this.getElement().outerWidth() > this._panel.width()) {
+                        return;
+                    }
+                } else {
+                    if(this.getElement().outerHeight() > this._panel.height()) {
+                        return;
+                    }
+                }
+
                 if(e.originalEvent.wheelDelta > 0) {
                     scrollPrev();
                 } else {
@@ -221,6 +229,8 @@
         addElement: function(el) {
             let element = this.$('<div></div>');
 
+            element.attr('key', el.key);
+
             if(JSB.isInstanceOf(el.element, 'JSB.Controls.Control') || JSB.isInstanceOf(el.element, 'JSB.Widgets.Control')) {
                 element.append(el.element.getElement());
             } else {
@@ -239,7 +249,7 @@
                         return;
                     }
 
-                    this.options.onClick.call(this, el.key, index - 1);
+                    this.options.onClick.call(this, el, index - 1);
                 });
             }
 

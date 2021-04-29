@@ -25,44 +25,48 @@
 		$require: ['css:Navigator.css'],
 
 	    $constructor: function(opts) {
-	        $base(opts);
-
-			this.addClass('jsb-navigator');
-
-			this.options.onClick = function(key, index) {
-			    if(this.getElements().length - 1 === index) {
+			this.options.onClick = (elementDesk, index) => {
+			    if(this.getElements().length - 1 === index || elementDesk.key === 'splitter') {
 			        return;
 			    }
 
-			    $this.gotoElement(key);
+			    this.gotoElement(elementDesk.key);
 
-			    opts.onClick.call($this, key, index);
+			    opts.onClick.call(this, elementDesk, index);
 			};
+
+	        $base(opts);
+
+			this.addClass('jsb-navigator');
         },
 
         addElement: function(el) {
             var panel = this.getPanel();
 
             if(panel.children().length > 0) {
-                panel.append('<div></div>');
+                $base({
+                    key: 'splitter',
+                    element: '<div></div>'
+                });
             }
 
             $base(el);
         },
 
         gotoElement: function(key) {
-            var elements = this.getPanel().find('div:nth-child(odd)'),
+            let elements = this.getElements(),
+                htmlElements = this.getPanel().find('div:nth-child(odd)'),
                 index;
 
-            for(index = 0; index < this._elements.length; index++){
-                if(this._elements[index].key === key){
+            for(index = 0; index < elements.length; index++) {
+                if(elements[index].key === key){
                     break;
                 }
             }
 
-            this._elements.splice(index + 1, this._elements.length);
+            elements.splice(index + 1, elements.length);
 
-            this.$(elements[index]).nextAll().remove();
+            this.$(htmlElements[index]).nextAll().remove();
         }
     }
 }
