@@ -86,10 +86,20 @@
 	    * @param {string} options.title - заголовок вкладки
 	    */
 		addTab: function(options) {
-			var icon = this.$('<i class="icon"></i>'),
+			let icon = this.$('<i class="icon"></i>'),
 			    id = options.id || JSB().generateUid(),
-                tab = this.$('<li clientId="' + id + '"></li>'),
+                tab,
                 title = this.$('<span class="title">' + options.title + '</span>');
+
+            if(this.options.scrollTab) {
+                tab = this.$('<div class="tab"></div>');
+            } else {
+                tab = this.$('<li class="tab" clientId="' + id + '"></li>');
+
+    			tab.click(function(evt) {
+                    $this.switchTab(id);
+    			});
+            }
 
             if(options.desc) {
                 title.attr('title', options.desc);
@@ -101,10 +111,6 @@
                 tab.prepend(icon);
             }
 
-			tab.click(function(evt) {
-                $this.switchTab(id);
-			});
-
 			this._tabs[id] = {
 			    iconElement: icon,
 			    options: options,
@@ -115,7 +121,10 @@
 			if(this.options.scrollTab) {
 			    this._tabPane.addElement({
 			        element: tab,
-			        key: id
+			        key: id,
+			        onClick: () => {
+			            this.switchTab(id);
+			        }
 			    });
 			} else {
 			    this._tabPane.append(tab);
@@ -303,7 +312,9 @@
             }
 
             if(this.options.scrollTab) {
-                this._tabPane.sort(sortCallback);
+                this._tabPane.sort((a, b) => {
+                    return sortCallback.call(this, this._getTab(a.key), this._getTab(b.key));
+                });
             } else {
                 let tabsArr = [],
                     tabs = this._getTab();

@@ -26,7 +26,8 @@
 
 	    _clickPosition: null,
 	    _elements: [],
-	    _moved: false,
+	    _isMouseDown: false,
+	    _isMoved: false,
 	    _panel: null,
 
 	    $constructor: function(opts) {
@@ -34,18 +35,18 @@
 
 			this.addClass('jsb-scrollPanel');
 
-			var isHorizontal = this.options.position === 'horizontal';
+			let isHorizontal = this.options.position === 'horizontal';
 
 			function changeButtonVisibility(position) {
-			    var isNextHide;
+			    let isNextHide;
 
 			    if(isHorizontal) {
-			        isNextHide = $this.getElement().outerWidth() - $this._panel.width() === position;
+			        isNextHide = $this.getElement().outerWidth() - $this._panel.width() >= position;
 			    } else {
-			        isNextHide = $this.getElement().outerHeight() - $this._panel.height() === position;
+			        isNextHide = $this.getElement().outerHeight() - $this._panel.height() >= position;
 			    }
 
-                if(isNextHide){
+                if(isNextHide) {
                     nextScroll.addClass('hidden');
                 } else {
                     nextScroll.removeClass('hidden');
@@ -58,15 +59,8 @@
                 }
 			}
 
-			if(isHorizontal) {
-			    this.addClass('horizontal');
-			} else {
-			    this.addClass('vertical');
-			}
-
-			var prevScroll = this.$('<div class="prevScroll scroll hidden"></div>');
-			prevScroll.click(function() {
-			    var pos;
+			function scrollPrev() {
+			    let pos;
 
 			    if(isHorizontal) {
 			        pos = $this._panel.position().left + 30;
@@ -83,13 +77,10 @@
 			    }
 
 			    changeButtonVisibility(pos);
-			});
+			}
 
-			this._panel = this.$('<ul class="panel"></ul>');
-
-			var nextScroll = this.$('<div class="nextScroll scroll hidden"></div>');
-			nextScroll.click(function() {
-			    var pos;
+			function scrollNext() {
+			    let pos;
 
 			    if(isHorizontal) {
 			        pos = $this._panel.position().left + 30;
@@ -98,7 +89,7 @@
 			            pos = $this.getElement().outerWidth() - $this._panel.width();
 			        }
 			    } else {
-			        pos = $this._panel.position().top + 30;
+			        pos = $this._panel.position().top - 30;
 
 			        if(pos < $this.getElement().outerHeight() - $this._panel.height()) {
 			            pos = $this.getElement().outerHeight() - $this._panel.height();
@@ -112,83 +103,108 @@
 			    }
 
 			    changeButtonVisibility(pos);
-			});
+			}
 
-			this._panel.mousedown(function(e) {
-			    function off() {
-                    $this.$(document).on('mouseup.navigator', function(e) {
-                        $this._panel.off('mousemove.navigator');
-                        $this.$(document).off('mouseup.navigator');
-                        $this._panel.removeClass('moving');
-                    });
-			    }
+			this.addClass(this.options.position);
 
-			    if(isHorizontal) {
-			        let outerWidth = $this.getElement().outerWidth(),
-			            width = $this._panel.width();
+			let prevScroll = this.$('<div class="prevScroll scroll hidden"></div>');
 
-                    if(width > outerWidth) {
-                        $this._clickPosition = e.pageX;
-                        $this._panel.addClass('moving');
+			prevScroll.click(scrollPrev);
 
-                        $this._panel.on('mousemove.navigator', function(e) {
-                            $this._moved = true;
+			this._panel = this.$('<div class="panel"></div>');
 
-                            var pos = $this._panel.position().left - $this._clickPosition + e.pageX;
+			this._panel.addClass(this.options.position);
 
-                            if(pos <= 0) {
-                                if(pos < outerWidth - width) {
-                                    pos = outerWidth - width;
-                                }
-                            }
+			let nextScroll = this.$('<div class="nextScroll scroll hidden"></div>');
 
-                            $this._panel.css({left: pos});
-                        });
+			nextScroll.click(scrollNext);
 
-                        off();
+            if(this.options.mousemove) {
+                this._panel.mousedown((e) => {
+                    this._isMouseDown = true;
+                    this._isMoved = false;
+
+                    if(isHorizontal) {
+                        this._clickPosition = e.pageX;
+                    } else {
+                        this._clickPosition = e.pageY;
                     }
-			    } else {
-			        let outerHeight = $this.getElement().outerHeight(),
-			            height = $this._panel.height();
+                });
 
-                    if(height > outerHeight) {
-                        $this._clickPosition = e.pageX;
-                        $this._panel.addClass('moving');
+                this.$(document).mousemove((e) => {
+                    if(this._isMouseDown) {
+                        this._panel.addClass('moving');
 
-                        $this._panel.on('mousemove.navigator', function(e) {
-                            $this._moved = true;
+                        if(isHorizontal) {
+                            let outerWidth = this.getElement().outerWidth(),
+                                width = this._panel.width();
 
-                            var pos = $this._panel.position().left - $this._clickPosition + e.pageX;
+                            if(width > outerWidth) {
+                                if(Math.abs(this._clickPosition - e.pageX) > 5) {
+                                    this._isMoved = true;
+                                }
 
-                            if(pos <= 0) {
+                                let pos = $this._panel.position().left - $this._clickPosition + e.pageX;
+
+                                if(pos <= 0) {
+                                    if(pos < outerWidth - width) {
+                                        pos = outerWidth - width;
+                                    }
+                                }
+
+                                this._panel.css({left: pos});
+
+                                changeButtonVisibility(pos);
+                            }
+                        } else {
+                            let outerHeight = this.getElement().outerHeight(),
+                                height = this._panel.height();
+
+                            if(height > outerHeight) {
+                                if(Math.abs(this._clickPosition - e.pageY) > 5) {
+                                    this._isMoved = true;
+                                }
+
+                                let pos = this._panel.position().top - this._clickPosition + e.pageY;
+
+                                if(pos > 0) {
+                                    pos = 0;
+                                }
+
                                 if(pos < outerHeight - height) {
                                     pos = outerHeight - height;
                                 }
+
+                                this._panel.css({top: pos});
+
+                                changeButtonVisibility(pos);
                             }
-
-                            $this._panel.css({left: pos});
-                        });
-
-                        off();
+                        }
                     }
-			    }
-			});
+                });
 
-			this.getElement().scroll(function() {
-			    // todo
-			    //debugger;
-			});
+                this.$(document).mouseup(() => {
+                    if(this._isMouseDown) {
+                        this._isMouseDown = false;
+                        this._panel.removeClass('moving');
+                    }
+                });
+			}
 
-			this.getElement().resize(function() {
-			    var position;
+            this._panel.bind('mousewheel', function(e) {
+                if(e.originalEvent.wheelDelta > 0) {
+                    scrollPrev();
+                } else {
+                    scrollNext();
+                }
+            });
 
+			this.getElement().resize(() => {
 			    if(isHorizontal) {
-			        position = $this._panel.position().left;
+			        changeButtonVisibility(this._panel.position().left);
 			    } else {
-			        position = $this._panel.position().top;
+			        changeButtonVisibility(this._panel.position().top);
 			    }
-
-			    changeButtonVisibility(position);
 			});
 
 			this.append(prevScroll);
@@ -197,12 +213,13 @@
         },
 
         options: {
+            mousemove: false,
             position: 'horizontal',
             onClick: null
         },
 
         addElement: function(el) {
-            var element = this.$('<li></li>');
+            let element = this.$('<div></div>');
 
             if(JSB.isInstanceOf(el.element, 'JSB.Controls.Control') || JSB.isInstanceOf(el.element, 'JSB.Widgets.Control')) {
                 element.append(el.element.getElement());
@@ -210,23 +227,19 @@
                 element.append(el.element);
             }
 
-            var index = this._elements.push({
+            let index = this._elements.push({
                 key: el.key,
-                element: element
+                element: element,
+                originalElement: el
             });
 
             if(JSB.isFunction(this.options.onClick)) {
-                element.click(function(){
-                    if($this._moved){
-                        $this._moved = false;
+                element.click(() => {
+                    if(this._isMoved) {
                         return;
                     }
 
-                    if($this._elements.length === index) {
-                        return;
-                    }
-
-                    $this.options.onClick.call($this, el.key, index - 1);
+                    this.options.onClick.call(this, el.key, index - 1);
                 });
             }
 
@@ -235,6 +248,11 @@
 
         clear: function() {
             this._panel.empty();
+            this._elements = [];
+        },
+
+        getElements: function() {
+            return this._elements;
         },
 
         getPanel: function() {
@@ -249,8 +267,16 @@
             // todo
         },
 
-        sort: function() {
-            // todo
+        sort: function(sortCallback) {
+            this._elements.sort((a, b) => {
+                return sortCallback.call(this, a, b);
+            });
+
+            this._panel.children().detach();
+
+            this._elements.forEach(item => {
+                this._panel.append(item.element);
+            });
         }
     }
 }

@@ -11,6 +11,7 @@
     margin: 0;
     padding: 0;
     background: rgba(230, 230, 230, 1);
+    overflow: hidden;
 }
 
 .jsb-tabview.topTabPosition > .tabPane,
@@ -51,7 +52,7 @@
     border-left: 1px solid #ddd;
 }
 
-.jsb-tabview > .tabPane > li {
+.jsb-tabview > .tabPane .tab {
 	min-width: 25px;
 	min-height: 25px;
 	cursor: pointer;
@@ -63,39 +64,39 @@
     transition: background 200ms, color 200ms;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li,
-.jsb-tabview.bottomTabPosition > .tabPane > li {
+.jsb-tabview.topTabPosition > .tabPane .tab,
+.jsb-tabview.bottomTabPosition > .tabPane .tab {
     display: inline-block;
     float: right;
     padding: 4px 10px;
     height: 35px;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li {
+.jsb-tabview.topTabPosition > .tabPane .tab {
     margin: 1px -1px 0px;
     border-radius: 6px 6px 0 0;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li > * {
+.jsb-tabview.topTabPosition > .tabPane .tab > * {
     display: inline-block;
     vertical-align: middle;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li > .icon {
+.jsb-tabview.topTabPosition > .tabPane .tab > .icon {
     margin-right: 6px;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li > .title {
+.jsb-tabview.topTabPosition > .tabPane .tab > .title {
     word-break: break-word;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li.disabled {
+.jsb-tabview.topTabPosition > .tabPane .tab.disabled {
     pointer-events: none;
     opacity: 0.5;
     cursor: default;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li.active {
+.jsb-tabview.topTabPosition > .tabPane .tab.active {
     color: #383838;
     border: 1px solid #ddd;
     border-top: 2px solid #d37531;
@@ -105,12 +106,12 @@
     height: 36px;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li:not(.active):hover {
+.jsb-tabview.topTabPosition > .tabPane .tab:not(.active):hover {
 	color: #696969;
     background: #fff;
 }
 
-.jsb-tabview.topTabPosition > .tabPane > li.icon {
+.jsb-tabview.topTabPosition > .tabPane .tab.icon {
     display: inline-block;
 	vertical-align: middle;
 }

@@ -30,6 +30,10 @@
 			this.addClass('jsb-navigator');
 
 			this.options.onClick = function(key, index) {
+			    if(this.getElements().length - 1 === index) {
+			        return;
+			    }
+
 			    $this.gotoElement(key);
 
 			    opts.onClick.call($this, key, index);
@@ -40,14 +44,14 @@
             var panel = this.getPanel();
 
             if(panel.children().length > 0) {
-                panel.append('<li></li>');
+                panel.append('<div></div>');
             }
 
             $base(el);
         },
 
         gotoElement: function(key) {
-            var elements = this.getPanel().find('li:nth-child(odd)'),
+            var elements = this.getPanel().find('div:nth-child(odd)'),
                 index;
 
             for(index = 0; index < this._elements.length; index++){
