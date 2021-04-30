@@ -41,8 +41,8 @@
 			    this._tabPane = new ScrollPanel({
 			        cssClass: 'tabPane',
 			        position: this.options.tabPosition === 'top' || this.options.tabPosition === 'bottom' ? 'horizontal' : 'vertical',
-			        onClick: function(id) {
-			            $this.switchTab(id);
+			        onClick: function(elementDesc) {
+			            $this.switchTab(elementDesc.key);
 			        }
 			    });
 			} else {
