@@ -8,6 +8,8 @@
 	-moz-user-select: initial;
 	-ms-user-select: initial;
 	user-select: initial;
+	
+	overflow: unset;
 }
 
 .jsonView .pane {
