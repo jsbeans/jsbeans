@@ -25,14 +25,18 @@
 		$require: ['css:Navigator.css'],
 
 	    $constructor: function(opts) {
-			this.options.onClick = (elementDesk, index) => {
+	        opts = opts || {};
+
+	        let onClick = opts.onClick;
+
+			opts.onClick = (elementDesk, index) => {
 			    if(this.getElements().length - 1 === index || elementDesk.key === 'splitter') {
 			        return;
 			    }
 
 			    this.gotoElement(elementDesk.key);
 
-			    opts.onClick.call(this, elementDesk, index);
+			    onClick && onClick.call(this, elementDesk, index);
 			};
 
 	        $base(opts);
