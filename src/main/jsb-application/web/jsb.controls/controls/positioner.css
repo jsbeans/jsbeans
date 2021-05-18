@@ -30,6 +30,7 @@
 
 .jsb-positioner > .curVal {
     width: 100%;
+    min-height: 20px;
     cursor: pointer;
     padding: 0 4px;
     font-size: 14px;

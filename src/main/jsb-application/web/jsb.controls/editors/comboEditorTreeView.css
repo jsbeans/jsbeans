@@ -80,20 +80,3 @@
     padding: 0 4px;
     outline: none;
 }
-
-.jsb-comboEditorTreeView > .dropDown {
-    position: absolute;
-    right: 0;
-    top: 32px;
-    min-height: 4px;
-    z-index: 10;
-    background: white;
-    border: 1px solid lightgrey;
-    max-height: 250px;
-    max-width: 400px;
-    overflow-y: hidden;
-}
-
-.jsb-comboEditorTreeView ._dwp_nodeHeader {
-    width: 100%;
-}

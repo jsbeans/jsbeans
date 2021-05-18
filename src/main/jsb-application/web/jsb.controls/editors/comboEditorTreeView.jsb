@@ -3,14 +3,14 @@
 	$parent: 'JSB.Controls.Control',
 
 	$client: {
-		$require: ['JSB.Widgets.TreeView',
+		$require: ['JSB.Widgets.ToolManager',
+		           'JSB.Controls.ComboEditorTreeViewDropDown',
 		           'css:comboEditorTreeView.css'],
 
 	    _currentValue: undefined,
 	    _dropDownElement: null,
 	    _options: {},
 	    _value: null,
-	    _values: {},
 
 	    $constructor: function(opts) {
 	        $base(opts);
@@ -41,11 +41,11 @@
             }
 
             if(this.options.options){
-                this.setOptions(this.options.options, true);
+                this.setOptions(this.options.options);
             }
 
 	        if(JSB.isDefined(this.options.value)){
-	            this.setValue(this.options.value, this.options.valueKey, true);
+	            this.setValue(this.options.value, true);
 	        }
 
             if(!this.options.onlySelect) {
@@ -59,37 +59,7 @@
             this.dropDownBtn.click(evt => {
                 evt.stopPropagation();
 
-                if(!this._dropDownElement) {
-                    this.constructDropDown();
-                }
-
-                if(this.getElement().has(this._dropDownElement.get(0)).length) {
-                    this._dropDownElement.detach();
-                } else {
-                    this.append(this._dropDownElement);
-
-                    let top = this.getElement().offset().top,
-                        elementHeight = this.getElement().height(),
-                        ddHeight = this._dropDownElement.outerHeight(),
-                        bodyHeight = this.$(window).height();
-
-                    if(bodyHeight <= top + elementHeight + ddHeight){
-                        this._dropDownElement.css('top', 'initial');
-                        this._dropDownElement.css('bottom', elementHeight);
-                    } else {
-                        this._dropDownElement.css('top', elementHeight);
-                        this._dropDownElement.css('bottom', 'initial');
-                    }
-
-                    this.$(document).on('click.comboEditor_closeDD', evt => {
-                        if(!this._dropDownElement.is(evt.target) && this._dropDownElement.has(evt.target).length === 0) {
-
-                            this._dropDownElement.detach();
-
-                            this.$(document).off('click.comboEditor_closeDD');
-                        }
-                    });
-                }
+                this.openDropDown();
             });
 	    },
 
@@ -145,53 +115,39 @@
 	        this.editor.focus();
 	    },
 
-	    constructDropDown: function() {
-	        this._dropDownElement = this.$('<div class="dropDown"></div>');
-
-	        let tree = new TreeView({
-	            onSelectionChanged: (key, item, evt) => {
-	                this._dropDownElement.detach();
-
-	                this.setValue(item.value);
-	            }
-	        });
-
-	        for(let i in this._options) {
-	            let item = this._options[i];
-
-                if(!item.element) {
-                    if(this.options.itemRender) {
-                        item.element = this.options.itemRender.call(this, item);
-                    } else {
-                        item.element = item.value || item.key;
-                    }
-                }
-
-                tree.addNode(item, item.parentKey);
-
-                this._values[item.value] = item;
-	        }
-
-	        this._dropDownElement.append(tree);
-	    },
-
 	    getValue: function() {
             return this._value;
+	    },
+
+	    openDropDown: function() {
+            ToolManager.activate({
+                id: 'ComboEditorTreeViewDropDown',
+                cmd: 'show',
+                data: {
+                    itemRender: this.options.itemRender,
+                    options: this._options
+                },
+                target: {
+                    selector: this.getElement(),
+                    dock: 'bottom'
+                },
+                callback: (value) => {
+                    this.setValue(value);
+                }
+            });
 	    },
 
 	    setOptions: function(options) {
             function prepareOptions(options, parentKey) {
 	            options.forEach(item => {
-	                if(!item.key) {
-	                    item.key = JSB.generateUid();
-	                }
-
-	                item.parentKey = parentKey;
-
-	                $this._options[item.value] = item;
+	                $this._options[item.value] = {
+	                    key: item.key || JSB.generateUid(),
+	                    originalItem: item,
+	                    parentKey: parentKey
+	                };
 
 	                if(item.children) {
-	                    prepareOptions(item.children, item.key);
+	                    prepareOptions(item.children, $this._options[item.value].key);
 	                }
 	            });
             }
@@ -238,7 +194,7 @@
 	        }
 
 	        if(!hEvt && JSB.isFunction(this.options.onChange)) {
-	            this.options.onChange.call(this, val, this._options[val]);
+	            this.options.onChange.call(this, val, this._options[val] && this._options[val].originalItem);
 	        }
 	    }
 	}

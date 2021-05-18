@@ -1,0 +1,18 @@
+.comboEditorTreeViewDropDown {
+    min-height: 4px;
+    z-index: 10;
+    background: white;
+    border: 1px solid lightgrey;
+    max-height: 250px;
+    max-width: 400px;
+    overflow-y: hidden;
+}
+
+.comboEditorTreeViewDropDown ._dwp_treeview {
+    max-height: 250px;
+    max-width: 400px;
+}
+
+.comboEditorTreeViewDropDown ._dwp_nodeHeader {
+    width: 100%;
+}

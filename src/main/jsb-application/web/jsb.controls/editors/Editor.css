@@ -13,7 +13,7 @@
 
 .jsb-editor > input {   /*[type="text"]*/
     border: none;
-    box-shadow: 0 0 0 2px #d7dbe0;
+    border: 2px solid #d7dbe0;
     border-radius: 3px;
     font-size: 1em;
     padding: 2px 4px;
@@ -23,7 +23,7 @@
 }
 
 .jsb-editor > input[type="text"]:focus {
-    box-shadow: 0 0 0 2px #8fa8cc;
+    border: 2px solid #8fa8cc;
 }
 
 .jsb-editor > input[type="color"] {
