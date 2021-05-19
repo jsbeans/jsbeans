@@ -10,12 +10,12 @@
     box-sizing: border-box;
     position: relative;
     border: 1px solid rgba(2, 47, 78, 0);
-    color: #5f3601;
+    color: #39505f;
     transition: background-color 300ms;
 }
 
 .jsb-navigator.jsb-scrollPanel > .panel > div:nth-child(odd):not(:last-child):hover {
-	background-color: rgba(156, 92, 29, 0.3);
+	background-color: rgb(164 179 189);
     transition: background-color 300ms;
 }
 
