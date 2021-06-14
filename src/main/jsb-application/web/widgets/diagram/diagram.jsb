@@ -1173,6 +1173,18 @@
 		        x: this.grid.width(),
 		        y: this.grid.height()
 		    };
+		},
+
+		getCenter: function() {
+		    let element = this.getElement()
+		        offset = element.offset(),
+		        width = element.width(),
+		        height = element.height();
+
+            return this.pageToSheetCoords({
+                x: offset.left + width / 2,
+                y: offset.top + height / 2
+            });
 		}
 	}
 }
