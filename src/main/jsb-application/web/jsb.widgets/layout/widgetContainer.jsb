@@ -16,8 +16,8 @@
 	},
 	$client: {
 		$require: ['css:widgetContainer.css'],
+
 		widgets: {},
-		
 		
 		$constructor: function(opts){
 			var self = this;
@@ -44,7 +44,6 @@
 			}, function(){
 				return self.getClientContainer();
 			});
-			
 		},
 		
 		options: {
@@ -52,8 +51,7 @@
 			allowClose: false
 		},
 		
-			// members
-			
+        // members
 		destroy: function(){
 			for(var i in this.widgets){
 				this.widgets[i].w.destroy();
@@ -81,7 +79,11 @@
 			
 			var title = desc.title || w.getTitle() || desc.id || w.getId();
 			var tab = this.wcView.addTab(title, w, desc);
-			this.widgets[w.getId()] = {tab: tab, w: w};
+			this.widgets[w.getId()] = {
+			    desc: desc,
+			    tab: tab,
+			    w: w
+            };
 			w.setContainer(this);
 			
 			this.updateBehavior(w.getBehavior());
@@ -169,12 +171,19 @@
 		},
 		
 		updateBehavior: function(b){
-			// nothing todo
-			
+			// nothing to do
 		},
 		
 		getClientContainer: function(){
 			return this.getElement();
+		},
+
+		hideWidget: function(wId) {
+			this.wcView.hideTab(this.widgets[this.getWidget(wId).getId()].tab);
+		},
+
+		showWidget: function(wId) {
+		    this.wcView.showTab(this.widgets[this.getWidget(wId).getId()].tab);
 		}
 	}
 }

@@ -220,7 +220,7 @@
 			return true;
 		},
 
-		removeTab: function(tab){
+		removeTab: function(tab) {
 			var entry = this.resolveTab(tab);
 			var activeTab = this.tabPane.find('.active');
 			var needSwitch = (entry.tab.attr('clientId') == activeTab.attr('clientId'));
@@ -232,9 +232,10 @@
 			}
 			entry.wrap.remove();
 			entry.tab.remove();
-			if(entry.ctrl && JSB().isInstanceOf(entry.ctrl, 'JSB.Widgets.Control')) {
-				entry.ctrl.destroy();
-			}
+
+            if(entry.ctrl && JSB().isInstanceOf(entry.ctrl, 'JSB.Widgets.Control')) {
+                entry.ctrl.destroy();
+            }
 
 			delete this.tabs[entry.id];
 			if(needSwitch){
@@ -444,6 +445,27 @@
 			} else {
 				// TODO: for vertical orientation
 			}
+		},
+
+		hideTab: function(tab) {
+		    let entry = this.resolveTab(tab);
+
+		    if(entry.tab.hasClass('hidden')) {
+		        return;
+		    }
+
+		    entry.tab.addClass('hidden');
+
+			if(entry.tab.attr('clientId') == this.tabPane.find('.active').attr('clientId')) {
+				for(var t in this.tabs) {
+					this.switchTab(t);
+					break;
+				}
+			}
+		},
+
+		showTab: function(tab) {
+		    this.resolveTab(tab).tab.removeClass('hidden');
 		}
 	}
 }
