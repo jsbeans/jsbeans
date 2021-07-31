@@ -20,7 +20,13 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import org.eclipse.jetty.http.HttpCookie.SameSite;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jsbeans.Core;
@@ -46,6 +52,7 @@ public class HttpService extends Service {
 //    private static final String WEB_FOLDER_KEY = "web.folder";
     private static final String WEB_PORT_KEY = "web.http.port";
     private static final String WEB_SECURE_KEY = "web.secure";
+    private static final String WEB_REQUEST_LOG = "web.writerequestlog";
     private static final String WEB_XML = "web.config";
     private static final String WEB_REQUEST_HEADER_SIZE = "web.http.requestHeaderSize";
     private static final String WEB_RESPONSE_BUFFER_SIZE = "web.http.responseBufferSize";
@@ -104,6 +111,8 @@ public class HttpService extends Service {
             context.getSessionHandler().getSessionCookieConfig().setSecure(true);
         }
         
+        
+        
 /*        
         Set<SessionTrackingMode> hs = new HashSet<SessionTrackingMode>();
         hs.add(SessionTrackingMode.SSL);
@@ -121,9 +130,24 @@ public class HttpService extends Service {
         if(ConfigHelper.has(WEB_REQUEST_HEADER_SIZE)){
         	context.setMaxFormContentSize(ConfigHelper.getConfigInt(WEB_REQUEST_HEADER_SIZE));
         	server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", ConfigHelper.getConfigInt(WEB_REQUEST_HEADER_SIZE));
-        }      
+        }
+        
+        HandlerCollection handlers = new HandlerCollection();
+        handlers.addHandler(context);
+        
+        if(ConfigHelper.has(WEB_REQUEST_LOG) && ConfigHelper.getConfigBoolean(WEB_REQUEST_LOG)){
+	        RequestLogHandler requestLogHandler = new RequestLogHandler();
+	        handlers.addHandler(requestLogHandler);
+	        NCSARequestLog requestLog = new NCSARequestLog("./logs/request.log");
+	        requestLog.setRetainDays(10);
+	        requestLog.setAppend(true);
+	        requestLog.setExtended(true);
+	        requestLog.setLogTimeZone("GMT");
+	        requestLogHandler.setRequestLog(requestLog);
+        }
 
-        server.setHandler(context);
+        server.setHandler(handlers);
+//        server.setHandler(context);
         
         
 /*        
