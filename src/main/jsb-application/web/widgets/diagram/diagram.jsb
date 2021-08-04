@@ -1104,6 +1104,39 @@
 			
 			return selMap;
 		},
+
+		/*
+		* area.x1
+		* area.x2
+		* area.y1
+		* area.y2
+		*/
+		getNodesInArea: function(area) {
+		    let selMap = {};
+
+			for(let nodeId in this.nodes) {
+				let nodeRc = this.nodes[nodeId].getRect(),
+				    nodeMinPt = {x: nodeRc.x, y: nodeRc.y},
+				    nodeMaxPt = {x: nodeRc.x + nodeRc.w, y: nodeRc.y + nodeRc.h};
+
+				if(nodeMaxPt.x < area.x1) {
+		        	continue;	// item is leftside from the selection
+		        }
+		        if(nodeMinPt.x > area.x2) {
+		        	continue;	// item is rightside from the selection
+		        }
+		        if(nodeMaxPt.y < area.y1) {
+		        	continue;	// item is top from the selection
+		        }
+		        if(nodeMinPt.y > area.y2) {
+		        	continue;	// item is bottom from the selection
+		        }
+
+		        selMap[nodeId] = this.nodes[nodeId];
+			}
+
+			return selMap;
+		},
 		
 		updateLayout: function(items){
 			if(!this.options.autoLayout){
