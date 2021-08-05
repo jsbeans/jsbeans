@@ -24,7 +24,11 @@
 			
 			this.addClass('registryExplorer');
 			
-			this.treeView = new TreeView();
+			this.treeView = new TreeView({
+			    onSelectionChanged: function() {
+			        $this.options.onSelectionChanged && $this.options.onSelectionChanged.apply($this, arguments);
+			    }
+			});
 			this.append(this.treeView);
 			
 			if(this.options.registry){
@@ -175,6 +179,10 @@
 					 
 				}
 			});
+		},
+
+		getSelected: function() {
+		    return this.treeView.getSelected();
 		}
 	}
 }

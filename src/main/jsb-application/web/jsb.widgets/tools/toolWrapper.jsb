@@ -1055,9 +1055,7 @@
 		close: function() {
 			this.hide();
 
-			if(this.options.data.closeCallback) {
-			    this.options.data.closeCallback.call(this);
-			}
+			this.options.data && this.options.data.closeCallback && this.options.data.closeCallback.call(this);
 		},
 		
 		hideModalBackground: function(){
