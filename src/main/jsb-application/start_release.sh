@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+export APP_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd $APP_DIR
+
 JARS="$(cat .classpath_jars |sed 's/\\/\//g')"
 
 mkdir -p logs
