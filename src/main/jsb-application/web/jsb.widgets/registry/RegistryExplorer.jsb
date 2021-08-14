@@ -124,8 +124,8 @@
 					
 					// create renderer
 					var items = wDescObj[category];
-					for(var j = 0; j < items.length; j++){
-						var itemDesc = items[j];
+
+					items.forEach((itemDesc) => {
 						var renderer = $this.createItemRenderer(itemDesc);
 						
 						$this.treeView.addNode({
@@ -134,33 +134,29 @@
 						}, pKey);
 						
 						renderer.registry = $this.registry;
-						
-						(function(renderer){
-							renderer.getElement().draggable({
-								start: function(evt, ui){
-									evt.originalEvent.preventDefault();
-									evt.stopPropagation();
-								},
-								helper: function(evt, ui){
-									this.draggingItems = [renderer];
-									
-									// create drag container
-									var helper = $this.$('<div class="dragHelper"></div>');
-									helper.append($this.$('<div class="dragItem"></div>').append(renderer.getElement().clone()));
-									return helper.get(0);
-								},
-								stop: function(evt, ui){
-								},
-								revert: false,
-								scroll: false,
-								zIndex: 100000,
-								distance: 10,
-								appendTo: 'body'
-							});
-							
-						})(renderer);
 
-					}
+                        renderer.getElement().draggable({
+                            start: function(evt, ui){
+                                evt.originalEvent.preventDefault();
+                                evt.stopPropagation();
+                            },
+                            helper: function(evt, ui){
+                                this.draggingItems = [renderer];
+
+                                // create drag container
+                                var helper = $this.$('<div class="dragHelper"></div>');
+                                helper.append($this.$('<div class="dragItem"></div>').append(renderer.getElement().clone()));
+                                return helper.get(0);
+                            },
+                            stop: function(evt, ui){
+                            },
+                            revert: false,
+                            scroll: false,
+                            zIndex: 100000,
+                            distance: 10,
+                            appendTo: 'body'
+                        });
+					});
 					
 					$this.treeView.sort(function(a, b){
 						var an = 0;
@@ -176,7 +172,6 @@
 						}
 						return bn - an;
 					});
-					 
 				}
 			});
 		},
