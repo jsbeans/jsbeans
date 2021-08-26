@@ -1,6 +1,6 @@
 @CHARSET "UTF-8";
 
-._dwp_control {
+._jsb_control {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
@@ -21,7 +21,7 @@
 	
 }
 
-._dwp_control p {
+._jsb_control p {
 	-webkit-user-select: text;
 	-khtml-user-select: text;
 	-moz-user-select: text;
@@ -29,7 +29,7 @@
 	user-select: text;
 }
 
-._dwp_control * {
+._jsb_control * {
 	margin: 0;
 	padding: 0;
 	line-height: inherit;
@@ -37,7 +37,7 @@
 /*	background-color: inherit; */
 }
 
-._dwp_control pre {
+._jsb_control pre {
 	background: inherit;
     border: inherit;
     font-family: monospace;

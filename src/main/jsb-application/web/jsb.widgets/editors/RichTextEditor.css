@@ -1,0 +1,38 @@
+@CHARSET "UTF-8";
+
+._jsb_richTextEditor {
+	padding: 8px 20px;
+}
+
+._jsb_richTextEditor > .codex-editor {
+	
+}
+
+._jsb_richTextEditor > .codex-editor > .codex-editor__redactor {
+	
+}
+
+._jsb_richTextEditor > .codex-editor > .codex-editor__redactor .ce-block__content {
+	max-width: initial;
+}
+
+._jsb_richTextEditor > .codex-editor > .ce-toolbar {}
+
+._jsb_richTextEditor > .codex-editor > .ce-toolbar > .ce-toolbar__content {
+	max-width: initial;
+}
+
+._jsb_richTextEditor > .codex-editor > .ce-toolbar .ce-toolbar__actions {
+	right: -20px;
+}
+
+
+
+._jsb_richTextEditor > .codex-editor .ce-toolbar__settings-btn > svg,
+._jsb_richTextEditor > .codex-editor .ce-toolbar__plus > svg,
+._jsb_richTextEditor > .codex-editor > .ce-toolbar > .ce-toolbar__content svg,
+._jsb_richTextEditor > .codex-editor > .ce-inline-toolbar svg {
+	left: initial !important;
+	top: initial !important;
+	position: initial !important;
+}

@@ -25,16 +25,16 @@
 				this.element = this.$(this.options.element);
 				delete this.options.element;
 				this.element.attr('_id', this.getId());
-				this.element.addClass('_dwp_control');
+				this.element.addClass('_jsb_control');
 			} else {
 				var tag = opts.tag || 'div';
-				this.element = this.$('<'+tag+' _id="'+this.getId()+'" class="_dwp_control"></'+tag+'>');
+				this.element = this.$('<'+tag+' _id="'+this.getId()+'" class="_jsb_control"></'+tag+'>');
 			}
 			// options class
             if(this.options.cssClass){
                 this.addClass(this.options.cssClass);
             }
-			this._init();
+			this._jsb_init();
 		},
 		
 		destroy: function(){
@@ -65,7 +65,7 @@
 			return this.element;
 		},
 		
-		_init: function(){
+		_jsb_init: function(){
 			var self = this;
 /*				
 				// install tooltip
@@ -235,6 +235,10 @@
 		
 		attr: function(){
 			return this.getElement().attr.apply(this.getElement(), arguments);
+		},
+		
+		removeAttr: function(){
+			return this.getElement().removeAttr.apply(this.getElement(), arguments);
 		},
 		
 		isContentReady: function(sel, shouldExists){
