@@ -17,8 +17,11 @@
 	    $require: ['JSB.IO.FileSystem',
 	               'java:java.lang.reflect.Array',
 	               'java:java.lang.Byte',
+	               'java:java.io.File',
+	               'java:java.io.FileOutputStream',
 	               'java:java.util.zip.ZipEntry',
-	               'java:java.util.zip.ZipOutputStream'
+	               'java:java.util.zip.ZipOutputStream',
+	               'java:java.util.zip.ZipInputStream'
 	               ],
 
 	    zip: function(inputDescs, outputStream) {
@@ -43,8 +46,29 @@
 	        zOut.close();
 	    },
 
-	    unzip: function() {
-	        //
+	    unzip: function(fileStream, outputDir) {
+	        var zIn = new ZipInputStream(fileStream),
+	            entry = zIn.getNextEntry();
+
+            while(entry) {
+                var file = new File(outputDir + File.separator + entry.getName());
+
+                file.getParentFile().mkdirs();
+
+                var fOut = new FileOutputStream(file);
+
+                while(zIn.available() > 0) {
+                    fOut.write(zIn.read());
+                }
+
+                fOut.close();
+
+                zIn.closeEntry();
+
+                entry = zIn.getNextEntry();
+            }
+
+            zIn.close();
 	    }
 	}
 }
