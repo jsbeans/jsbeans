@@ -17,6 +17,7 @@
 	    $require: ['JSB.IO.FileSystem',
 	               'java:java.lang.reflect.Array',
 	               'java:java.lang.Byte',
+	               'java:java.nio.charset.StandardCharsets',
 	               'java:java.io.File',
 	               'java:java.io.FileOutputStream',
 	               'java:java.util.zip.ZipEntry',
@@ -25,7 +26,7 @@
 	               ],
 
 	    zip: function(inputDescs, outputStream) {
-	        var zOut = new ZipOutputStream(outputStream);
+	        var zOut = new ZipOutputStream(outputStream, StandardCharsets.UTF_8);
 
 	        inputDescs.forEach(desc => {
 	            let entry = new ZipEntry(desc.relPath),
@@ -47,7 +48,7 @@
 	    },
 
 	    unzip: function(fileStream, outputDir) {
-	        var zIn = new ZipInputStream(fileStream),
+	        var zIn = new ZipInputStream(fileStream, StandardCharsets.UTF_8),
 	            entry = zIn.getNextEntry();
 
             while(entry) {
@@ -60,6 +61,8 @@
                 while(zIn.available() > 0) {
                     fOut.write(zIn.read());
                 }
+
+                fOut.flush();
 
                 fOut.close();
 
