@@ -55,6 +55,10 @@ public class BufferHelper {
 		return arr.getBuffer();
 	}
 	
+	public static byte[] allocateByteArray(int size){
+		return new byte[size];
+	}
+	
 	public static String base64Encode(NativeArrayBuffer arr){
 		return DatatypeConverter.printBase64Binary(arr.getBuffer());
 	}

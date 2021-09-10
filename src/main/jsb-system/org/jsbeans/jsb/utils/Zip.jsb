@@ -22,7 +22,8 @@
 	               'java:java.io.FileOutputStream',
 	               'java:java.util.zip.ZipEntry',
 	               'java:java.util.zip.ZipOutputStream',
-	               'java:java.util.zip.ZipInputStream'
+	               'java:java.util.zip.ZipInputStream',
+	               'java:org.jsbeans.helpers.BufferHelper'
 	               ],
 
 	    zip: function(inputDescs, outputStream) {
@@ -49,8 +50,10 @@
 
 	    unzip: function(fileStream, outputDir) {
 	        var zIn = new ZipInputStream(fileStream, StandardCharsets.UTF_8),
-	            entry = zIn.getNextEntry();
+	            entry = zIn.getNextEntry(),
+	            chunkSize = 4096;
 
+	        var bArr = BufferHelper.allocateByteArray(chunkSize);
             while(entry) {
                 var file = new File(outputDir + File.separator + entry.getName());
 
@@ -59,7 +62,12 @@
                 var fOut = new FileOutputStream(file);
 
                 while(zIn.available() > 0) {
-                    fOut.write(zIn.read());
+                	var rc = zIn.read(bArr, 0, chunkSize);
+                	if(rc > 0){
+                		fOut.write(bArr, 0, rc);	
+                	} else {
+                		break;
+                	}
                 }
 
                 fOut.flush();
