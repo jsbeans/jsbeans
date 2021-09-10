@@ -165,7 +165,7 @@
 		},
 		
 		killSession: function(sessionId){
-			this.checkAdminOnly();
+			this.checkSystemOrAdmin();
 			return Kernel.ask('JsHub', 'RemoveScopeMessage', {scopePath: sessionId});
 		},
 		
@@ -225,8 +225,16 @@
 			return Kernel.user() === Config.get('kernel.security.admin.user');
 		},
 
-		checkAdminOnly: function(){
-			if(!this.isAdmin()){
+		isSystem:function(){
+            return Kernel.user() === Config.get('kernel.security.system.user');
+        },
+
+		isSystemOrAdmin:function(){
+            return this.isAdmin() || this.isSystem();
+        },
+
+		checkSystemOrAdmin: function(){
+			if(!this.isAdmin() || this.isSystem()){
 				throw 'Administrator privileges required';
 			}
 		},

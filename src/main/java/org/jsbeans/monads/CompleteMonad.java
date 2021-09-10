@@ -10,6 +10,11 @@
 
 package org.jsbeans.monads;
 
+import scala.concurrent.Future;
+
+import javax.security.auth.Subject;
+import java.security.PrivilegedAction;
+
 public abstract class CompleteMonad<T> extends Monad<T> {
 
     public CompleteMonad() {
@@ -21,4 +26,18 @@ public abstract class CompleteMonad<T> extends Monad<T> {
     }
 
     public abstract void onComplete(Chain<?, T> chain, T result, Throwable fail);
+
+    public void accOnComplete(final Chain<?, T> chain, final T result, final Throwable fail) {
+        if (getAccessControlSubject() != null) {
+            Subject.doAs(getAccessControlSubject(), new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    CompleteMonad.this.onComplete(chain, result, fail);
+                    return null;
+                }
+            });
+        } else {
+            onComplete(chain, result, fail);
+        }
+    }
 }

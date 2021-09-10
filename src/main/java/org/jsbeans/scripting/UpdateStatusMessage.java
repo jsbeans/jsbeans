@@ -10,10 +10,10 @@
 
 package org.jsbeans.scripting;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import java.util.List;
 
-public class UpdateStatusMessage implements Message {
+public class UpdateStatusMessage extends SubjectMessage {
     private static final long serialVersionUID = -6675337814825208234L;
 
     public ExecutionStatus status;

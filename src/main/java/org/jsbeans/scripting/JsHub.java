@@ -28,8 +28,6 @@ import org.jsbeans.monads.Chain;
 import org.jsbeans.monads.CompleteMonad;
 import org.jsbeans.monads.FutureMonad;
 import org.jsbeans.scripting.JsTimeoutMessage.TimeoutType;
-import org.jsbeans.security.PrincipalMessage;
-import org.jsbeans.security.SecurityService;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.jsbeans.services.DependsOn;
@@ -44,7 +42,7 @@ import scala.concurrent.duration.Duration;
 import javax.security.auth.Subject;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.security.PrivilegedExceptionAction;
+import java.security.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -55,7 +53,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-@DependsOn({SecurityService.class})
 public class JsHub extends Service {
     private static final boolean openDebugger = ConfigHelper.has("kernel.jshub.openDebugger") ? ConfigHelper.getConfigBoolean("kernel.jshub.openDebugger") : false;
     private static final boolean createDump = ConfigHelper.has("kernel.jshub.createDump") ? ConfigHelper.getConfigBoolean("kernel.jshub.createDump"):false;
@@ -536,9 +533,7 @@ public class JsHub extends Service {
 
                             }
                             msgToSend = GsonWrapper.fromJson(json, msgCls);
-                            if (msgToSend instanceof PrincipalMessage<?>) {
-                                ((PrincipalMessage<?>) msgToSend).setUserPrincipal(msg.getUser());
-                            }
+
                         }
 
                         if (msg.isTell()) {
@@ -732,7 +727,7 @@ public class JsHub extends Service {
         if (msg.getScopePath() == null) {
             msg.setScopePath("");
         }
-        
+
         ActorRef self = this.getSelf();
         ActorRef sender = this.getSender();
         Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(msg.getScopePath(), msg.isScopePreserved());
@@ -780,6 +775,11 @@ public class JsHub extends Service {
 
                     cx.setWrapFactory(new InterceptWrapFactory());
 
+//                    Subject s2 = Subject.getSubject(msg.getAccessControlContext());
+//                    if(s2 != null) {
+//                        Principal[] pp = s2.getPrincipals().toArray(new Principal[s2.getPrincipals().size()]);
+//                    }
+
                     Subject subj = Subject.getSubject(msg.getAccessControlContext());
                     Object resultObj = null;
                     if (msg.getBody() != null) {
@@ -787,10 +787,7 @@ public class JsHub extends Service {
                     		dumpScript(scriptId, msg.getBody(), null, true);
                     	}
 
-                        resultObj = Subject.doAs(
-                                subj,
-                                (PrivilegedExceptionAction<Object>) () -> cx.evaluateString(scope, msg.getBody(), getScriptNameByToken(token), 1, null)
-                        );
+                        resultObj = cx.evaluateString(scope, msg.getBody(), getScriptNameByToken(token), 1, null);
                     } else if (msg.getFunction() != null) {
                     	Object[] args = msg.getArgs();
                         List<Object> objArr = new ArrayList<Object>();
@@ -803,10 +800,7 @@ public class JsHub extends Service {
                         if(createDump){
                         	dumpScript(scriptId, null, msg.getFunction(), true);
                         }
-                        resultObj = Subject.doAs(
-                                subj,
-                                (PrivilegedExceptionAction<Object>) () -> msg.getFunction().call(cx, scope, scope, objArr.toArray())
-                        );
+                        resultObj = msg.getFunction().call(cx, scope, scope, objArr.toArray());
                     }
 
                     UpdateStatusMessage uMsg = new UpdateStatusMessage(token);

@@ -12,6 +12,9 @@ package org.jsbeans.monads;
 
 import scala.concurrent.Future;
 
+import javax.security.auth.Subject;
+import java.security.PrivilegedAction;
+
 public abstract class FutureMonad<X, T> extends Monad<T> {
 
     public FutureMonad() {
@@ -23,5 +26,18 @@ public abstract class FutureMonad<X, T> extends Monad<T> {
     }
 
     public abstract Future<T> run(X prev);
+
+    public Future<T> accRun(final X prev) {
+        if (getAccessControlSubject() != null) {
+            return Subject.doAs(getAccessControlSubject(), new PrivilegedAction<Future<T>>() {
+                @Override
+                public Future<T> run() {
+                    return FutureMonad.this.run(prev);
+                }
+            });
+        } else {
+            return run(prev);
+        }
+    }
 
 }

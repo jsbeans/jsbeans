@@ -19,24 +19,21 @@ import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.helpers.NetworkHelper;
 import org.jsbeans.helpers.ReflectionHelper;
 import org.jsbeans.messages.Message;
+import org.jsbeans.monads.FutureMonad;
 import org.jsbeans.plugin.PluginActivationException;
 import org.jsbeans.plugin.PluginActivator;
 import org.jsbeans.plugin.DependsOn;
 import org.jsbeans.services.ServiceManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.concurrent.Future;
 
+import javax.security.auth.Subject;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.*;
 
 //import ch.qos.logback.classic.Level;
 //import ch.qos.logback.classic.LoggerContext;
@@ -71,14 +68,30 @@ public class Core {
     public static synchronized void start() {
         log.info("System core started at " + new Date());
 
-        Core.resolvePluginDependencies();
-        Core.configureLogger();
-        Core.loadBaseConfiguration();
-        Core.collectAndConfigurePlugins();
-        Core.startActorSystem();
-        Core.initPlugins();
-        Core.startServiceManager();
-        Core.finalizeConfiguration();
+        Subject sysSubj = Subject.getSubject(AccessController.getContext());
+        if (sysSubj == null /*&& ConfigHelper.getConfigBoolean("kernel.security.enabled")*/) {
+            sysSubj = new Subject(true, Collections.singleton(new Principal() {
+                @Override
+                public String getName() {
+                    return "SYSTEM";
+                }
+            }), Collections.emptySet(), Collections.emptySet());
+        }
+
+        Subject.doAs(sysSubj, new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                Core.resolvePluginDependencies();
+                Core.configureLogger();
+                Core.loadBaseConfiguration();
+                Core.collectAndConfigurePlugins();
+                Core.startActorSystem();
+                Core.initPlugins();
+                Core.startServiceManager();
+                Core.finalizeConfiguration();
+                return null;
+            }
+        });
     }
 
     private static void configureLogger() {

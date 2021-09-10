@@ -21,6 +21,7 @@ import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.helpers.ExceptionHelper;
 import org.jsbeans.helpers.ReflectionHelper;
 import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 
 import java.util.*;
 
@@ -236,7 +237,7 @@ public class ServiceManagerService extends Service {
         }
     }
 
-    public static class Initialized implements Message {
+    public static class Initialized extends SubjectMessage {
         private static final long serialVersionUID = 628740839476831749L;
 
     }

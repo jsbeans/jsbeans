@@ -21,6 +21,7 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 
 import javax.naming.AuthenticationException;
+import javax.security.auth.Subject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -28,21 +29,41 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.security.PrivilegedExceptionAction;
+import java.util.Collections;
 
 public class JSEndPointServlet extends HttpServlet {
     private static final long serialVersionUID = -8093030776258401896L;
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String rid = WebHelper.extractHeadersFromRequest(req);
-        String type = req.getParameter("type");
-        UpdateStatusMessage respObj = null;
-        if (type.equalsIgnoreCase("execute")) {
-            respObj = this.performExecute(req, rid);
-        } else if (type.equalsIgnoreCase("check")) {
-            respObj = this.performCheck(req, rid);
-        } else if (type.equalsIgnoreCase("break")) {
 
+        Principal principal = req.getUserPrincipal();
+        Subject subj = principal != null
+                ? new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet())
+                : null;
+        UpdateStatusMessage respObj = null;
+        try {
+            respObj = Subject.doAs(subj, new PrivilegedExceptionAction<UpdateStatusMessage>() {
+                @Override
+                public UpdateStatusMessage run() throws Exception {
+                    String rid = WebHelper.extractHeadersFromRequest(req);
+                    String type = req.getParameter("type");
+                    UpdateStatusMessage status = null;
+                    if (type.equalsIgnoreCase("execute")) {
+                        status = performExecute(req, rid);
+                    } else if (type.equalsIgnoreCase("check")) {
+                        status = performCheck(req, rid);
+                    } else if (type.equalsIgnoreCase("break")) {
+
+                    }
+                    return status;
+                }
+            });
+        } catch(Exception e) {
+            respObj = new UpdateStatusMessage("");
+            respObj.status = ExecutionStatus.FAIL;
+            respObj.error = e.getMessage();
         }
 
         JsObject jObj = new JsObject(JsObjectType.JSONOBJECT);
@@ -105,6 +126,7 @@ public class JSEndPointServlet extends HttpServlet {
             String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
             String clientIp = WebHelper.extractRealIpFromRequest(req);
             Timeout timeout = ActorHelper.getServiceCommTimeout();
+
             ExecuteScriptMessage execMsg = new ExecuteScriptMessage(JsbTemplateEngine.perform(script, null, null), true);
             execMsg.setScopePath(req.getSession().getId());
             execMsg.setUserToken(userToken);

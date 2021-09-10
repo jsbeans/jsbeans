@@ -10,10 +10,10 @@
 
 package org.jsbeans.scripting.jsb;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import org.jsbeans.types.JsObject;
 
-public class RpcMessage implements Message {
+public class RpcMessage extends SubjectMessage {
     private static final long serialVersionUID = -3210242004243442532L;
 
     private String sessionId;

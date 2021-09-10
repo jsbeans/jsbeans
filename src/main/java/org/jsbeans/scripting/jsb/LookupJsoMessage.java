@@ -10,10 +10,10 @@
 
 package org.jsbeans.scripting.jsb;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import org.jsbeans.types.JsObject;
 
-public class LookupJsoMessage implements Message {
+public class LookupJsoMessage extends SubjectMessage {
     private static final long serialVersionUID = -8044548925080524415L;
 
     private String name;

@@ -12,10 +12,10 @@ package org.jsbeans.scripting.jsb;
 
 import java.io.InputStream;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import org.jsbeans.types.JsObject;
 
-public class UploadMessage implements Message {
+public class UploadMessage extends SubjectMessage {
 	private static final long serialVersionUID = 1125416428756281194L;
 	private String sessionId;
 	private String streamId;

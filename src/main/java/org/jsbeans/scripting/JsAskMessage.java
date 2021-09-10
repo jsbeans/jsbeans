@@ -11,11 +11,11 @@
 package org.jsbeans.scripting;
 
 import akka.util.Timeout;
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 
-public class JsAskMessage implements Message {
+public class JsAskMessage extends SubjectMessage {
     private static final long serialVersionUID = -3148776997600008010L;
 
     private String targetSvcName;

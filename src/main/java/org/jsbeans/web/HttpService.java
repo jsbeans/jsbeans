@@ -16,6 +16,7 @@ package org.jsbeans.web;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.util.Timeout;
+import org.eclipse.jetty.util.resource.Resource;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import org.eclipse.jetty.http.HttpCookie.SameSite;
@@ -33,27 +34,28 @@ import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.ConfigHelper;
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import org.jsbeans.scripting.ExecuteScriptMessage;
 import org.jsbeans.scripting.JsHub;
 import org.jsbeans.scripting.jsb.JsbRegistryService;
-import org.jsbeans.security.SecurityService;
 import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
 import org.jsbeans.services.ServiceManagerService;
+
+import java.io.IOException;
 
 //import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
 /**
  * @author Alex
  */
-@DependsOn({JsHub.class, JsbRegistryService.class, SecurityService.class})
+@DependsOn({JsHub.class, JsbRegistryService.class})
 public class HttpService extends Service {
 //    private static final String WEB_FOLDER_KEY = "web.folder";
     private static final String WEB_PORT_KEY = "web.http.port";
     private static final String WEB_SECURE_KEY = "web.secure";
     private static final String WEB_REQUEST_LOG = "web.writerequestlog";
-    private static final String WEB_XML = "web.config";
+    private static final String WEB_XML = "web.config.path";
     private static final String WEB_REQUEST_HEADER_SIZE = "web.http.requestHeaderSize";
     private static final String WEB_RESPONSE_BUFFER_SIZE = "web.http.responseBufferSize";
 
@@ -74,10 +76,6 @@ public class HttpService extends Service {
     	if(ConfigHelper.has(WEB_PORT_KEY)){
     		portVal = ConfigHelper.getConfigInt(WEB_PORT_KEY);
     	}
-
-    	String webXml = ConfigHelper.has(WEB_XML)
-                ? ConfigHelper.getConfigString(WEB_XML)
-                : "WEB-INF/web.xml";
 
         Server server = new Server(portVal);
         
@@ -100,8 +98,14 @@ public class HttpService extends Service {
 
 //        context.setResourceBase(ConfigHelper.getWebFolder());
         context.setBaseResource(resources);
-
-//        context.setDescriptor(webXml);
+        if (ConfigHelper.has(WEB_XML)) {
+            String webXml = null;
+            try {
+                webXml = context.getBaseResource().addPath(ConfigHelper.getConfigString(WEB_XML)).getURI().toString();
+                context.setDescriptor(webXml);
+            } catch (IOException e) {
+            }
+        }
         context.setContextPath("/");
         context.getSessionHandler().setSessionCookie("_jsbSession_" + portVal.toString());
         context.getSessionHandler().setSessionIdPathParameterName("_jsbsession_");
@@ -198,7 +202,7 @@ public class HttpService extends Service {
         }
     }
 
-    public static class Initialized implements Message {
+    public static class Initialized extends SubjectMessage {
 		private static final long serialVersionUID = -618525700041876036L;
     }
 }

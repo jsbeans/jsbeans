@@ -10,6 +10,9 @@
 
 package org.jsbeans.monads;
 
+import javax.security.auth.Subject;
+import java.security.PrivilegedAction;
+
 public abstract class MapMonad<X, T> extends Monad<T> {
     public MapMonad() {
         super();
@@ -20,5 +23,18 @@ public abstract class MapMonad<X, T> extends Monad<T> {
     }
 
     public abstract T run(X prev);
+
+    public T accRun(final X prev) {
+        if (getAccessControlSubject() != null) {
+            return Subject.doAs(getAccessControlSubject(), new PrivilegedAction<T>() {
+                @Override
+                public T run() {
+                    return MapMonad.this.run(prev);
+                }
+            });
+        } else {
+            return run(prev);
+        }
+    }
 
 }

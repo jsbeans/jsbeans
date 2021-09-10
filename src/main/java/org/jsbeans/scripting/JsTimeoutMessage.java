@@ -10,10 +10,13 @@
 
 package org.jsbeans.scripting;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import org.mozilla.javascript.ScriptableObject;
 
-public class JsTimeoutMessage implements Message {
+import java.security.AccessControlContext;
+import java.security.AccessController;
+
+public class JsTimeoutMessage extends SubjectMessage {
     private static final long serialVersionUID = -3148776997600008010L;
     private long duration;
     private TimeoutType type;
@@ -25,6 +28,14 @@ public class JsTimeoutMessage implements Message {
     private String key = null;
     private String clientRequestId = null;
     private String clientAddr = null;
+
+    public static enum TimeoutType {
+        setTimeout,
+        setInterval,
+        clearTimeout,
+        clearInterval
+    }
+
     public JsTimeoutMessage(TimeoutType type, String token, String session, ScriptableObject callback, long duration) {
         this.type = type;
         this.token = token;
@@ -112,12 +123,5 @@ public class JsTimeoutMessage implements Message {
 
     public void setClientAddr(String addr) {
         this.clientAddr = addr;
-    }
-
-    public static enum TimeoutType {
-        setTimeout,
-        setInterval,
-        clearTimeout,
-        clearInterval
     }
 }

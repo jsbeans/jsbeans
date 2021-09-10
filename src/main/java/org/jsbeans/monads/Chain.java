@@ -18,6 +18,9 @@ import akka.japi.Function;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.Future;
 
+import javax.security.auth.Subject;
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -89,7 +92,7 @@ public class Chain<F, L> {
 
                 @Override
                 public T call() throws Exception {
-                    return this.job.run(null);
+                    return this.job.accRun(null);
                 }
             }.setJob(job), eCtx);
         } else {
@@ -103,7 +106,7 @@ public class Chain<F, L> {
 
                 @Override
                 public T apply(X arg) {
-                    return this.job.run(arg);
+                    return this.job.accRun(arg);
                 }
             }.setJob(job), eCtx);
         }
@@ -113,7 +116,7 @@ public class Chain<F, L> {
     private <X, T> void addFuture(final FutureMonad<X, T> fJob) {
         if (this.lastF == null) {
             try {
-                this.lastF = fJob.run(null);
+                this.lastF = fJob.accRun(null);
             } catch (Exception e) {
                 this.lastF = Futures.failed(e);
             }
@@ -122,7 +125,7 @@ public class Chain<F, L> {
                 @Override
                 public Future<T> apply(X arg) {
                     try {
-                        return fJob.run(arg);
+                        return fJob.accRun(arg);
                     } catch (Exception e) {
                         return Futures.failed(e);
                     }
@@ -143,7 +146,7 @@ public class Chain<F, L> {
                         final X firstArg = xArg;
                         Chain<X, T> ch = new Chain<X, T>(eCtx, xArg);
                         ch.parent = self;
-                        tJob.run(ch);
+                        tJob.accRun(ch);
 
                         Future<TraverseTuple<X, T>> f = ((Future<T>) ch.getFuture()).map(new Mapper<T, TraverseTuple<X, T>>() {
                             @Override
@@ -171,7 +174,7 @@ public class Chain<F, L> {
         ((Future<T>) this.lastF).onComplete(new OnComplete<T>() {
             @Override
             public void onComplete(Throwable fail, T res) throws Throwable {
-                m.onComplete(self, res, fail);
+                m.accOnComplete(self, res, fail);
             }
         }, eCtx);
     }
@@ -192,5 +195,12 @@ public class Chain<F, L> {
         }
         return this;
     }
+
+//    public Subject getAccessControlSubject() {
+//        return accessControlSubject;
+//    }
+//    public AccessControlContext getAccessControlContext() {
+//        return accessControlContext;
+//    }
 
 }

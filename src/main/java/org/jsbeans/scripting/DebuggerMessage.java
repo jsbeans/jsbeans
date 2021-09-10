@@ -10,9 +10,9 @@
 
 package org.jsbeans.scripting;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 
-public class DebuggerMessage implements Message {
+public class DebuggerMessage extends SubjectMessage {
 	private static final long serialVersionUID = 1691477983144408055L;
 
 	private boolean stop;

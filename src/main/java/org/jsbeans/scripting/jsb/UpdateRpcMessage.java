@@ -10,10 +10,10 @@
 
 package org.jsbeans.scripting.jsb;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import org.jsbeans.scripting.UpdateStatusMessage;
 
-public class UpdateRpcMessage implements Message {
+public class UpdateRpcMessage extends SubjectMessage {
     private static final long serialVersionUID = 6285278111095296262L;
     public UpdateStatusMessage jsStatusMessage;
     private String sessionId;

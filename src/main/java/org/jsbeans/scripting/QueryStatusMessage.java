@@ -10,9 +10,9 @@
 
 package org.jsbeans.scripting;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 
-public class QueryStatusMessage implements Message {
+public class QueryStatusMessage extends SubjectMessage {
     private static final long serialVersionUID = -2152410407478427511L;
     public ExecutionStatus status;
     public String token;

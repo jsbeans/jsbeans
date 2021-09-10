@@ -10,9 +10,16 @@
 
 package org.jsbeans.monads;
 
+import javax.security.auth.Subject;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+
 public abstract class Monad<T> {
     private Object[] args;
     private Chain<?, ?> chain = null;
+
+    private Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
+    private transient AccessControlContext accessControlContext =  AccessController.getContext();
 
     public Monad() {
     }
@@ -40,6 +47,13 @@ public abstract class Monad<T> {
 
     protected <X> X get(String key) {
         return this.chain.get(key);
+    }
+
+    protected Subject getAccessControlSubject() {
+        return accessControlSubject;
+    }
+    protected AccessControlContext getAccessControlContext() {
+        return accessControlContext;
     }
 
 }

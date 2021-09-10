@@ -12,10 +12,11 @@ package org.jsbeans.scripting;
 
 import org.jsbeans.helpers.ExceptionHelper;
 import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 
 import java.io.Serializable;
 
-public class JsWrappedResponseMessage implements Message {
+public class JsWrappedResponseMessage extends SubjectMessage {
     private static final long serialVersionUID = -7986381147151427157L;
     public boolean success = false;
     public Serializable result;

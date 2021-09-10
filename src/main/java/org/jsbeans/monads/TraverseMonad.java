@@ -10,6 +10,11 @@
 
 package org.jsbeans.monads;
 
+import scala.concurrent.Future;
+
+import javax.security.auth.Subject;
+import java.security.PrivilegedAction;
+
 public abstract class TraverseMonad<X, T> extends Monad<T> {
 
     public TraverseMonad() {
@@ -21,5 +26,19 @@ public abstract class TraverseMonad<X, T> extends Monad<T> {
     }
 
     public abstract void run(Chain<?, ?> ch);
+
+    public void accRun(final Chain<?, ?> ch) {
+        if (getAccessControlSubject() != null) {
+            Subject.doAs(getAccessControlSubject(), new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    TraverseMonad.this.run(ch);
+                    return null;
+                }
+            });
+        } else {
+            run(ch);
+        }
+    }
 
 }

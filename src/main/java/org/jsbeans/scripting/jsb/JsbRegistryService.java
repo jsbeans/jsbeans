@@ -45,6 +45,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 @DependsOn(JsHub.class)
@@ -398,7 +399,6 @@ public class JsbRegistryService extends Service {
                             String procName = obj.get("proc").getAsString();
                             String instanceId = obj.get("instance").getAsString();
                             JsonElement paramElt = obj.get("params");
-
                             String script = String.format("JSB().getProvider().performRpc('%s','%s','%s',%s,'%s');", jsoName, instanceId, procName, paramElt != null ? paramElt.toString() : "null", rpcId);
                             ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
                             execMsg.setScopePath(sessionId);

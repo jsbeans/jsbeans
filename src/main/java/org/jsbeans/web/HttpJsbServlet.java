@@ -15,6 +15,7 @@ import akka.util.Timeout;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
+import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.scripting.ExecuteScriptMessage;
 import org.jsbeans.scripting.ExecutionStatus;
 import org.jsbeans.scripting.JsHub;
@@ -40,8 +41,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.Principal;
-import java.security.PrivilegedExceptionAction;
+import java.security.*;
 import java.util.Collections;
 import java.util.Map;
 
@@ -68,12 +68,12 @@ public class HttpJsbServlet extends HttpServlet {
             final String session = req.getSession().getId();
             final Object tokenObj = req.getSession().getAttribute("token");
             final String token = tokenObj != null ? tokenObj.toString() : null;
-            final Principal principal = req.getUserPrincipal();
+            final Principal principal = req.getUserPrincipal() == null && ConfigHelper.getConfigBoolean("kernel.security.enabled")
+                    ? new AnonymousPrincipal()
+                    : req.getUserPrincipal();
             final String user = principal != null ? principal.getName() : null;
-            
             // construct proc 
             final String proc = req.getMethod().toLowerCase();
-            
             
             // construct bean path
             final String beanPath = req.getServletPath().toLowerCase();
@@ -139,7 +139,7 @@ public class HttpJsbServlet extends HttpServlet {
                     if(fPostObj != null){
                     	postBody = fPostObj.toString();	
                     }
-                    
+
                     String clientIp = WebHelper.extractRealIpFromRequest(req);
                     HttpJsbServlet.this.execCmd(beanPath, proc, params, postBody, session, clientIp, user, rid, getFullURL(req), token, ac);
                     return null;

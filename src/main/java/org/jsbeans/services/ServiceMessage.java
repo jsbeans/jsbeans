@@ -10,13 +10,13 @@
 
 package org.jsbeans.services;
 
-import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ServiceMessage implements Message {
+public class ServiceMessage extends SubjectMessage {
     private static final long serialVersionUID = 3189832890701743099L;
 
     private List<String> services = new ArrayList<>();

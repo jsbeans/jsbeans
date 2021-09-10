@@ -23,10 +23,13 @@ import org.jsbeans.scripting.jsb.RpcMessage;
 import org.jsbeans.scripting.jsb.UploadMessage;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
+import org.jsbeans.types.JsonElement;
+import org.jsbeans.types.JsonObject;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 
+import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -37,6 +40,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.Principal;
+import java.security.PrivilegedExceptionAction;
+import java.util.Collections;
 import java.util.Map;
 
 public class JsbServlet extends HttpServlet {
@@ -123,25 +128,36 @@ public class JsbServlet extends HttpServlet {
         }
         AsyncContext ac = req.startAsync(req, resp);
         ac.setTimeout(0);	// disable async timeout - use future timeout
-        Principal p = null;
+        final Principal principal = req.getUserPrincipal() == null && ConfigHelper.getConfigBoolean("kernel.security.enabled")
+                ? new AnonymousPrincipal()
+                : req.getUserPrincipal();
+        final String userName = principal != null ? principal.getName() : null;
+        final Object userTokenObj = req.getSession().getAttribute("token");
+        final String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
+        final String clientIp = WebHelper.extractRealIpFromRequest(req);
+        final String cmdf = cmd;
+
+        Subject subj = principal != null
+                ? new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet())
+                : null;
         try {
-            p = req.getUserPrincipal();
-        } catch (Exception e) {
-        }
-        String userName = null;
-        if (p != null) {
-            userName = p.getName();
-        }
-        Object userTokenObj = req.getSession().getAttribute("token");
-        String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
-        String clientIp = WebHelper.extractRealIpFromRequest(req);
-        
-        if ("get".equals(cmd)) {
-            this.handleGetJsoCommand(ac, clientIp, userName, rid, userToken);
-        } else if ("rpc".equals(cmd)) {
-            this.handleRpcCommand(ac, clientIp, userName, rid, userToken);
-        } else if("upload".equals(cmd)) {
-        	this.handleUploadCommand(ac, clientIp, userName, rid, userToken);
+            Subject.doAs(subj, new PrivilegedExceptionAction<String>() {
+                @Override
+                public String run() throws Exception {
+                    if ("get".equals(cmdf)) {
+                        handleGetJsoCommand(ac, clientIp, userName, rid, userToken);
+                    } else if ("rpc".equals(cmdf)) {
+                        handleRpcCommand(ac, clientIp, userName, rid, userToken);
+                    } else if ("upload".equals(cmdf)) {
+                        handleUploadCommand(ac, clientIp, userName, rid, userToken);
+                    }
+                    return null;
+                }
+            });
+        }catch(Exception e) {
+            // respond error (404)
+            ((HttpServletResponse) ac.getResponse()).sendError(404);
+            ac.complete();
         }
     }
 

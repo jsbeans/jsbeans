@@ -14,11 +14,17 @@ import akka.actor.UntypedActor;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.messages.Message;
+import org.jsbeans.messages.SubjectMessage;
 import org.jsbeans.monads.Chain;
+import org.jsbeans.web.HttpJsbServlet;
+import org.jsbeans.web.WebHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.concurrent.ExecutionContext;
+
+import javax.security.auth.Subject;
+import java.security.PrivilegedExceptionAction;
 
 public abstract class Service extends UntypedActor {
     private final Logger traceLogger = LoggerFactory.getLogger(this.getClass()); // trace logger
@@ -101,10 +107,24 @@ public abstract class Service extends UntypedActor {
 //				getLog().warning(String.format("Initialization message can only be send by ServiceManager. Ignoring message from '%s'", this.sender().path().toString()));
 //			}
         } else {
-            try {
-                this.onMessage(msg);
-            } catch (PlatformException ex) {
-                getLog().error(ex.getMessage(), ex);
+            if (msg instanceof SubjectMessage) {
+                try {
+                    Subject.doAs(((SubjectMessage)msg).getAccessControlSubject(), new PrivilegedExceptionAction<Object>() {
+                        @Override
+                        public Object run() throws Exception {
+                            onMessage(msg);
+                            return null;
+                        }
+                    });
+                } catch (Exception ex) {
+                    getLog().error(ex.getMessage(), ex);
+                }
+            } else {
+                try {
+                    onMessage(msg);
+                } catch (PlatformException ex) {
+                    getLog().error(ex.getMessage(), ex);
+                }
             }
         }
     }
