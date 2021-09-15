@@ -54,12 +54,18 @@
 
     </style>
     <script type="text/javascript">
+		JSB().lookup('Console',function(f){
+			new f({
+				container: 'div#mainContainer'
+			});
+		});
+/*
 	 	function doLoad(){
 			JSB().lookup('Console',function(f){
 	 			new f({
 	 				container: 'div#mainContainer'
 	 			});
-	 		})
+	 		});
 		}
 		JSB().create('Auth', {}, function(auth){
 			window.se = window.se || {};
@@ -80,7 +86,7 @@
 				}
 			});
 		});
-
+*/
     </script>
 </head>
 <body>
