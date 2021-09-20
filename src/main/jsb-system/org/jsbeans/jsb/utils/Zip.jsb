@@ -50,17 +50,19 @@
 	    },
 
 	    unzip: function(fileStream, outputDir) {
-	    	
 	        var zIn = new ZipInputStream(fileStream, StandardCharsets.UTF_8),
 	            entry = zIn.getNextEntry(),
 	            chunkSize = 2048;
 
 	        var bArr = BufferHelper.allocateByteArray(chunkSize);
-	        var outDirPath = Paths.get(outputDir);
             while(entry) {
-            	var filePath = outDirPath.resolve(entry.getName());
-                var file = filePath.toFile();
-            	JSB.getLogger().info('Unzipping: "' + file.getPath() + '"');
+            	var outPath = outputDir;
+            	var entryParts = ('' + entry.getName()).split(/[\\\/]/i);
+            	for(var i = 0; i < entryParts.length; i++){
+            		outPath = FileSystem.join(outPath, entryParts[i]);
+            	}
+                var file = new File(outPath);
+/*            	JSB.getLogger().info('Unzipping: "' + file.getPath() + '"'); */
                 file.getParentFile().mkdirs();
                 var fOut = new FileOutputStream(file);
                 while(true) {
