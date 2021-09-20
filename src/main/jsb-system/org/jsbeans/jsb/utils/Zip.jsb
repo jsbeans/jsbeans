@@ -50,6 +50,7 @@
 	    },
 
 	    unzip: function(fileStream, outputDir) {
+	    	
 	        var zIn = new ZipInputStream(fileStream, StandardCharsets.UTF_8),
 	            entry = zIn.getNextEntry(),
 	            chunkSize = 2048;
@@ -59,6 +60,7 @@
             while(entry) {
             	var filePath = outDirPath.resolve(entry.getName());
                 var file = filePath.toFile();
+            	JSB.getLogger().info('Unzipping: "' + file.getPath() + '"');
                 file.getParentFile().mkdirs();
                 var fOut = new FileOutputStream(file);
                 while(true) {
