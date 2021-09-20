@@ -62,7 +62,6 @@
             		outPath = FileSystem.join(outPath, entryParts[i]);
             	}
                 var file = new File(outPath);
-/*            	JSB.getLogger().info('Unzipping: "' + file.getPath() + '"'); */
                 file.getParentFile().mkdirs();
                 var fOut = new FileOutputStream(file);
                 while(true) {
