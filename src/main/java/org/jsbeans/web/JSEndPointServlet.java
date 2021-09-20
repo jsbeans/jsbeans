@@ -38,10 +38,11 @@ public class JSEndPointServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        Principal principal = req.getUserPrincipal();
-        Subject subj = principal != null
-                ? new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet())
-                : null;
+        final Principal principal = req.getUserPrincipal() == null
+                ? (ConfigHelper.getConfigBoolean("kernel.security.enabled") ? new AnonymousPrincipal() : new AdminPrincipal())
+                : req.getUserPrincipal();
+
+        Subject subj = new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet());
         UpdateStatusMessage respObj = null;
         try {
             respObj = Subject.doAs(subj, new PrivilegedExceptionAction<UpdateStatusMessage>() {
@@ -101,7 +102,7 @@ public class JSEndPointServlet extends HttpServlet {
     private UpdateStatusMessage performCheck(HttpServletRequest req, String rid) throws UnsupportedEncodingException, IOException {
         String token = req.getParameter("token");
         try {
-            if (req.getUserPrincipal() == null && ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
+            if (ConfigHelper.getConfigBoolean("kernel.security.enabled") && (req.getUserPrincipal() == null || req.getUserPrincipal() instanceof AnonymousPrincipal)) {
                 throw new AuthenticationException("Logged in user privileges required");
             }
             Timeout timeout = ActorHelper.getServiceCommTimeout();
@@ -117,7 +118,7 @@ public class JSEndPointServlet extends HttpServlet {
 
     private UpdateStatusMessage performExecute(HttpServletRequest req, String rid) throws UnsupportedEncodingException, IOException {
         try {
-            if (req.getUserPrincipal() == null && ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
+            if (ConfigHelper.getConfigBoolean("kernel.security.enabled") && (req.getUserPrincipal() == null || req.getUserPrincipal() instanceof AnonymousPrincipal)) {
                 throw new AuthenticationException("Logged in user privileges required");
             }
             String script = req.getParameter("data");

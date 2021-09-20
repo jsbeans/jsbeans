@@ -68,8 +68,8 @@ public class HttpJsbServlet extends HttpServlet {
             final String session = req.getSession().getId();
             final Object tokenObj = req.getSession().getAttribute("token");
             final String token = tokenObj != null ? tokenObj.toString() : null;
-            final Principal principal = req.getUserPrincipal() == null && ConfigHelper.getConfigBoolean("kernel.security.enabled")
-                    ? new AnonymousPrincipal()
+            final Principal principal = req.getUserPrincipal() == null
+                    ? (ConfigHelper.getConfigBoolean("kernel.security.enabled") ? new AnonymousPrincipal() : new AdminPrincipal())
                     : req.getUserPrincipal();
             final String user = principal != null ? principal.getName() : null;
             // construct proc 

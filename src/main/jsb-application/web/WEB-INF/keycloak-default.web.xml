@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ This file is the part of jsBeans, high-level JavaScript client-server framework.
+  ~ The contents of this file are subject to the MIT License (MIT).
+  ~ (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2016
+  ~
+  ~ Настоящий файл является частью клиент-сервеной JavaScript платформы.
+  ~ Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
+  ~ Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
+  -->
+
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         id="WebApp_ID" version="3.0">
+    <display-name>jsBeans</display-name>
+
+    <module-name>application</module-name>
+
+    <welcome-file-list>
+        <welcome-file>cubisio.jsb</welcome-file>
+    </welcome-file-list>
+
+    <filter>
+        <filter-name>KeycloakFilter</filter-name>
+        <filter-class>org.keycloak.adapters.servlet.KeycloakOIDCFilter</filter-class>
+        <init-param>
+            <param-name>keycloak.config.path</param-name>
+            <param-value>/WEB-INF/keycloak.json</param-value>
+        </init-param>
+        <init-param>
+            <param-name>keycloak.config.skipPattern</param-name>
+            <param-value></param-value>
+            <!--param-value>(?i)^/(DataCube/Query/JcqHtml.jsb|jsbeans.jsb|dashboard.jsb|download.jsb)</param-value-->
+        </init-param>
+        <async-supported>true</async-supported>
+    </filter>
+    <!--filter-mapping>
+        <filter-name>Keycloak Filter</filter-name>
+        <url-pattern>/keycloak/*</url-pattern>
+        <url-pattern>/protected/*</url-pattern>
+    </filter-mapping-->
+    <filter-mapping>
+        <filter-name>KeycloakFilter</filter-name>
+        <servlet-name>JsbServlet</servlet-name>
+        <servlet-name>HttpJsbServlet</servlet-name>
+        <servlet-name>JSEndPointServlet</servlet-name>
+    </filter-mapping>
+
+    <servlet>
+        <description></description>
+        <display-name>JsbServlet</display-name>
+        <servlet-name>JsbServlet</servlet-name>
+        <servlet-class>org.jsbeans.web.JsbServlet</servlet-class>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>JsbServlet</servlet-name>
+        <url-pattern>/jsb</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <description></description>
+        <display-name>HttpJsbServlet</display-name>
+        <servlet-name>HttpJsbServlet</servlet-name>
+        <servlet-class>org.jsbeans.web.HttpJsbServlet</servlet-class>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HttpJsbServlet</servlet-name>
+        <url-pattern>*.jsb</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <description></description>
+        <display-name>JSEndPointServlet</display-name>
+        <servlet-name>JSEndPointServlet</servlet-name>
+        <servlet-class>org.jsbeans.web.JSEndPointServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>JSEndPointServlet</servlet-name>
+        <url-pattern>/jspoint</url-pattern>
+    </servlet-mapping>
+
+    <filter>
+        <filter-name>cross-origin</filter-name>
+        <filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
+        <async-supported>true</async-supported>
+        <init-param>
+            <param-name>allowedOrigins</param-name>
+            <param-value>*</param-value>
+        </init-param>
+        <init-param>
+            <param-name>allowedMethods</param-name>
+            <param-value>*</param-value>
+        </init-param>
+        <init-param>
+            <param-name>allowedHeaders</param-name>
+            <param-value>*</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>cross-origin</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+</web-app>

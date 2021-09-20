@@ -112,9 +112,9 @@ public class JsbRegistryService extends Service {
         try {
         	String codeToExecute = String.format("JSB.getRepository().load(%d);", stage);
             ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
-            if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
-                scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
-            }
+//            if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
+//                scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
+//            }
 //            scriptMsg.setToken(jsoFile);
             Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), scriptMsg, ActorHelper.getServiceCommTimeout());
             Object result = Await.result(f, ActorHelper.getServiceCommTimeout().duration());
@@ -192,9 +192,9 @@ public class JsbRegistryService extends Service {
 
                 String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s',$_fullPath:'%s',$_fullPathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile, webFolder), relPath, relPathWithFile, fullPath,  fullPathFile);
                 ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
-                if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
-                    scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
-                }
+//                if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
+//                    scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
+//                }
                 scriptMsg.setToken(jsoFile);
                 Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), scriptMsg, ActorHelper.getServiceCommTimeout());
                 Object result = Await.result(f, ActorHelper.getServiceCommTimeout().duration());
@@ -221,9 +221,9 @@ public class JsbRegistryService extends Service {
             String jsoPath = ConfigHelper.getConfigString("kernel.jsb.jsbEngineResource");
             String jsoData = FileHelper.readStringFromResource(jsoPath);
             ExecuteScriptMessage execMsg = new ExecuteScriptMessage(jsoData, false);
-            if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
-                execMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
-            }
+//            if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
+//                execMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
+//            }
             execMsg.setToken(jsoPath);
             Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, ActorHelper.getServiceCommTimeout());
             Object result = Await.result(f, ActorHelper.getServiceCommTimeout().duration());

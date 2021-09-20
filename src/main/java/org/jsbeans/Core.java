@@ -24,6 +24,7 @@ import org.jsbeans.plugin.PluginActivationException;
 import org.jsbeans.plugin.PluginActivator;
 import org.jsbeans.plugin.DependsOn;
 import org.jsbeans.services.ServiceManagerService;
+import org.jsbeans.web.SystemPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.Future;
@@ -70,12 +71,7 @@ public class Core {
 
         Subject sysSubj = Subject.getSubject(AccessController.getContext());
         if (sysSubj == null /*&& ConfigHelper.getConfigBoolean("kernel.security.enabled")*/) {
-            sysSubj = new Subject(true, Collections.singleton(new Principal() {
-                @Override
-                public String getName() {
-                    return "SYSTEM";
-                }
-            }), Collections.emptySet(), Collections.emptySet());
+            sysSubj = new Subject(true, Collections.singleton(new SystemPrincipal()), Collections.emptySet(), Collections.emptySet());
         }
 
         Subject.doAs(sysSubj, new PrivilegedAction<Object>() {

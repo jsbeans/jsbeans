@@ -128,8 +128,8 @@ public class JsbServlet extends HttpServlet {
         }
         AsyncContext ac = req.startAsync(req, resp);
         ac.setTimeout(0);	// disable async timeout - use future timeout
-        final Principal principal = req.getUserPrincipal() == null && ConfigHelper.getConfigBoolean("kernel.security.enabled")
-                ? new AnonymousPrincipal()
+        final Principal principal = req.getUserPrincipal() == null
+                ? (ConfigHelper.getConfigBoolean("kernel.security.enabled") ? new AnonymousPrincipal() : new AdminPrincipal())
                 : req.getUserPrincipal();
         final String userName = principal != null ? principal.getName() : null;
         final Object userTokenObj = req.getSession().getAttribute("token");
