@@ -30,9 +30,13 @@
 	        $base(opts);
 	        if ($this.isSecurityEnabled()) {
                 var bean = Config.get('kernel.security.permissionsBean');
-                JSB.lookup(bean, function(PermissionsClass){
-                    $this.repo = new PermissionsClass();
-                });
+                if (bean) {
+                    JSB.getRepository().ensureLoaded(function(){
+                        JSB.lookup(bean, function(PermissionsClass){
+                            $this.repo = new PermissionsClass();
+                        });
+                    });
+                }
             }
             // setup JSB.Error
             $this.SecurityError = function (message){
