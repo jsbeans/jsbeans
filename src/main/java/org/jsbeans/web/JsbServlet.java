@@ -142,10 +142,12 @@ public class JsbServlet extends HttpServlet {
         if (principal != null) {
             // if subject initialized with current principal
             Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
-            for (Principal pr : accessControlSubject.getPrincipals()) {
-                if (pr == principal) {
-                    subj = accessControlSubject;
-                    break;
+            if (accessControlSubject != null) {
+                for (Principal pr : accessControlSubject.getPrincipals()) {
+                    if (pr == principal) {
+                        subj = accessControlSubject;
+                        break;
+                    }
                 }
             }
             if (subj == null) {
