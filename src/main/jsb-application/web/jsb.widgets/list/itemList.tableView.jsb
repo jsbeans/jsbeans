@@ -111,39 +111,68 @@
 				return;
 			}
 			
-			var self = this;
+			var self = this, hTable = null;
 			var tvh = this.list.find('.tableViewHeader');
-			var tr = null;
 			if(tvh.length === 0){
-				tvh = this.$('<div class="tableViewHeader"></div>');
-				tr = this.$('<div class="tableViewHeaderRow"></div>');
-				tvh.append(tr);				
-				this.list.horizontalScrollBox.getElement().find('> ._dwp_scrollPane').prepend(tvh);
+				tvh = this.$('<div class="tableViewHeader"><table class="headerTable" cellpadding="0" cellspacing="0"><colgroup></colgroup><thead><tr class="tableViewHeaderRow"></tr></thead></table></div>');
+				hTable = tvh.find('> .headerTable');
+				this.list.getElement().prepend(tvh);
+				tvh.resize(function(){
+					$this.list.scrollBox.getElement().css('top', tvh.height());
+				});
+				
+				$this.container.resize(function(){
+					hTable.css('width', $this.container.width());
+					$this.updateHeaderCols();
+				});
+				
+				$this.subscribe('JSB.Widgets.ItemList.scroll', function(sender, msg, params){
+					if(sender != $this.list){
+						return;
+					}
+					
+					hTable.css('margin-left', params.x);
+				});
 			} else {
-				tr = tvh.find('> .tableViewHeaderRow');
+				hTable = tvh.find('> .headerTable');	
 			}
 			
-			var hCells = tr.find('> .cellHeader');
+
+			var headerRow = tvh.find('.tableViewHeaderRow');
+			var headerColGroup = tvh.find('colgroup');
+			
+			var hCells = headerRow.find('> .cellHeader');
+			var hCols = headerColGroup.find('> col');
 			if(hCells.length != this.columns.length){
 				hCells.remove();
+				hCols.remove();
 				
 				// fill
 				for(var i = 0; i < this.columns.length; i++){
 					var col = this.columns[i];
-					var th = this.$('<div class="cellHeader"></div>');
+					var th = this.$('<th class="cellHeader"></th>');
 					th.attr('key', col.key);
-					tr.append(th);
+					headerRow.append(th);
+					
+					var colEl = this.$('<col></col>');
+					colEl.attr('key', col.key);
+					headerColGroup.append(colEl);
 					
 					if(col.opts && col.opts.onCreateCellHeader){
 						col.opts.onCreateCellHeader.call(this, th, col.opts);
+					} else {
+						th.text(col.key);
 					}
 				}
 			}
 			
-			$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox').css({
+			$this.list.scrollBox.getElement().css({
 				top: tvh.height()
 			});
 			
+			$this.updateHeaderCols();
+			
+/*			
 			function findCol(lis, i){
 				var col = {
 						cells: [],
@@ -189,11 +218,12 @@
 					this.$(hCells[i]).resizable({
 						autoHide: true,
 						handles: "e",
-						alsoResize: tvh
+						// alsoResize: hTable
 					});
 				}
 			}
-			
+*/			
+/*			
 			if(this.options.headerOverflow)
 				this.container.resize(function(){					
 					if($this.list.horizontalScrollBox.getElement().find('.iScrollHorizontalScrollbar').is(":visible")){
@@ -212,10 +242,36 @@
 						});
 					}
 				});
+*/			
+		},
+		
+		updateHeaderCols: function(){
+			var tvh = this.list.find('.tableViewHeader');
+			var headerCols = tvh.find('colgroup > col');
+			var headerCells = tvh.find('.cellHeader');
+			var lis = this.container.find('> li');
+			if(lis.length == 0){
+				return;
+			}
 			
-			tvh.resize(function(){
-				$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane').width(tvh.width());
-			});
+			// set header width
+			var count = lis[0].children.length;
+			for(var i = 0; i < count; i++){
+				if(headerCols.length <= i){
+					break;
+				}
+				(function(i){
+					var cellWidth = $this.$(lis[0].children[i]).outerWidth();
+					
+					var hCell = $this.$(headerCells[i]);
+					hCell.outerWidth(cellWidth);
+					JSB.defer(function(){
+						if(hCell.outerWidth() != cellWidth){
+							$this.$(lis[0].children[i]).outerWidth(hCell.outerWidth());
+						}
+					});
+				})(i);
+			}
 		},
 		
 		update: function(){

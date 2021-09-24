@@ -18,7 +18,11 @@
 		$require: ['css:itemList.css'],
 		$constructor: function(opts){
 			var self = this;
-			$base(opts);
+			this._onScrollHandler = opts && opts.onScroll;
+			var extOpts = JSB.merge({}, opts, {onScroll: function(x, y){
+				return $this._handleOnScroll(x, y);
+			}})
+			$base(extOpts);
 			this.addClass('_dwp_itemList');
 			
 			if(!this.options.views.basic){
@@ -34,6 +38,14 @@
 			view: 'basic',
 			onSelected: function(tgtObj){},
 			readOnly: false,
+		},
+		
+		_handleOnScroll: function(x, y){
+			// do something
+			$this.publish('JSB.Widgets.ItemList.scroll', {x: x, y: y});
+			if($this._onScrollHandler){
+				return $this._onScrollHandler.call($this, x, y);
+			}
 		},
 		
 		setReadOnly: function(b){

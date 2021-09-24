@@ -52,29 +52,13 @@
 	cursor: pointer;
 }
 
-/*._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.allowHover:hover, */
-._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.allowHover.highlighted {
-	background: -webkit-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
-	background: -moz-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
-    background: linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
-    background: -o-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
-    background: -ms-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
-	border: 1px solid rgba(170, 149, 39, 0.5);
-	border-radius: 3px;
+._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.allowHover.highlighted:not(.selected) {
+	background: #d6e2ea;
 }
 
-._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.selected, 
-/*._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.selected.allowHover:hover,*/
-._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.selected.allowHover.highlighted {
-	background: -webkit-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-	background: -moz-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-    background: linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-    background: -o-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-    background: -ms-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-	border: 1px solid #AA9527;
-	color: #5F5B00;
-	text-shadow: 1px 1px 1px #CEC89F;
-	border-radius: 3px;
+._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.selected {
+	background: #b0d0e8;
+	color: #07234c;
 	cursor: default;
 }
 

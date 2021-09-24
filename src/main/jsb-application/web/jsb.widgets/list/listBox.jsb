@@ -27,14 +27,8 @@
 				this.noItemsElt.text(this.options.emptyText);
 			}
 			elt.append(this.noItemsElt);
-/*			
-			this.horizontalScrollBox = new ScrollBox({scrollY: false});
-			this.horizontalScrollBox.addClass('horizontalScrollBox');
-			this.horizontalScrollBox.find('._dwp_scrollPane').addClass('horizontalScrollPane');
-			elt.append(this.horizontalScrollBox.getElement());
-*/			
-			this.scrollBox = new ScrollBox(/*$jsb.merge({scrollX: false}, this.options)*/this.options);
-/*			this.horizontalScrollBox.append(this.scrollBox);*/
+			
+			this.scrollBox = new ScrollBox(this.options);
 			
 			elt.append(this.scrollBox.getElement());
 			

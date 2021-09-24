@@ -3,7 +3,6 @@
 ._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > ._dwp_listBoxItem {
 	padding: 0;
 	margin: 0 3px 3px 0;
-	background: none;
 	border: none;
 }
 
@@ -11,44 +10,10 @@
 }
 
 
-._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.allowHover.highlighted {
-	background: none;
-	border: none;
-}
-
 ._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem {
 	padding: 4px 6px;
-	border: 1px solid #CCCCCC;
-	border-radius: 4px;
 	position: relative;
-	background: -webkit-linear-gradient(top,#fffffd, #f2f2f2 5%, #FDFDFD 25%, #ECECEC 98%, #E8E8E8 100%);
-	background: -moz-linear-gradient(top,#fffffd, #f2f2f2 5%, #FDFDFD 25%, #ECECEC 98%, #E8E8E8 100%);
-	background: linear-gradient(top,#fffffd, #f2f2f2 5%, #FDFDFD 25%, #ECECEC 98%, #E8E8E8 100%);
-	background: -o-linear-gradient(top,#fffffd, #f2f2f2 5%, #FDFDFD 25%, #ECECEC 98%, #E8E8E8 100%);
-	background: -ms-linear-gradient(top,#fffffd, #f2f2f2 5%, #FDFDFD 25%, #ECECEC 98%, #E8E8E8 100%);
-	color: #858585;
 }
-
-._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.highlighted ._dwp_listItem {
-	background: -webkit-linear-gradient(top, #FFF0DB 0%, #FCEBDF 15%, #FFE1C2 95%, #F8ECDD 100%);
-	background: -moz-linear-gradient(top, #FFF0DB 0%, #FCEBDF 15%, #FFE1C2 95%, #F8ECDD 100%);
-    background: linear-gradient(top, #FFF0DB 0%, #FCEBDF 15%, #FFE1C2 95%, #F8ECDD 100%);
-    background: -o-linear-gradient(top, #FFF0DB 0%, #FCEBDF 15%, #FFE1C2 95%, #F8ECDD 100%);
-    background: -ms-linear-gradient(top, #FFF0DB 0%, #FCEBDF 15%, #FFE1C2 95%, #F8ECDD 100%);
-    color: #B97A56;
-    border: 1px solid #D1C0B8;
-}
-
-._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.selected ._dwp_listItem {
-	background: -webkit-linear-gradient(top, #FFD7A3 0%, #FFE1CB 15%, #FCCC99 95%, #FFD9A9 100%);
-	background: -moz-linear-gradient(top, #FFD7A3 0%, #FFE1CB 15%, #FCCC99 95%, #FFD9A9 100%);
-    background: linear-gradient(top, #FFD7A3 0%, #FFE1CB 15%, #FCCC99 95%, #FFD9A9 100%);
-    background: -o-linear-gradient(top, #FFD7A3 0%, #FFE1CB 15%, #FCCC99 95%, #FFD9A9 100%);
-    background: -ms-linear-gradient(top, #FFD7A3 0%, #FFE1CB 15%, #FCCC99 95%, #FFD9A9 100%);
-    color: #A03A00;
-    border: 1px solid #BBA398;
-}
-
 
 ._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem ._dwp_closeBtn {
 	width: 14px;
