@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
@@ -41,8 +42,20 @@ public class JSEndPointServlet extends HttpServlet {
         final Principal principal = req.getUserPrincipal() == null
                 ? (ConfigHelper.getConfigBoolean("kernel.security.enabled") ? new AnonymousPrincipal() : new AdminPrincipal())
                 : req.getUserPrincipal();
-
-        Subject subj = new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet());
+        Subject subj = null;
+        if (principal != null) {
+            // if subject initialized with current principal
+            Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
+            for (Principal pr : accessControlSubject.getPrincipals()) {
+                if (pr == principal) {
+                    subj = accessControlSubject;
+                    break;
+                }
+            }
+            if (subj == null) {
+                subj = new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet());
+            }
+        }
         UpdateStatusMessage respObj = null;
         try {
             respObj = Subject.doAs(subj, new PrivilegedExceptionAction<UpdateStatusMessage>() {

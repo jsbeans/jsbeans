@@ -24,6 +24,7 @@ import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.messages.Message;
 import org.jsbeans.messages.Messages;
+import org.jsbeans.messages.SubjectMessage;
 import org.jsbeans.monads.Chain;
 import org.jsbeans.monads.CompleteMonad;
 import org.jsbeans.monads.FutureMonad;
@@ -200,6 +201,35 @@ public class JsHub extends Service {
         public Object getDefaultValue(Class<?> typeHint) {
             return method.getDefaultValue(typeHint);
         }
+    }
+
+    abstract class SubjectRunnable implements Runnable {
+        private Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
+        private transient AccessControlContext accessControlContext =  AccessController.getContext();
+
+        public Subject getAccessControlSubject() {
+            return accessControlSubject;
+        }
+        public AccessControlContext getAccessControlContext() {
+            return accessControlContext;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Subject.doAs(getAccessControlSubject(), new PrivilegedExceptionAction<Object>() {
+                    @Override
+                    public Object run() throws Exception {
+                        start();
+                        return null;
+                    }
+                });
+            } catch (Exception ex) {
+                getLog().error(ex.getMessage(), ex);
+                throw new RuntimeException(ex);
+            }
+        }
+        public abstract void start();
     }
     
     public static ContextFactory getContextFactory(){
@@ -449,9 +479,9 @@ public class JsHub extends Service {
             if (msg.getType() == TimeoutType.setTimeout) {
                 c = sch.scheduleOnce(
                         Duration.create(msg.getDuration(), TimeUnit.MILLISECONDS),
-                        new Runnable() {
+                        new SubjectRunnable() {
                             @Override
-                            public void run() {
+                            public void start() {
                                 getSelf().tell(execMsg, getSelf());
                                 getSelf().tell(JsTimeoutMessage.createClearTimeout(key), getSelf());
                             }
@@ -731,9 +761,9 @@ public class JsHub extends Service {
         ActorRef self = this.getSelf();
         ActorRef sender = this.getSender();
         Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(msg.getScopePath(), msg.isScopePreserved());
-        Runnable r = new Runnable() {
+        Runnable r = new SubjectRunnable() {
 			@Override
-			public void run() {
+			public void start() {
                 // put wrapped entries if any
                 if (msg.getWrapped() != null) {
                     for (String key : msg.getWrapped().keySet()) {

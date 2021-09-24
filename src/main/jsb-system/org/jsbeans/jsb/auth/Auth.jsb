@@ -21,10 +21,15 @@
 		           'JSB.IO.FileSystem',
 		           'JSB.Crypt.MD5',
 
+		           'java:org.jsbeans.web.SystemPrincipal',
+
+                   'java:java.util.Collections',
 		           'java:java.security.AccessControlContext',
 		           'java:java.security.AccessController',
+		           'java:java.security.Principal',
 		           'java:javax.security.auth.Subject',
-		           'java:java.security.Principal'],
+		           'java:java.security.PrivilegedExceptionAction',
+               ],
 
 	    $constructor: function(opts) {
 	        $base(opts);
@@ -99,6 +104,26 @@
             return null;
         },
 
+		getPrincipalUserName: function(){
+            var p = $this.getPrincipalName();
+            var i = p.indexOf('@');
+            return i > 0 ? p.substring(0,i) : p;
+        },
+
+        doAsSystem: function(callback, asSystem){
+            var asSystem = JSB.isDefined(asSystem) ? asSystem : true;
+            if (!asSystem) {
+                return callback();
+            }
+            var systemPrincipal = new SystemPrincipal();
+            var subj = new Subject(true, Collections.singleton(systemPrincipal), Collections.emptySet(), Collections.emptySet());
+            return Subject.doAs(subj, new PrivilegedExceptionAction() {
+                run: function(){
+                    return callback();
+                }
+            });
+        },
+
         hasRole: function() {
             // TODO check jaas role
             //$this.checkPermission()
@@ -159,9 +184,9 @@
 		},
 
 		_logStackHook: function() {
-		    var stack = JSB.stackTrace();
-		    //debugger;
-		    FileSystem.write('logs/__jsbeans_auth-' + $this.getPrincipalName() + '-' + MD5.md5(stack).substring(0,8) + '.log', stack);
+//		    var stack = JSB.stackTrace();
+//		    //debugger;
+//		    FileSystem.write('logs/__jsbeans_auth-' + $this.getPrincipalName() + '-' + MD5.md5(stack).substring(0,8) + '.log', stack);
 		},
 
 	}

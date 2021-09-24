@@ -125,9 +125,21 @@ public class HttpJsbServlet extends HttpServlet {
                 }
             }
 
-            Subject subj = principal != null
-                    ? new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet())
-                    : null;
+
+            Subject subj = null;
+            if (principal != null) {
+                // if subject initialized with current principal
+                Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
+                for (Principal pr : accessControlSubject.getPrincipals()) {
+                    if (pr == principal) {
+                        subj = accessControlSubject;
+                        break;
+                    }
+                }
+                if (subj == null) {
+                    subj = new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet());
+                }
+            }
 
             final JsonObject fpObj = pObj;
             final JsonElement fPostObj = postObj;

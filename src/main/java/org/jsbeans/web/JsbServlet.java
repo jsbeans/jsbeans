@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
@@ -137,9 +138,21 @@ public class JsbServlet extends HttpServlet {
         final String clientIp = WebHelper.extractRealIpFromRequest(req);
         final String cmdf = cmd;
 
-        Subject subj = principal != null
-                ? new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet())
-                : null;
+        Subject subj = null;
+        if (principal != null) {
+            // if subject initialized with current principal
+            Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
+            for (Principal pr : accessControlSubject.getPrincipals()) {
+                if (pr == principal) {
+                    subj = accessControlSubject;
+                    break;
+                }
+            }
+            if (subj == null) {
+                subj = new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet());
+            }
+        }
+
         try {
             Subject.doAs(subj, new PrivilegedExceptionAction<String>() {
                 @Override
