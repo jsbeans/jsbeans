@@ -16,7 +16,10 @@
 	display: none;
 	text-align: center;
 	color: #8A7E75;
-	font-size: x-small;
+	position: absolute;
+    margin: auto;
+    top: 50%;
+    width: 100%;
 }
 
 ._dwp_listBox ._dwp_noItems.visible {

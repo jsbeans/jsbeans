@@ -234,8 +234,8 @@
         },
 
 		checkSystemOrAdmin: function(){
-			if(!this.isAdmin() || this.isSystem()){
-				throw 'Administrator privileges required';
+			if(!this.isSystemOrAdmin()){
+				throw new Error('Administrator privileges required');
 			}
 		},
 
