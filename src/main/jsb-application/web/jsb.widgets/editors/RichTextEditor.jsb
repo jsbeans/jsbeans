@@ -225,7 +225,11 @@
 		},
 		
 		getHtml: function(){
-			return $this.parser.parse($this.getData());
+			var data = $this.getData();
+			if(data){
+				return $this.parser.parse(data);	
+			}
+			return '';
 		},
 		
 		getText: function(){}
