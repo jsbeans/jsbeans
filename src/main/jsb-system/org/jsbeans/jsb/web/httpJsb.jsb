@@ -28,6 +28,10 @@
 			if(!repoEntry || !repoEntry.jsb){
 				throw 'Unable to find bean: ' + beanPath;
 			}
+
+            if(!$this.findHttpBean(repoEntry.jsb)) {
+                throw 'Bean "' + repoEntry.jsb.$name + '" does not allow to be called via HTTP. Use "$http" option in bean declaration.';
+            }
 /*			
 			if(!repoEntry.jsb['$http'] && (!repoEntry.jsb.currentSection() || !repoEntry.jsb.currentSection()['$http'])){
 				throw 'Bean "' + repoEntry.jsb.$name + '" does not allow to be called via HTTP. Use "$http" option in bean declaration.';
@@ -67,8 +71,11 @@
 					return;
 				}
 				var result = $jsb.getProvider().executeClientRpc(repoEntry.jsb.$name, instanceId, proc, params);
-				var opts = {}; 
+				var opts = {};
 				if(result instanceof Web.Response){
+				    if (result.opts && result.opts.noComplete) {
+				        return;
+				    }
 					opts = result.opts; 
 					result = result.data; 
 				}
@@ -102,7 +109,17 @@
 			} catch(e){
 				servlet.processExecResultAsync(null, e, context);
 			}
-		}
+		},
+
+		findHttpBean: function(jsb) {
+		    while(jsb && jsb.$name != 'JSB.Object') {
+		        if (jsb.$http || (jsb.currentSection() && jsb.currentSection().$http)) {
+		            return jsb;
+		        }
+		        jsb = jsb.getParent();
+		    }
+		    return false;
+		},
 		
 	}
 }

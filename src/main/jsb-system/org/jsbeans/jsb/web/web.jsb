@@ -110,6 +110,10 @@
 		respond: function(data, opts){
 			return new this.Response(data, opts);
 		},
+
+		respondNoComplete: function() {
+		    return $this.respond(null, {noComplete:true});
+		},
 		
 		getRequest: function(){
 			return JSB.getThreadLocal().get('__request');
