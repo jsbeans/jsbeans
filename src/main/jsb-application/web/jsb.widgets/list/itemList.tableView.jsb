@@ -20,11 +20,12 @@
 			headerOverflow: false,
 			headerCellMinSize: 10
 		},
-		columns: [{key: '__main__', opts:{}}],
+		columns: [], //[{key: '__main__', opts:{}}],
 		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
+			this.columns.push({key: '__main__', opts: opts});
 			
 			this.subscribe(['JSB.Widgets.ItemList.insertItem', 'JSB.Widgets.ItemList.deleteItem','JSB.Widgets.ItemList.clear'], function(sender, msg, params){
 				if(self.list !== sender){
@@ -275,13 +276,24 @@
 		},
 		
 		update: function(){
-			var self = this;
 			if(!this.isActive()){
 				return;
 			}
 			
 			this.container.find('> li').each(function(){
-				self.syncItem(self.$(this));
+				$this.syncItem($this.$(this));
+			});
+			
+			$this.updateHeader();
+		},
+		
+		updateItem: function(key){
+			if(!this.isActive()){
+				return;
+			}
+			
+			this.container.find('> li[key="'+key+'"]').each(function(){
+				$this.syncItem($this.$(this), true);
 			});
 			
 			$this.updateHeader();
@@ -300,7 +312,7 @@
 				}
 		},
 		
-		syncItem: function(wrapper){
+		syncItem: function(wrapper, bForce){
 			var cells = wrapper.find('> *');
 
 			var bNeedUpdate = false;
@@ -328,7 +340,7 @@
 				bNeedUpdate = true;
 			}
 			
-			if(bNeedUpdate){
+			if(bNeedUpdate || bForce){
 				// clear all cells except main
 				wrapper.find('> .cell').remove(); // TODO: remove all injected beans
 				var bWasMain = false;
