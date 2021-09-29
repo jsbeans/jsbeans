@@ -60,12 +60,7 @@
         <org.jsbeans.application.path>jsb-application</org.jsbeans.application.path>
     </properties>
 <!--     
-	<repositories>
-		<repository>
-			<id>org.eclipse.wst.jsdt</id>
-			<url>https://maven.wso2.org/nexus/content/repositories/thirdparty</url>
-		</repository>
-	</repositories>
+
  -->
     <dependencies>
         <dependency>
