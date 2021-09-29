@@ -16,7 +16,7 @@ import akka.actor.Cancellable;
 import akka.actor.Scheduler;
 import akka.util.Timeout;
 
-import org.eclipse.wst.jsdt.debug.rhino.debugger.RhinoDebugger;
+/*import org.eclipse.wst.jsdt.debug.rhino.debugger.RhinoDebugger;*/
 import org.jboss.netty.channel.ChannelException;
 import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
@@ -327,7 +327,8 @@ public class JsHub extends Service {
             debugger = null;
         }
     }
-    
+
+/*    
     private void enableEclipseDebugger() throws Exception {
     	int port = 9999;
     	String transport = "socket";
@@ -343,7 +344,7 @@ public class JsHub extends Service {
 		d.start();
 		getContextFactory().addListener(d);
     }
-
+*/
 
     @Override
     protected void onMessage(Object msg) throws PlatformException {

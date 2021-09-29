@@ -49,7 +49,7 @@
 			if(this.options.dropDown){
 				// create dropdown list
 				this.addClass('_dwp_dropDown');
-				this.getElement().append('<div class="_dwp_cbContainer"></div>');
+				this.getElement().append('<div class="_dwp_cbContainer empty"></div>');
 				this.getElement().append('<div class="_dwp_dropBtn"></div>');
 
 				this.getElement().click(function(evt){
@@ -183,7 +183,9 @@
 			if(this.options.dropDown){
 				if(!val){
 					this.selectedObject = null;
-					this.find('> ._dwp_cbContainer').empty();
+					var cbContainerElt = this.find('> ._dwp_cbContainer');
+					cbContainerElt.empty();
+					cbContainerElt.addClass('empty');
 					this.getElement().removeAttr('value');
 					if(!JSB().isNull(this.options.onChange) && this.initialized){
 						this.options.onChange.call($this, null, null);
@@ -202,10 +204,12 @@
 							dt = $this.$(valObj.element).clone();
 						}
 						this.find('> ._dwp_cbContainer').empty().append(dt);
+						this.find('> ._dwp_cbContainer').removeClass('empty');
 						this.selectedObject = valObj;
 						this.getElement().attr('value', valObj.key);
 					} else {
 						this.find('> ._dwp_cbContainer').empty();
+						this.find('> ._dwp_cbContainer').addClass('empty');
 						this.selectedObject = null;
 						this.getElement().removeAttr('value');
 					}

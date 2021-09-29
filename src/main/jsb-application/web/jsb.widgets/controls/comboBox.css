@@ -4,6 +4,7 @@
 	position: relative;
 	font-size: small;
 	display: inline-block;
+	vertical-align: middle;
 }
 
 ._dwp_comboBox._dwp_dropDown,
@@ -49,9 +50,18 @@
 	padding-right: 14px;
 }
 
+._dwp_comboBox._dwp_dropDown > ._dwp_cbContainer.empty {}
+
+._dwp_comboBox._dwp_dropDown > ._dwp_cbContainer.empty:before {
+	content: 'Выберите из списка';
+	color: #686868;
+}
+
 ._dwp_comboBox._dwp_dropDown.hasClearBtn > ._dwp_cbContainer {
     padding-right: 20px;
 }
+
+
 
 ._dwp_comboBox._dwp_dropDown > ._dwp_dropBtn {
 	width: 12px;
