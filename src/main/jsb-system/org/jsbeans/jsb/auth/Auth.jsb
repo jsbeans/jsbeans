@@ -30,9 +30,21 @@
 		           'java:javax.security.auth.Subject',
 		           'java:java.security.PrivilegedExceptionAction',
                ],
+               
+        _userManager: null,
+        _permissionMap: {},
+        _userManager: null,
 
 	    $constructor: function(opts) {
 	        $base(opts);
+	        
+	        JSB.onLoad(function(){
+				if(JSB.isDefined(this.$expose) && this.isSubclassOf('JSB.Auth.BasicPermission')){
+					$this._registerPermission(this);
+				}
+			});
+
+/*	        
 	        if ($this.isSecurityEnabled()) {
                 var bean = Config.get('kernel.security.permissionsBean');
                 if (bean) {
@@ -43,6 +55,8 @@
                     });
                 }
             }
+*/
+	        
             // setup JSB.Error
             $this.SecurityError = function (message){
                 this.message = message;
@@ -51,6 +65,26 @@
             };
             $this.SecurityError.prototype = Object.create(JSB.Error.prototype);
         },
+        
+        setUserManager: function(userManager){
+        	Kernel.checkSystemOrAdmin();
+        	if(this._userManager){
+        		JSB.getLogger().info('User manager has already been installed. Please check.');
+        		return;
+        	}
+        	this._userManager = userManager;
+        },
+        
+        _registerPermission: function(permissionJsb){
+			if(!permissionJsb.$expose || !permissionJsb.$expose.id || !JSB.isString(permissionJsb.$expose.id)){
+				JSB.getLogger().error('Invalid permission "' + permissionJsb.getName() + '" - missing "id" in $expose descriptor');
+				return;
+			}
+			this.lock('permissionMap');
+			this._permissionMap[permissionJsb.$expose.id] = new (permissionJsb.getClass())(permissionJsb.$expose.id);
+			this.unlock('permissionMap');
+			/* JSB.getLogger().info('Permission "' + permissionJsb.$expose.name + '" registered' ); */
+		},
 
 		isSecurityEnabled: function(){
 			return Config.get('kernel.security.enabled');
@@ -129,6 +163,63 @@
             //$this.checkPermission()
         },
 
+        getPermissions: function(){
+        	return this._permissionMap;
+		},
+		
+		getPermission: function(pId){
+			return this._permissionMap[pId];
+		},
+		
+		checkPermission: function(permissionId){
+/*			
+			if(!Auth.isSecurityEnabled()){
+				return;
+			}
+*/			
+			
+			if(!$this._userManager){
+				throw new this.SecurityError('UserManager has not been installed');
+			}
+			
+			if(!this._permissionMap[permissionId]){
+				throw new this.SecurityError('Missing permission with id "' + permissionId + '"');
+			}
+/*
+			if(Kernel.isSystemOrAdmin()){
+				return;
+			}
+*/			
+			var permissionParamChain = $this._userManager.getPermissionParamsForUser(Auth.getUser(), permissionId);
+
+			var callArgs = [null];
+			for(var i = 1; i < arguments.length; i++){
+				callArgs.push(arguments[i]);
+			}
+			var lastError = null;
+			var pInst = this._permissionMap[permissionId];
+			for(var i = 0; i < permissionParamChain.length; i++){
+				callArgs[0] = permissionParamChain[i];
+				try {
+					pInst.check.apply(pInst, callArgs);
+					return;
+				} catch(e){
+					lastError = e;
+				}
+			}
+			if(lastError){
+				throw lastError;
+			}
+		},
+		
+		testPermission: function(permissionId){
+			try {
+				this.checkPermission.apply(this, arguments);
+			} catch(e) {
+				return e;
+			}
+		},
+/*        
         checkPermission: function(permission, use) {
             var currentUser  = $this.getPrincipalName();
             if($this.isSecurityEnabled()) {
@@ -182,7 +273,7 @@
             var status = $this.repo.removePermission(user, permission, desc);
             return status;
 		},
-
+*/
 		_logStackHook: function() {
 //		    var stack = JSB.stackTrace();
 //		    //debugger;
