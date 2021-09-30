@@ -21,6 +21,11 @@
 		
 		cachedContent: {},
 		
+		$constructor: function(){
+			this._minifyScripts = Config.has('web.minifyScripts') && Config.get('web.minifyScripts') || false;
+			this._es5Compatible = Config.has('web.es5Compatible') && Config.get('web.es5Compatible') || false;
+		},
+		
 		get: function(obj) {
 			var path = 'jsbeans.jsb';
 			var refType = null;
@@ -68,7 +73,7 @@
 			// insert setup server code
 			var setupProcStr = '(' + setupServerPath.toString().trim() + ')();';
 			if(!Config.get('web.debug')){
-				setupProcStr = '' + JsMinifier.minify(setupProcStr, false);
+				setupProcStr = '' + JsMinifier.minify(setupProcStr, false, this._minifyScripts, this._es5Compatible);
 			}
 			code += setupProcStr;
 			

@@ -77,6 +77,9 @@
 				// remove jso from the web cache
 				WebCache.remove(this.$name);
 			});
+			
+			this._minifyScripts = Config.has('web.minifyScripts') && Config.get('web.minifyScripts') || false;
+			this._es5Compatible = Config.has('web.es5Compatible') && Config.get('web.es5Compatible') || false;
 		},
 
 		Response: function(data, opts){
@@ -91,7 +94,7 @@
 				var jsoPath = Config.get("kernel.jsb.jsbEngineResource");
 				jsbData = FileHelper.readStringFromResource(jsoPath);
 				if(!Config.get('web.debug')){
-					jsbData = '' + JsMinifier.minify(jsbData, false);
+					jsbData = '' + JsMinifier.minify(jsbData, false, this._minifyScripts, this._es5Compatible);
 				}
 			} else {
 				jsbData = 'JSB(' + JsbServlet.getJsbCode(name, Kernel.session(), Kernel.clientAddr(), Kernel.user(), Kernel.clientRequestId(), Kernel.userToken()) + ');';
