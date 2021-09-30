@@ -52,6 +52,8 @@ public class Core {
     
     public static final String RUN_TAG = UUID.randomUUID().toString();
 
+    private static String serverConfName = "SERVER.conf";
+
     static {
         DOMConfigurator.configure(
                 Core.class.getResource("/" + getConfigPath(configPath, "log4j.xml")));
@@ -81,6 +83,7 @@ public class Core {
                 Core.configureLogger();
                 Core.loadBaseConfiguration();
                 Core.collectAndConfigurePlugins();
+                Core.applyServerConfiguration();
                 Core.startActorSystem();
                 Core.initPlugins();
                 Core.startServiceManager();
@@ -158,29 +161,6 @@ public class Core {
         log.info("Configuration loaded from '{}'", path);
     }
 
-    private static void finalizeConfiguration() {
-        Config systemPropertiesConfig  = ConfigFactory.empty();
-        for(Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
-            if ("false".equalsIgnoreCase(e.getValue().toString())) {
-                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(false));
-                continue;
-            } else if ("true".equalsIgnoreCase(e.getValue().toString())) {
-                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(true));
-                continue;
-            }
-//            try{
-//                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(Integer.parseInt(e.getValue().toString())));
-//                continue;
-//            } catch(Exception err){
-//                // ignore
-//            }
-            systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(e.getValue().toString()));
-        }
-
-        Core.mergeConfigWith(systemPropertiesConfig, false);
-        log.info("Configuration system property loaded");
-    }
-
     private static String getConfigPath(String configPath, String name) {
         return configPath.endsWith("/") || configPath.length() == 0
                 ? configPath + name
@@ -255,9 +235,42 @@ public class Core {
         }
     }
 
+    private static void applyServerConfiguration(){
+        String path = getConfigPath(configPath, "SERVER.conf");
+        Config conf = ConfigFactory.parseResources(path);
+        // merge main and plugin config
+        if (conf != null) {
+            Core.mergeConfigWith(conf, false);
+            log.debug("Server config loaded", serverConfName);
+        }
+    }
+
     private static Config loadPluginConfig(String name) {
         // load plugin config
         return ConfigFactory.parseResources(getConfigPath(configPath, name + ".conf"));
+    }
+
+    private static void finalizeConfiguration() {
+        Config systemPropertiesConfig  = ConfigFactory.empty();
+        for(Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
+            if ("false".equalsIgnoreCase(e.getValue().toString())) {
+                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(false));
+                continue;
+            } else if ("true".equalsIgnoreCase(e.getValue().toString())) {
+                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(true));
+                continue;
+            }
+//            try{
+//                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(Integer.parseInt(e.getValue().toString())));
+//                continue;
+//            } catch(Exception err){
+//                // ignore
+//            }
+            systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(e.getValue().toString()));
+        }
+
+        Core.mergeConfigWith(systemPropertiesConfig, false);
+        log.info("Configuration system property loaded");
     }
 
     private static void initPlugins() {
