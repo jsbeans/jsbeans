@@ -93,9 +93,19 @@
 		isThroughAuth: function() {
 		    return Config.get("kernel.security.throughAuthEnabled");
 		},
-
+		
 		getUser: function(){
 			return Kernel.user();
+		},
+		
+		getUserInfo: function(){
+			var userInfo = {
+				userName: this.getUser()
+			};
+			if(this._userManager){
+				JSB.merge(userInfo, this._userManager.getUserInfo(userInfo.userName));
+			}
+			return userInfo;
 		},
 
 		getAccessControlContext: function() {
@@ -172,11 +182,9 @@
 		},
 		
 		checkPermission: function(permissionId){
-/*			
 			if(!Auth.isSecurityEnabled()){
 				return;
 			}
-*/			
 			
 			if(!$this._userManager){
 				throw new this.SecurityError('UserManager has not been installed');
@@ -185,11 +193,11 @@
 			if(!this._permissionMap[permissionId]){
 				throw new this.SecurityError('Missing permission with id "' + permissionId + '"');
 			}
-/*
+
 			if(Kernel.isSystemOrAdmin()){
 				return;
 			}
-*/			
+			
 			var permissionParamChain = $this._userManager.getPermissionParamsForUser(Auth.getUser(), permissionId);
 
 			var callArgs = [null];

@@ -17,6 +17,7 @@
 		$require: ['JSB.Web',
 		           'JSB.System.Config',
 		           'JSB.System.Kernel',
+		           'JSB.Auth',
 		           'java:org.jsbeans.web.JsMinifier'],
 		
 		cachedContent: {},
@@ -27,6 +28,7 @@
 		},
 		
 		get: function(obj) {
+			$this.publish('JSB.ClientBootstrap.userAccess', Auth.getUser());
 			var path = 'jsbeans.jsb';
 			var refType = null;
 			if(obj && obj.refid){

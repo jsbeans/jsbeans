@@ -226,19 +226,22 @@ public class JsBridge {
     	ActorSelection jsHubSvc = ActorHelper.getActorSelection(JsHub.class);
         String token = Context.getCurrentContext().getThreadLocal("token").toString();
         //String sessionId = Context.getCurrentContext().getThreadLocal("session").toString();
-        Object user = Context.getCurrentContext().getThreadLocal("user");
+//        Object user = Context.getCurrentContext().getThreadLocal("user");
         Object userToken = Context.getCurrentContext().getThreadLocal("userToken");
         Object clientAddr = Context.getCurrentContext().getThreadLocal("clientAddr");
         Object clientRequestId = Context.getCurrentContext().getThreadLocal("clientRequestId");
         
         final ExecuteScriptMessage execMsg = new ExecuteScriptMessage(token, (Function) callback, new Object[]{});
         //execMsg.setScopePath(msg.getScopePath());
+/*        
         if(user != null){
         	execMsg.setUser(user.toString());
         }
+*/        
         if(userToken != null){
         	execMsg.setUserToken(userToken.toString());
         }
+        
         if(clientRequestId != null){
         	execMsg.setClientRequestId(clientRequestId.toString());
         }

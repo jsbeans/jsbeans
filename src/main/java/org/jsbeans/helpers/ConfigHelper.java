@@ -202,6 +202,23 @@ public class ConfigHelper {
             }
         }
     }
+    
+    public static String getPluginHomeFolder(Class<?> cls) {
+        if (cls.getProtectionDomain() == null) {
+            return null;
+        } else {
+            try {
+                File file = new File(cls.getProtectionDomain().getCodeSource().getLocation().toURI());
+                String path = file.getCanonicalPath();
+                if (file.isFile()) {
+                    return getRootFolder();
+                }
+                return path;
+            } catch (URISyntaxException | IOException e) {
+                throw ExceptionHelper.runtime(e);
+            }
+        }
+    }
 
     public static String getPluginConfigHome(Object obj){
         String pluginHome = getPluginHomeFolder(obj);
