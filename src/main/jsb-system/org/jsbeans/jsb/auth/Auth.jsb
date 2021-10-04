@@ -61,7 +61,7 @@
             $this.SecurityError = function (message){
                 this.message = message;
                 JSB.Error.apply(this, arguments);
-                JSB.Error.captureStackTrace(this);
+                Error.captureStackTrace(this);
             };
             $this.SecurityError.prototype = Object.create(JSB.Error.prototype);
         },
@@ -179,6 +179,18 @@
 		
 		getPermission: function(pId){
 			return this._permissionMap[pId];
+		},
+		
+		getPermissionParams: function(permissionId){
+			if(!$this._userManager){
+				throw new this.SecurityError('UserManager has not been installed');
+			}
+			
+			if(!this._permissionMap[permissionId]){
+				throw new this.SecurityError('Missing permission with id "' + permissionId + '"');
+			}
+			
+			return $this._userManager.getPermissionParamsForUser(Auth.getUser(), permissionId);
 		},
 		
 		checkPermission: function(permissionId){

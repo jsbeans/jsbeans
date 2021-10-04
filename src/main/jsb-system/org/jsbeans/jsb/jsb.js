@@ -910,7 +910,7 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 
 					// setup rootFunc
-					$rootFunc = function(inst, callback){
+					$rootFunc = function(inst, callback, chRoot){
 						if(!callback){
 							return;
 						}
@@ -921,7 +921,7 @@ if(!(function(){return this;}).call(null).JSB){
 						if(self.isSession()){
 							throw new Error('Use of $root is restricted for session bean "' + self.getDescriptor().$name+ '"');
 						}
-						return Bridge.executeRoot(callback);
+						return Bridge.executeRoot(callback, chRoot ? true : false);
 					}
 /*
 					// propagate $server and $client
