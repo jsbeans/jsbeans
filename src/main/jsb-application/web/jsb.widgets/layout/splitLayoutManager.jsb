@@ -347,6 +347,9 @@
 						self.constructArea(layoutDesc, name, function(ctrl){
 							layoutDesc.ctrl = ctrl;
 							self.layoutsView.addTab(name, ctrl, {});
+							if(layoutDesc.key){
+								layoutDesc.ctrl.attr('key', layoutDesc.key);
+							}
 							if(name == self.options.defaultLayout){
 								self.layoutsView.switchTab(name);
 							}
