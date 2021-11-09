@@ -116,7 +116,9 @@
 
 .grid-master > table td.grid-cell[type="undefined"] {}
 
-.grid-master > table td.grid-cell[type="string"] {}
+.grid-master > table td.grid-cell[type="string"] {
+	white-space: pre;
+}
 
 .grid-master > table td.grid-cell[type="number"],
 .grid-master > table td.grid-cell[type="float"],
