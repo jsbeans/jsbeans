@@ -124,7 +124,7 @@
 				params.scope = scope;
 			}
 			return this.activate({
-				id: '_dwp_messageTool',
+				id: '_jsb_messageTool',
 				cmd: 'show',
 				data: params,
 				scope: params.scope,

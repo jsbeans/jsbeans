@@ -21,7 +21,7 @@
 			var self = this;
 			JSB().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
 				toolMgr.registerTool({
-					id: '_dwp_messageTool',
+					id: '_jsb_messageTool',
 					jso: self,
 					wrapperOpts: {
 						exclusive: true,
@@ -29,6 +29,7 @@
 						hideByEsc: true,
 						hideByOuterClick: false,
 						hideInterval: 0,
+						cssClass: '_jsb_messageToolWrapper'
 					}
 				});
 			});
@@ -42,7 +43,7 @@
 		construct: function(){
 			var self = this;
 			var elt = this.getElement();
-			elt.addClass('_dwp_messageTool');
+			elt.addClass('_jsb_messageTool');
 			this.icon = this.$('<div class="_dwp_messageTool_Icon"></div>');
 			this.append(this.icon);
 			this.message = this.$('<div class="_dwp_messageTool_Message"></div>');
@@ -64,8 +65,9 @@
 			var data = this.data.data;
 			
 			// set class
-			if(data.css)
+			if(data.css){
 				this.getElement().addClass(data.css);
+			}
 			
 			// set icon
 			this.icon.removeAttr('class');
@@ -98,6 +100,9 @@
 							self.complete();
 						}
 					});
+					if(b.css){
+						btnElt.addClass(b.css);
+					}
 					liElt.append(btnElt.getElement());
 					
 				})(btn);
