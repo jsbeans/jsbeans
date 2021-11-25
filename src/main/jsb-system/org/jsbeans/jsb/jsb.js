@@ -6453,6 +6453,11 @@ JSB({
 				if (xhr.overrideMimeType) {
 					xhr.overrideMimeType("application/json");
 				}
+				if(xhrObj.headerProps && Object.keys(xhrObj.headerProps).length > 0){
+					for(var hp in xhrObj.headerProps){
+						xhr.setRequestHeader(hp, xhrObj.headerProps[hp]);
+					}
+				}
 				xhr.onreadystatechange = function(){
 					if(xhr.readyState != 4) return;
 					window.clearTimeout(to);
@@ -6466,7 +6471,7 @@ JSB({
 							}
 							xhrObj.success(resdata, xhr.status, xhr);
 						}
-					} else {
+					} else if(xhr.status != 0) {
 						if(xhrObj.error){
 							xhrObj.error(xhr, xhr.status, xhr.statusText);
 						}
@@ -6498,6 +6503,7 @@ JSB({
 					data: params,
 					dataType: 'jsonp',
 					timeout: timeout,
+					headerProps: opts && opts.headerProps,
 					success: function(data, status, xhr){
 						self.curDeferTimeout = self.options.minDeferTimeout;
 						var respObj = data;
@@ -6541,6 +6547,7 @@ JSB({
 						data: params,
 						type: method,
 						timeout: timeout,
+						headerProps: opts && opts.headerProps,
 						success: function(data, status, xhr){
 							self.curDeferTimeout = self.options.minDeferTimeout;
 							if(triggerKey){
@@ -6661,7 +6668,7 @@ JSB({
 					var dDesc = p.__di[i];
 					if(dDesc.d.__type == 'File'){
 						$this.ajax($this.getServerBase() + 'jsb?cmd=upload&id=' + dDesc.d.__id, dDesc.d.__data, function(res, obj){
-						}, {timeout: 0});
+						}, {timeout: 0, headerProps: {'Content-Length':dDesc.d.__data.size, 'Access-Control-Allow-Origin': '*'}});
 						delete dDesc.d.__data;
 					}
 				}
