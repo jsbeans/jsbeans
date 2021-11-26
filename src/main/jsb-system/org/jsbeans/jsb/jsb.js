@@ -6471,7 +6471,7 @@ JSB({
 							}
 							xhrObj.success(resdata, xhr.status, xhr);
 						}
-					} else if(xhr.status != 0) {
+					} else {
 						if(xhrObj.error){
 							xhrObj.error(xhr, xhr.status, xhr.statusText);
 						}
