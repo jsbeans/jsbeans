@@ -196,10 +196,10 @@
         <dependency>
             <groupId>org.eclipse.jetty.aggregate</groupId>
             <artifactId>jetty-all</artifactId>
-            <version>9.4.39.v20210325</version>
+            <version>9.4.43.v20210629</version>
             <type>pom</type>
     		<!--  <scope>test</scope>  -->
-            <!--  <version>8.1.12.v20130726</version>  -->
+            <!--  <version>9.4.39.v20210325</version>  -->
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
