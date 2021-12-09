@@ -222,15 +222,13 @@
 	    },
 
 	    setValue: function(val, key, hEvt){
-	        this._value = {
-                key: key,
-                value: val
-            };
-
             this.currentVal.empty();
 	        this.dropDown.find('li').removeClass('selected');
 
 	        if(JSB.isDefined(key)){  // select
+	        	if(!this._optionsList[key]){
+	        		return;
+	        	}
 	            this.currentVal.append(this._optionsList[key].html());
 	            this._optionsList[key].addClass('selected');
 	        } else {
@@ -238,6 +236,11 @@
                     this.currentVal.append('<div class="simpleValue">' + val + '</div>');
                 }
 	        }
+	        
+	        this._value = {
+                key: key,
+                value: val
+            };
 
 	        if(this.clearBtn){
                 if(JSB.isDefined(val) || JSB.isDefined(key)){

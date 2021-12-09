@@ -1880,10 +1880,16 @@ if(!(function(){return this;}).call(null).JSB){
 			return jsbMap;
 		},
 
-		clone: function(obj){
+		clone: function(obj, bAssign){
 			if(this.isArray(obj)){
+				if(bAssign){
+					return Object.assign([],obj);
+				}
 				return this.merge(true, [], obj);
 			} else if(this.isPlainObject(obj)){
+				if(bAssign){
+					return Object.assign({},obj);	
+				}
 				return this.merge(true, {}, obj);
 			}
 			return obj;
