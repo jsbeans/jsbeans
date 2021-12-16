@@ -111,10 +111,17 @@
 			var zoom = this.node.diagram.getOption('zoom');
 			var nodePos = this.node.getElement().get(0).getBoundingClientRect();
 			var originRc = this.options.origin.get(0).getBoundingClientRect();
-			this.originRc.left = (originRc.left - nodePos.left) / zoom;
-			this.originRc.top = (originRc.top - nodePos.top) / zoom;
-			this.originRc.width = (originRc.right - originRc.left) / zoom;
-			this.originRc.height = (originRc.bottom - originRc.top) / zoom;
+			if(this.node.isFixed()){
+				this.originRc.left = (originRc.left - nodePos.left);
+				this.originRc.top = (originRc.top - nodePos.top);
+				this.originRc.width = (originRc.right - originRc.left);
+				this.originRc.height = (originRc.bottom - originRc.top);
+			} else {
+				this.originRc.left = (originRc.left - nodePos.left) / zoom;
+				this.originRc.top = (originRc.top - nodePos.top) / zoom;
+				this.originRc.width = (originRc.right - originRc.left) / zoom;
+				this.originRc.height = (originRc.bottom - originRc.top) / zoom;
+			}
 		},
 		
 		install: function(){
@@ -210,6 +217,11 @@
 
 			this.installed = true;
 			this.publish('_jsb_diagramConnectorInstalled');
+			this.setTrigger('_jsb_diagramConnectorInstalled');
+		},
+		
+		isInstalled: function(){
+			return this.installed;
 		},
 		
 		getOrigin: function(){
@@ -220,8 +232,8 @@
 			if(!this.installed){
 				return null;
 			}
-			
 			var nodePos = this.node.getPosition();
+			
 			var ox = Math.round(this.originRc.left + this.originRc.width / 2);
 			var oy = Math.round(this.originRc.top + this.originRc.height / 2);
 

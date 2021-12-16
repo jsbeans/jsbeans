@@ -272,6 +272,21 @@
 			if(JSB().isNull(this.source) || JSB().isNull(this.target)){
 				return;
 			}
+			
+			if(JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') && !this.source.isInstalled()){
+				this.source.ensureTrigger('_jsb_diagramConnectorInstalled', ()=>{
+					this.redraw();
+				});
+				return;
+			}
+			
+			if(JSB().isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector') && !this.target.isInstalled()){
+				this.target.ensureTrigger('_jsb_diagramConnectorInstalled', ()=>{
+					this.redraw();
+				});
+				return;
+			}
+			
 			var self = this;
 			
 			if(!this.group){

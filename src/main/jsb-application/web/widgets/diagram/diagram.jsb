@@ -254,7 +254,7 @@
 			
 			this.setupEventHandlers();
 			
-			this.getElement().resize(function(){
+			this.getElement().resize(function(x, y){
 				if(!$this.getElement().is(':visible')){
 					return;
 				}
@@ -371,6 +371,9 @@
 			}
 			this.options.zoom = zoom;
 			this.updateViewport({dontUpdateDimensions:true});
+			JSB.defer(()=>{
+				this.updateViewport({dontUpdateDimensions:true});
+			}, 0, 'setZoom_' + $this.getId());
 		},
 		
 		setupEventHandlers: function(){
@@ -452,6 +455,13 @@
 				var dRect = this.getElement().get(0).getBoundingClientRect();
 				w = dRect.right - dRect.left;
 				h = dRect.bottom - dRect.top;
+				if(h&1){
+					h--;
+					this.addClass('odd_vert');
+				} else {
+					this.removeClass('odd_vert');
+				}
+				
 				this.svg.attr('width', w);
 				this.svg.attr('height', h);
 				$this.lastWidth = w;
@@ -489,7 +499,8 @@
 				width: gridSideX * 2,
 				height: gridSideY * 2
 			});
-			this.updateFixedLinks();
+			
+			this._updateFixedLinks();	
 		},
 		
 		setupLayout: function(key, opts, callback){
@@ -808,7 +819,15 @@
 			}
 		},
 		
-		updateFixedLinks: function(){
+		_updateFixedConnectors: function(){
+			for(var nId in this.nodes){
+				if(this.nodes[nId].isFixed()){
+					this.nodes[nId].updateConnectors();
+				}
+			}
+		},
+		
+		_updateFixedLinks: function(){
 			for(var i in this.fixedLinks){
 				this.fixedLinks[i].redraw();
 			}

@@ -5,6 +5,9 @@
 	background-color: #fff;
 }
 
+._jsb_diagram.odd_vert {
+}
+
 ._jsb_diagram.panning {
 	cursor: move;
 }
@@ -42,6 +45,10 @@
 	top: 50%;
 	width: 0;
 	height: 0;
+}
+
+._jsb_diagram.odd_vert > ._jsb_diagramCanvas > ._jsb_diagramSheet {
+	top: calc(50% - 1px);
 }
 
 ._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet > ._jsb_diagramNode {
