@@ -174,6 +174,8 @@
 		
 		updateScrollbars: function(){
 			if(!this.options.scrollbars){
+				this.removeClass('horzScrollVisible');
+				this.removeClass('vertScrollVisible');
 				return;
 			}
 			var wrapRect = this.getElement().get(0).getBoundingClientRect();
