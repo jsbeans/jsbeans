@@ -3170,7 +3170,7 @@ if(!(function(){return this;}).call(null).JSB){
 			return op;
 		},
 
-		defer: function( deferProc, timeout, key ){
+		defer: function( deferProc, timeout, key, noProlong ){
 			var self = this;
 			var toProc = function(){
 				if(key && self.deferTimeoutMap[key]){
@@ -3200,10 +3200,16 @@ if(!(function(){return this;}).call(null).JSB){
 					locker.lock('__deferTimeoutMap');
 				}
 				try {
-					if(this.deferTimeoutMap[key]){
-						JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
+					if(noProlong){
+						if(!this.deferTimeoutMap[key]){
+							this.deferTimeoutMap[key] = JSB().Window.setTimeout(toProc, timeout);
+						}
+					} else {
+						if(this.deferTimeoutMap[key]){
+							JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
+						}
+						this.deferTimeoutMap[key] = JSB().Window.setTimeout(toProc, timeout);
 					}
-					this.deferTimeoutMap[key] = JSB().Window.setTimeout(toProc, timeout);
 				} finally {
 					if(locker){
 						locker.unlock('__deferTimeoutMap');
