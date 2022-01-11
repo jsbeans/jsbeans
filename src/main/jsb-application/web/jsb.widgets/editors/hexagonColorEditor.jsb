@@ -408,6 +408,7 @@
                 cancelText: "Отмена",
                 showButtons: true,
                 allowEmpty: true,
+                showAlpha: true,
                 //togglePaletteOnly: true,
                 hideAfterPaletteSelect:true,
 		        disabled: this.options.readonly,

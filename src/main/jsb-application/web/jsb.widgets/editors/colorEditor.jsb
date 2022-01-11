@@ -31,10 +31,10 @@
 
 		    this.editBoxElt.spectrum({
 		        color: this._color,
-		        showInput: true,
+		        showInput: false,
+		        showInitial: false,
 		        showPalette: true,
 		        showPaletteOnly: false,
-		        showInitial: true,
 		        togglePaletteMoreText: 'больше',
                 togglePaletteLessText: 'меньше',
                 chooseText: "Принять",
@@ -43,6 +43,7 @@
                 noColorSelectedText: "Цвет не выбран",
                 showButtons: true,
                 allowEmpty: true,
+                showAlpha: true,
                 //togglePaletteOnly: true,
                 hideAfterPaletteSelect:true,
 		        disabled: this.options.readonly,
