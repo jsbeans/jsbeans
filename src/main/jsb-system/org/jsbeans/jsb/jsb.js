@@ -2009,7 +2009,7 @@ if(!(function(){return this;}).call(null).JSB){
 					} else if(rjsb._readyState == 3){
 						msg += '\r\n\tBean "' + rName + '" is waiting for its $constructor to be correctly completed';
 					} else {
-						msg += '\r\n\tBean "' + rName + '" is incompleted for unknown reqson';
+						msg += '\r\n\tBean "' + rName + '" is incompleted for unknown reason';
 					}
 				}
 				throw new Error(msg);
