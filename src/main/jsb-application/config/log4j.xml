@@ -42,7 +42,7 @@
     </appender>
 
     <logger name="ru.sis">
-        <level value="INFO"/>
+        <level value="DEBUG"/>
     </logger>
 
     <logger name="ru.avicomp">
@@ -69,7 +69,7 @@
 
     <!-- jsBeans loggers  -->
     <logger name="org.jsbeans">
-        <level value="INFO"/>
+        <level value="DEBUG"/>
     </logger>
     <logger name="Remoting">
         <level value="INFO"/>
@@ -79,7 +79,7 @@
     </logger>
 
     <logger name="org.jsbeans.scripting">
-        <level value="INFO"/>
+        <level value="DEBUG"/>
         <appender-ref ref="FILE-SCRIPTING"/>
     </logger>
     <logger name="org.jsbeans.security">
