@@ -25,12 +25,15 @@
 -->
 <html>
 <head>
+	{{? htmlSection && htmlSection.headBefore && htmlSection.headBefore.length > 0}}
+		{{=htmlSection.headBefore}}
+	{{?}}
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=1024, user-scalable=no" />
-	{{? htmlSection.title}}
+	{{? htmlSection && htmlSection.title}}
 	<title>{{=htmlSection.title}}</title>
 	{{?}}
-	{{? htmlSection.favicon}}
+	{{? htmlSection && htmlSection.favicon}}
 	<link rel="shortcut icon" type="image/png" href="{{=htmlSection.favicon}}"/>
 	{{?}}
  	<script type="text/javascript" src="/jsbeans.jsb?refid={{=this.getId()}}&{{=Web.getSessionIdPathParameterName()}}={{=Kernel.session()}}"></script>
@@ -50,10 +53,19 @@
 			position: absolute !important;
 		}
  	</style>
+ 	{{? htmlSection && htmlSection.headAfter && htmlSection.headAfter.length > 0}}
+ 		{{=htmlSection.headAfter}}
+	{{?}}
 </head>
 
 <body>
+	{{? htmlSection && htmlSection.bodyBefore && htmlSection.bodyBefore.length > 0}}
+		{{=htmlSection.bodyBefore}}
+	{{?}}
 	<div jsb="{{=this.getJsb().$name}}" bind="{{=this.getId()}}" class="mainContainer" ></div>
+	{{? htmlSection && htmlSection.bodyAfter && htmlSection.bodyAfter.length > 0}}
+		{{=htmlSection.bodyAfter}}
+	{{?}}
 </body>
 </html>`,{
 	contentType: 'text/html;charset=utf-8'
