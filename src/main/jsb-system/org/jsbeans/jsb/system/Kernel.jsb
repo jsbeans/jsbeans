@@ -18,6 +18,7 @@
 		    'java:org.jsbeans.helpers.NetworkHelper',
 		    'java:java.net.InetAddress',
 		    'java:org.jsbeans.web.HttpService',
+		    'java:java.lang.System'
 		],
 
 		$constructor: function(){
@@ -295,5 +296,8 @@
 		    return '' + InetAddress.getLocalHost().getHostName();
 		},
 		
+		gc: function(){
+			System.gc();
+		}
 	}
 }
