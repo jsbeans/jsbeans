@@ -77,6 +77,10 @@
 			this.ensureActive();
 			return '' + this.cluster.state().getLeader().toString();
 		},
+
+		isLeader: function(){
+			return $this.getLeader() == $this.getNodeAddress();
+		},
 		
 		getMembers: function(selfExclude){
 			this.ensureActive();
