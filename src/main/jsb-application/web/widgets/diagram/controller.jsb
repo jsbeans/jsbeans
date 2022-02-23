@@ -282,7 +282,9 @@
 					
 					if(this.isNodeResizing) {
 						this.isNodeResizing = false;
-
+						if(!params.handle){
+							params.handle = $this.nodeResizeHandle;
+						}
 						if(params.handle.type == 'resize' && params.handle.onResize) {
 						    params.handle.onResize.call(sender);
 						}
