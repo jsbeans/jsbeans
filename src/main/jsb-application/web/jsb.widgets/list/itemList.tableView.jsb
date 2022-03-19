@@ -250,7 +250,7 @@
 			var tvh = this.list.find('.tableViewHeader');
 			var headerCols = tvh.find('colgroup > col');
 			var headerCells = tvh.find('.cellHeader');
-			var lis = this.container.find('> li');
+			var lis = this.container.find('> li:visible');
 			if(lis.length == 0){
 				return;
 			}

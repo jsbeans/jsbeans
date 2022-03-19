@@ -40,7 +40,7 @@
 }
 
 ._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem[filtered="true"]{
-	display: none;
+	display: none !important;
 }
 
 ._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.allowSelect {
