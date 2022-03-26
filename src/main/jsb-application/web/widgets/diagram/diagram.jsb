@@ -20,6 +20,7 @@
 		WiringController: 'JSB.Widgets.Diagram.WiringController',
 		LayoutManager: 'JSB.Widgets.Diagram.LayoutManager',
 		DefaultLayoutManager: 'JSB.Widgets.Diagram.DefaultLayoutManager',
+		D3: 'D3',
 		css: 'css:diagram.css'
 	},
 	
@@ -104,10 +105,12 @@
 				}
 			};
 
-			
+/*			
 			JSB().loadScript('tpl/d3/d3.min.js', function(){
 				$this.init();
 			});
+*/			
+			$this.init();
 			
 		},
 		

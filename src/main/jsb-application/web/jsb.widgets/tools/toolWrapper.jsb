@@ -13,7 +13,8 @@
 	$parent:'JSB.Widgets.Control',
 	$client: {
 		$require: ['jQuery.UI.Droppable',
-		           'script:/../../../tpl/d3/d3.min.js',
+/*		           'script:/../../../tpl/d3/d3.min.js',*/
+		           'D3',
 		           'css:toolWrapper.css'],
 
 		$constructor: function(toolId, toolMgr, w, opts){
