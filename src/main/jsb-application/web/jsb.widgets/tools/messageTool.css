@@ -49,6 +49,7 @@
 	display: inline-block;
 	min-width: 300px;
 	max-width: 600px;
+	user-select: text;
 }
 
 ._jsb_messageTool ._dwp_messageTool_Buttons {
