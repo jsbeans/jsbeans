@@ -126,8 +126,9 @@
 //							return window.CodeMirror.overlayMode(window.CodeMirror.getMode(config, "text/javascript"), mustacheOverlay);
 //						});
 						$this.init(mode, theme, {
-							lint: true,
+/*							lint: true,
 							gutters: ['CodeMirror-lint-markers']
+							*/
 						});
 						$this.ready = true;
 					});
