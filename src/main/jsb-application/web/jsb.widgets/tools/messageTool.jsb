@@ -94,10 +94,13 @@
 					var btnElt = new Button({
 						caption: b.text,
 						onClick: function(){
+							var noClose = false;
 							if(self.data.callback){
-								self.data.callback.call(self, b.value);
+								noClose |= self.data.callback.call(self, b.value);
 							}
-							self.complete();
+							if(!noClose){
+								self.complete();
+							}
 						}
 					});
 					if(b.css){

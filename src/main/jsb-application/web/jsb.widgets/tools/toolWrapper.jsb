@@ -262,8 +262,10 @@
 			this.publish('toolShow', params);
 			
 			this.updatePosition();
+			
+			var isModal = JSB.isDefined(this.params.modal) ? this.params.modal : this.options.modal;
 
-			if(this.options.modal){
+			if(isModal){
 				this.addClass('_dwp_modal');
 				this.showModalBackground(this.affinityPoint);
 			} else {

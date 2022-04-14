@@ -266,7 +266,7 @@
 				return true;
 			}
 			
-			if(readyToShow()){
+			if((params && params.showImmediately) || readyToShow()){
 				if(!chosenInstance.prepareShow){
 					return;
 				}
