@@ -177,53 +177,25 @@ public class JsbRegistryService extends Service {
         try {
             String body = bean.read();
 
-            // create documentation
-            if(genDocs && remoteRepoUrl.isEmpty()){
-                String path = bean.getFullLocation();
-                int index = path.lastIndexOf("/") != -1 ? path.lastIndexOf("/"): path.lastIndexOf("\\");
-                JsbDoc.parse(body, path.substring(index + 1) + ".json");
-            }
-
-
             String basePath = bean.getBaseLocation().equals("WEB")
                     ? (ConfigHelper.getWebFolders().stream().filter(w ->
-                            FileHelper.fileExists(w+"/"+bean.getFullLocation()))
-                            .findAny()
-                            .orElse(null)
-                    )
+                    FileHelper.fileExists(w+"/"+bean.getFullLocation()))
+                    .findAny()
+                    .orElse(null)
+            )
                     : bean.getBaseLocation();
+
+            // create documentation
+            if(genDocs && remoteRepoUrl.isEmpty()){
+                int index = basePath.lastIndexOf("/") != -1 ? basePath.lastIndexOf("/"): basePath.lastIndexOf("\\");
+                JsbDoc.parse(body, basePath.substring(index + 1) + ".json");
+            }
+
             String webFolder = basePath.endsWith("/") ? basePath.substring(0, basePath.length() -1) : basePath;
             String relPathWithFile = bean.getURI().startsWith("/") ? bean.getURI().substring(1) : bean.getURI();
             String relPath = FileHelper.getFolderByPath(bean.getURI().startsWith("/") ? bean.getURI().substring(1) : bean.getURI());
             String fullPathFile = bean.getBaseLocation().equals("WEB") ? Paths.get(basePath, bean.getURI()).toString() : bean.getFullLocation();
             String fullPath = FileHelper.getFolderByPath(fullPathFile);
-
-
-
-            /**System
-             * jsoFile=/jsb-system/org/jsbeans/jsb/io/Encoder.jsb
-             * webFolder=server
-             * relPathWithFile=server/Encoder.jsb
-             * relPath=server
-             * fullPathFile=/jsb-system/org/jsbeans/jsb/io/Encoder.jsb
-             * fullPath=/jsb-system/org/jsbeans/jsb/io
-             * */
-            /**Server
-             * jsoFile=/jsb-resource/workflow/operators/workflow/ForkJoinOperator.jsb
-             * webFolder=server
-             * relPathWithFile=server/ForkJoinOperator.jsb
-             * relPath=server
-             * fullPathFile=/jsb-resource/workflow/operators/workflow/ForkJoinOperator.jsb
-             * fullPath=/jsb-resource/workflow/operators/workflow
-             * */
-            /**Application
-             * jsoFile=/media/user/WORK/bradex/br-portal/cubisio/modules/jsbeans/target/classes/jsb-application/web/jsb.widgets/tools/toolTip.jsb
-             * webFolder=/media/user/WORK/bradex/br-portal/cubisio/modules/jsbeans/target/classes/jsb-application/web
-             * relPathWithFile=jsb.widgets/tools/toolTip.jsb
-             * relPath=jsb.widgets/tools
-             * fullPathFile=/media/user/WORK/bradex/br-portal/cubisio/modules/jsbeans/target/classes/jsb-application/web/jsb.widgets/tools/toolTip.jsb
-             * fullPath=/media/user/WORK/bradex/br-portal/cubisio/modules/jsbeans/target/classes/jsb-application/web/jsb.widgets/tools
-             * */
 
             String source = JsbTemplateEngine.perform(body, fullPathFile, webFolder);
             String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s',$_fullPath:'%s',$_fullPathFile:'%s'});",
