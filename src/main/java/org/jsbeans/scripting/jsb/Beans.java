@@ -84,7 +84,7 @@ public interface Beans {
             return paths.stream()
                     .flatMap(path ->
                             FileHelper.searchFiles(path, "**/*.jsb").stream()
-                                    .map(file -> file.replaceAll(File.separator, "/").substring(path.length()))
+                                    .map(file -> file.replaceAll("\\\\", "/").substring(path.length()))
                                     .filter(filter)
                                     .map(uri -> (Bean) new Bean() {
                                         @Override

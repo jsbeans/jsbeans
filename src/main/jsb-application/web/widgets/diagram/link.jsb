@@ -249,8 +249,10 @@
 							y: seg.to.y - seg.from.y
 						};
 						var vecLen = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
-						vec.x /= vecLen;
-						vec.y /= vecLen;
+						if(vecLen > 0){
+							vec.x /= vecLen;
+							vec.y /= vecLen;
+						}
 						var vecOffs = vecLen / 2;
 						if(vecOffs > this.diagram.getOption('cellSize') * this.options.cellRoundMax){
 							vecOffs = this.diagram.getOption('cellSize') * this.options.cellRoundMax;
