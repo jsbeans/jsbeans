@@ -16,13 +16,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
-import org.jsbeans.helpers.ActorHelper;
-import org.jsbeans.helpers.ConfigHelper;
-import org.jsbeans.helpers.FileHelper;
-import org.jsbeans.helpers.ReflectionHelper;
-import org.jsbeans.messages.Message;
+import org.jsbeans.documentation.JsbDoc;
+import org.jsbeans.helpers.*;
 import org.jsbeans.monads.Chain;
 import org.jsbeans.monads.CompleteMonad;
 import org.jsbeans.monads.FutureMonad;
@@ -32,42 +28,68 @@ import org.jsbeans.scripting.JsHub;
 import org.jsbeans.scripting.UpdateStatusMessage;
 import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
-import org.jsbeans.documentation.JsbDoc;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
+import org.jsbeans.scripting.jsb.Beans.Bean;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
-import scala.concurrent.duration.Duration;
 
-import java.io.File;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.regex.Pattern;
+
 
 @DependsOn(JsHub.class)
 public class JsbRegistryService extends Service {
-/*	
+    String jsbEnginePath = ConfigHelper.getConfigString("kernel.jsb.jsbEngineResource");
+    String lookupSystemPath = ConfigHelper.getConfigString("kernel.jsb.lookupSystemPath");
+    String lookupServerPath = ConfigHelper.getConfigString("kernel.jsb.lookupResourcePath");
+    String remoteRepoUrl = ConfigHelper.has("kernel.jsb.repo.remote") ? ConfigHelper.getConfigString("kernel.jsb.repo.remote") : "";
+    byte[] remoteKey = (ConfigHelper.has("kernel.jsb.repo.key")
+            ? ConfigHelper.getConfigString("kernel.jsb.repo.key")
+            : "0123456789").getBytes();
+    String remoteKeyBase64 = Base64.getEncoder().encodeToString(remoteKey);
+    String jsbEngineURI = jsbEnginePath.substring(lookupSystemPath.length());
+
+    boolean genDocs = ConfigHelper.has("kernel.jsb.createDoc") && ConfigHelper.getConfigBoolean("kernel.jsb.createDoc");;
+
+    public static Beans.Provider system;
+    public static Beans.Provider server;
+    public static Beans.Provider application;
+/*
     private static final long garbageCollectorInterval = ConfigHelper.getConfigInt("kernel.jshub.garbageCollectorInterval");
     private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpireTimeout");
-*/    
+*/
 
 //    private Map<String, SessionEntry> sessionMap = Collections.synchronizedMap(new LinkedHashMap<String, SessionEntry>(16, 0.75F, true));
 //    private Map<String, SessionEntry> sessionMap = new LinkedHashMap<String, SessionEntry>(16, 0.75F, true);
 
     @Override
     protected void onInit() throws PlatformException {
-        this.loadJsbEngine();
+        system = remoteRepoUrl.isEmpty()
+                ? new Beans.ResourceProvider(Collections.singleton(lookupSystemPath), Pattern.compile(".*\\.jsb|.*jsb\\.js"))
+                : new Beans.RemoteProvider(
+                        this.getRemoteUrl(Beans.Type.system),
+                        Beans.EncoderDecoder.decoder(remoteKey),
+                        Collections.emptyList());
 
-        // load server-side JSS from resources
-        String sysPath = ConfigHelper.getConfigString("kernel.jsb.lookupSystemPath");
-        this.registerBeans(sysPath, true);
+        // register system bean jsb.js
+        Bean bean = system.find(jsbEngineURI);
+        this.loadJsbEngine(bean);
+
+        // register server-side JSS from resources
+        system.forEach(this::registerBean);
         this.loadBeans(1);
 /*
-        // Run garbage collection timer to avoid old sessions 
+        // Run garbage collection timer to avoid old sessions
         Core.getActorSystem().scheduler().schedule(
                 Duration.Zero(),
                 Duration.create(garbageCollectorInterval, TimeUnit.MILLISECONDS),
@@ -75,7 +97,12 @@ public class JsbRegistryService extends Service {
                 Message.TICK,
                 Core.getActorSystem().dispatcher(),
                 getSelf());
-*/                
+*/
+    }
+
+    private String getRemoteUrl(Beans.Type type) {
+        String url = remoteRepoUrl + "?" + type.name() + "&key=" + remoteKeyBase64;
+        return url;
     }
 
     @Override
@@ -95,22 +122,139 @@ public class JsbRegistryService extends Service {
         }
     }
 
+    private void handleLoadAdditionalObjects(LoadAdditionalObjectsMessage msg) {
+//        getLog().info("JssFolders:\n" +  ConfigHelper.getJssFolders().toString().replaceAll(", ", "\n"));
+//        getLog().info("WebFolders:\n" +  ConfigHelper.getWebFolders().toString().replaceAll(", ", "\n"));
 
-	private void handleLoadAdditionalObjects(LoadAdditionalObjectsMessage msg) {
-    	String resPath = ConfigHelper.getConfigString("kernel.jsb.lookupResourcePath");
-    	this.registerBeans(resPath, true);
-        // load client-server JSBs
-        for (String path : ConfigHelper.getJssFolders()) {
-            this.registerBeans(path, false);
-        }
+        /// register server beans
+        server = remoteRepoUrl.isEmpty()
+                ? new Beans.ResourceProvider(Collections.singleton(lookupServerPath), Pattern.compile(".*\\.jsb"))
+                : new Beans.RemoteProvider(
+                        this.getRemoteUrl(Beans.Type.server),
+                        Beans.EncoderDecoder.decoder(remoteKey),
+                        Collections.emptyList());
+        server.forEach(
+                this::registerBean);
+
+        // register application beans
+        application = remoteRepoUrl.isEmpty()
+                ? new Beans.FileProvider(ConfigHelper.getJssFolders())
+                : new Beans.RemoteProvider(
+                        this.getRemoteUrl(Beans.Type.application),
+                        Beans.EncoderDecoder.decoder(remoteKey),
+                        Collections.singleton("WEB"));
+        application.forEach(
+                this::registerBean);
+
         this.loadBeans(2);
         this.completeInitialization();
     }
-    
+
+
+//    private BeansPackage scanRemoteBeans(String url) {
+//        try {
+//            BeansPackage system;
+//            String repo = this.remoteRepoGet(url);
+//            BufferedReader reader = new BufferedReader(new StringReader(repo));
+//            String line;
+//            system = new BeansPackage(BeansPackageType.system);
+//            while (((line = reader.readLine()) != null)) {
+//                system.beans.add(line);
+//            }
+//            return system;
+//        } catch (IOException e) {
+//            getLog().error(String.format("Failed to read remote beans list from '%s' due to following reson: %s", remoteRepoUrl, e.toString()));
+//            throw new PlatformException(e);
+//        }
+//    }
+
+
+    private void registerBean(Bean bean) {
+        if (bean.getURI().equalsIgnoreCase(jsbEngineURI)) {
+            // core registered
+            return;
+        }
+        try {
+            String body = bean.read();
+
+            // create documentation
+            if(genDocs && remoteRepoUrl.isEmpty()){
+                String path = bean.getFullLocation();
+                int index = path.lastIndexOf("/") != -1 ? path.lastIndexOf("/"): path.lastIndexOf("\\");
+                JsbDoc.parse(body, path.substring(index + 1) + ".json");
+            }
+
+
+            String basePath = bean.getBaseLocation().equals("WEB")
+                    ? (ConfigHelper.getWebFolders().stream().filter(w ->
+                            FileHelper.fileExists(w+"/"+bean.getFullLocation()))
+                            .findAny()
+                            .orElse(null)
+                    )
+                    : bean.getBaseLocation();
+            String webFolder = basePath.endsWith("/") ? basePath.substring(0, basePath.length() -1) : basePath;
+            String relPathWithFile = bean.getURI().startsWith("/") ? bean.getURI().substring(1) : bean.getURI();
+            String relPath = FileHelper.getFolderByPath(bean.getURI().startsWith("/") ? bean.getURI().substring(1) : bean.getURI());
+            String fullPathFile = bean.getBaseLocation().equals("WEB") ? Paths.get(basePath, bean.getURI()).toString() : bean.getFullLocation();
+            String fullPath = FileHelper.getFolderByPath(fullPathFile);
+
+
+
+            /**System
+             * jsoFile=/jsb-system/org/jsbeans/jsb/io/Encoder.jsb
+             * webFolder=server
+             * relPathWithFile=server/Encoder.jsb
+             * relPath=server
+             * fullPathFile=/jsb-system/org/jsbeans/jsb/io/Encoder.jsb
+             * fullPath=/jsb-system/org/jsbeans/jsb/io
+             * */
+            /**Server
+             * jsoFile=/jsb-resource/workflow/operators/workflow/ForkJoinOperator.jsb
+             * webFolder=server
+             * relPathWithFile=server/ForkJoinOperator.jsb
+             * relPath=server
+             * fullPathFile=/jsb-resource/workflow/operators/workflow/ForkJoinOperator.jsb
+             * fullPath=/jsb-resource/workflow/operators/workflow
+             * */
+            /**Application
+             * jsoFile=/media/user/WORK/bradex/br-portal/cubisio/modules/jsbeans/target/classes/jsb-application/web/jsb.widgets/tools/toolTip.jsb
+             * webFolder=/media/user/WORK/bradex/br-portal/cubisio/modules/jsbeans/target/classes/jsb-application/web
+             * relPathWithFile=jsb.widgets/tools/toolTip.jsb
+             * relPath=jsb.widgets/tools
+             * fullPathFile=/media/user/WORK/bradex/br-portal/cubisio/modules/jsbeans/target/classes/jsb-application/web/jsb.widgets/tools/toolTip.jsb
+             * fullPath=/media/user/WORK/bradex/br-portal/cubisio/modules/jsbeans/target/classes/jsb-application/web/jsb.widgets/tools
+             * */
+
+            String source = JsbTemplateEngine.perform(body, fullPathFile, webFolder);
+            String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s',$_fullPath:'%s',$_fullPathFile:'%s'});",
+                    source, relPath, relPathWithFile, fullPath,  fullPathFile);
+            ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
+//                if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
+//                    scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
+//                }
+            scriptMsg.setToken(fullPathFile);
+            Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), scriptMsg, ActorHelper.getServiceCommTimeout());
+            Object result = Await.result(f, ActorHelper.getServiceCommTimeout().duration());
+            if (result instanceof UpdateStatusMessage) {
+                UpdateStatusMessage msg = (UpdateStatusMessage) result;
+                if (msg.error != null && msg.error.trim().length() > 0) {
+                    getLog().error(String.format("Failed to register JSB descriptor '%s' due to following reson: %s", fullPathFile, msg.error));
+                } else {
+                    // jso loaded successfully
+                }
+            } else {
+                throw new PlatformException(String.format("Internal Error: Expected 'ScopeResponseMessage' but found message of type '%s' while loading JSB '%s'", result.getClass().getName(), fullPathFile));
+            }
+        } catch (Exception e) {
+            getLog().error(String.format("Failed to register JSB descriptor '%s' due to following reson: %s", bean.getURI(), e.toString()));
+        }
+    }
+
+
     private void loadBeans(int stage) throws PlatformException {
         // load indexed beans
         try {
-        	String codeToExecute = String.format("JSB.getRepository().load(%d);", stage);
+            String codeToExecute = String.format("JSB.getRepository().load(%d);", stage);
             ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
 //            if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
 //                scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
@@ -129,102 +273,20 @@ public class JsbRegistryService extends Service {
                 throw new PlatformException(String.format("Internal Error: Expected 'ScopeResponseMessage' but found message of type '%s'", result.getClass().getName()));
             }
         }catch(Exception e){
-        	getLog().error(String.format("Failed to load JSB descriptor due to following reson: %s", e.toString()));
+            getLog().error(String.format("Failed to load JSB descriptor due to following reson: %s", e.toString()));
         }
 
     }
 
-    private void registerBeans(final String folder, boolean isServer) throws PlatformException {
-        //String folder = ConfigHelper.getPluginHomeFolder(this);
-        Collection<String> jsoPaths = null;
-        if (!isServer) {
-        	jsoPaths = FileHelper.searchFiles(folder, "**/*.jsb");
-//            jsoPaths.addAll(FileHelper.searchFiles(folder, "**/*.jsb"));
-        } else {
-            jsoPaths = new ArrayList<>();
-            String prefix = folder.startsWith("/") ? folder : folder.substring(1);
-            ReflectionHelper.getPlatformReflections().getResources(Pattern.compile(".*(\\.jsb)"))
-                    .stream().map("/"::concat).filter(n -> n.startsWith(prefix)).forEach(jsoPaths::add);
-        }
-        for (String jsoPath : jsoPaths) {
-            String jsoFile = jsoPath;
-            try {
-                if (!isServer) {
-                    jsoFile = FileHelper.normalizePath(jsoPath);
-                }
-                String jsoBody = isServer ? FileHelper.readStringFromResource(jsoFile) : FileHelper.readStringFromFile(jsoFile);
-                if (jsoBody == null || jsoBody.length() == 0) {
-                    throw new PlatformException(String.format("Problem occured due to loading JSB descriptor: '%s'", jsoFile));
-                }
-
-                // create documentation
-                if(ConfigHelper.has("kernel.jsb.createDoc") && ConfigHelper.getConfigBoolean("kernel.jsb.createDoc")){
-                    int index = jsoFile.lastIndexOf("/") != -1 ? jsoFile.lastIndexOf("/"): jsoFile.lastIndexOf("\\");
-                    JsbDoc.parse(jsoBody, jsoFile.substring(index + 1) + ".json");
-                }
-                
-                // obtain pathes
-                String fullPathFile = jsoFile.replaceAll("\\\\", "/");
-                String fullPath = fullPathFile.substring(0, fullPathFile.lastIndexOf("/"));
-                // obtain relative folder
-                String relPath = "";
-                String relPathWithFile = "";
-                String webFolder = "";
-                if(jsoFile.endsWith("Gauge.jsb")) {
-                	"".toCharArray();
-                }
-                for (String fld : ConfigHelper.getWebFolders()) {
-                    try {
-                    	Path webPath = jsoFile.endsWith(".jsb") ? new File(fld).toPath().normalize() : (new File(folder)).toPath().normalize();
-                        Path fPath = Paths.get(jsoFile);
-                        
-                        relPath = isServer ? "server" : FileHelper.getFolderByPath(webPath.relativize(fPath).toString()).replaceAll("\\\\", "/");
-                        webFolder = isServer ? "server" : webPath.toString().replaceAll("\\\\", "/");
-                        if(relPath.equals("/")){
-                        	relPathWithFile = fPath.getFileName().toString();
-                        } else {
-                        	relPathWithFile = relPath + '/' + fPath.getFileName().toString();
-                        }
-                        if (!relPath.startsWith("..")) break;
-                    } catch (Exception ex) {
-                    }
-                }
-
-                String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s',$_fullPath:'%s',$_fullPathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile, webFolder), relPath, relPathWithFile, fullPath,  fullPathFile);
-                ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
-//                if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
-//                    scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
-//                }
-                scriptMsg.setToken(jsoFile);
-                Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), scriptMsg, ActorHelper.getServiceCommTimeout());
-                Object result = Await.result(f, ActorHelper.getServiceCommTimeout().duration());
-                if (result instanceof UpdateStatusMessage) {
-                    UpdateStatusMessage msg = (UpdateStatusMessage) result;
-                    if (msg.error != null && msg.error.trim().length() > 0) {
-                        getLog().error(String.format("Failed to register JSB descriptor '%s' due to following reson: %s", jsoFile, msg.error));
-                    } else {
-                        // jso loaded successfully
-                    }
-                } else {
-                    throw new PlatformException(String.format("Internal Error: Expected 'ScopeResponseMessage' but found message of type '%s' while loading JSB '%s'", result.getClass().getName(), jsoFile));
-                }
-            } catch (Exception e) {
-                getLog().error(String.format("Failed to register JSB descriptor '%s' due to following reson: %s", jsoFile, e.toString()));
-            }
-        }
-        
-    }
-
-
-    private void loadJsbEngine() throws PlatformException {
+    private void loadJsbEngine(Bean bean) throws PlatformException {
         try {
-            String jsoPath = ConfigHelper.getConfigString("kernel.jsb.jsbEngineResource");
-            String jsoData = FileHelper.readStringFromResource(jsoPath);
+            String jsoData = bean.read();
+
             ExecuteScriptMessage execMsg = new ExecuteScriptMessage(jsoData, false);
 //            if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
 //                execMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
 //            }
-            execMsg.setToken(jsoPath);
+            execMsg.setToken(bean.getURI());
             Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, ActorHelper.getServiceCommTimeout());
             Object result = Await.result(f, ActorHelper.getServiceCommTimeout().duration());
             if (result instanceof UpdateStatusMessage) {
@@ -285,7 +347,7 @@ public class JsbRegistryService extends Service {
                 });
     }
 
-    
+
     private void handleRpc(RpcMessage msg) {
         try {
             JsObject rpcResult = new JsObject(JsObjectType.JSONARRAY);
@@ -328,7 +390,7 @@ public class JsbRegistryService extends Service {
                 }
                 JsonObject obj = elt.getAsJsonObject();
                 String id = obj.get("id").getAsString();
-                
+
                 // check whether widget and proc field are filled
                 JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
                 rpcEntryResp.addToObject("id", id);
@@ -386,29 +448,29 @@ public class JsbRegistryService extends Service {
 //                    sEntry.newRpc(id);
 
                 this.createChain(JsonObject.class, UpdateStatusMessage.class, obj)
-                    .add(new FutureMonad<JsonObject, Object>(sessionId, clientAddr, user, clientRequestId, userToken, id) {
-                        @Override
-                        public Future<Object> run(JsonObject obj) throws PlatformException {
-                            String sessionId = this.getArgument(0);
-                            String clientAddr = this.getArgument(1);
-                            String user = this.getArgument(2);
-                            String rid = this.getArgument(3);
-                            String userToken = this.getArgument(4);
-                            String rpcId = this.getArgument(5);
-                            String jsoName = obj.get("jsb").getAsString();
-                            String procName = obj.get("proc").getAsString();
-                            String instanceId = obj.get("instance").getAsString();
-                            JsonElement paramElt = obj.get("params");
-                            String script = String.format("JSB().getProvider().performRpc('%s','%s','%s',%s,'%s');", jsoName, instanceId, procName, paramElt != null ? paramElt.toString() : "null", rpcId);
-                            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
-                            execMsg.setScopePath(sessionId);
-                            execMsg.setClientAddr(clientAddr);
-                            execMsg.setUser(user);
-                            execMsg.setUserToken(userToken);
-                            execMsg.setClientRequestId(rid);
-                            return ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, ActorHelper.getServiceCommTimeout());
-                        }
-                    })/*.add(new CompleteMonad<UpdateStatusMessage>(sessionId, id) {
+                        .add(new FutureMonad<JsonObject, Object>(sessionId, clientAddr, user, clientRequestId, userToken, id) {
+                            @Override
+                            public Future<Object> run(JsonObject obj) throws PlatformException {
+                                String sessionId = this.getArgument(0);
+                                String clientAddr = this.getArgument(1);
+                                String user = this.getArgument(2);
+                                String rid = this.getArgument(3);
+                                String userToken = this.getArgument(4);
+                                String rpcId = this.getArgument(5);
+                                String jsoName = obj.get("jsb").getAsString();
+                                String procName = obj.get("proc").getAsString();
+                                String instanceId = obj.get("instance").getAsString();
+                                JsonElement paramElt = obj.get("params");
+                                String script = String.format("JSB().getProvider().performRpc('%s','%s','%s',%s,'%s');", jsoName, instanceId, procName, paramElt != null ? paramElt.toString() : "null", rpcId);
+                                ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
+                                execMsg.setScopePath(sessionId);
+                                execMsg.setClientAddr(clientAddr);
+                                execMsg.setUser(user);
+                                execMsg.setUserToken(userToken);
+                                execMsg.setClientRequestId(rid);
+                                return ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, ActorHelper.getServiceCommTimeout());
+                            }
+                        })/*.add(new CompleteMonad<UpdateStatusMessage>(sessionId, id) {
 	                    @Override
 	                    public void onComplete(Chain<?, UpdateStatusMessage> chain, UpdateStatusMessage result, Throwable fail) throws PlatformException {
 	                        if (fail != null) {
@@ -425,16 +487,16 @@ public class JsbRegistryService extends Service {
             this.getSender().tell(new RpcMessage(e), this.getSelf());
         }
     }
-    
+
     private void handleUpload(UploadMessage msg) {
-    	String sessionId = msg.getSessionId();
-    	String streamId = msg.getStreamId();
+        String sessionId = msg.getSessionId();
+        String streamId = msg.getStreamId();
         String clientAddr = msg.getClientAddr();
         String user = msg.getUser();
         String userToken = msg.getUserToken();
         String clientRequestId = msg.getClientRequestId();
-		try {
-			String script = String.format( "JSB().getProvider().performUpload('%s', JSB.getThreadLocal().get('__stream'));", streamId );
+        try {
+            String script = String.format( "JSB().getProvider().performUpload('%s', JSB.getThreadLocal().get('__stream'));", streamId );
             ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
             execMsg.addThreadLocal("__stream", msg.getStream());
             execMsg.setScopePath(sessionId);
@@ -450,10 +512,10 @@ public class JsbRegistryService extends Service {
                 getLog().error("JsoRegistryService handleRpc failed with message: " + fail.getMessage(), fail);
 
             }
-		} catch(PlatformException e) {
-			getLog().error(e.getMessage());
-		}
-	}
+        } catch(PlatformException e) {
+            getLog().error(e.getMessage());
+        }
+    }
 
 /*
     private void updateSessionMap() {
