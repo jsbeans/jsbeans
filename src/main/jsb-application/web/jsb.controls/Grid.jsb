@@ -128,6 +128,7 @@
             //rowHeader: true, todo
             rowClass: null,
             stringLimit: 0,
+            undefinedAsNull: true,
 
             // renderers
             headerRenderer: null,
@@ -477,6 +478,9 @@
         _defaultRenderer: function(td, value, opts){
             function detectType(val){
                 if(!JSB.isDefined(val)){
+                	if($this.options.undefinedAsNull){
+                		return 'null';
+                	}
                     return 'undefined';
                 }
 
@@ -545,6 +549,8 @@
                 } else {
                     this.$(td).text(value);
                 }
+            } else if(valueType === 'null'){
+            	this.$(td).text('null');
             } else {
                 this.$(td).text(String(value));
             }
