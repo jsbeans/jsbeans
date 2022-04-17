@@ -37,9 +37,6 @@
 		},
 
 		get: function(params){
-            if (!params.key || !JSB.isString(params.key)) {
-                throw new JSB.Error('Invalid user key');
-            }
 			var request = Web.getContext().getRequest();
 			var response = Web.getContext().getResponse();
             response.setCharacterEncoding('UTF-8');
@@ -51,8 +48,15 @@
                 var pkg = JsbRegistryService.server;
             } else if(params.hasOwnProperty('application')) {
                 var pkg = JsbRegistryService.application;
+            } else if(params.hasOwnProperty('redirect_uri')) {
+                var url = params.redirect_uri;
+                response.sendRedirect(url);
+                return;
             }
 
+            if (!params.key || !JSB.isString(params.key)) {
+                throw new JSB.Error('Invalid user key');
+            }
             var key = Base64.getDecoder().decode(params.key);
             var out = EncoderDecoder.encoder(key).apply(response.getOutputStream());
             ZippedProvider.writeAsZip(pkg, out);
