@@ -34,17 +34,13 @@ import org.jsbeans.scripting.jsb.Beans.Bean;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 @DependsOn(JsHub.class)
@@ -76,10 +72,7 @@ public class JsbRegistryService extends Service {
     protected void onInit() throws PlatformException {
         system = remoteRepoUrl.isEmpty()
                 ? new Beans.ResourceProvider(Collections.singleton(lookupSystemPath), Pattern.compile(".*\\.jsb|.*jsb\\.js"))
-                : new Beans.RemoteProvider(
-                        this.getRemoteUrl(Beans.Type.system),
-                        Beans.EncoderDecoder.decoder(remoteKey),
-                        Collections.emptyList());
+                : createRemoteProvider(Beans.Type.system, Collections.emptyList());
 
         // register system bean jsb.js
         Bean bean = system.find(jsbEngineURI);
@@ -98,6 +91,30 @@ public class JsbRegistryService extends Service {
                 Core.getActorSystem().dispatcher(),
                 getSelf());
 */
+    }
+
+    private Beans.RemoteProvider createRemoteProvider(Beans.Type type, Collection<String> paths) {
+        return new Beans.RemoteProvider(
+                this.getRemoteUrl(type),
+                Beans.EncoderDecoder.decoder(remoteKey),
+                paths,
+                http -> {
+                    if(AuthHelper.httpClientAuthEnabled()) {
+                        while (!AuthHelper.checkHttpClientAuth()) {
+                            getLog().info("Wait auth...");
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Map<String, String> cookies = AuthHelper.getCookies();
+                        http.setRequestProperty("Cookie", cookies.entrySet()
+                                .stream()
+                                .map(e -> e.getKey() + "=" + e.getValue())
+                                .collect(Collectors.joining("; ")));
+                    }
+                });
     }
 
     private String getRemoteUrl(Beans.Type type) {
@@ -129,20 +146,14 @@ public class JsbRegistryService extends Service {
         /// register server beans
         server = remoteRepoUrl.isEmpty()
                 ? new Beans.ResourceProvider(Collections.singleton(lookupServerPath), Pattern.compile(".*\\.jsb"))
-                : new Beans.RemoteProvider(
-                        this.getRemoteUrl(Beans.Type.server),
-                        Beans.EncoderDecoder.decoder(remoteKey),
-                        Collections.emptyList());
+                : createRemoteProvider(Beans.Type.server, Collections.emptyList());
         server.forEach(
                 this::registerBean);
 
         // register application beans
         application = remoteRepoUrl.isEmpty()
                 ? new Beans.FileProvider(ConfigHelper.getJssFolders())
-                : new Beans.RemoteProvider(
-                        this.getRemoteUrl(Beans.Type.application),
-                        Beans.EncoderDecoder.decoder(remoteKey),
-                        Collections.singleton("WEB"));
+                : createRemoteProvider(Beans.Type.application, Collections.singleton("WEB"));
         application.forEach(
                 this::registerBean);
 

@@ -3,6 +3,8 @@ package org.jsbeans.scripting.jsb;
 import com.google.common.primitives.Bytes;
 import org.jsbeans.PlatformException;
 import org.jsbeans.Starter;
+import org.jsbeans.helpers.AuthHelper;
+import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.helpers.FileHelper;
 import org.jsbeans.helpers.ReflectionHelper;
 import org.jsbeans.types.Tuple;
@@ -14,10 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -282,7 +282,7 @@ public interface Beans {
     class RemoteProvider implements Provider {
         HttpURLConnection http;
         ZippedProvider zipped;
-        public RemoteProvider(String url, UnaryOperator<InputStream> decoder, Collection<String> paths) {
+        public RemoteProvider(String url, UnaryOperator<InputStream> decoder, Collection<String> paths, Consumer<HttpURLConnection> prepareHttp) {
                 zipped = new ZippedProvider(() -> {
                     try {
                         if (http != null) {
@@ -293,6 +293,7 @@ public interface Beans {
                         http.setConnectTimeout(15000);
                         http.setReadTimeout(15000);
                         http.setRequestProperty("charset", "UTF-8");
+                        prepareHttp.accept(http);
                         return decoder != null ? decoder.apply(http.getInputStream()) : http.getInputStream();
                     } catch (IOException e) {
                         throw new PlatformException(e);
@@ -438,13 +439,13 @@ public interface Beans {
 
     class EncoderDecoder {
         public static UnaryOperator<InputStream> decoder(byte[] decodeKey) {
-            return decoderPipe(decodeKey);
-//            return decoderXor(decodeKey);
+//            return decoderPipe(decodeKey);
+            return decoderXor(decodeKey);
         }
 
         public static UnaryOperator<OutputStream> encoder(byte[] encodeKey) {
-            return encoderPipe(encodeKey);
-//            return encoderXor(encodeKey);
+//            return encoderPipe(encodeKey);
+            return encoderXor(encodeKey);
         }
         public static UnaryOperator<InputStream> decoderPipe(byte[] decodeKey) {
             return i -> i;
