@@ -98,23 +98,7 @@ public class JsbRegistryService extends Service {
                 this.getRemoteUrl(type),
                 Beans.EncoderDecoder.decoder(remoteKey),
                 paths,
-                http -> {
-                    if(AuthHelper.httpClientAuthEnabled()) {
-                        while (!AuthHelper.checkHttpClientAuth()) {
-                            getLog().info("Wait auth...");
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        Map<String, String> cookies = AuthHelper.getCookies();
-                        http.setRequestProperty("Cookie", cookies.entrySet()
-                                .stream()
-                                .map(e -> e.getKey() + "=" + e.getValue())
-                                .collect(Collectors.joining("; ")));
-                    }
-                });
+                AuthHelper::authenticateHttpClient);
     }
 
     private String getRemoteUrl(Beans.Type type) {
