@@ -355,7 +355,7 @@
 
             // если контент - конструктор элемента, то сперва создадим элемент
             if(JSB.isFunction(tab.options.content)) {
-                tab.options.content = new tab.options.content();
+                tab.options.content = new tab.options.content(tab.options.options);
             }
 
             this._contentPane.append(tab.options.content);

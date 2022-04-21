@@ -119,6 +119,13 @@
 			return this.registry;
 		},
 		
+		getItemsByType: function(type){
+			if(type){
+				return this.registryByType[type];
+			}
+			return this.registryByType;
+		},
+		
 		getItemAttr: function(jsb, attr){
 			var desc = this.registryByType[jsb];
 			if(!desc){
