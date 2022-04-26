@@ -3,7 +3,6 @@ package org.jsbeans.scripting.jsb;
 import com.google.common.primitives.Bytes;
 import org.jsbeans.PlatformException;
 import org.jsbeans.Starter;
-import org.jsbeans.helpers.AuthHelper;
 import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.helpers.FileHelper;
 import org.jsbeans.helpers.ReflectionHelper;
@@ -16,7 +15,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -261,19 +262,25 @@ public interface Beans {
             try (ZipOutputStream zip = new ZipOutputStream(out, StandardCharsets.UTF_8)){
                 provider.forEach(bean -> {
                     try(InputStream is = bean.getInputStream()) {
-                        byte[]buffer = new byte[is.available()];
+                        byte[]buffer = new byte[1024];
+                        int size, total = 0;
 
                         ZipEntry entry = new ZipEntry(bean.getURI());
-                        entry.setSize(buffer.length);
                         zip.putNextEntry(entry);
-                        is.read(buffer);
-                        zip.write(buffer);
+                        do {
+                            size = is.read(buffer, 0, 1024);
+                            if(size > 0) {
+                                zip.write(buffer, 0, size);
+                                total += size;
+                            }
+                        } while (size > 0);
+                        entry.setSize(total);
                         zip.closeEntry();
-                    } catch (IOException e) {
+                    } catch (Throwable e) {
                         throw new PlatformException(e);
                     }
                 });
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 throw new PlatformException(e);
             }
         }
