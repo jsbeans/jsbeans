@@ -13,6 +13,7 @@ package org.jsbeans.helpers;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.security.MessageDigest;
+import java.security.Principal;
 
 public class AuthHelper {
 
@@ -67,5 +68,9 @@ public class AuthHelper {
         loginClient();
         String auth = clientAuthLogin.getType() + " " + clientAuthLogin.getToken();
         http.setRequestProperty("Authorization", auth);
+    }
+
+    public static Principal getClientPrincipal() {
+        return () -> clientAuthLogin.getUser();
     }
 }

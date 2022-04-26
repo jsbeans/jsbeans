@@ -21,20 +21,37 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ReflectionHelper {
 
     private static ReflectionHelper instance = new ReflectionHelper();
+
+    private static Collection<URL> urls = getClassPath().stream()
+                            .filter((url) -> {
+                                String u = url.toString();
+                                return !u.endsWith(".so") && !u.endsWith(".bin")
+                                        && !u.contains("rhino");
+                            })
+                            .collect(Collectors.toList());
     private static Reflections reflections = new Reflections(
             new ConfigurationBuilder()
-                    .addScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new ResourcesScanner())
-                    .setUrls(ClasspathHelper.forClassLoader().stream()
-                            .filter((url) -> !url.toString().endsWith(".so") && !url.toString().endsWith(".bin"))
-                            .collect(Collectors.toList()))
+                    .addScanners(
+                            new TypeAnnotationsScanner(),
+                            new SubTypesScanner(),
+                            new ResourcesScanner())
+                    .setUrls(urls)
 //                    .setUrls(ClasspathHelper.forPackage(Core.PLATFORM_PACKAGE))
     );
+
+    public static Collection<URL> getClassPath() {
+        if(System.getProperty("java.version").startsWith("11.")) {
+            return ClasspathHelper.forJavaClassPath();
+        }
+        return ClasspathHelper.forClassLoader();
+    }
 
     public static ReflectionHelper getInstance() {
         return instance;

@@ -439,13 +439,19 @@ public interface Beans {
 
     class EncoderDecoder {
         public static UnaryOperator<InputStream> decoder(byte[] decodeKey) {
-//            return decoderPipe(decodeKey);
-            return decoderXor(decodeKey);
+            if (ConfigHelper.getConfigBoolean("kernel.jsb.repo.encoded")) {
+                return decoderXor(decodeKey);
+            } else {
+                return decoderPipe(decodeKey);
+            }
         }
 
         public static UnaryOperator<OutputStream> encoder(byte[] encodeKey) {
-//            return encoderPipe(encodeKey);
-            return encoderXor(encodeKey);
+            if (ConfigHelper.getConfigBoolean("kernel.jsb.repo.encoded")) {
+                return encoderXor(encodeKey);
+            } else {
+                return encoderPipe(encodeKey);
+            }
         }
         public static UnaryOperator<InputStream> decoderPipe(byte[] decodeKey) {
             return i -> i;
