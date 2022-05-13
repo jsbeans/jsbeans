@@ -67,6 +67,11 @@
 		getNodeAddress: function(){
 			return this.selfAddr;
 		},
+
+		getNodeId: function(address){
+		    var addr = address||this.getNodeAddress();
+			return addr.substring(addr.indexOf('@')+1);
+		},
 		
 		getState: function(){
 			this.ensureActive();
