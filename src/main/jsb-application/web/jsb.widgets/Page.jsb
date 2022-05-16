@@ -34,7 +34,26 @@
 	<title>{{=htmlSection.title}}</title>
 	{{?}}
 	{{? htmlSection && htmlSection.favicon}}
-	<link rel="shortcut icon" type="image/png" href="{{=htmlSection.favicon}}"/>
+	{{
+		function extractIconType(){
+			var icon = htmlSection.favicon;
+			if(/\.ico$/i.test(icon)){
+				return 'image/x-icon';
+			} else if(/\.svg$/i.test(icon)){
+				return 'image/svg+xml';
+			} else if(/\.gif$/i.test(icon)){
+				return 'image/gif';
+			} else if(/\.jpg$/i.test(icon)){
+				return 'image/jpeg';
+			} else if(/\.png$/i.test(icon)){
+				return 'image/png';
+			} else if(/\.bmp$/i.test(icon)){
+				return 'image/bmp';
+			}
+		}
+	}}
+	<link rel="shortcut icon" type="{{=extractIconType()}}" href="{{=htmlSection.favicon}}"/>
+	<link rel="icon" type="{{=extractIconType()}}" href="{{=htmlSection.favicon}}"/>
 	{{?}}
  	<script type="text/javascript" src="/jsbeans.jsb?refid={{=this.getId()}}&{{=Web.getSessionIdPathParameterName()}}={{=Kernel.session()}}"></script>
  	
