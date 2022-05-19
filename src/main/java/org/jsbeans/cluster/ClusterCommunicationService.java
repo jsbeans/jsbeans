@@ -36,7 +36,7 @@ public class ClusterCommunicationService extends Service {
 
     @Override
     protected void onMessage(Object msg) throws PlatformException {
-//		getLog().info(msg.toString());
+		getLog().info(msg.toString());
     }
 
 }

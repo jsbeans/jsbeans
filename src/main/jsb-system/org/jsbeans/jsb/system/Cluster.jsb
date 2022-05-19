@@ -89,7 +89,9 @@
 		
 		getMembers: function(selfExclude){
 			this.ensureActive();
-			var members = this.cluster.state().getMembers();
+			var clusterState = this.cluster.state();
+			var members = clusterState.getMembers();
+			var unreachable = clusterState.getUnreachable();
 			var it = members.iterator();
 			var mMap = {};
 			while(it.hasNext()){
@@ -99,7 +101,10 @@
 				if(selfExclude && mAddr == this.getNodeAddress()){
 					continue;
 				}
-				mMap[mAddr] = mStatus;
+				mMap[mAddr] = {
+					status: mStatus,
+					reachable: !unreachable.contains(m)
+				}
 			}
 			return mMap;
 		},
