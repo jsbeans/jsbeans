@@ -3226,18 +3226,6 @@ if(!(function(){return this;}).call(null).JSB){
 				throw new Error('Missing interval argument in JSB.interval');
 			}
 			var toProc = function(){
-				if(key && self.intervalMap[key]){
-					var locker = self.getLocker();
-					if(locker){
-						locker.lock('__intervalMap');
-					}
-					if(self.intervalMap[key]){
-						delete self.intervalMap[key];
-					}
-					if(locker){
-						locker.unlock('__intervalMap');
-					}
-				}
 				proc.call(self);
 			};
 			if(key){
