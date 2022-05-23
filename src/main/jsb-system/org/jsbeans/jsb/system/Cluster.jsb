@@ -32,8 +32,8 @@
 				this.selfAddr = '' + this.cluster.selfAddress().toString();
 				
 				// roles
-				if(Config.has('kernel.cluster.roles')){
-					this.roles = Config.get('kernel.cluster.roles');
+				if(Config.has('kernel.cluster.allRoles')){
+					this.roles = Config.get('kernel.cluster.allRoles');
 					if(!JSB.isArray(this.roles)){
 						this.roles = [this.roles];
 					}
