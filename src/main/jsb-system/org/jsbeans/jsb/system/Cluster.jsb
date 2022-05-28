@@ -89,7 +89,8 @@
 		
 		getLeader: function(){
 			this.ensureActive();
-			return '' + this.cluster.state().getLeader().toString();
+			var leader = this.cluster.state().getLeader();
+			return leader ? '' + leader.toString() : this.getNodeAddress();
 		},
 
 		isLeader: function(){
