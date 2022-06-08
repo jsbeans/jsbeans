@@ -49,6 +49,9 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
 
+        <maven.build.timestamp.format>yyMMddHHmm</maven.build.timestamp.format>
+        <buildNumber>1.${maven.build.timestamp}</buildNumber>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <org.jsbeans.version>1.0-SNAPSHOT</org.jsbeans.version>
@@ -58,7 +61,17 @@
         <org.jsbeans.resource.path>jsb-resource</org.jsbeans.resource.path>
         <!-- define application js-beans location in jar and result build directory-->
         <org.jsbeans.application.path>jsb-application</org.jsbeans.application.path>
+        <compilerArgument>-g</compilerArgument>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>RELEASE</id>
+            <properties>
+                <compilerArgument></compilerArgument>
+            </properties>
+        </profile>
+    </profiles>
 <!--     
 
  -->
@@ -304,7 +317,7 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
-                    <compilerArgument>-g</compilerArgument>
+                    <compilerArgument>${compilerArgument}</compilerArgument>
                 </configuration>
                 <executions>
                     <execution>
@@ -312,6 +325,23 @@
                         <goals>
                             <goal>compile</goal>
                             <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <target>
+                                <echo file="${project.build.outputDirectory}/${org.jsbeans.application.path}/version.txt">${buildNumber}</echo>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
                         </goals>
                     </execution>
                 </executions>

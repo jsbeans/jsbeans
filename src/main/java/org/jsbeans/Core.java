@@ -236,10 +236,11 @@ public class Core {
     }
 
     private static void applyServerConfiguration(){
-        String path = getConfigPath(configPath, "SERVER.conf");
+        String path = getConfigPath(configPath, serverConfName);
         Config conf = ConfigFactory.parseResources(path);
         // merge main and plugin config
         if (conf != null) {
+            conf = conf.resolve();
             Core.mergeConfigWith(conf, false);
             log.debug("Server config loaded", serverConfName);
         }

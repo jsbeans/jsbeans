@@ -1,0 +1,110 @@
+package org.jsbeans.cluster;
+
+import org.eclipse.jetty.proxy.ProxyServlet;
+import org.keycloak.KeycloakPrincipal;
+import org.keycloak.KeycloakSecurityContext;
+import org.keycloak.representations.IDToken;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+public class ClusterProxyServlet extends ProxyServlet {
+
+    String defaultTargetURI;
+
+    class Target {
+        public String uri;
+        public long timemills;
+        Target(String uri, long timemills) {
+            this.uri = uri;
+            this.timemills = timemills;
+        }
+    }
+
+    ThreadLocal<String> targetURI = new ThreadLocal<>();
+    ConcurrentHashMap<String,Target> cache = new ConcurrentHashMap<>();
+    AtomicLong lastUpdate = new AtomicLong(0);
+    long cacheUpdateInterval;
+    long cacheTargetTimeout;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        this.defaultTargetURI = config.getInitParameter("defaultTargetURI");
+        this.cacheUpdateInterval = Long.parseLong(config.getInitParameter("cacheUpdateInterval"));
+        this.cacheTargetTimeout = Long.parseLong(config.getInitParameter("cacheTargetTimeout"));
+        super.init(config);
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        final Principal userPrincipal = request.getUserPrincipal();
+
+        cleanCache();
+
+        try {
+            Target target = cache.get(userPrincipal.getName());
+            if (target != null) {
+                targetURI.set(target.uri);
+            } else {
+                if (userPrincipal instanceof KeycloakPrincipal) {
+                    KeycloakPrincipal<KeycloakSecurityContext> kp = (KeycloakPrincipal<KeycloakSecurityContext>) userPrincipal;
+                    IDToken token = kp.getKeycloakSecurityContext().getIdToken();
+
+                    Map<String, Object> otherClaims = token.getOtherClaims();
+
+                    if (otherClaims.containsKey("userTargetHost")) {
+                        String userTargetHost = String.valueOf(otherClaims.get("userTargetHost"));
+                        targetURI.set(userTargetHost);
+                        cache.put(userPrincipal.getName(), new Target(userTargetHost, System.currentTimeMillis()));
+                    }
+                }
+            }
+            super.service(request, response);
+        } finally {
+            targetURI.set(null);
+        }
+    }
+
+    @Override
+    protected String rewriteTarget(HttpServletRequest request) {
+        // Forward all requests to another port on this machine
+        String uri = targetURI.get();//"http://localhost:8080";
+
+        if (uri == null) {
+            uri = defaultTargetURI;
+        }
+
+        // Take the current path and append it to the new url
+        String path = request.getRequestURI();
+        uri += path;
+
+        // Add query params
+        String query = request.getQueryString();
+        if (query != null && query.length() > 0) {
+            uri += "?" + query;
+        }
+
+        return uri;
+    }
+
+    private void cleanCache() {
+        long time = System.currentTimeMillis();
+        if (lastUpdate.get() + cacheUpdateInterval > time) {
+            cache.entrySet().removeIf(entry -> entry.getValue().timemills + cacheTargetTimeout > System.currentTimeMillis());
+
+//            for(Iterator<Map.Entry<String, Target>> it = cache.entrySet().iterator(); it.hasNext(); ) {
+//                Map.Entry<String, Target> entry = it.next();
+//                if (entry.getValue().timemills + cacheTargetTimeout > System.currentTimeMillis()) {
+//                    it.remove();
+//                }
+//            }
+        }
+    }
+}
