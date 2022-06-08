@@ -57,6 +57,9 @@
             if (!params.key || !JSB.isString(params.key)) {
                 throw new JSB.Error('Invalid user key');
             }
+            Log.debug('jsbrepo user = ' + Kernel.user());
+            // TODO check permission
+            // TODO store launch user stats (user,ip,time...)
             var key = Base64.getDecoder().decode(params.key);
             var out = EncoderDecoder.encoder(key).apply(response.getOutputStream());
             ZippedProvider.writeAsZip(pkg, out);
