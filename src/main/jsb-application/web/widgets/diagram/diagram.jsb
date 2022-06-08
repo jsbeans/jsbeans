@@ -897,6 +897,13 @@
 			this.nodes = {};
 		},
 		
+		resetViewport: function(){
+			this.options.panX = 0;
+			this.options.panY = 0;
+			this.options.zoom = 1;
+			this.updateViewport({dontUpdateDimensions:true});
+		},
+		
 		removeSelected: function(){
 			var sel = this.getSelected();
 			for(var itemId in sel){

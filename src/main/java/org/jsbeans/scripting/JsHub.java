@@ -810,7 +810,6 @@ public class JsHub extends Service {
 //                    if(s2 != null) {
 //                        Principal[] pp = s2.getPrincipals().toArray(new Principal[s2.getPrincipals().size()]);
 //                    }
-
                     Subject subj = Subject.getSubject(msg.getAccessControlContext());
                     Object resultObj = null;
                     if (msg.getBody() != null) {

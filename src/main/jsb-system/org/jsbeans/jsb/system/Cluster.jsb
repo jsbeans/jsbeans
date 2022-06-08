@@ -22,6 +22,7 @@
 		cluster: null,
 		selfAddr: null,
 		rpcMap: {},
+		roles: [],
 		
 		$constructor: function(){
 			var actorProvider = Config.get('akka.actor.provider');
@@ -29,6 +30,14 @@
 				this.active = true;
 				this.cluster = Cluster.get(Core.getActorSystem());
 				this.selfAddr = '' + this.cluster.selfAddress().toString();
+				
+				// roles
+				if(Config.has('kernel.cluster.allRoles')){
+					this.roles = Config.get('kernel.cluster.allRoles');
+					if(!JSB.isArray(this.roles)){
+						this.roles = [this.roles];
+					}
+				} 
 				
 				// rpcMap garbage collector
 				var garbageCollectionInterval = Config.has('kernel.cluster.rpcGarbageCollectionInterval') ? Config.get('kernel.cluster.rpcGarbageCollectionInterval'): 300000;
@@ -67,6 +76,11 @@
 		getNodeAddress: function(){
 			return this.selfAddr;
 		},
+
+		getNodeId: function(address){
+		    var addr = address||this.getNodeAddress();
+			return addr.substring(addr.indexOf('@')+1);
+		},
 		
 		getState: function(){
 			this.ensureActive();
@@ -75,16 +89,65 @@
 		
 		getLeader: function(){
 			this.ensureActive();
-			return '' + this.cluster.state().getLeader().toString();
+			var leader = this.cluster.state().getLeader();
+			return leader ? '' + leader.toString() : this.getNodeAddress();
 		},
 
 		isLeader: function(){
 			return $this.getLeader() == $this.getNodeAddress();
 		},
 		
+		getRoles: function(bWithNodes){
+			if(bWithNodes){
+				var roleMap = {};
+				for(var i = 0; i < this.roles.length; i++){
+					roleMap[this.roles[i]] = [];
+				}
+				var members = this.getMembers();
+				for(var memAddr in members){
+					var memDesc = members[memAddr];
+					for(var i = 0; i < memDesc.roles.length; i++){
+						var role = memDesc.roles[i];
+						roleMap[role] = roleMap[role] || [];
+						roleMap[role].push(memAddr);
+					}
+				}
+				
+				return roleMap;
+			}
+			return this.roles;
+		},
+		
+		getNodeState: function(nodeAddr){
+			nodeAddr = nodeAddr || this.getNodeAddress();
+			var memMap = this.getMembers();
+			return memMap[nodeAddr];
+		},
+		
+		getNodeMember: function(nodeAddr){
+			nodeAddr = nodeAddr || this.getNodeAddress();
+			var clusterState = this.cluster.state();
+			var members = clusterState.getMembers();
+			var it = members.iterator();
+			while(it.hasNext()){
+				var m = it.next();
+				var mAddr = '' + m.address().toString();
+				if(nodeAddr == mAddr){
+					return m;
+				}
+			}
+		},
+		
+		hasNodeRole: function(role, nodeAddr){
+			var m = this.getNodeMember(nodeAddr);
+			return m && m.hasRole(role);
+		},
+		
 		getMembers: function(selfExclude){
 			this.ensureActive();
-			var members = this.cluster.state().getMembers();
+			var clusterState = this.cluster.state();
+			var members = clusterState.getMembers();
+			var unreachable = clusterState.getUnreachable();
 			var it = members.iterator();
 			var mMap = {};
 			while(it.hasNext()){
@@ -94,7 +157,17 @@
 				if(selfExclude && mAddr == this.getNodeAddress()){
 					continue;
 				}
-				mMap[mAddr] = mStatus;
+				var roles = [], rIt = m.getRoles().iterator();
+				while(rIt.hasNext()){
+					roles.push(rIt.next().toString());
+				}
+				
+				mMap[mAddr] = {
+					status: mStatus,
+					roles: roles,
+					reachable: !unreachable.contains(m)
+					
+				}
 			}
 			return mMap;
 		},

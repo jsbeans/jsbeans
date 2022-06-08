@@ -14,6 +14,9 @@ public class SubjectMessage implements Message {
         return accessControlSubject;
     }
     public AccessControlContext getAccessControlContext() {
+    	if(accessControlContext == null){
+    		accessControlContext = AccessController.getContext();
+    	}
         return accessControlContext;
     }
 }

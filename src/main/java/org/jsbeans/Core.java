@@ -84,10 +84,10 @@ public class Core {
                 Core.loadBaseConfiguration();
                 Core.collectAndConfigurePlugins();
                 Core.applyServerConfiguration();
+                Core.finalizeConfiguration();
                 Core.startActorSystem();
                 Core.initPlugins();
                 Core.startServiceManager();
-                Core.finalizeConfiguration();
                 return null;
             }
         });
