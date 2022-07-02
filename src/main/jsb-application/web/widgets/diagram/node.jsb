@@ -146,22 +146,27 @@
 //			console.log('setPosition X:' + this.position.x + '; Y:' + this.position.y);
 		},
 
-		setSize: function(size, hideEvent) {
+		setSize: function(w, h, hideEvent) {
 		    var element = this.getElement();
 		    
 		    if(!this.options.size){
 		    	this.options.size = {};	
 		    }
 		    
+		    if(JSB().isObject(w)){
+				hideEvent = h;
+				w = w.width;
+				h = w.height;
+			}
 
-		    if(JSB.isDefined(size.width)) {
-		        element.width(size.width);
-		        this.options.size.width = size.width;
+		    if(JSB.isDefined(w)) {
+		        element.width(w);
+		        this.options.size.width = w;
             }
 
-		    if(JSB.isDefined(size.height)) {
-		        element.height(size.height);
-		        this.options.size.height = size.height;
+		    if(JSB.isDefined(h)) {
+		        element.height(h);
+		        this.options.size.height = h;
             }
 		},
 
