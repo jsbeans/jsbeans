@@ -155,8 +155,8 @@
 		    
 		    if(JSB().isObject(w)){
 				hideEvent = h;
-				w = w.width;
 				h = w.height;
+				w = w.width;
 			}
 
 		    if(JSB.isDefined(w)) {
