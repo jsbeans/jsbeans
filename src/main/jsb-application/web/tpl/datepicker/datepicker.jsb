@@ -10,6 +10,7 @@
 			changeMonth: false,
 			changeYear: false,
 			numberOfMonths: 1,
+			firstDay: 1,
 			showButtonPanel: false,
 			dateFormat: 'dd.mm.yy',
 			showWeek: false,
@@ -31,12 +32,17 @@
 				changeMonth: this.options.changeMonth,
 				changeYear: this.options.changeYear,
 				numberOfMonths: this.options.numberOfMonths,
+				firstDay: this.options.firstDay,
 				showButtonPanel: this.options.showButtonPanel,
 				dateFormat: this.options.dateFormat,
 				showWeek: this.options.showWeek,
-				onSelect: function(dateStr){
+				onSelect: function(dateStr, obj){
+					var day = parseInt(obj.selectedDay);
+					var month = parseInt(obj.selectedMonth);
+					var year = parseInt(obj.selectedYear);
+					var dt = new Date(year, month, day);
 					if($this.options.onChange){
-						$this.options.onChange.call($this, dateStr);
+						$this.options.onChange.call($this, dt.getTime());
 					}
 				}
 			};
@@ -51,7 +57,11 @@
 			pickerElt.datepicker(pickerOpts);
 			
 			if(this.options.date || this.options.value){
-				this.setDate(this.options.date || this.options.value);
+				var val = this.options.date || this.options.value;
+				if(JSB.isNumber(val)){
+					val = new Date(val);
+				}
+				this.setDate(val);
 			}
 		},
 		
@@ -60,6 +70,9 @@
 		},
 		
 		setDate: function(date){
+			if(JSB.isNumber(date)){
+				date = new Date(date);
+			}
 			this.find('> .picker').datepicker('setDate', date);
 		}
 		
