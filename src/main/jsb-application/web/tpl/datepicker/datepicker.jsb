@@ -34,6 +34,11 @@
 				showButtonPanel: this.options.showButtonPanel,
 				dateFormat: this.options.dateFormat,
 				showWeek: this.options.showWeek,
+				onSelect: function(dateStr){
+					if($this.options.onChange){
+						$this.options.onChange.call($this, dateStr);
+					}
+				}
 			};
 			var pickerElt = null;
 			
@@ -45,8 +50,8 @@
 			this.append(pickerElt);
 			pickerElt.datepicker(pickerOpts);
 			
-			if(this.options.date){
-				this.setDate(this.options.date);
+			if(this.options.date || this.options.value){
+				this.setDate(this.options.date || this.options.value);
 			}
 		},
 		
