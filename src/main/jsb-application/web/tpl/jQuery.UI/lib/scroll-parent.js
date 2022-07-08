@@ -38,7 +38,7 @@ return $.fn.scrollParent = function( includeHidden ) {
 		} ).eq( 0 );
 
 	return position === "fixed" || !scrollParent.length ?
-		$( this[ 0 ].ownerDocument || document ) :
+		$( (this[ 0 ] && this[ 0 ].ownerDocument) || document ) :
 		scrollParent;
 };
 

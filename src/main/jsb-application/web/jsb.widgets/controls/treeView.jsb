@@ -429,17 +429,23 @@
 			if(!oldKey){
 				throw 'No key to replace specified';
 			}
-			var itemObj = this.resolveItem(item);
-			var wrappedItem = this.wrapItem(itemObj);
-			
 			var oldObj = this.itemMap[oldKey];
 			if(!oldObj){
 				return;
 			}
+			var itemObj = this.resolveItem(item);
+			var bPrevObj = false;
+			var wrappedItem = null;
+			if(itemObj.element === oldObj.element){
+				oldObj.element.detach();
+			}
+			
 			var parentKey = oldObj.parent;
 			var wrapper = oldObj.wrapper;
+			wrappedItem = this.wrapItem(itemObj);
 			wrapper.after(wrappedItem);
 			itemObj.parent = parentKey;
+			this.deleteNode(oldKey);
 			
 			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
@@ -457,7 +463,6 @@
 				}, itemObj.key);
 			}
 			
-			this.deleteNode(oldKey);
 			this._applyFilteredToItem(itemObj);
 			
 			return itemObj;
