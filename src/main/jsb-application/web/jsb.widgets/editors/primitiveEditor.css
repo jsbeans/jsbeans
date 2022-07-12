@@ -64,7 +64,6 @@
 ._dwp_primitiveEditor > input:focus,
 ._dwp_primitiveEditor > textarea:focus {
 	outline-color: rgba(0,0,0,0);
-    box-shadow: 0 0 0 2px #8fa8cc;
 	border: 1px solid #8fa8cc;
 }
 
