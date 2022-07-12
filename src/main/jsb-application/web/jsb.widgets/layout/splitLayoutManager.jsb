@@ -68,7 +68,7 @@
 				// collect positions for SplitBox
 				for(var i = 0; i < desc.panes.length - 1; i++){
 					if(JSB().isNull(position)){
-						position = desc.panes[i].size;
+						desc.lastSplitPosition = position = desc.panes[i].size;
 					} else if(JSB().isArray(position)){
 						position.push(desc.panes[i].size);
 					} else {
@@ -79,13 +79,17 @@
 				// setup SplitBox
 				var sb = new SplitBox({
 					type: desc.split,
-					position: position
+					position: position,
+					onChange: function(idx, pos){
+						desc.lastSplitPosition = pos;
+					}
 				});
 				
 				// setup panes
 				for(var i = 0; i < desc.panes.length; i++ ) {
 					(function(idx){
 						var paneDesc = desc.panes[idx];
+						paneDesc.ancestor = desc;
 						if(paneDesc.key){
 							if(!self.paneMap[layoutName]){
 								self.paneMap[layoutName] = {};
@@ -307,6 +311,79 @@
 				return null;
 			}
 			return paneMap[key];
+		},
+		
+		getPaneSplitBox: function(key, layoutName){
+			if(!layoutName){
+				layoutName = this.options.defaultLayout;
+			}
+			var pane = this.getPane(key, layoutName);
+			var sb = null;
+			if(pane){
+				sb = pane.ctrl;
+			}
+			if(JSB().isInstanceOf(sb, 'JSB.Widgets.SplitBox')){
+				return sb;
+			}
+		},
+		
+		expandPane: function(key, layoutName, animObj){
+			if(!layoutName){
+				layoutName = this.options.defaultLayout;
+			}
+			var pane = this.getPane(key, layoutName);
+			var ancestor = pane.ancestor;
+			if(!ancestor || !ancestor.panes){
+				return;
+			}
+			let paneIdx = null;
+			for(let i = 0; i < ancestor.panes.length; i++){
+				if(ancestor.panes[i] === pane){
+					paneIdx = i;
+					break;
+				}
+			}
+			if(JSB.isNull(paneIdx)){
+				return;
+			}
+			var sb = ancestor && ancestor.ctrl;
+			
+			if(!JSB.isInstanceOf(sb, 'JSB.Widgets.SplitBox')){
+				return;
+			}
+			sb.setSplitterPosition(0, ancestor.lastSplitPosition || ancestor.size, animObj);
+			
+		},
+		
+		collapsePane: function(key, layoutName, animObj){
+			if(!layoutName){
+				layoutName = this.options.defaultLayout;
+			}
+			var pane = this.getPane(key, layoutName);
+			var ancestor = pane.ancestor;
+			if(!ancestor || !ancestor.panes){
+				return;
+			}
+			let paneIdx = null;
+			for(let i = 0; i < ancestor.panes.length; i++){
+				if(ancestor.panes[i] === pane){
+					paneIdx = i;
+					break;
+				}
+			}
+			if(JSB.isNull(paneIdx)){
+				return;
+			}
+			var sb = ancestor && ancestor.ctrl;
+			
+			if(!JSB.isInstanceOf(sb, 'JSB.Widgets.SplitBox')){
+				return;
+			}
+			if(paneIdx == 0){
+				sb.setSplitterPosition(0, 0, animObj);
+			} else {
+				sb.setSplitterPosition(0, 1, animObj);
+			}
 		},
 		
 		getPaneContainer: function(key, layoutName){

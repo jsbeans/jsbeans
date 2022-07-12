@@ -73,6 +73,12 @@
 									var rightPercent = splitter.percentWidth - leftPercent;
 									 
 									var percent = data.position.left * 100 / elt.width();
+									if(percent > 100){
+										percent = 100;
+									}
+									if(percent < 0){
+										percent = 0;
+									}
 									splitter.css('left', '' + percent + '%');
 									data.position.left = self.updatePanes()[idx];
 								},
@@ -82,7 +88,7 @@
 									splitter.css('left', '' + percent + '%');
 									$this.splitterPositions[i] = data.position.left / elt.width();
 									if($this.options.onChange){
-										$this.options.onChange.call($this);
+										$this.options.onChange.call($this, i, $this.splitterPositions[i]);
 									}
 								}
 							});
@@ -111,6 +117,13 @@
 									var rightPercent = splitter.percentHeight - leftPercent;
 									 
 									var percent = data.position.top * 100 / elt.height();
+									
+									if(percent > 100){
+										percent = 100;
+									}
+									if(percent < 0){
+										percent = 0;
+									}
 									splitter.css('top', '' + percent + '%');
 									data.position.top = self.updatePanes()[idx];
 								},
@@ -120,7 +133,7 @@
 									splitter.css('top', '' + percent + '%');
 									$this.splitterPositions[i] = data.position.top / elt.height();
 									if($this.options.onChange){
-										$this.options.onChange.call($this);
+										$this.options.onChange.call($this, i, $this.splitterPositions[i]);
 									}
 
 								}
@@ -335,6 +348,44 @@
 				idx = 0;
 			}
 			return this.splitterPositions[idx];
+		},
+		
+		setSplitterPosition: function(idx, pos, animateObj){
+			var splitter = $this.splitters[idx];
+			if(pos < 0){
+				pos = 0;
+			}
+			if(pos > 1){
+				pos = 1;
+			}
+			
+			if(animateObj){
+				if(!JSB.isObject(animateObj)){
+					animateObj = {};
+				}
+				animateObj.duration = animateObj.duration || 300;
+				progressProc = animateObj.progress;
+				animateObj.progress = function(){
+					$this.updatePanes();
+					if(progressProc){
+						progressProc.call($this);
+					}
+				};
+			}
+			
+			var cssObj = {};
+			if($this.options.type == 'vertical'){
+				cssObj.left = '' + (pos*100) + '%';
+			} else {
+				cssObj.top = '' + (pos*100) + '%';
+			}
+			
+			if(animateObj){
+				splitter.animate(cssObj, animateObj);
+			} else {
+				splitter.css(cssObj);
+				$this.updatePanes();
+			}
 		}
 	}
 }
