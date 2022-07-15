@@ -1,13 +1,13 @@
 @CHARSET "UTF-8";
 
 ._jsb_sliderEditor {
-	padding: 6px;
+	padding: 4px 0;
 	white-space: nowrap;
 }
 
 ._jsb_sliderEditor ._jsb_slider {
 	display: inline-block;
-	width: 200px;
+	width: 185px;
 }
 
 ._jsb_sliderEditor ._jsb_slider a {

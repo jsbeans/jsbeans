@@ -23,7 +23,7 @@
 }
 
 .jsb-editor > input[type="text"]:focus {
-    border: 2px solid #8fa8cc;
+	border-color: #8fa8cc;
 }
 
 .jsb-editor > input[type="color"] {
