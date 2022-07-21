@@ -1,7 +1,7 @@
 {
 	$name:'DateRangePicker',
 	$parent: 'JSB.Widgets.Control',
-	$require:['JQuery', 'JSB.Widgets.ToolManager'],
+	$require:['JQuery', 'JSB.Widgets.ToolManager','Moment'],
 	$client:{
 		
 		$bootstrap: function(readyCallback){
@@ -10,7 +10,6 @@
 			JSB().loadCss('tpl/glyphs/glyphs.css');
 			
 			(function(jQuery){
-				`#include 'moment.js'`;
 				`#include 'daterangepicker.js'`;
 			}).call(null, JSB().$);
 			
