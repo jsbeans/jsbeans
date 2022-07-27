@@ -265,7 +265,6 @@
     </dependencies>
 
     <build>
-        <finalName>org.jsbeans-jsbeans</finalName>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -355,7 +354,6 @@
                             <Manifest-Version>${org.jsbeans.version}</Manifest-Version>
                         </manifestEntries>
                     </archive>
-                    <!--<finalName>${project.groupId}-${project.artifactId}-${project.version}</finalName>-->
                 </configuration>
                 <executions>
                     <execution>

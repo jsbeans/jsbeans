@@ -33,7 +33,8 @@ public class ReflectionHelper {
                             .filter((url) -> {
                                 String u = url.toString();
                                 return !u.endsWith(".so") && !u.endsWith(".bin")
-                                        && !u.contains("rhino");
+                                        && !u.contains("rhino") && !u.endsWith(".pom")
+                                        && !u.endsWith("tools-1.4.2.jar");
                             })
                             .collect(Collectors.toList());
     private static Reflections reflections = new Reflections(
