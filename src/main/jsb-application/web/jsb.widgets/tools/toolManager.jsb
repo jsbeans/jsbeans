@@ -256,7 +256,7 @@
 					return false;
 				} else {
 					chosenInstance.compCntr++;
-					if(chosenInstance.compCntr < 5){
+					if(chosenInstance.compCntr < 10){
 						return false;
 					}
 				}
@@ -266,7 +266,7 @@
 				return true;
 			}
 			
-			if((params && params.showImmediately) || readyToShow()){
+			if((params && params.showImmediately) /*|| (params && params.target && params.target.dock)*/ || readyToShow()){
 				if(!chosenInstance.prepareShow){
 					return;
 				}

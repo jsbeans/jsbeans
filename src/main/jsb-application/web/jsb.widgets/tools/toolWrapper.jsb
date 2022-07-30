@@ -147,7 +147,19 @@
 				}
 			});
 
-            this.$(window).resize(function(){
+			this._windowSize = {
+				w: this.$(window).width(),
+				h: this.$(window).height()
+			}
+            this.$(window).resize(function(w, h){
+            	var wElt = $this.$(window);
+            	var newW = wElt.width();
+            	var newH = wElt.height();
+            	if($this._windowSize.w == newW && $this._windowSize.h == newH){
+            		return;
+            	}
+            	$this._windowSize.w = newW;
+            	$this._windowSize.h = newH;
                 if($this.params && $this.isVisible()){
                 	$this.updatePosition();
                 }
