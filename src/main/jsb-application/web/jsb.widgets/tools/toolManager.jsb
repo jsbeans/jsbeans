@@ -256,7 +256,7 @@
 					return false;
 				} else {
 					chosenInstance.compCntr++;
-					if(chosenInstance.compCntr < 10){
+					if(chosenInstance.compCntr < 20){
 						return false;
 					}
 				}
@@ -266,13 +266,15 @@
 				return true;
 			}
 			
-			if((params && params.showImmediately) /*|| (params && params.target && params.target.dock)*/ || readyToShow()){
+			if((params && params.showImmediately) || (params && params.target && params.target.dock) || readyToShow()){
 				if(!chosenInstance.prepareShow){
 					return;
 				}
-				chosenInstance.show(JSB.merge({
-					scope: scope 
-				}, params));
+				JSB.defer(()=>{
+					chosenInstance.show(JSB.merge({
+						scope: scope 
+					}, params));
+				});
 			} else {
 				JSB().deferUntil(function(){
 					if(!chosenInstance.prepareShow){
@@ -283,7 +285,7 @@
 					}, params));
 				},function(){
 					return readyToShow();
-				}, 10);
+				}, 15);
 			}
 			
 			return chosenInstance;
