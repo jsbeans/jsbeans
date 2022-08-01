@@ -6,7 +6,9 @@ cd $APP_DIR
 JARS="$(cat .classpath_jars |sed 's/\\/\//g')"
 
 mkdir -p logs
-java -XX:+UseConcMarkSweepGC -XX:+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadingEnabled \
+# -XX:+UseConcMarkSweepGC -XX:+CMSPermGenSweepingEnabled
+java \
+    -XX:+CMSClassUnloadingEnabled \
     -Xms512m -Xmx8192m \
     -Dfile.encoding=UTF-8 \
     -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 \
