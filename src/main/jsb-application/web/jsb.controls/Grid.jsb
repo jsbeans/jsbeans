@@ -342,7 +342,7 @@
         _createHeader: function() {
             var masterColGroup = this.$('<colgroup></colgroup>'),
                 topColGroup = this.$('<colgroup></colgroup>'),
-                colWidth = Math.ceil(this.getElement().width() / this._dataScheme.scheme.length),
+                colWidth = Math.floor(this.getElement().width() / this._dataScheme.scheme.length),
                 headerTR = this.$('<tr class="grid-header-row"></tr>');
 
             this._masterTable.prepend(masterColGroup);
