@@ -105,11 +105,8 @@
 		    });
 */
             this.getElement().resize(function() {
-                var height = $this.getElement().height();
-
-                $this._colResizeHandleContainer.get(0).style['margin-top'] = -height + 'px';
-
-                $this._colResizeHandleContainer.children('.col-resize-handle').height(height);
+                $this._colResizeHandleContainer.get(0).style['margin-top'] = -$this.getElement().height() + 'px';
+                $this._colResizeHandleContainer.children('.col-resize-handle').height($this.getElement().find('.grid-top').height());
                 //$this._updateSizes();
             });
         },
