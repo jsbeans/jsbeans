@@ -41,19 +41,18 @@
 			this.items = [];
 			this.itemMap = {};
 			this.initialized = false;
-			if(this.options.items){
-				this.setItems(this.options.items);
-			}
-/*			
+			
+			var items = this.options.items;
 			if(JSB.isFunction(items)){
 				items = items.call(this);
 			}
-			if(JSB().isArray(items)){
-				for(var i = 0; i < items.length; i++){
-					this.addItem(items[i]);
-				}
+			if(!JSB.isArray(items)){
+				items = [items];
 			}
-*/			
+			for(var i = 0; i < items.length; i++){
+				this.addItem(items[i]);
+			}
+			
 			if(this.options.dropDown){
 				// create dropdown list
 				this.addClass('_dwp_dropDown');
