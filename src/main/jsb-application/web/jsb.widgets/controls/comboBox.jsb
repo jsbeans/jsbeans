@@ -41,11 +41,19 @@
 			this.items = [];
 			this.itemMap = {};
 			this.initialized = false;
-			if(JSB().isArray(this.options.items)){
-				for(var i in this.options.items){
-					this.addItem(this.options.items[i]);
+			if(this.options.items){
+				this.setItems(this.options.items);
+			}
+/*			
+			if(JSB.isFunction(items)){
+				items = items.call(this);
+			}
+			if(JSB().isArray(items)){
+				for(var i = 0; i < items.length; i++){
+					this.addItem(items[i]);
 				}
 			}
+*/			
 			if(this.options.dropDown){
 				// create dropdown list
 				this.addClass('_dwp_dropDown');
@@ -164,6 +172,9 @@
 		
 		setItems: function(items){
 			this.clear();
+			if(JSB.isFunction(items)){
+				items = items.call(this);
+			}
 			if(!JSB.isArray(items)){
 				items = [items];
 			}
