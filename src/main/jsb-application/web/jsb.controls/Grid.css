@@ -124,17 +124,22 @@
 .grid-master > table td.grid-cell[type="float"],
 .grid-master > table td.grid-cell[type="double"] {
 	color: #004c9c;
+	white-space: pre;
 }
 
 .grid-master > table td.grid-cell[type="integer"] {
 	color: #00801c;
+	white-space: pre;
 }
 
 .grid-master > table td.grid-cell[type="boolean"] {
 	color: #007710;
+	white-space: pre;
 }
 
-.grid-master > table td.grid-cell[type="date"] {}
+.grid-master > table td.grid-cell[type="date"] {
+	white-space: pre;
+}
 
 /* grid top */
 .grid-top {
