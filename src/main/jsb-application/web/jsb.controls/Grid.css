@@ -83,7 +83,7 @@
 	overflow: hidden;
 	border-right: 1px solid #ffffff;
     border-bottom: 1px solid #ffffff;
-    padding: 4px;
+    padding: 1px 2px;
 }
 
 .grid-master > table td.grid-cell:last-child {
@@ -212,6 +212,7 @@
 .grid-column-resize-handles {
     position: relative;
     left: 0;
+	z-index: 1;
 }
 
 .grid-column-resize-handles > .col-resize-handle {

@@ -93,8 +93,8 @@
 }
 
 .jsb-panel > .header > ul > li:not(first-child) {
-    margin-left: 5px;
-    margin-right: 3px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
 .jsb-panel > .header > ul > li > i {
@@ -103,6 +103,11 @@
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: 300ms;
+}
+
+.jsb-panel.collapsed > .header > ul > li > i {
+	transform: rotate(-90deg);
 }
 
 .jsb-panel > .content {

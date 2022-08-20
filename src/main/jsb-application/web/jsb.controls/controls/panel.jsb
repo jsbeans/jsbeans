@@ -62,10 +62,10 @@
 
             if(this.options.collapseBtn){
             	this.addClass('collapsible');
-                var cl = 'fas fa-chevron-up';
+                var cl = 'fas fa-chevron-down';
                 if(this.options.collapsed){
                 	this.addClass('collapsed');
-                    cl = 'fas fa-chevron-down';
+                    // cl = 'fas fa-chevron-right';
                     this.elements.content.css('display', 'none');
                 }
                 this.elements.buttons.collapseBtn = this.$('<li key="collapseBtn" class="collapse-link"><i class="' + cl + '"></i></li>');
@@ -219,19 +219,17 @@
                 $BOX_PANEL.css('height', 'auto');
             }
 
-            if($ICON.hasClass('fa-chevron-up')){
-            	this.addClass('collapsed');
-                if(JSB.isFunction($this.options.onCollapse)){
-                    $this.options.onCollapse.call($this);
-                }
-            } else {
+            if(this.hasClass('collapsed')){
             	this.removeClass('collapsed');
                 if(JSB.isFunction($this.options.onExpand)){
                     $this.options.onExpand.call($this);
                 }
+            } else {
+            	this.addClass('collapsed');
+                if(JSB.isFunction($this.options.onCollapse)){
+                    $this.options.onCollapse.call($this);
+                }
             }
-
-            $ICON.toggleClass('fa-chevron-up fa-chevron-down');
         }
     }
 }
