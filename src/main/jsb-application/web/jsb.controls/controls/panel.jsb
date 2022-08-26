@@ -35,7 +35,7 @@
             }
 
             if(this.options.title){
-                this.elements.title = this.$('<h1><span>' + this.options.title + '</span></h1>');
+                this.elements.title = this.$('<h1></h1>').text(this.options.title);
                 this.elements.header.append(this.elements.title);
             }
 
@@ -192,7 +192,7 @@
         },
 
         getTitle: function() {
-            return this.elements.title.find('span').text();
+            return this.elements.title./*find('span').*/text();
         },
 
         setContent: function(content){
@@ -201,7 +201,7 @@
         },
 
         setTitle: function(title){
-            this.elements.title.find('span').text(title);
+            this.elements.title./*find('span').*/text(title);
         },
 
         togglePanel: function(){
