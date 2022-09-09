@@ -57,6 +57,12 @@
 		            return $this._defaultHeaderRenderer(th, index);
 		        }
 		    }
+		    
+		    if(!opts.columnSizePolicy){
+		        this.options.columnSizePolicy = function(colKey){
+		            return $this._defaultColumnSizePolicy(colKey);
+		        }
+		    }
 
 		    this._masterContainer.scroll(function(evt){
 		        evt.stopPropagation();
@@ -344,6 +350,13 @@
                 topColGroup = this.$('<colgroup></colgroup>'),
                 colWidth = Math.floor(this.getElement().width() / this._dataScheme.scheme.length),
                 headerTR = this.$('<tr class="grid-header-row"></tr>');
+            
+            // generate col sizes
+            for(var i = 0; i < this._dataScheme.scheme.length; i++) {
+                var colKey = this._dataScheme.scheme[i];
+                var colDesc = this.options.columnSizePolicy(colKey);
+                
+            }
 
             this._masterTable.prepend(masterColGroup);
             this._topTable.prepend(topColGroup);
@@ -470,6 +483,14 @@
 
         _defaultHeaderRenderer: function(th, index){
             th.append(index);
+        },
+        
+        _defaultColumnSizePolicy: function(colKey){
+        	return {
+        		weight: 1.0,
+        		minSize: null,
+        		maxSize: null
+        	}
         },
 
         _defaultRenderer: function(td, value, opts){
