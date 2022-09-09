@@ -100,9 +100,10 @@
 
 .grid-master > table td.grid-cell[type="null"] {
 	font-size: 11px;
-    color: #757575;
+    color: #888;
 	text-align: center;
-    background-color: #ececec;
+	vertical-align: middle;
+	font-family: monospace;
 }
 
 .grid-master > table td.grid-cell[type="null"]:before {
@@ -210,7 +211,7 @@
 
 
 .grid-column-resize-handles {
-    position: relative;
+    position: absolute;
     left: 0;
 	z-index: 1;
 }

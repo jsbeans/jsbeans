@@ -9,7 +9,7 @@
  */
 
 {
-	$name:'JSB.Widgets.ColorEditor',
+	$name:'JSB.Widgets.ExtendedColorEditor',
 	$parent: 'JSB.Widgets.Editor',
 	$require: ['css:colorEditor.css'],
 	$client: {

@@ -31,8 +31,8 @@
 
 		    this.editBoxElt.spectrum({
 		        color: this._color,
-		        showInput: false,
-		        showInitial: false,
+		        showInput: true,
+		        showInitial: true,
 		        showPalette: true,
 		        showPaletteOnly: false,
 		        togglePaletteMoreText: 'больше',
