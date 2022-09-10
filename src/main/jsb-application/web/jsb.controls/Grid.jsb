@@ -58,12 +58,6 @@
 		        }
 		    }
 		    
-		    if(!opts.columnSizePolicy){
-		        this.options.columnSizePolicy = function(colKey){
-		            return $this._defaultColumnSizePolicy(colKey);
-		        }
-		    }
-
 		    this._masterContainer.scroll(function(evt){
 		        evt.stopPropagation();
 
@@ -138,6 +132,7 @@
             // td, value, rowIndex, colIndex, rowData
             cellRenderer: null,
             rowRenderer: null,
+            columnSizePolicy: null,
 
             // callbacks
             preloader: null
@@ -348,14 +343,47 @@
         _createHeader: function() {
             var masterColGroup = this.$('<colgroup></colgroup>'),
                 topColGroup = this.$('<colgroup></colgroup>'),
-                colWidth = Math.floor(this.getElement().width() / this._dataScheme.scheme.length),
+                gridWidth = this.getElement().width(),
                 headerTR = this.$('<tr class="grid-header-row"></tr>');
-            
+
             // generate col sizes
+            var colSizeMap = {}, totalWeight = 0, reservedSize = 0, reservedCount = 0;
             for(var i = 0; i < this._dataScheme.scheme.length; i++) {
                 var colKey = this._dataScheme.scheme[i];
-                var colDesc = this.options.columnSizePolicy(colKey);
-                
+                var defColDesc = this._defaultColumnSizePolicy(colKey);
+                var colDesc = JSB.merge(defColDesc, this.options.columnSizePolicy && this.options.columnSizePolicy.call(this, colKey) || {});
+                colSizeMap[colKey] = colDesc;
+                if(colDesc.size == 'auto'){
+                	colDesc.colSize = null;
+                } else {
+                	colDesc.colSize = Math.floor(colDesc.size * gridWidth);
+                	if(colDesc.maxSize && colDesc.colSize > colDesc.maxSize){
+                		colDesc.colSize = colDesc.maxSize;
+                	}
+                	if(colDesc.minSize && colDesc.colSize < colDesc.minSize){
+                		colDesc.colSize = colDesc.minSize;
+                	}
+                	reservedSize += colDesc.colSize;
+                	reservedCount++;
+                }
+            }
+
+            // generate auto col-sizes
+            for(var colKey in colSizeMap){
+            	var colDesc = colSizeMap[colKey];
+            	if(colDesc.colSize){
+            		continue;
+            	}
+            	var leftSize = gridWidth - reservedSize;
+            	colDesc.colSize = Math.floor(leftSize / (this._dataScheme.scheme.length - reservedCount));
+            	if(colDesc.maxSize && colDesc.colSize > colDesc.maxSize){
+            		colDesc.colSize = colDesc.maxSize;
+            	}
+            	if(colDesc.minSize && colDesc.colSize < colDesc.minSize){
+            		colDesc.colSize = colDesc.minSize;
+            	}
+            	reservedSize += colDesc.colSize;
+            	reservedCount++;
             }
 
             this._masterTable.prepend(masterColGroup);
@@ -370,15 +398,13 @@
                 $this.$(topColGroup.children()[index]).width(width);
             }
 
-            if(colWidth < this.options.minColWidth) {
-                colWidth = this.options.minColWidth;
-            }
-
+            var curResizePos = 0;
             for(var i = 0; i < this._dataScheme.scheme.length; i++) {
                 var colKey = this._dataScheme.scheme[i],
-                    col = '<col colKey="' + colKey + '" style="width: ' + colWidth + 'px">',
+                    col = '<col colKey="' + colKey + '" style="width: ' + colSizeMap[colKey].colSize + 'px">',
                     masterCol = this.$(col),
                     topCol = this.$(col);
+                curResizePos += colSizeMap[colKey].colSize;
 
                 masterColGroup.append(masterCol);
                 topColGroup.append(topCol);
@@ -399,7 +425,7 @@
                     var resizeHandle = this.$('<div class="col-resize-handle"></div>');
                     this._colResizeHandleContainer.append(resizeHandle);
 
-                    resizeHandle.get(0).style.left = (i + 1) * colWidth + 'px';
+                    resizeHandle.get(0).style.left = curResizePos + 'px';
 
                     (function(index) {
                         var curLeft;
@@ -487,7 +513,7 @@
         
         _defaultColumnSizePolicy: function(colKey){
         	return {
-        		weight: 1.0,
+        		size: 'auto',
         		minSize: null,
         		maxSize: null
         	}
