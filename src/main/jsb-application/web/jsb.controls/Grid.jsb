@@ -363,10 +363,9 @@
                 	if(colDesc.maxSize && colDesc.colSize > colDesc.maxSize){
                 		colDesc.colSize = colDesc.maxSize;
                 	}
-                	if(colDesc.minSize && colDesc.colSize < colDesc.minSize){
-                		colDesc.colSize = colDesc.minSize;
-                	} else if(colDesc.colSize < this.options.minColWidth){
-                		colDesc.colSize = this.options.minColWidth;
+                	var minSize = colDesc.minSize || this.options.minColWidth;
+                	if(colDesc.colSize < minSize){
+                		colDesc.colSize = minSize;
                 	}
                 	reservedSize += colDesc.colSize;
                 	reservedCount++;
@@ -384,10 +383,9 @@
             	if(colDesc.maxSize && colDesc.colSize > colDesc.maxSize){
             		colDesc.colSize = colDesc.maxSize;
             	}
-            	if(colDesc.minSize && colDesc.colSize < colDesc.minSize){
-            		colDesc.colSize = colDesc.minSize;
-            	} else if(colDesc.colSize < this.options.minColWidth){
-            		colDesc.colSize = this.options.minColWidth;
+            	var minSize = colDesc.minSize || this.options.minColWidth;
+            	if(colDesc.colSize < minSize){
+            		colDesc.colSize = minSize;
             	}
             	reservedSize += colDesc.colSize;
             	reservedCount++;
