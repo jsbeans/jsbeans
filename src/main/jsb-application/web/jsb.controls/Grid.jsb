@@ -248,10 +248,15 @@
             this.addArray([rowData], rowIndex);
         },
 
-        clear: function(){
-            this._dataScheme = null;
+        clear: function(bKeepHeader){
+            this.showNoDataMsg(false);
 
+            if(bKeepHeader){
+            	this._masterTable.find('> .grid-row').remove();
+            	return;
+            }
             this._masterTable.empty();
+            this._dataScheme = null;
 
             //if(this._topTable){
                 this._topTable.empty();
@@ -260,8 +265,6 @@
             if(this._colResizeHandleContainer){
                 this._colResizeHandleContainer.empty();
             }
-
-            this.showNoDataMsg(false);
         },
 
         getRowCount: function() {
@@ -299,7 +302,7 @@
         },
 
         setData: function(data, opts){
-            this.clear();
+            this.clear(opts && opts.keepHeader);
 
             if(!data || data.length == 0) {
                 this.showNoDataMsg(true);
@@ -362,6 +365,8 @@
                 	}
                 	if(colDesc.minSize && colDesc.colSize < colDesc.minSize){
                 		colDesc.colSize = colDesc.minSize;
+                	} else if(colDesc.colSize < this.options.minColWidth){
+                		colDesc.colSize = this.options.minColWidth;
                 	}
                 	reservedSize += colDesc.colSize;
                 	reservedCount++;
@@ -381,6 +386,8 @@
             	}
             	if(colDesc.minSize && colDesc.colSize < colDesc.minSize){
             		colDesc.colSize = colDesc.minSize;
+            	} else if(colDesc.colSize < this.options.minColWidth){
+            		colDesc.colSize = this.options.minColWidth;
             	}
             	reservedSize += colDesc.colSize;
             	reservedCount++;
