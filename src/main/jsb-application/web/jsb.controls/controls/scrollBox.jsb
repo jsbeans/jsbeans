@@ -31,13 +31,13 @@
                 this.getElement().css('overflow-y', 'hidden');
             }
 
-            let hasEvents = this.events.onMaxX ||
-                            this.events.onMinX ||
-                            this.events.onMaxY ||
-                            this.events.onMinY ||
-                            this.events.preLoad ||
-                            this.events.onScroll ||
-                            this.events.onChangeVisible;
+            let hasEvents = this.options.onMaxX ||
+                            this.options.onMinX ||
+                            this.options.onMaxY ||
+                            this.options.onMinY ||
+                            this.options.preLoad ||
+                            this.options.onScroll ||
+                            this.options.onChangeVisible;
 
 			if(hasEvents) {
                 this.getElement().scroll(function(evt) {
@@ -48,33 +48,33 @@
                         clientHeight = evt.target.clientHeight,
                         clientWidth = evt.target.clientWidth;
 
-                    if(JSB().isFunction($this.events.onScroll)){
-                        $this.events.onScroll.call($this, evt);
+                    if(JSB().isFunction($this.options.onScroll)){
+                        $this.options.onScroll.call($this, evt);
                     }
 
                     // for content preloader    todo: not fire when scroll up
-                    if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad)) {
-                        $this.events.preLoad.call($this, evt);
+                    if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.options.preLoad)) {
+                        $this.options.preLoad.call($this, evt);
                     }
 
                     // maxY
-                    if(scrollHeight - scrollTop - clientHeight === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMaxY)) {
-                        $this.events.onMaxY.call($this, evt);
+                    if(scrollHeight - scrollTop - clientHeight === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.options.onMaxY)) {
+                        $this.options.onMaxY.call($this, evt);
                     }
 
                     // minY
-                    if(scrollTop === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.events.onMinY)) {
-                        $this.events.onMinY.call($this, evt);
+                    if(scrollTop === 0 && $this._oldScroll.y !== scrollTop && JSB().isFunction($this.options.onMinY)) {
+                        $this.options.onMinY.call($this, evt);
                     }
 
                     // maxX
-                    if(scrollWidth - scrollLeft - clientWidth === 0 & $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMaxX)) {
-                        $this.events.onMaxX.call($this, evt);
+                    if(scrollWidth - scrollLeft - clientWidth === 0 & $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.options.onMaxX)) {
+                        $this.options.onMaxX.call($this, evt);
                     }
 
                     // minX
-                    if(scrollLeft === 0 && $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.events.onMinX)) {
-                        $this.events.onMinX.call($this, evt);
+                    if(scrollLeft === 0 && $this._oldScroll.x !== scrollLeft && JSB().isFunction($this.options.onMinX)) {
+                        $this.options.onMinX.call($this, evt);
                     }
 
                     $this._oldScroll.x = scrollLeft;
@@ -97,19 +97,17 @@
             }
 		},
 		
-		events:{
-			onMaxX: null,
+        options: {
+            xAxisScroll: true,
+            yAxisScroll: true,
+            
+            onMaxX: null,
 			onMinX: null,
 			onMaxY: null,
 			onMinY: null,
 			preLoad: null,
 			onScroll: null,
 			onChangeVisible: null
-		},
-
-        options: {
-            xAxisScroll: true,
-            yAxisScroll: true
         },
 
 		/**
@@ -125,7 +123,7 @@
          * @return {{number}, {number}} Объект {x, y}
          */
 		getScrollPosition: function(){
-			return { x: this.getElement().scrollLeft, y: this.getElement().scrollTop };
+			return { x: this.getElement().scrollLeft(), y: this.getElement().scrollTop() };
 		},
 
 		/**

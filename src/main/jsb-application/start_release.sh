@@ -15,6 +15,6 @@ mkdir -p logs
 #  -XX:+CMSPermGenSweepingEnabled \
 java \
   -XX:+CMSClassUnloadingEnabled \
-  -Xms512m -Xmx8192m -Dfile.encoding=UTF-8 \
+  -Dfile.encoding=UTF-8 \
   "$@" -classpath config:$JARS \
   org.jsbeans.Starter
