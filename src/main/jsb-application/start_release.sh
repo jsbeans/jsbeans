@@ -5,10 +5,11 @@ cd $APP_DIR
 
 JARS="$(cat .classpath_jars |sed 's/\\/\//g')"
 
-#fix
+if [[ -f version.txt ]]; then
+  echo "build.version=\"$(cat version.txt)\"" > config/version.conf
+fi
 
 mkdir -p logs
-
 
 #  -XX:+UseConcMarkSweepGC \
 #  -XX:+CMSPermGenSweepingEnabled \
