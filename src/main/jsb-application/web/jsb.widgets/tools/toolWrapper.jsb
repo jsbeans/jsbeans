@@ -378,51 +378,56 @@
 			for(var i in this.targets){
 				var t = this.targets[i];
 				var selRect = null;
-				if(!JSB().isNull(t.selector)){
-					var sel = this.$(t.selector);
-					if(JSB().isNull(sel) || sel.length == 0){
-						throw 'ToolWrapper.show: invalid selector specified';
-						return;
-					}
-					selRect = sel.get(0).getBoundingClientRect();
-					
+				var pt = null;
+				if(JSB.isDefined(t.position) && JSB.isDefined(t.position.x) && JSB.isDefined(t.position.y)){
+					pt = t.position;
 				} else {
-					selRect = {
-						left: 0,
-						right: this.$(window).width(),
-						width: this.$(window).width(),
-						top: 0,
-						bottom: this.$(window).height(),
-						height: this.$(window).height()
+					if(!JSB().isNull(t.selector)){
+						var sel = this.$(t.selector);
+						if(JSB().isNull(sel) || sel.length == 0){
+							throw 'ToolWrapper.show: invalid selector specified';
+							return;
+						}
+						selRect = sel.get(0).getBoundingClientRect();
+					} else {
+						selRect = {
+							left: 0,
+							right: this.$(window).width(),
+							width: this.$(window).width(),
+							top: 0,
+							bottom: this.$(window).height(),
+							height: this.$(window).height()
+						};
+					}
+					var tRect = {
+						left: selRect.left,
+						top: selRect.top,
+						right: selRect.right,
+						bottom: selRect.bottom
 					};
+					pt = {
+						x: ( tRect.left + tRect.right ) / 2,
+						y: ( tRect.top + tRect.bottom ) / 2
+					};
+					if(t.pivotHorz == 'left'){
+						pt.x = tRect.left;
+					} else if(t.pivotHorz == 'right'){
+						pt.x = tRect.right;
+					}
+					if(t.pivotVert == 'top'){
+						pt.y = tRect.top;
+					} else if(t.pivotVert == 'bottom'){
+						pt.y = tRect.bottom;
+					}
+					if(!JSB().isNull(t.offsetHorz)){
+						pt.x += t.offsetHorz;
+					}
+					if(!JSB().isNull(t.offsetVert)){
+						pt.y += t.offsetVert;
+					}
+					t.rect = tRect;
 				}
-				var tRect = {
-					left: selRect.left,
-					top: selRect.top,
-					right: selRect.right,
-					bottom: selRect.bottom
-				};
-				var pt = {
-					x: ( tRect.left + tRect.right ) / 2,
-					y: ( tRect.top + tRect.bottom ) / 2
-				};
-				if(t.pivotHorz == 'left'){
-					pt.x = tRect.left;
-				} else if(t.pivotHorz == 'right'){
-					pt.x = tRect.right;
-				}
-				if(t.pivotVert == 'top'){
-					pt.y = tRect.top;
-				} else if(t.pivotVert == 'bottom'){
-					pt.y = tRect.bottom;
-				}
-				if(!JSB().isNull(t.offsetHorz)){
-					pt.x += t.offsetHorz;
-				}
-				if(!JSB().isNull(t.offsetVert)){
-					pt.y += t.offsetVert;
-				}
-				t.rect = tRect;
+				
 				t.pt = pt;
 				ap.x += pt.x;
 				ap.y += pt.y;
@@ -461,7 +466,8 @@
 				var bExisted = false;
 				for(var j in newTargets){
 					nT = newTargets[j];
-					if(this.$(nT.selector).get(0) == this.$(t.selector).get(0)){
+					if((JSB.isDefined(t.selector) && this.$(nT.selector).get(0) == this.$(t.selector).get(0))
+						||(JSB.isDefined(t.position) && JSB.isEqual(nT.position, t.position))){
 						bExisted = true;
 						break;
 					}
@@ -482,7 +488,8 @@
 				var bExisted = false;
 				for(var j in this.targets){
 					var t = this.targets[j];
-					if(this.$(nT.selector).get(0) == this.$(t.selector).get(0)){
+					if((JSB.isDefined(t.selector) && this.$(nT.selector).get(0) == this.$(t.selector).get(0))
+						||(JSB.isDefined(t.position) && JSB.isEqual(nT.position, t.position))){
 						bExisted = true;
 						break;
 					}
@@ -641,6 +648,9 @@
 				var height = this.getElement().outerHeight();
 				this.minPt = {x: 0, y: 0, w: null};
 				var whirlStep = 20;
+				if(JSB.isDefined(this.params.position)){
+					whirlStep = 10;
+				}
 				if(this.params.whirlStep){
 					whirlStep = this.params.whirlStep; 
 				}
