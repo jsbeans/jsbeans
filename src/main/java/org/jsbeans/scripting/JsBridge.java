@@ -13,10 +13,13 @@ package org.jsbeans.scripting;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.util.Timeout;
+
+import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.*;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
+import org.jsbeans.web.SystemPrincipal;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.IdScriptableObject;
@@ -32,7 +35,9 @@ import scala.concurrent.Future;
 
 import javax.security.auth.Subject;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -230,14 +235,33 @@ public class JsBridge {
         Object userToken = Context.getCurrentContext().getThreadLocal("userToken");
         Object clientAddr = Context.getCurrentContext().getThreadLocal("clientAddr");
         Object clientRequestId = Context.getCurrentContext().getThreadLocal("clientRequestId");
+        ExecuteScriptMessage execMsg = null;
         
-        final ExecuteScriptMessage execMsg = new ExecuteScriptMessage(token, (Function) callback, new Object[]{});
+        if(chRoot){
+	        Subject sysSubj = new Subject(true, Collections.singleton(new SystemPrincipal()), Collections.emptySet(), Collections.emptySet());
+	        execMsg = Subject.doAs(sysSubj, new PrivilegedAction<ExecuteScriptMessage>() {
+	            @Override
+	            public ExecuteScriptMessage run() {
+	            	return new ExecuteScriptMessage(token, (Function) callback, new Object[]{});
+	            }
+	        });
+/*	        
+	        if(ConfigHelper.getConfigBoolean("kernel.security.enabled")){
+	        	execMsg.setUser(ConfigHelper.getConfigString("kernel.security.system.user"));
+	        }
+*/	        
+        } else {
+        	execMsg = new ExecuteScriptMessage(token, (Function) callback, new Object[]{});
+        	if(user != null){
+        		execMsg.setUser(user.toString());
+        	}
+        }
         //execMsg.setScopePath(msg.getScopePath());
-        
+/*        
         if(!chRoot && user != null){
         	execMsg.setUser(user.toString());
         }
-        
+*/        
         if(userToken != null){
         	execMsg.setUserToken(userToken.toString());
         }

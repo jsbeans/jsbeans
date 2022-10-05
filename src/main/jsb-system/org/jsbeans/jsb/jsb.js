@@ -1006,7 +1006,7 @@ if(!(function(){return this;}).call(null).JSB){
 								procDecl += 'var $current = new $curFunc(this); ';
 							}
 							if(hasRoot && self.isServer()){
-								procDecl += 'var $root = function(callback){return $rootFunc($this, callback);}; ';
+								procDecl += 'var $root = function(callback, chRoot){return $rootFunc($this, callback, chRoot);}; ';
 							}
 						}
 /*						if(self.isClient()){
