@@ -108,6 +108,20 @@
 			return userInfo;
 		},
 
+		getUserGroupNames: function(userId) {
+			if(this._userManager){
+				this._userManager.getUserGroupNames(userId);
+			}
+			return [];
+		},
+
+        getUserGroups: function(userId){
+			if(this._userManager){
+				return this._userManager.getUserGroupNames(userId);
+			}
+            return {};
+        },
+
 		getAccessControlContext: function() {
 		    return AccessController.getContext();
 		},
