@@ -45,6 +45,7 @@ import java.security.*;
 import java.util.Collections;
 import java.util.Map;
 
+@SuppressWarnings("deprecation")
 public class HttpJsbServlet extends HttpServlet {
 	private static final long serialVersionUID = 4803233014924737807L;
 
@@ -219,12 +220,13 @@ public class HttpJsbServlet extends HttpServlet {
             if (respObj.status == ExecutionStatus.SUCCESS) {
                 if (contentType != null) {
                     resp.setContentType(contentType);
+                    ((HttpServletResponse)resp).addHeader("Content-Type", contentType);
                 }
                 if (encoding != null) {
                     resp.setCharacterEncoding(encoding);
                 }
                 if (contentDisposition != null) {
-                    ((HttpServletResponse)resp).addHeader("Content-disposition", contentDisposition);
+                    ((HttpServletResponse)resp).addHeader("Content-Disposition", contentDisposition);
                 }
                 JsObject data = ((JsObject)respObj.result).getAttribute("exec");
                 if(data.getResultType() != JsObjectType.NULL){
@@ -252,6 +254,7 @@ public class HttpJsbServlet extends HttpServlet {
             }
             resp.setCharacterEncoding("UTF-8");
             resp.setContentType("application/json; charset=UTF-8");
+            ((HttpServletResponse)resp).addHeader("Content-Type", "application/json; charset=UTF-8");
             resp.getOutputStream().write(result.getBytes("UTF-8"));
         } else {
             // respond error (404)

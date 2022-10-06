@@ -255,6 +255,9 @@ public class JsBridge {
         	if(user != null){
         		execMsg.setUser(user.toString());
         	}
+            if(userToken != null){
+            	execMsg.setUserToken(userToken.toString());
+            }
         }
         //execMsg.setScopePath(msg.getScopePath());
 /*        
@@ -262,9 +265,6 @@ public class JsBridge {
         	execMsg.setUser(user.toString());
         }
 */        
-        if(userToken != null){
-        	execMsg.setUserToken(userToken.toString());
-        }
         
         if(clientRequestId != null){
         	execMsg.setClientRequestId(clientRequestId.toString());
