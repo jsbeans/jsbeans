@@ -1138,7 +1138,9 @@
 			if(this.options.modal){
 				this.hideModalBackground();
 			}
-			
+			if(this.params.data.onClose){
+				this.params.data.onClose.call(this);
+			}
 			this.publish('toolHide', this.params);
 		},
 		
