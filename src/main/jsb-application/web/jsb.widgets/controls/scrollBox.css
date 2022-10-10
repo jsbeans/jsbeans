@@ -58,6 +58,7 @@
 
 ._dwp_scrollBox.vertScrollVisible > .iScrollVerticalScrollbar {
 	display: block;
+	z-index: initial !important;
 	width: 10px !important;
 	bottom: 0 !important;
     top: 0 !important;
@@ -77,6 +78,7 @@
 
 ._dwp_scrollBox.horzScrollVisible > .iScrollHorizontalScrollbar {
 	display: block;
+	z-index: initial !important;
 	height: 10px !important;
 	left: 0 !important;
     right: 0 !important;
