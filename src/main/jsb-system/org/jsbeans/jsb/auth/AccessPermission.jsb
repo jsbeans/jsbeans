@@ -48,7 +48,6 @@
         ]
     */
 	check: function(accessRequest, accessPermissions){
-debugger;
 		var user = Auth.getUser();
 
 		if (JSB.isString(accessPermissions)) {
