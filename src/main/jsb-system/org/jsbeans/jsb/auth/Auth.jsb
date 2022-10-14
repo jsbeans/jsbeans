@@ -118,7 +118,7 @@
 
 		getUserGroupNames: function(userId) {
 			if(this._userManager){
-				return this._userManager.getUserGroupNames(userId);
+				return this._userManager.getUserGroupNames(userId||this.getUserId());
 			}
 			return {};
 		},

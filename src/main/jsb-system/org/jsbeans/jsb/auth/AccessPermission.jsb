@@ -83,7 +83,7 @@
                     if (accessPermission.user == user
                             || accessPermission.group && groups[accessPermission.group]
                             || accessPermission.groupName &&
-                                (groupNames||(groupNames=Auth.getUserGroupNames(userId)))[accessPermission.groupName]) {
+                                (groupNames||(groupNames=Auth.getUserGroupNames()))[accessPermission.groupName]) {
 
                         return this.getLevel();
                     }
