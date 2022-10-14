@@ -12,9 +12,12 @@
     $name:'JSB.Net.HttpConnection',
 
     $server: {
-    	$require: [	'java:org.jsbeans.helpers.BufferHelper',
-    				'JSB.System.Log', 
-    				'JSB.IO.Stream'],
+    	$require: [
+            'java:org.jsbeans.helpers.BufferHelper',
+            'JSB.System.Log',
+            'JSB.IO.Stream',
+            'java:org.jsbeans.helpers.AuthHelper',
+        ],
     	
         $constructor: function(options){
             this.URL = Packages.java.net.URL;
@@ -44,6 +47,7 @@
                 "User-Agent": "Wget/1.12",
                 "Content-Type": "application/x-www-form-urlencoded"
             },
+            authClient: false, // use local  client auth
         },
 
         connect: function(){
@@ -107,6 +111,10 @@
             for(var key in options.requestProperties) if (options.requestProperties.hasOwnProperty(key)) {
                var val = options.requestProperties[key];
                this.httpConnection.setRequestProperty(key, val);
+            }
+
+            if(options.authClient) {
+                AuthHelper.authenticateHttpClient(this.httpConnection);
             }
 
             if(options.user && options.password) {

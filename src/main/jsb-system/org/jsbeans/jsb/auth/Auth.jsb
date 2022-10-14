@@ -20,6 +20,7 @@
 
 		           'JSB.IO.FileSystem',
 		           'JSB.Crypt.MD5',
+		           'JSB.Auth.AccessPermissions',
 
 		           'java:org.jsbeans.web.SystemPrincipal',
 
@@ -97,27 +98,34 @@
 		getUser: function(){
 			return Kernel.user();
 		},
+
+		getUserId: function() {
+			if(!$this._userManager){
+				throw new this.SecurityError('UserManager has not been installed');
+			}
+			return this._userManager.getUserIdByName(Kernel.user());
+		},
 		
-		getUserInfo: function(){
+		getUserInfo: function(opts){
 			var userInfo = {
 				userName: this.getUser()
 			};
 			if(this._userManager){
-				JSB.merge(userInfo, this._userManager.getUserInfo(userInfo.userName));
+				JSB.merge(userInfo, this._userManager.getUserInfo(userInfo.userName, opts));
 			}
 			return userInfo;
 		},
 
 		getUserGroupNames: function(userId) {
 			if(this._userManager){
-				this._userManager.getUserGroupNames(userId);
+				return this._userManager.getUserGroupNames(userId);
 			}
-			return [];
+			return {};
 		},
 
         getUserGroups: function(userId){
 			if(this._userManager){
-				return this._userManager.getUserGroupNames(userId);
+				return this._userManager.getUserGroups(userId);
 			}
             return {};
         },
@@ -206,7 +214,9 @@
 			
 			return $this._userManager.getPermissionParamsForUser(Auth.getUser(), permissionId);
 		},
-		
+
+		/** Check user permission
+		*/
 		checkPermission: function(permissionId){
 			if(!Auth.isSecurityEnabled()){
 				return;
@@ -253,61 +263,33 @@
 				return e;
 			}
 		},
-/*        
-        checkPermission: function(permission, use) {
-            var currentUser  = $this.getPrincipalName();
-            if($this.isSecurityEnabled()) {
-                if (!$this.repo) {
-                    throw new $this.SecurityError('Permissions bean is not initialized, set config kernel.security.permissionsBean');
-                }
-                if(!currentUser) {
-                    throw new $this.SecurityError('Not authorized user for permission ' + permission);
-                }
 
-                var status = $this.repo.hasPermission(currentUser, permission, use);
-                if (status) {
-                    return true;
-                }
-                throw new $this.SecurityError('User ' + currentUser + ' has no permission ' + permission);
-            }
-            return true;
-        },
+		checkAccessPermission: function(requests, permissions){
+			if(!Auth.isSecurityEnabled()){
+				return;
+			}
 
-        getPermission: function(user, permission) {
-            if($this.isSecurityEnabled()) {
-                if (!$this.repo) {
-                    throw new $this.SecurityError('Permissions bean is not initialized, set config kernel.security.permissionsBean');
-                }
-                var currentUser  = $this.getPrincipalName();
-                if (currentUser) {
-                    if (currentUser != user) {
-                        $this.checkPermission('jsb.auth.getNotOwnPermission');
-                    }
-                    var desc = $this.repo.getPermission(user, permission);
-                    return desc;
-                }
+			if(!$this._userManager){
+				throw new this.SecurityError('UserManager has not been installed');
+			}
+
+            if (JSB.isString(requests)) {
+			    requests = AccessPermissions.parseAccessRequest(requests);
             }
-            return null;
+
+			var level = 0;
+			for(var i = 0; i < requests.length; i++){
+				var request = requests[i];
+				var pInst = this._permissionMap[request.type];
+				var lvl = pInst.check(request, permissions);
+				if (lvl > level) {
+				    level = lvl;
+				}
+			}
+
+            return level;
 		},
 
-        addPermission: function(user, permission, desc) {
-            if (!$this.repo) {
-                throw new $this.SecurityError('Permissions bean is not initialized, set config kernel.security.permissionsBean');
-            }
-            $this.checkPermission('jsb.auth.addPermission');
-            var status = $this.repo.addPermission(user, permission, desc);
-            return status;
-		},
-
-		removePermission: function(user, permission, desc) {
-            if (!$this.repo) {
-                throw new $this.SecurityError('Permissions bean is not initialized, set config kernel.security.permissionsBean');
-            }
-            $this.checkPermission('jsb.auth.removePermission');
-            var status = $this.repo.removePermission(user, permission, desc);
-            return status;
-		},
-*/
 		_logStackHook: function() {
 //		    var stack = JSB.stackTrace();
 //		    //debugger;
