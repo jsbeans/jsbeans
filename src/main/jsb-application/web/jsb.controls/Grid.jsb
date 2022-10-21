@@ -159,6 +159,7 @@
 
             function createRow(rowData, rowIndex) {
                 var row = $this.$('<tr class="grid-row"></tr>');
+                row.data('data', rowData);
 
                 row.addClass($this.options.rowClass);
 

@@ -1141,6 +1141,9 @@
 			if(this.params.data.onClose){
 				this.params.data.onClose.call(this);
 			}
+			if(this.params.onClose){
+				this.params.onClose.call(this);
+			}
 			this.publish('toolHide', this.params);
 		},
 		
