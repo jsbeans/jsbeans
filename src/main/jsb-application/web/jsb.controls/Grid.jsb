@@ -155,7 +155,8 @@
 
         addArray: function(data, rowIndex, opts){
             var newRows = [],
-                dataType = 'array';
+                dataType = 'array',
+                lastRowCount = this._masterTable.find('> .grid-row').length;
 
             function createRow(rowData, rowIndex) {
                 var row = $this.$('<tr class="grid-row"></tr>');
@@ -225,7 +226,7 @@
                         createDataScheme(data[i]);
                     }
 
-                    createRow(data[i], i);
+                    createRow(data[i], i+lastRowCount);
                 }
             } else {
                 for(var i in data) { // object
