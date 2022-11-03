@@ -1135,13 +1135,13 @@
 				}
 			}
 			
-			if(this.options.modal){
+			if(this.options && this.options.modal){
 				this.hideModalBackground();
 			}
-			if(this.params.data.onClose){
+			if(this.params && this.params.data && this.params.data.onClose){
 				this.params.data.onClose.call(this);
 			}
-			if(this.params.onClose){
+			if(this.params && this.params.onClose){
 				this.params.onClose.call(this);
 			}
 			this.publish('toolHide', this.params);
