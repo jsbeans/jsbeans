@@ -1084,8 +1084,6 @@
 		},
 		
 		hideModalBackground: function(){
-			var self = this;
-			
 			// restore droppables
 			if($this.droppables){
 				for(var i = 0; i < $this.droppables.length; i++){
@@ -1096,11 +1094,12 @@
 				$this.droppables = null;
 			}
 
-			this.modalBack.fadeOut(function(){
-				self.modalBack.remove();
-				self.modalBack = null;
-				
-			});
+			if(this.modalBack){
+				this.modalBack.fadeOut(()=>{
+					this.modalBack.remove();
+					this.modalBack = null;
+				});
+			}
 		},
 		
 		hide: function(bCanceled){
@@ -1135,7 +1134,8 @@
 				}
 			}
 			
-			if(this.options && this.options.modal){
+			var isModal = JSB.isDefined(this.params.modal) ? this.params.modal : this.options.modal;
+			if(isModal){
 				this.hideModalBackground();
 			}
 			if(this.params && this.params.data && this.params.data.onClose){
