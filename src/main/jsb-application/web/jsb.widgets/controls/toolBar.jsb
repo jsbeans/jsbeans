@@ -72,6 +72,9 @@
 			if(itemObj.checkbox){
 				itemWrapper.addClass('checkbox');
 			}
+			if(itemObj.group){
+				itemWrapper.addClass('group');
+			}
 			
 			if(!JSB().isNull(itemObj.key)){
 				itemWrapper.attr("key", itemObj.key);	
