@@ -210,7 +210,8 @@
 			var chosenInstance = null;
 			for(var i in toolEntry.instances){
 				var inst = toolEntry.instances[i];
-				if(!inst.isVisible() || params.cmd == 'update'){
+				if((!inst.isVisible() || params.cmd == 'update') && (!params.bind || inst.options.bind == params.bind)){
+					
 					chosenInstance = inst;
 					break;
 				}
