@@ -262,10 +262,10 @@
 			this.visible = true;
 			this.params = params;
 			this.scope = null;
-			if(!JSB().isNull(this.options.scope)){
+			if(!JSB.isNull(this.options.scope)){
 				this.scope = this.options.scope;
 			}
-			if(!JSB().isNull(params.scope)){
+			if(JSB.isDefined(params.scope)){
 				this.scope = params.scope;
 			}
 			
@@ -274,7 +274,6 @@
 			this.publish('toolShow', params);
 			
 			this.updatePosition();
-			
 			var isModal = JSB.isDefined(this.params.modal) ? this.params.modal : this.options.modal;
 
 			if(isModal){

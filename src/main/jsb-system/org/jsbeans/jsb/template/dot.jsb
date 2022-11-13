@@ -169,12 +169,17 @@
 		$require: ['JSB.Template.Template'],
 		$constructor: function(){
 
-			Template.doT = this._createDoT();
+			this.doT = Template.doT = this._createDoT();
 			
 			Template.exec_doT = function(template, json){
 				var templateProc = Template.doT.template(template);
 				return templateProc(json);
 			};
+		},
+		
+		exec: function(template, json){
+			var templateProc = this.doT.template(template);
+			return templateProc(json);
 		}
 	}
 }
