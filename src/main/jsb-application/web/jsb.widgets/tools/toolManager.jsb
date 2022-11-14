@@ -188,7 +188,7 @@
 			if(JSB().isNull(toolEntry)){
 				return;
 			}
-			
+
 			if(params.cmd == 'show'){
 				// perform exclusive logic
 				if(toolEntry.wrapperOpts && toolEntry.wrapperOpts.exclusive){
@@ -221,7 +221,7 @@
 				// create new instance
 				var cls = toolEntry.jso.getClass();
 				var obj = new cls(toolEntry.toolOpts);
-				chosenInstance = new ToolWrapper(params.id, self, obj, JSB().merge(toolEntry.wrapperOpts, params));
+				chosenInstance = new ToolWrapper(params.id, self, obj, toolEntry.wrapperOpts/*JSB().merge({}, toolEntry.wrapperOpts, params)*/);
 				toolEntry.instances[toolEntry.instances.length] = chosenInstance;
 			}
 			
