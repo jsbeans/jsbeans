@@ -134,7 +134,7 @@
 		    return AccessController.getContext();
 		},
 
-		getPrincipals: function(token){
+		getPrincipals: function(){
             var subject = Subject.getSubject($this.getAccessControlContext());
             var principals = [];
             if(subject != null) {
@@ -147,8 +147,8 @@
 		},
 
 		isAuthenticated: function(){
-            var principals = $this.getUserPrincipals();
-            return principals && principals.size() > 0;
+            var principals = $this.getPrincipals();
+            return principals && principals.length > 0;
 		},
 
 		getPrincipal: function(){
