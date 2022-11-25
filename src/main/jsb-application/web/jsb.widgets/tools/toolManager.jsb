@@ -221,6 +221,9 @@
 				// create new instance
 				var cls = toolEntry.jso.getClass();
 				var obj = new cls(toolEntry.toolOpts);
+				if(params.bind){
+					toolEntry.wrapperOpts.bind = params.bind;
+				}
 				chosenInstance = new ToolWrapper(params.id, self, obj, toolEntry.wrapperOpts/*JSB().merge({}, toolEntry.wrapperOpts, params)*/);
 				toolEntry.instances[toolEntry.instances.length] = chosenInstance;
 			}
