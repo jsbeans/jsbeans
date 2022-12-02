@@ -28,7 +28,7 @@
     position: relative;
     font-size: 18px;
     font-weight: 400;
-    margin: 5px 0 6px;
+    margin: 5px 0;
     display: inline-block;
 	max-width: 100%;
     text-overflow: ellipsis;
