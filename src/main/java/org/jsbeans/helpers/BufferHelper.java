@@ -10,6 +10,8 @@
 
 package org.jsbeans.helpers;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -31,7 +33,7 @@ public class BufferHelper {
 		}
 	}
 	
-	public static NativeArrayBuffer toArrayBuffer(Object obj) throws UnsupportedEncodingException, IllegalAccessException, InstantiationException, InvocationTargetException{
+	public static NativeArrayBuffer toArrayBuffer(Object obj) throws IllegalAccessException, InstantiationException, InvocationTargetException, IOException{
 		NativeArrayBuffer nab = null;
 		if(obj instanceof String){
 			String str = (String)obj;
@@ -43,11 +45,15 @@ public class BufferHelper {
 			nab = new NativeArrayBuffer(array.size());
 			
 			System.arraycopy(array.toArray(), 0, nab.getBuffer(), 0, array.size());
+		} else if(obj instanceof InputStream) {
+			InputStream is = (InputStream)obj;
+			nab = new NativeArrayBuffer(is.available());
+			is.read(nab.getBuffer());
 		} else if(obj!=null && obj.getClass().isArray()){
 			int length = ((byte [])obj).length;
 			nab = new NativeArrayBuffer(length);
 			System.arraycopy(obj, 0, nab.getBuffer(), 0, length);
-		}
+		} 
 		return nab;
 	}
 	

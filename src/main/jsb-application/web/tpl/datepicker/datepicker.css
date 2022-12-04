@@ -1,6 +1,8 @@
 @CHARSET "UTF-8";
 
-._jsb_DatePicker {}
+._jsb_DatePicker {
+	display: inline-block;
+}
 
 ._jsb_DatePicker > .picker {
 	width: 100%;
