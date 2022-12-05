@@ -37,7 +37,7 @@
 			var request = Web.getContext().getRequest();
 			var response = Web.getContext().getResponse();
             response.setCharacterEncoding('UTF-8');
-            response.setContentType('text');
+            response.setContentType('text/plain');
 
             Kernel.checkSystemOrAdmin();
 
