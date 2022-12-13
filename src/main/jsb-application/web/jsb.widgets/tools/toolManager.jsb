@@ -236,7 +236,7 @@
 			}
 			
 			// set data
-			chosenInstance.setData({data: params.data, callback: params.callback});
+			chosenInstance.setData(params);
 			chosenInstance.compCntr = 0;
 			chosenInstance.prepareShow = true;
 			
