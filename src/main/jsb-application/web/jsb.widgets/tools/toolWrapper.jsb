@@ -274,7 +274,7 @@
 			this.publish('toolShow', params);
 			
 			this.updatePosition();
-			var isModal = JSB.isDefined(this.params.modal) ? this.params.modal : this.options.modal;
+			var isModal = (this.params && JSB.isDefined(this.params.modal)) ? this.params.modal : this.options.modal;
 
 			if(isModal){
 				this.addClass('_dwp_modal');
@@ -1133,7 +1133,7 @@
 				}
 			}
 			
-			var isModal = JSB.isDefined(this.params.modal) ? this.params.modal : this.options.modal;
+			var isModal = (this.params && JSB.isDefined(this.params.modal)) ? this.params.modal : this.options.modal;
 			if(isModal){
 				this.hideModalBackground();
 			}

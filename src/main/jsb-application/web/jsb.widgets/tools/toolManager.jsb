@@ -221,10 +221,16 @@
 				// create new instance
 				var cls = toolEntry.jso.getClass();
 				var obj = new cls(toolEntry.toolOpts);
+				
+				var oddWrapperOpts = {};
 				if(params.bind){
-					toolEntry.wrapperOpts.bind = params.bind;
+					oddWrapperOpts.bind = params.bind;
 				}
-				chosenInstance = new ToolWrapper(params.id, self, obj, toolEntry.wrapperOpts/*JSB().merge({}, toolEntry.wrapperOpts, params)*/);
+				if(params.cssClass){
+					oddWrapperOpts.cssClass = params.cssClass;
+				}
+				var wrapperOpts = JSB.merge({}, toolEntry.wrapperOpts, oddWrapperOpts);
+				chosenInstance = new ToolWrapper(params.id, self, obj, wrapperOpts);
 				toolEntry.instances[toolEntry.instances.length] = chosenInstance;
 			}
 			

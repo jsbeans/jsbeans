@@ -13,7 +13,7 @@
 	$parent: 'JSB.Controls.Control',
 	$require: ['JSB.Controls.Editor',
 	           'css:panel.css',
-	           'css:../../fonts/fa/fontawesome-all.min.css'],
+	           'css:../../fonts/fa/css/all.min.css'],
     $client: {
         $constructor: function(opts){
         	this.elements = {

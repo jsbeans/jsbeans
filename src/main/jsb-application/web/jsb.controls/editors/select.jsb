@@ -13,7 +13,7 @@
 	$parent: 'JSB.Controls.Control',
     $client: {
     	$require: ['css:select.css',
-    	           'css:../../fonts/fa/fontawesome-all.min.css'],
+    	           'css:../../fonts/fa/css/all.min.css'],
         _optionsList: {},
 
         $constructor: function(opts){
