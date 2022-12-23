@@ -332,7 +332,7 @@
 				layoutName = this.options.defaultLayout;
 			}
 			var pane = this.getPane(key, layoutName);
-			var ancestor = pane.ancestor;
+			var ancestor = pane && pane.ancestor;
 			if(!ancestor || !ancestor.panes){
 				return;
 			}
@@ -360,7 +360,7 @@
 				layoutName = this.options.defaultLayout;
 			}
 			var pane = this.getPane(key, layoutName);
-			var ancestor = pane.ancestor;
+			var ancestor = pane && pane.ancestor;
 			if(!ancestor || !ancestor.panes){
 				return;
 			}
