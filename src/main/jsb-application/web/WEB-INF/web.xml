@@ -35,7 +35,7 @@
         <filter-class>org.jsbeans.web.UrlPrefixForwardFilter</filter-class>
         <init-param>
             <param-name>urlprefixforward.prefix</param-name>
-            <param-value>/cubisio/http/ShortUrlMappingForward.jsb?path=</param-value>
+            <param-value>/cubisio/http/Endpoint.jsb?path=</param-value>
         </init-param>
         <async-supported>true</async-supported>
     </filter>

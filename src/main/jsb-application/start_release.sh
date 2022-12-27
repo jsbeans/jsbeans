@@ -9,7 +9,14 @@ if [[ -f version.txt ]]; then
   echo "build.version=\"$(cat version.txt)\"" > config/version.conf
 fi
 
-mkdir -p logs
+if [[ -d logs ]]; then
+  bklog="./logs/$(date '+%Y-%m-%d %H:%M:%S')/"
+  mkdir -p "$bklog"
+  find ./logs/ -maxdepth 1 -type f -exec cp {} "$bklog" \;
+else
+  mkdir -p logs
+fi
+
 
 #  -XX:+UseConcMarkSweepGC \
 #  -XX:+CMSPermGenSweepingEnabled \
