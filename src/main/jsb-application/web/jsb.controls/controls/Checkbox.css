@@ -6,22 +6,21 @@
 
 .jsb-checkbox > .caption {
 	position: relative;
-	min-width: 20px;
-    min-height: 20px;
-    height: 100%;
 }
 
 .jsb-checkbox > .caption > .check-elem {
-	position: absolute;
-    top: 50%;
-    margin-top: -10px;
+	display: inline-block;
+	line-height: 0;
+    vertical-align: middle;
     padding: 0;
-    width: 20px;
-    height: 20px;
-    background-image: url(/jsb.controls/images/greenCheckBox.png);
-    background-repeat: no-repeat;
     border: none;
     cursor: pointer;
+	font-size: 17px;
+}
+
+.jsb-checkbox > .caption > .check-elem > input {
+	left: 0;
+	z-index: -1;
 }
 
 .jsb-checkbox > .caption > .check-elem > .check-helper {
@@ -37,25 +36,23 @@
     opacity: 0;
 }
 
-.jsb-checkbox > .caption > .check-elem.checked {
-    background-position: -22px 0;
+.jsb-checkbox > .caption > .check-elem.checked > .fa-square,
+.jsb-checkbox > .caption > .check-elem:not(.checked) > .fa-check-square {
+	display: none;
 }
 
 .jsb-checkbox > .caption > .check-elem:hover:not(.checked) {
-    background-position: -66px 0;
 }
 
 .jsb-checkbox > .caption > .label {
     display: inline-block;
     vertical-align: middle;
-    line-height: 20px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    text-align: right;
-    padding-left: 23px;
     max-width: 100%;
     cursor: pointer;
+	margin-left: 4px;
 }
 
 .jsb-checkbox > .caption> .check-elem + .label,

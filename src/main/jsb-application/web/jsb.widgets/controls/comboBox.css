@@ -7,9 +7,7 @@
 	vertical-align: middle;
 }
 
-._dwp_comboBox._dwp_dropDown,
-._dwp_comboBox._dwp_dropDown.disabled:hover,
-._dwp_comboBox._dwp_dropDown.disabled:active {
+._dwp_comboBox._dwp_dropDown {
 	padding: 4px 8px;
 	border-radius: 4px;
 	
@@ -24,7 +22,7 @@
 	background: -ms-linear-gradient(top,#fffffd, #f2f2f2 5%, #CFCFCF 25%, #EEEEEE 98%, #D8D8D8 100%);
 }
 
-._dwp_comboBox._dwp_dropDown:hover {
+._dwp_comboBox._dwp_dropDown:not(.disabled):hover {
 	background: -webkit-linear-gradient(top,#fffffd, #f2f2f2 5%, #FFFFFF 25%, #EEEEEE 98%, #D8D8D8 100%);
 	background: -moz-linear-gradient(top,#fffffd, #f2f2f2 5%, #FFFFFF 25%, #EEEEEE 98%, #D8D8D8 100%);
 	background: linear-gradient(top,#fffffd, #f2f2f2 5%, #FFFFFF 25%, #EEEEEE 98%, #D8D8D8 100%);
@@ -32,7 +30,7 @@
 	background: -ms-linear-gradient(top,#fffffd, #f2f2f2 5%, #FFFFFF 25%, #EEEEEE 98%, #D8D8D8 100%);
 }
 
-._dwp_comboBox._dwp_dropDown:active {
+._dwp_comboBox._dwp_dropDown:not(.disabled):active {
 	padding: 5px 7px 3px 9px;
 	background: -webkit-linear-gradient(top,#F2F2F2, #CACACA 5%, #CBCBCB 25%, #F9F9F9 98%, #FFFFFF 100%);
 	background: -moz-linear-gradient(top,#F2F2F2, #CACACA 5%, #CBCBCB 25%, #F9F9F9 98%, #FFFFFF 100%);

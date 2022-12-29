@@ -13,7 +13,8 @@
 	$parent: 'JSB.Controls.Control',
 
 	$client: {
-		$require: ['css:Checkbox.css'],
+		$require: ['css:Checkbox.css',
+					'css:../../fonts/fa/css/all.min.css'],
 
 		_contentBox: null,
 		_label: null,
@@ -25,8 +26,9 @@
 			this.getElement().append(`#dot
 				<div class="caption">
 				    <div class="check-elem">
+				    	<i class="far fa-square"></i>
+				    	<i class="fas fa-check-square"></i>
 				        <input type="checkbox" class="flat" style="position: absolute; opacity: 0;">
-				        <ins class="check-helper"></ins>
 	                </div>
                 </div>
 			`);
@@ -39,7 +41,7 @@
 			    this.setContent(this.options.content);
 			}
 
-            this.find('> .caption > .check-elem > ins').click(function(evt){
+            this.find('> .caption > .check-elem').click(function(evt){
                 $this.setChecked(!$this.find('> .caption > .check-elem').hasClass('checked'));
 
                 if($this.options.onclick){

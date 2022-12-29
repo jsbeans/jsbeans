@@ -46,8 +46,7 @@
 }
 
 .jsb-panel > .header > h1 > i {
-	color: #1b3288;
-    margin-left: 5px;
+    margin-left: 4px;
     opacity: 0.5;
     font-size: 13px;
     transition: 300ms;
