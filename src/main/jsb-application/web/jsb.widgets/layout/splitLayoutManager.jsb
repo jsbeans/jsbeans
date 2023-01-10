@@ -347,11 +347,26 @@
 				return;
 			}
 			var sb = ancestor && ancestor.ctrl;
-			
 			if(!JSB.isInstanceOf(sb, 'JSB.Widgets.SplitBox')){
 				return;
 			}
-			sb.setSplitterPosition(0, ancestor.lastSplitPosition || ancestor.size, animObj);
+			var container = sb.getPane(paneIdx);
+			sb.setSplitterPosition(0, ancestor.lastSplitPosition || ancestor.size, animObj, ()=>{
+				// release size in ctrl to prevent child elements from layout change
+				if(ancestor.split == 'vertical'){
+					pane.ctrl.getElement().css('width', '');
+				} else {
+					pane.ctrl.getElement().css('height', '');
+				}
+				
+				if(JSB.isDefined(pane.minSize)){
+					if(ancestor.split == 'vertical'){
+						container && container.css('min-width', pane.minSize);
+					} else {
+						container && container.css('min-height', pane.minSize);
+					}
+				}
+			});
 			
 		},
 		
@@ -379,6 +394,25 @@
 			if(!JSB.isInstanceOf(sb, 'JSB.Widgets.SplitBox')){
 				return;
 			}
+			
+			// remove minimal constraints from container
+			if(JSB.isDefined(pane.minSize)){
+				var container = sb.getPane(paneIdx);
+				if(ancestor.split == 'vertical'){
+					container && container.css('min-width', '');
+				} else {
+					container && container.css('min-height', '');
+				}
+			}
+			
+			// fix size in ctrl to prevent child elements from layout change
+			if(ancestor.split == 'vertical'){
+				pane.ctrl.getElement().css('width', pane.ctrl.getElement().width()+'px');
+			} else {
+				pane.ctrl.getElement().css('height', pane.ctrl.getElement().width()+'px');
+			}
+			
+			// collapse pane
 			if(paneIdx == 0){
 				sb.setSplitterPosition(0, 0, animObj);
 			} else {

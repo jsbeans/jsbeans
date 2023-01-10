@@ -333,6 +333,10 @@
 			return this.panes[paneIdx];
 		},
 		
+		getPane: function(paneIdx){
+			return this.panes[paneIdx];
+		},
+		
 		append: function(ctrl){
 			for(var i = 0; i < this.filledPanes.length; i++ ){
 				if(!this.filledPanes[i]){
@@ -350,7 +354,7 @@
 			return this.splitterPositions[idx];
 		},
 		
-		setSplitterPosition: function(idx, pos, animateObj){
+		setSplitterPosition: function(idx, pos, animateObj, readyCallback){
 			var splitter = $this.splitters[idx];
 			if(pos < 0){
 				pos = 0;
@@ -371,6 +375,9 @@
 						progressProc.call($this);
 					}
 				};
+				if(JSB.isFunction(readyCallback)){
+					animateObj.complete = readyCallback;
+				}
 			}
 			
 			var cssObj = {};
@@ -385,6 +392,9 @@
 			} else {
 				splitter.css(cssObj);
 				$this.updatePanes();
+				if(JSB.isFunction(readyCallback)){
+					readyCallback.call(this);
+				}
 			}
 		}
 	}
