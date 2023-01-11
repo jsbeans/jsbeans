@@ -94,7 +94,7 @@
 			this.cachedContent[path] = code;
 			
 			return Web.respond(code, {
-				contentType: 'text/javascript;charset=UTF-8'
+				contentType: 'application/javascript; charset=UTF-8'
 			});
 		},
 		
