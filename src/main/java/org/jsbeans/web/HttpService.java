@@ -109,7 +109,6 @@ public class HttpService extends Service {
         context.setContextPath("/");
         context.getSessionHandler().setSessionCookie("_jsbSession_" + portVal.toString());
         context.getSessionHandler().setSessionIdPathParameterName("_jsbsession_");
-        
         if(ConfigHelper.has(WEB_SECURE_KEY) && ConfigHelper.getConfigBoolean(WEB_SECURE_KEY)){
             context.getSessionHandler().setSameSite(SameSite.NONE);
             context.getSessionHandler().getSessionCookieConfig().setSecure(true);

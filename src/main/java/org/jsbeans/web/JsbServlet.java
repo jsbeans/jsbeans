@@ -191,7 +191,11 @@ public class JsbServlet extends HttpServlet {
 	private void responseResult(AsyncContext ac, String result) throws UnsupportedEncodingException, IOException {
         if (result != null && result.length() > 0) {
             if (ac.getRequest().getParameterMap().containsKey("callback")) {
-                result = String.format("%s(%s);", ac.getRequest().getParameter("callback"), result);
+            	String callbackStr = ac.getRequest().getParameter("callback");
+            	if(callbackStr.indexOf(';') >= 0) {
+            		callbackStr = callbackStr.substring(0, callbackStr.indexOf(';'));
+            	}
+                result = String.format("%s(%s);", callbackStr, result);
             }
             try {
             	((HttpServletResponse) ac.getResponse()).addHeader("Run-Tag", Core.RUN_TAG);

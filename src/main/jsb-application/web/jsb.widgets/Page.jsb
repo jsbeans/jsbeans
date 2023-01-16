@@ -55,7 +55,7 @@
 	<link rel="shortcut icon" type="{{=extractIconType()}}" href="{{=htmlSection.favicon}}"/>
 	<link rel="icon" type="{{=extractIconType()}}" href="{{=htmlSection.favicon}}"/>
 	{{?}}
- 	<script type="text/javascript" src="/jsbeans.jsb?refid={{=this.getId()}}&{{=Web.getSessionIdPathParameterName()}}={{=Kernel.session()}}"></script>
+ 	<script type="text/javascript" src="/jsbeans.jsb;{{=Web.getSessionIdPathParameterName()}}={{=Kernel.session()}}?refid={{=this.getId()}}"></script>
  	
  	<style>
  		body {
