@@ -48,10 +48,12 @@
 	padding-right: 14px;
 }
 
-._dwp_comboBox._dwp_dropDown > ._dwp_cbContainer.empty {}
+._dwp_comboBox._dwp_dropDown > ._dwp_cbContainer.empty {
+	color: #686868;
+}
 
 ._dwp_comboBox._dwp_dropDown > ._dwp_cbContainer.empty:before {
-	content: 'Выберите из списка';
+	content: 'Выберите';
 	color: #686868;
 }
 

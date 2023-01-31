@@ -32,6 +32,7 @@
 			value: '',
 			enabled: true,
 			tree: false,
+			placeholder: 'Выберите из списка',
 			onChange: function(key, obj){},
 			onEditorChange: function(value, evt){}
 		},
