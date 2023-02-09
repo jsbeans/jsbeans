@@ -16,16 +16,12 @@ package org.jsbeans.web;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.util.Timeout;
-import org.eclipse.jetty.util.resource.Resource;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigValue;
 import org.eclipse.jetty.http.HttpCookie.SameSite;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.util.resource.ResourceCollection;
@@ -41,8 +37,14 @@ import org.jsbeans.scripting.jsb.JsbRegistryService;
 import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
 import org.jsbeans.services.ServiceManagerService;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.ServerSocket;
+import java.util.Map;
+import java.util.function.Consumer;
 
 //import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
@@ -51,15 +53,37 @@ import java.io.IOException;
  */
 @DependsOn({JsHub.class, JsbRegistryService.class})
 public class HttpService extends Service {
-//    private static final String WEB_FOLDER_KEY = "web.folder";
-    private static final String WEB_PORT_KEY = "web.http.port";
-    private static final String WEB_SECURE_KEY = "web.secure";
-    private static final String WEB_REQUEST_LOG = "web.writerequestlog";
-    private static final String WEB_XML = "web.config.path";
-    private static final String WEB_REQUEST_HEADER_SIZE = "web.http.requestHeaderSize";
-    private static final String WEB_RESPONSE_BUFFER_SIZE = "web.http.responseBufferSize";
 
-    public static final int DEFAULT_PORT = 8888;
+    public interface WebConfigurator {
+        void configure(WebAppContext context, Config config);
+    }
+
+    private static final String WEB_MAIN            = "web.http";
+    private static final String WEB_FACADES         = "web.http.facades";
+    private static final String WEB_CONTEXT_OLD     = "web.config.path"; // deprecated
+
+    private static final String _PORT               = "port";
+    private static final String _COOKIE_SECURE      = "cookie.secure";
+    private static final String _REQUEST_LOG        = "requestLog";
+    private static final String _CONTEXT            = "webContext";
+    private static final String _REQUEST_HEADER_SIZE  = "requestHeaderSize";
+    private static final String _RESPONSE_BUFFER_SIZE = "responseBufferSize";
+    private static final String _CONFIGURATOR         = "configurator";
+
+    public static int defaultPort = 8888;
+
+    public static int findAvailablePort(int startPort, int endPort) throws IOException {
+        for (int port = startPort; port <= endPort; startPort++) {
+            try {
+                ServerSocket s = new ServerSocket(port);
+                s.close();
+                return port;
+            } catch (IOException ex) {
+                continue; // try next port
+            }
+        }
+        throw new IOException("No free port found (" + startPort + "-" + endPort + ")");
+    }
     
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
@@ -71,14 +95,11 @@ public class HttpService extends Service {
         this.completeInitialization();
     }
 
-    private void startJettyServer() {
-    	Integer portVal = DEFAULT_PORT;
-    	if(ConfigHelper.has(WEB_PORT_KEY)){
-    		portVal = ConfigHelper.getConfigInt(WEB_PORT_KEY);
-    	}
+    private void startJettyServer(String name, Config config) {
+        int port = config.hasPath(_PORT) ? config.getInt(_PORT) : defaultPort;
 
-        Server server = new Server(portVal);
-        
+        Server server = new Server(port);
+
 /*		
         SelectChannelConnector c = new SelectChannelConnector();
 		c.setForwarded(true);
@@ -98,22 +119,20 @@ public class HttpService extends Service {
 
 //        context.setResourceBase(ConfigHelper.getWebFolder());
         context.setBaseResource(resources);
-        if (ConfigHelper.has(WEB_XML)) {
-            String webXml = null;
-            try {
-                webXml = context.getBaseResource().addPath(ConfigHelper.getConfigString(WEB_XML)).getURI().toString();
-                context.setDescriptor(webXml);
-            } catch (IOException e) {
-            }
+        try {
+            String path = config.hasPath(_CONTEXT)? config.getString(_CONTEXT) : ConfigHelper.getConfigString(WEB_CONTEXT_OLD);
+            String webXml = context.getBaseResource().addPath(path).getURI().toString();
+            context.setDescriptor(webXml);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        context.setContextPath("/");
-        context.getSessionHandler().setSessionCookie("_jsbSession_" + portVal.toString());
+        context.setContextPath("/"); // TODO config
+        context.getSessionHandler().setSessionCookie("_jsbSession_" + port);
         context.getSessionHandler().setSessionIdPathParameterName("_jsbsession_");
-        if(ConfigHelper.has(WEB_SECURE_KEY) && ConfigHelper.getConfigBoolean(WEB_SECURE_KEY)){
+        if(config.hasPath(_COOKIE_SECURE) && config.getBoolean(_COOKIE_SECURE)){
             context.getSessionHandler().setSameSite(SameSite.NONE);
             context.getSessionHandler().getSessionCookieConfig().setSecure(true);
         }
-        
         
         
 /*        
@@ -130,18 +149,18 @@ public class HttpService extends Service {
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
         
         // set requestHeaderSize for long POST-requests
-        if(ConfigHelper.has(WEB_REQUEST_HEADER_SIZE)){
-        	context.setMaxFormContentSize(ConfigHelper.getConfigInt(WEB_REQUEST_HEADER_SIZE));
-        	server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", ConfigHelper.getConfigInt(WEB_REQUEST_HEADER_SIZE));
+        if(config.hasPath(_REQUEST_HEADER_SIZE)){
+        	context.setMaxFormContentSize(config.getInt(_REQUEST_HEADER_SIZE));
+        	server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", config.getInt(_REQUEST_HEADER_SIZE));
         }
         
         HandlerCollection handlers = new HandlerCollection();
         handlers.addHandler(context);
         
-        if(ConfigHelper.has(WEB_REQUEST_LOG) && ConfigHelper.getConfigBoolean(WEB_REQUEST_LOG)){
+        if(config.hasPath(_REQUEST_LOG) && config.getBoolean(_REQUEST_LOG)){
 	        RequestLogHandler requestLogHandler = new RequestLogHandler();
 	        handlers.addHandler(requestLogHandler);
-	        NCSARequestLog requestLog = new NCSARequestLog("./logs/request.log");
+	        NCSARequestLog requestLog = new NCSARequestLog("./logs/request" + (name!=null?"-"+name:"") +".log");
 	        requestLog.setRetainDays(10);
 	        requestLog.setAppend(true);
 	        requestLog.setExtended(true);
@@ -149,9 +168,20 @@ public class HttpService extends Service {
 	        requestLogHandler.setRequestLog(requestLog);
         }
 
+        if(config.hasPath(_CONFIGURATOR) && config.getString(_CONFIGURATOR).trim().length() > 0) {
+            try {
+                Class<WebConfigurator> configuratorClass = (Class<WebConfigurator>) Class.forName(config.getString(_CONFIGURATOR));
+                WebConfigurator configurator = configuratorClass.getConstructor().newInstance();
+                configurator.configure(context, config);
+
+            } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
+                     InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         server.setHandler(handlers);
 //        server.setHandler(context);
-        
         
 /*        
         // set requestHeaderSize for long cross-domain GET requests
@@ -174,6 +204,7 @@ public class HttpService extends Service {
         Timeout timeout = ActorHelper.getServiceCommTimeout();
         ExecuteScriptMessage msg = new ExecuteScriptMessage("JSB.getInstance('JSB.Web')._setAppContext(JSB.getThreadLocal().get('__appContext'));", false);
         msg.addThreadLocal("__appContext", context);
+        msg.addThreadLocal("__webFacadeName", name);
         Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), msg, timeout);
         try {
 			Await.result(future, timeout.duration());
@@ -181,20 +212,26 @@ public class HttpService extends Service {
 		}
         
         try {
-            this.getLog().debug(String.format("Starting Jetty web server at %d", portVal.intValue()));
+            this.getLog().debug(String.format("Starting Jetty web server at %d", port));
             server.start();
         } catch (Exception e) {
             throw new PlatformException(e);
         }
-        this.getLog().debug("Web server started");
-        
+        this.getLog().info("Web server started - :" + port + (name!=null?" ("+name+")":""));
     }
 
 
     @Override
     protected void onMessage(Object msg) throws PlatformException {
         if (msg instanceof ServiceManagerService.Initialized) {
-            startJettyServer();
+            startJettyServer(null, ConfigHelper.getConfig().getConfig(WEB_MAIN));
+            if(ConfigHelper.has(WEB_FACADES)) {
+                Config facades = ConfigHelper.getConfig().getConfig(WEB_FACADES);
+                ConfigObject names = ConfigHelper.getConfig().getObject(WEB_FACADES);
+                for(Map.Entry<String, ConfigValue> e: names.entrySet()) {
+                    startJettyServer(e.getKey(), facades.getConfig(e.getKey()));
+                }
+            }
             Core.getActorSystem().eventStream().publish(new Initialized());
         } else {
             unhandled(msg);
