@@ -28,17 +28,17 @@
 			onHighlight: function(bEnable){
 				this.group.classed('highlighted', bEnable);
 				if(bEnable){
-					this.group.attr('filter', 'url(#' + this.diagram.getShapeId('highlightFilter') + ')');
+					this.group && this.group.attr('filter', 'url(#' + this.diagram.getShapeId('highlightFilter') + ')');
 				} else if(!this.isSelected()){
-					this.group.attr('filter', null);
+					this.group && this.group.attr('filter', null);
 				}
 			},
 			onSelect: function(bEnable){
 				this.group.classed('selected', bEnable);
 				if(bEnable){
-					this.group.attr('filter', 'url(#' + this.diagram.getShapeId('highlightFilter') + ')');
+					this.group && this.group.attr('filter', 'url(#' + this.diagram.getShapeId('highlightFilter') + ')');
 				} else if(!this.isHighlighted()){
-					this.group.attr('filter', null);
+					this.group && this.group.attr('filter', null);
 				}
 			}
 		},
@@ -78,10 +78,10 @@
 		setAttribute: function(a, val){
 			if(JSB.isNull(val)){
 				delete this._attrs[a];
-				this.group.attr(a, null);
+				this.group && this.group.attr(a, null);
 			}
 			this._attrs[a] = val;
-			this.group.attr(a, val);
+			this.group && this.group.attr(a, val);
 		},
 		
 		destroy: function(){
