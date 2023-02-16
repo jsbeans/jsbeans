@@ -333,6 +333,10 @@
 			}
 		},
 		
+		clear: function(){
+			this.setData('');
+		},
+		
 		setData: function(data) {
 			if(!this.ready){
 				JSB.deferUntil(function(){
@@ -412,6 +416,10 @@
 				self.editor.focus();
 			}
 			
+		},
+		
+		getDoc: function(){
+			return this.editor.getDoc();
 		}
 	}
 }
