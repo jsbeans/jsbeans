@@ -465,8 +465,8 @@
 				var bExisted = false;
 				for(var j in newTargets){
 					nT = newTargets[j];
-					if((JSB.isDefined(t.selector) && this.$(nT.selector).get(0) == this.$(t.selector).get(0))
-						||(JSB.isDefined(t.position) && JSB.isEqual(nT.position, t.position))){
+					if((!JSB.isDefined(t.selector) || this.$(nT.selector).get(0) == this.$(t.selector).get(0))
+						&&(!JSB.isDefined(t.position) || JSB.isEqual(nT.position, t.position))){
 						bExisted = true;
 						break;
 					}
