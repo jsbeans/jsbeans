@@ -10,7 +10,6 @@
 
 {
 	$name: 'JSB.JsbLogTailer',
-	$parent: 'JSB.Widgets.Page',
 	$http: true,
 	$fixedId: true,
 	$singleton: true,
@@ -32,7 +31,7 @@
                    ],
 
 		cachedContent: {},
-
+		
 		$constructor: function(){
 		},
 
@@ -85,5 +84,6 @@
                 randomAccessFile && randomAccessFile.close();
             }
 		},
+
 	}
 }
