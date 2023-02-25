@@ -23,59 +23,33 @@ import scala.concurrent.Future;
 import javax.naming.AuthenticationException;
 import javax.security.auth.Subject;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.AccessController;
 import java.security.Principal;
-import java.security.PrivilegedExceptionAction;
-import java.util.Collections;
 
-public class JSEndPointServlet extends HttpServlet {
+public class JSEndPointServlet extends AuthenticatedHttpServlet {
     private static final long serialVersionUID = -8093030776258401896L;
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        final Principal principal = req.getUserPrincipal() == null
-                ? (ConfigHelper.getConfigBoolean("kernel.security.enabled") ? new AnonymousPrincipal() : new AdminPrincipal())
-                : req.getUserPrincipal();
-        Subject subj = null;
-        if (principal != null) {
-            // if subject initialized with current principal
-            Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
-            if (accessControlSubject != null) {
-                for (Principal pr : accessControlSubject.getPrincipals()) {
-                    if (pr == principal) {
-                        subj = accessControlSubject;
-                        break;
-                    }
-                }
-            }
-            if (subj == null) {
-                subj = new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet());
-            }
-        }
+        final Principal principal = Subject.getSubject(AccessController.getContext()).getPrincipals().iterator().next();
+        final String userName = principal.getName();
+
         UpdateStatusMessage respObj = null;
         try {
-            respObj = Subject.doAs(subj, new PrivilegedExceptionAction<UpdateStatusMessage>() {
-                @Override
-                public UpdateStatusMessage run() throws Exception {
-                    String rid = WebHelper.extractHeadersFromRequest(req);
-                    String type = req.getParameter("type");
-                    UpdateStatusMessage status = null;
-                    if (type.equalsIgnoreCase("execute")) {
-                        status = performExecute(req, rid);
-                    } else if (type.equalsIgnoreCase("check")) {
-                        status = performCheck(req, rid);
-                    } else if (type.equalsIgnoreCase("break")) {
+            String rid = WebHelper.extractHeadersFromRequest(req);
+            String type = req.getParameter("type");
+            if (type.equalsIgnoreCase("execute")) {
+                respObj = performExecute(req, rid);
+            } else if (type.equalsIgnoreCase("check")) {
+                respObj = performCheck(req, rid);
+            } else if (type.equalsIgnoreCase("break")) {
 
-                    }
-                    return status;
-                }
-            });
+            }
         } catch(Exception e) {
             respObj = new UpdateStatusMessage("");
             respObj.status = ExecutionStatus.FAIL;

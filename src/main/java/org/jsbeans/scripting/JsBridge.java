@@ -13,21 +13,13 @@ package org.jsbeans.scripting;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.util.Timeout;
-
-import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.*;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
+import org.jsbeans.web.AdminPrincipal;
 import org.jsbeans.web.SystemPrincipal;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.IdScriptableObject;
-import org.mozilla.javascript.JavaScriptException;
-import org.mozilla.javascript.NativeObject;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.WrapFactory;
+import org.mozilla.javascript.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.Await;
@@ -35,16 +27,17 @@ import scala.concurrent.Future;
 
 import javax.security.auth.Subject;
 import java.security.AccessController;
+import java.security.Principal;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JsBridge {
     private static JsBridge instance = new JsBridge();
     
     private ConcurrentHashMap<String, LockEntry> lockMap = new ConcurrentHashMap<>();
+    //private Function loginCallback;
+    ExecuteScriptMessage loginCallbackMessage;
 
 /*	
 	private Object mutex = new Object();
@@ -53,6 +46,26 @@ public class JsBridge {
 
     public static JsBridge getInstance() {
         return instance;
+    }
+
+    public void setLoginCallback(Function loginCallback) {
+        if(this.loginCallbackMessage != null) {
+            throw new RuntimeException("LoginService initialized yet");
+        }
+        Context loginContext = this.getCurrentContext();
+
+        //this.loginCallback = loginCallback;
+        this.loginCallbackMessage = new ExecuteScriptMessage(loginContext.getThreadLocal("token").toString(), loginCallback, new Object[]{null});
+        this.loginCallbackMessage.setRespondNative(true);
+        if(loginContext.getThreadLocal("userToken") != null)
+            this.loginCallbackMessage.setUserToken(loginContext.getThreadLocal("userToken").toString());
+        if(loginContext.getThreadLocal("user") != null)
+            this.loginCallbackMessage.setUser(loginContext.getThreadLocal("user").toString());
+        if(loginContext.getThreadLocal("clientRequestId") != null)
+            this.loginCallbackMessage.setClientRequestId(loginContext.getThreadLocal("clientRequestId").toString());
+        this.loginCallbackMessage.setToken(loginContext.getThreadLocal("token").toString());
+        this.loginCallbackMessage.setScopePath(loginContext.getThreadLocal("session").toString());
+        this.loginCallbackMessage.setClientAddr(loginContext.getThreadLocal("clientAddr").toString());
     }
 
     public void lock(String str) {
@@ -148,6 +161,10 @@ public class JsBridge {
     	Context.getCurrentContext().removeThreadLocal(key);
     }
 
+    public Context getCurrentContext() {
+        return Context.getCurrentContext();
+    }
+
     public void sleep(final long msec) throws Exception {
         Thread.sleep(msec);
 /*		
@@ -192,9 +209,13 @@ public class JsBridge {
         if (userObj != null) {
             return userObj.toString();
         }
+        Optional<Principal> p = Subject.getSubject(AccessController.getContext()).getPrincipals().stream().findFirst();
+        if(p.isPresent()) {
+            return p.get().getName();
+        }
         return null;
     }
-    
+
     public String getCurrentSession() {
         Object sessionObj = Context.getCurrentContext().getThreadLocal("session");
         if (sessionObj != null) {
@@ -225,6 +246,53 @@ public class JsBridge {
             return addrObj.toString();
         }
         return null;
+    }
+
+    public Set<? extends Principal> createAdminPrincipalRoles() {
+        return Collections.singleton(new AdminPrincipal());
+    }
+
+    public Set<? extends Principal> loginUserRoles(Principal principal) {
+        if(loginCallbackMessage != null) {
+            this.loginCallbackMessage.getArgs()[0] = principal;
+            this.loginCallbackMessage.setNativeArgs(true);
+            Timeout timeout = ActorHelper.getServiceCommTimeout();
+            Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), this.loginCallbackMessage, timeout);
+            try {
+                Object result = Await.result(future, timeout.duration());
+                if (!(result instanceof UpdateStatusMessage)) {
+                    throw new PlatformException(String.format("Invalid response. Expected message of type '%s' but received '%s'", UpdateStatusMessage.class.getName(), result.getClass().getName()));
+                }
+                UpdateStatusMessage resp = (UpdateStatusMessage) result;
+                if(resp.status == ExecutionStatus.FAIL){
+                    if(resp.result instanceof JavaScriptException){
+                        throw (JavaScriptException)resp.result;
+                    }
+                    throw new JavaScriptException(resp.result.toString(), "", 0);
+                }
+                NativeJavaObject o = (NativeJavaObject)resp.result;
+                if(o != null) {
+                    Set<? extends Principal> roles = (Set<? extends Principal>)o.unwrap();
+                    return roles;
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Collections.emptySet();
+    }
+
+    public boolean hasPrincipal(String className) throws ClassNotFoundException {
+        Class<? extends Principal> cl = (Class<? extends Principal>) Class.forName(className);
+        return Subject.getSubject(AccessController.getContext()).getPrincipals(cl).size() > 0;
+    }
+
+    public boolean hasAdminPrincipal() {
+        return Subject.getSubject(AccessController.getContext()).getPrincipals(AdminPrincipal.class).size() > 0;
+    }
+
+    public boolean hasSystemPrincipal() {
+        return Subject.getSubject(AccessController.getContext()).getPrincipals(SystemPrincipal.class).size() > 0;
     }
 
     public Object executeRoot(ScriptableObject callback, boolean chRoot) throws Exception{

@@ -12,14 +12,10 @@ package org.jsbeans.web;
 
 import akka.util.Timeout;
 
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
-import org.jsbeans.helpers.ConfigHelper;
-import org.jsbeans.scripting.ExecuteScriptMessage;
-import org.jsbeans.scripting.ExecutionStatus;
-import org.jsbeans.scripting.JsHub;
-import org.jsbeans.scripting.UpdateStatusMessage;
+import org.jsbeans.scripting.*;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.jsbeans.types.JsObject;
@@ -33,7 +29,6 @@ import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -42,11 +37,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.*;
-import java.util.Collections;
 import java.util.Map;
 
 @SuppressWarnings("deprecation")
-public class HttpJsbServlet extends HttpServlet {
+public class HttpJsbServlet extends AuthenticatedHttpServlet {
 	private static final long serialVersionUID = 4803233014924737807L;
 
 	public static String getFullURL(HttpServletRequest request) throws UnsupportedEncodingException {
@@ -61,7 +55,7 @@ public class HttpJsbServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String rid = WebHelper.extractHeadersFromRequest(req);
         final AsyncContext ac = req.startAsync(req, resp);
         ac.setTimeout(0);	// disable async timeout - use future timeout
@@ -69,10 +63,9 @@ public class HttpJsbServlet extends HttpServlet {
             final String session = req.getSession().getId();
             final Object tokenObj = req.getSession().getAttribute("token");
             final String token = tokenObj != null ? tokenObj.toString() : null;
-            final Principal principal = req.getUserPrincipal() == null
-                    ? (ConfigHelper.getConfigBoolean("kernel.security.enabled") ? new AnonymousPrincipal() : new AdminPrincipal())
-                    : req.getUserPrincipal();
-            final String user = principal != null ? principal.getName() : null;
+            final Principal principal = Subject.getSubject(AccessController.getContext()).getPrincipals().iterator().next();
+            final String user = principal.getName();
+
             // construct proc 
             final String proc = req.getMethod().toLowerCase();
             
@@ -126,40 +119,17 @@ public class HttpJsbServlet extends HttpServlet {
                 }
             }
 
-
-            Subject subj = null;
-            if (principal != null) {
-                // if subject initialized with current principal
-                Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
-                if (accessControlSubject != null) {
-                    for (Principal pr : accessControlSubject.getPrincipals()) {
-                        if (pr == principal) {
-                            subj = accessControlSubject;
-                            break;
-                        }
-                    }
-                }
-                if (subj == null) {
-                    subj = new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet());
-                }
-            }
-
             final JsonObject fpObj = pObj;
             final JsonElement fPostObj = postObj;
-            Subject.doAs(subj, new PrivilegedExceptionAction<String>() {
-                @Override
-                public String run() throws Exception {
-                    String params = fpObj.toJson();
-                    String postBody = null;
-                    if(fPostObj != null){
-                    	postBody = fPostObj.toString();	
-                    }
 
-                    String clientIp = WebHelper.extractRealIpFromRequest(req);
-                    HttpJsbServlet.this.execCmd(beanPath, proc, params, postBody, session, clientIp, user, rid, getFullURL(req), token, ac);
-                    return null;
-                }
-            });
+            String params = fpObj.toJson();
+            String postBody = null;
+            if(fPostObj != null){
+                postBody = fPostObj.toString();
+            }
+
+            String clientIp = WebHelper.extractRealIpFromRequest(req);
+            HttpJsbServlet.this.execCmd(beanPath, proc, params, postBody, session, clientIp, user, rid, getFullURL(req), token, ac);
 
         } catch (Exception ex) {
             this.responseError(ex.getMessage(), req, resp);

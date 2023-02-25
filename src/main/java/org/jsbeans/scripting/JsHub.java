@@ -824,7 +824,11 @@ public class JsHub extends Service {
                     	if(args.length > 0){
                             JsObjectSerializerHelper jser = new JsObjectSerializerHelper();
                             for (Object obj : args) {
-                                objArr.add(jser.jsonElementToNativeObject(GsonWrapper.toGsonJsonElement(obj), cx, scope));
+                                if(msg.isNativeArgs()) {
+                                    objArr.add(obj);
+                                }else {
+                                    objArr.add(jser.jsonElementToNativeObject(GsonWrapper.toGsonJsonElement(obj), cx, scope));
+                                }
                             }
                     	}
                         if(createDump){

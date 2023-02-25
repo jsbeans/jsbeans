@@ -35,6 +35,7 @@ public class ExecuteScriptMessage extends SubjectMessage {
     private String clientRequestId = null;
     private boolean respond = true;
     private boolean respondNative = false;
+    private boolean nativeArgs;
 
     public ExecuteScriptMessage() {
     }
@@ -100,6 +101,14 @@ public class ExecuteScriptMessage extends SubjectMessage {
 
     public Object[] getArgs() {
         return this.args;
+    }
+
+    public boolean isNativeArgs() {
+        return this.nativeArgs;
+    }
+
+    public void setNativeArgs(boolean nativeArgs) {
+        this.nativeArgs = nativeArgs;
     }
 
     public String getScopePath() {

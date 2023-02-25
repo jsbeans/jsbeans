@@ -20,8 +20,11 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 import org.eclipse.jetty.http.HttpCookie.SameSite;
+import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.NCSARequestLog;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.util.resource.ResourceCollection;
@@ -40,7 +43,9 @@ import org.jsbeans.services.ServiceManagerService;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.util.Map;
@@ -99,7 +104,6 @@ public class HttpService extends Service {
         int port = config.hasPath(_PORT) ? config.getInt(_PORT) : defaultPort;
 
         Server server = new Server(port);
-
 /*		
         SelectChannelConnector c = new SelectChannelConnector();
 		c.setForwarded(true);
@@ -120,7 +124,7 @@ public class HttpService extends Service {
 //        context.setResourceBase(ConfigHelper.getWebFolder());
         context.setBaseResource(resources);
         try {
-            String path = config.hasPath(_CONTEXT)? config.getString(_CONTEXT) : ConfigHelper.getConfigString(WEB_CONTEXT_OLD);
+            String path = config.hasPath(_CONTEXT) ? config.getString(_CONTEXT) : ConfigHelper.getConfigString(WEB_CONTEXT_OLD);
             String webXml = context.getBaseResource().addPath(path).getURI().toString();
             context.setDescriptor(webXml);
         } catch (IOException e) {
@@ -153,10 +157,9 @@ public class HttpService extends Service {
         	context.setMaxFormContentSize(config.getInt(_REQUEST_HEADER_SIZE));
         	server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", config.getInt(_REQUEST_HEADER_SIZE));
         }
-        
         HandlerCollection handlers = new HandlerCollection();
         handlers.addHandler(context);
-        
+
         if(config.hasPath(_REQUEST_LOG) && config.getBoolean(_REQUEST_LOG)){
 	        RequestLogHandler requestLogHandler = new RequestLogHandler();
 	        handlers.addHandler(requestLogHandler);
@@ -210,7 +213,15 @@ public class HttpService extends Service {
 			Await.result(future, timeout.duration());
 		} catch (Exception e1) {
 		}
-        
+
+//        server.setErrorHandler(new ErrorHandler(){
+//            @Override
+//            protected void writeErrorPageBody(HttpServletRequest request, Writer writer, int code, String message, boolean showStacks) throws IOException{
+//                String uri = request.getRequestURI();
+//                writeErrorPageMessage(request, writer, code, message, uri);
+//            }
+//        });
+
         try {
             this.getLog().debug(String.format("Starting Jetty web server at %d", port));
             server.start();
@@ -225,10 +236,14 @@ public class HttpService extends Service {
     protected void onMessage(Object msg) throws PlatformException {
         if (msg instanceof ServiceManagerService.Initialized) {
             startJettyServer(null, ConfigHelper.getConfig().getConfig(WEB_MAIN));
-            if(ConfigHelper.has(WEB_FACADES)) {
+            if(ConfigHelper.has(WEB_FACADES) && !(ConfigHelper.getConfig().getAnyRef(WEB_FACADES) instanceof Boolean)) {
                 Config facades = ConfigHelper.getConfig().getConfig(WEB_FACADES);
                 ConfigObject names = ConfigHelper.getConfig().getObject(WEB_FACADES);
                 for(Map.Entry<String, ConfigValue> e: names.entrySet()) {
+                    if(facades.getAnyRef(e.getKey()) instanceof Boolean) {
+                        continue;
+                    }
+
                     startJettyServer(e.getKey(), facades.getConfig(e.getKey()));
                 }
             }

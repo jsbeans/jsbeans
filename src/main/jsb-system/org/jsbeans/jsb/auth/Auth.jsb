@@ -190,11 +190,6 @@
             });
         },
 
-        hasRole: function() {
-            // TODO check jaas role
-            //$this.checkPermission()
-        },
-
         getPermissions: function(){
         	return this._permissionMap;
 		},

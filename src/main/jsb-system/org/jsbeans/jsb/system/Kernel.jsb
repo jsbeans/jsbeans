@@ -223,11 +223,17 @@
 		},
 		
 		isAdmin: function(){
-			return Kernel.user() === Config.get('kernel.security.admin.user');
+		    return Bridge.hasAdminPrincipal();
+			//return Kernel.user() === Config.get('kernel.security.admin.user');
 		},
 
 		isSystem:function(){
-            return Kernel.user() === Config.get('kernel.security.system.user');
+		    return Bridge.hasSystemPrincipal();
+            //return Kernel.user() === Config.get('kernel.security.system.user');
+        },
+
+        hasRole: function(name) {
+            return !!Bridge.hasPrincipal(name);
         },
 
 		isSystemOrAdmin:function(){

@@ -28,7 +28,6 @@
 		},
 		
 		get: function(obj) {
-			$this.publish('JSB.ClientBootstrap.userAccess', Auth.getUser());
 			var path = 'jsbeans.jsb';
 			var refType = null;
 			if(obj && obj.refid){

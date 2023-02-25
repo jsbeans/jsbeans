@@ -23,8 +23,6 @@ import org.jsbeans.scripting.jsb.RpcMessage;
 import org.jsbeans.scripting.jsb.UploadMessage;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
-import org.jsbeans.types.JsonElement;
-import org.jsbeans.types.JsonObject;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
@@ -32,7 +30,6 @@ import scala.concurrent.Future;
 import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -41,11 +38,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.Principal;
-import java.security.PrivilegedExceptionAction;
-import java.util.Collections;
-import java.util.Map;
 
-public class JsbServlet extends HttpServlet {
+public class JsbServlet extends AuthenticatedHttpServlet {
     private static final long serialVersionUID = -4914554821670876067L;
 
     private static Boolean isDebug = ConfigHelper.getConfigBoolean("web.debug");
@@ -120,7 +114,7 @@ public class JsbServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String cmd = req.getParameter("cmd");
         String rid = WebHelper.extractHeadersFromRequest(req);
 
@@ -129,46 +123,21 @@ public class JsbServlet extends HttpServlet {
         }
         AsyncContext ac = req.startAsync(req, resp);
         ac.setTimeout(0);	// disable async timeout - use future timeout
-        final Principal principal = req.getUserPrincipal() == null
-                ? (ConfigHelper.getConfigBoolean("kernel.security.enabled") ? new AnonymousPrincipal() : new AdminPrincipal())
-                : req.getUserPrincipal();
-        final String userName = principal != null ? principal.getName() : null;
+        final Principal principal = Subject.getSubject(AccessController.getContext()).getPrincipals().iterator().next();
+        final String userName = principal.getName();
         final Object userTokenObj = req.getSession().getAttribute("token");
         final String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
         final String clientIp = WebHelper.extractRealIpFromRequest(req);
         final String cmdf = cmd;
 
-        Subject subj = null;
-        if (principal != null) {
-            // if subject initialized with current principal
-            Subject accessControlSubject = Subject.getSubject(AccessController.getContext());
-            if (accessControlSubject != null) {
-                for (Principal pr : accessControlSubject.getPrincipals()) {
-                    if (pr == principal) {
-                        subj = accessControlSubject;
-                        break;
-                    }
-                }
-            }
-            if (subj == null) {
-                subj = new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet());
-            }
-        }
-
         try {
-            Subject.doAs(subj, new PrivilegedExceptionAction<String>() {
-                @Override
-                public String run() throws Exception {
-                    if ("get".equals(cmdf)) {
-                        handleGetJsoCommand(ac, clientIp, userName, rid, userToken);
-                    } else if ("rpc".equals(cmdf)) {
-                        handleRpcCommand(ac, clientIp, userName, rid, userToken);
-                    } else if ("upload".equals(cmdf)) {
-                        handleUploadCommand(ac, clientIp, userName, rid, userToken);
-                    }
-                    return null;
-                }
-            });
+            if ("get".equals(cmdf)) {
+                handleGetJsoCommand(ac, clientIp, userName, rid, userToken);
+            } else if ("rpc".equals(cmdf)) {
+                handleRpcCommand(ac, clientIp, userName, rid, userToken);
+            } else if ("upload".equals(cmdf)) {
+                handleUploadCommand(ac, clientIp, userName, rid, userToken);
+            }
         }catch(Exception e) {
             // respond error (404)
             ((HttpServletResponse) ac.getResponse()).sendError(404);
