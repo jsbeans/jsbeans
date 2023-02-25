@@ -10,6 +10,7 @@
 
 {
 	$name: 'JSB.JsbLogTailer',
+	$parent: 'JSB.Widgets.Page',
 	$http: true,
 	$fixedId: true,
 	$singleton: true,
@@ -37,7 +38,7 @@
 			var request = Web.getContext().getRequest();
 			var response = Web.getContext().getResponse();
             response.setCharacterEncoding('UTF-8');
-            response.setContentType('text/plain');
+            response.setContentType('text/html; charset=utf-8');
 
             Kernel.checkSystemOrAdmin();
 
@@ -51,6 +52,7 @@
                 var NL = 10;
                 var readLines = 0;
                 var builder = new StringBuilder();
+
                 var randomAccessFile = new RandomAccessFile(file, 'r');
                 var fileLength = file.length() - 1;
                 randomAccessFile.seek(fileLength);
@@ -67,13 +69,15 @@
                     }
                     builder["append(char)"](c);
                 }
+
                 // Since line is read from the last so it is in reverse order. Use reverse
                 // method to make it correct order
+                oStream.write('<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body><div style="white-space:pre">');
                 oStream.write(''+builder.reverse().toString());
+                oStream.write('</div></body></html>');
             } finally {
                 randomAccessFile && randomAccessFile.close();
             }
 		},
-
 	}
 }
