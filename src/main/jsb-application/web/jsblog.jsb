@@ -10,10 +10,11 @@
 
 {
 	$name: 'JSB.JsbLogTailer',
+	$parent: 'JSB.Widgets.Page',
 	$http: true,
 	$fixedId: true,
 	$singleton: true,
-	
+
 	$server: {
 		$require: ['java:java.io.File',
 		            'java:java.lang.Thread',
@@ -26,18 +27,21 @@
 		           'JSB.Auth',
                    'JSB.Web',
                    'JSB.IO.TextStream',
-                   'java:java.util.Base64',],
-		
+                   'java:java.util.Base64',
+                   {JString: 'java:java.lang.String'},
+                   ],
+
 		cachedContent: {},
-		
+
 		$constructor: function(){
 		},
 
 		get: function(params){
+		    params.readEncoding = params && params.readEncoding || "ISO-8859-1";
 			var request = Web.getContext().getRequest();
 			var response = Web.getContext().getResponse();
             response.setCharacterEncoding('UTF-8');
-            response.setContentType('text/plain');
+            response.setContentType('text/html; charset=utf-8');
 
             Kernel.checkSystemOrAdmin();
 
@@ -51,29 +55,35 @@
                 var NL = 10;
                 var readLines = 0;
                 var builder = new StringBuilder();
+
                 var randomAccessFile = new RandomAccessFile(file, 'r');
                 var fileLength = file.length() - 1;
                 randomAccessFile.seek(fileLength);
+
                 for (var pointer = fileLength; pointer >= 0; pointer--) {
                     randomAccessFile.seek(pointer);
                     var c;
                     // read from the last, one char at the time
                     c = randomAccessFile.read();
-                    // break when end of the line
                     if (c == NL) {
                         readLines++;
                         if (readLines == params.lines)
                             break;
                     }
-                    builder["append(char)"](c);
                 }
-                // Since line is read from the last so it is in reverse order. Use reverse
-                // method to make it correct order
-                oStream.write(''+builder.reverse().toString());
+
+                oStream.write('<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body><div style="white-space:pre">');
+                randomAccessFile.seek(pointer > 0 ? pointer : 0);
+                for(var i =0; ;i++){
+                    var line = randomAccessFile.readLine();
+                    if(!line) break;
+                    var str = new JString(line.getBytes(params.readEncoding),"UTF-8");
+                    oStream.writeLine(''+str);
+                }
+                oStream.write('</div></body></html>');
             } finally {
                 randomAccessFile && randomAccessFile.close();
             }
 		},
-
 	}
 }
