@@ -13,6 +13,7 @@ package org.jsbeans.web;
 import akka.util.Timeout;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.eclipse.jetty.server.Request;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.scripting.*;
@@ -56,7 +57,14 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
 
     @Override
     protected void doService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String rid = WebHelper.extractHeadersFromRequest(req);
+        String rid;
+        try {
+            rid = WebHelper.extractHeadersFromRequest(req);
+        }catch (IndexOutOfBoundsException e) {
+            // workaround - java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0 - когда заголовок содержит пустой authorization
+            Request base = Request.getBaseRequest(req);
+            rid = WebHelper.extractHeadersFromRequest(base);
+        }
         final AsyncContext ac = req.startAsync(req, resp);
         ac.setTimeout(0);	// disable async timeout - use future timeout
         try {
