@@ -5508,10 +5508,15 @@ JSB({
 		var stage = entry.stage;
 		if(this.stages[stage] && this.stages[stage][name]){
 			var locker = JSB().getLocker();
+			var bReady = false;
 			if(locker)locker.lock('_jsb_repo_stages');
 			delete this.stages[stage][name];
-			if(locker)locker.unlock('_jsb_repo_stages');
 			if(Object.keys(this.stages[stage]).length == 0){
+				bReady = true;
+			}
+			if(locker)locker.unlock('_jsb_repo_stages');
+			if(bReady){
+				JSB().getLogger() && JSB().getLogger().info('Repository complete loading stage: ' + stage);
 				this.setTrigger('loaded', stage);
 			}
 		}
