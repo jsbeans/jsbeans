@@ -291,6 +291,9 @@
 				var request = requests[i];
 				var pInst = this._permissionMap[request.type];
 				var lvl = pInst.check(request, permissions);
+				if(lvl < 0) {
+				    return lvl;
+				}
 				if (lvl > level) {
 				    level = lvl;
 				}

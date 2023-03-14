@@ -24,16 +24,34 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
 //    private static final String SESSION_ATTR_USER_ROLES = "userRolePrincipals";
 //    private static final String SESSION_ATTR_USER_ROLES_UPDATED = "userRolePrincipalsUpdated";
 
+    public static final String LOGOUT_URI = "/logout";
+    public static final String REDIRECT_URI_PARAM = "redirectURI";
+
     static Map<Object, Tuple<Set<? extends Principal>, Long>> _cachedUsers = new ConcurrentHashMap<>();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
         final Principal principal = req.getUserPrincipal() == null
                 ? (ConfigHelper.getConfigBoolean("kernel.security.enabled")
                         ? new AnonymousPrincipal()
                         : new AdminPrincipal()
                     )
                 : req.getUserPrincipal();
+
+
+        if(req.getRequestURI().equals(LOGOUT_URI)) {
+            req.logout();
+            _cachedUsers.remove(principal);
+            String uri = req.getParameter(REDIRECT_URI_PARAM);
+            if(uri != null && uri.length() > 1) {
+                resp.sendRedirect(uri);
+            } else {
+                resp.setStatus(200);
+            }
+            return;
+        }
+
         final Subject subject = new Subject(false, new HashSet<>(1), Collections.emptySet(), Collections.emptySet());
         subject.getPrincipals().add(principal);
 

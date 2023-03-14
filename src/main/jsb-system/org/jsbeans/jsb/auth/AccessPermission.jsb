@@ -30,11 +30,15 @@
             {
                 user: 'user',
                 type: 'perm_type',
+                access: true,
+                deny:false,
                 read: true,
             },
             {
                 group: 'groupId',
                 type: 'perm_type',
+                access: true,
+                deny:false,
                 read: true,
                 write: true,
                 create: true,
@@ -85,13 +89,18 @@
                             || accessPermission.groupName &&
                                 (groupNames||(groupNames=Auth.getUserGroupNames()))[accessPermission.groupName]) {
 
-                        return this.getLevel();
+                        if(accessPermission.access && !accessPermission.deny) {
+                            return this.getLevel();
+                        } else {
+                            /// принудительный запрет
+                            return -1;
+                        }
                     }
                 }
             }
         }
 
-        throw new Error('Access denied: ' + accessRequest.type);
+        return 0;
 	},
 
     getLevel: function() {
@@ -104,5 +113,9 @@
 
     getAccessPermissionType: function() {
         return this.getJsb().$expose.id;
+    },
+
+    getName: function() {
+        return this.getJsb().$expose.name;
     },
 }
