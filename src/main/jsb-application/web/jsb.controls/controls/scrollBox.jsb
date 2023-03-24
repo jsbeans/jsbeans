@@ -185,11 +185,13 @@
          * @param {number}, {number} Координаты по осям x и y
          */
         setScrollPosition: function(x, y){
-            if(x)
+            if(JSB.isDefined(x)){
                 this.getElement().scrollLeft(x);
+            }
 
-            if(y)
+            if(JSB.isDefined(y)){
                 this.getElement().scrollTop(y);
+            }
         },
 
         updateVisibleArea: function() {
