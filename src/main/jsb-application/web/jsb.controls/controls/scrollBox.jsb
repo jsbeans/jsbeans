@@ -81,6 +81,8 @@
                     $this._oldScroll.y = scrollTop;
                 });
             }
+			
+			$this.setEasing('easeOutExpo');
 
             this.getElement().mousewheel(function(evt){
                 evt.stopPropagation();
@@ -131,25 +133,63 @@
          *
          * @param {number}, {number} Координаты по осям x и y
          */
-		scrollTo: function(x, y){
-		    this.setScrollPosition(x, y);
+		scrollTo: function(x, y, opts){
+			if(x < 0){
+				x = 0;
+			}
+			if(y < 0){
+				y = 0;
+			}
+			let maxScrollWidth = this.getElement().get(0).scrollWidth - this.getElement().get(0).clientWidth;
+			let maxScrollHeight = this.getElement().get(0).scrollHeight - this.getElement().get(0).clientHeight;
+			if(x > maxScrollWidth){
+				x = maxScrollWidth;
+			}
+			if(y > maxScrollHeight){
+				y = maxScrollHeight;
+			}
+			if(opts && opts.animate){
+				let dur = opts.duration || 400;
+				let startTime = Date.now();
+				let scrollStart = this.getScrollPosition();
+				let deltaX = x - scrollStart.x;
+				let deltaY = y - scrollStart.y;
+				if(deltaX == 0 && deltaY == 0){
+					return;
+				}
+				$this.getElement().css('scroll-behavior', 'auto');
+				function _doScrollStep(){
+					let deltaTime = Date.now() - startTime;
+					var newX = $this.ease(deltaTime, scrollStart.x, deltaX, dur);
+					var newY = $this.ease(deltaTime, scrollStart.y, deltaY, dur);
+					$this.setScrollPosition(newX, newY);
+					if(Math.round(newX) == Math.round(x) && Math.round(newY) == Math.round(y)){
+						$this.getElement().css('scroll-behavior', '');
+						return;
+					}
+					JSB.defer(()=>{
+						_doScrollStep();
+					}, 0);
+				}
+				_doScrollStep();
+			} else {
+				this.getElement().css('scroll-behavior', 'auto');
+				this.setScrollPosition(x, y);
+				this.getElement().css('scroll-behavior', '');
+			}
 		},
 
-		scrollToElement: function(target, vAlign, hAlign){
+		scrollToElement: function(target, opts){
 			var tgt = this.find(target);
 			if(tgt.length == 0){
 				return;
 			}
             var targetRc = tgt.get(0).getBoundingClientRect();
             var sbRc = this.getElement().get(0).getBoundingClientRect();
+            var sp = this.getScrollPosition();
 
-            if(!vAlign){
-                vAlign = 'center';
-            }
-            if(!hAlign){
-                hAlign = 'center';
-            }
-
+            var vAlign = opts && opts.vAlign || 'center';
+            var hAlign = opts && opts.hAlign || 'center';
             var hOffs, vOffs;
 
             switch(vAlign){
@@ -176,7 +216,7 @@
                 break;
             }
 
-            this.scrollTo(hOffs, vOffs);
+            this.scrollTo(Math.round(sp.x+hOffs), Math.round(sp.y+vOffs), opts);
 		},
 
 		/**
@@ -186,9 +226,8 @@
          */
         setScrollPosition: function(x, y){
             if(JSB.isDefined(x)){
-                this.getElement().scrollLeft(x);
+           		this.getElement().scrollLeft(x);	
             }
-
             if(JSB.isDefined(y)){
                 this.getElement().scrollTop(y);
             }
@@ -208,6 +247,165 @@
             };
 
             this.options.onChangeVisible.call(visibleRect, wholeSize);
-        }
+        },
+        
+        ease: function (t, b, c, d) {
+			return this.easing(t, b, c, d);
+		},
+		
+		setEasing: function(easing){
+			if(JSB().isFunction(easing)){
+				this.easing = easing;
+				return;
+			}
+			switch(easing){
+			case 'linearTween':
+				this.easing = function (t, b, c, d) {
+					return c*t/d + b;
+				};
+				break;
+			case 'easeInQuad':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					return c*t*t + b;
+				};
+				break;
+			case 'easeOutQuad':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					return -c * t*(t-2) + b;
+				};
+				break;
+			case 'easeInOutQuad':
+				this.easing = function (t, b, c, d) {
+					t /= d/2;
+					if (t < 1) return c/2*t*t + b;
+					t--;
+					return -c/2 * (t*(t-2) - 1) + b;
+				};
+				break;
+			case 'easeInCubic':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					return c*t*t*t + b;
+				};
+				break;
+			case 'easeOutCubic':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					t--;
+					return c*(t*t*t + 1) + b;
+				};
+				break;
+			case 'easeInOutCubic':
+				this.easing = function (t, b, c, d) {
+					t /= d/2;
+					if (t < 1) return c/2*t*t*t + b;
+					t -= 2;
+					return c/2*(t*t*t + 2) + b;
+				};
+				break;
+			case 'easeInQuart':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					return c*t*t*t*t + b;
+				};
+				break;
+			case 'easeOutQuart':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					t--;
+					return -c * (t*t*t*t - 1) + b;
+				};
+				break;
+			case 'easeInOutQuart':
+				this.easing = function (t, b, c, d) {
+					t /= d/2;
+					if (t < 1) return c/2*t*t*t*t + b;
+					t -= 2;
+					return -c/2 * (t*t*t*t - 2) + b;
+				};
+				break;
+			case 'easeInQuint':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					return c*t*t*t*t*t + b;
+				};
+				break;
+			case 'easeOutQuint':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					t--;
+					return c*(t*t*t*t*t + 1) + b;
+				};
+				break;
+			case 'easeInOutQuint':
+				this.easing = function (t, b, c, d) {
+					t /= d/2;
+					if (t < 1) return c/2*t*t*t*t*t + b;
+					t -= 2;
+					return c/2*(t*t*t*t*t + 2) + b;
+				};
+				break;
+			case 'easeInSine':
+				this.easing = function (t, b, c, d) {
+					return -c * Math.cos(t/d * (Math.PI/2)) + c + b;
+				};
+				break;
+			case 'easeOutSine':
+				this.easing = function (t, b, c, d) {
+					return c * Math.sin(t/d * (Math.PI/2)) + b;
+				};
+				break;
+			case 'easeInOutSine':
+				this.easing = function (t, b, c, d) {
+					return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
+				};
+				break;
+			case 'easeInExpo':
+				this.easing = function (t, b, c, d) {
+					return c * Math.pow( 2, 10 * (t/d - 1) ) + b;
+				};
+				break;
+			case 'easeOutExpo':
+				this.easing = function (t, b, c, d) {
+					return c * ( -Math.pow( 2, -10 * t/d ) + 1 ) + b;
+				};
+				break;
+			case 'easeInOutExpo':
+				this.easing = function (t, b, c, d) {
+					t /= d/2;
+					if (t < 1) return c/2 * Math.pow( 2, 10 * (t - 1) ) + b;
+					t--;
+					return c/2 * ( -Math.pow( 2, -10 * t) + 2 ) + b;
+				};
+				break;
+			case 'easeInCirc':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					return -c * (Math.sqrt(1 - t*t) - 1) + b;
+				};
+				break;
+			case 'easeOutCirc':
+				this.easing = function (t, b, c, d) {
+					t /= d;
+					t--;
+					return c * Math.sqrt(1 - t*t) + b;
+				};
+				break;
+			case 'easeInOutCirc':
+				this.easing = function (t, b, c, d) {
+					t /= d/2;
+					if (t < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;
+					t -= 2;
+					return c/2 * (Math.sqrt(1 - t*t) + 1) + b;
+				};
+				break;
+			default:
+				this.easing = function (t, b, c, d) {
+					return c * ( -Math.pow( 2, -10 * t/d ) + 1 ) + b;
+				};
+			}
+		},
 	}
 }

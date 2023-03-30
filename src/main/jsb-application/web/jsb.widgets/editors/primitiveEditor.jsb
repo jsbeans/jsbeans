@@ -93,7 +93,7 @@
 					});
 				}
 				this.plainElt.click(function(evt){
-//					evt.stopPropagation();
+					evt.stopPropagation();
 					if(!JSB().isNull(self.clickKey)){
 						JSB().Window.clearTimeout(self.clickKey);
 						self.clickKey = null;
