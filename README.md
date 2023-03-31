@@ -1,7 +1,4 @@
-
-# Описание сервера приложений jsBeans  
-
-JsBeans - Client-server JavaScript Fullstack Web Framework
+# JsBeans - Client-server JavaScript Fullstack Web Framework
 
 ```jsBeans``` — изоморфный клиент-серверный фреймворк класса "full-stack" для создания комплексных программных решений с развитым веб-интерфейсом, объектной иерархией и клиент-серверным взаимодействием на языке JavaScript.
 
