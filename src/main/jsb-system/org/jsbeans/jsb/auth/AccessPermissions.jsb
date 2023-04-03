@@ -44,6 +44,7 @@
 	    var permissions = [];
 	    for(var i = 0, l = exps.length; i < l; i++) {
 	        var e = exps[i].trim();
+	        if(e.length == 0) continue;
 	        var s = e.split(':');
 
 	        var perm = {
