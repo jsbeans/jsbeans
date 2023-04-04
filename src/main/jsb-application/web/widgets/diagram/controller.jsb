@@ -98,12 +98,12 @@
 					return;
 				}
 				if(sender == this.diagram && params.event.which == 1){
-					if(params.event.ctrlKey || params.event.altKey || MacKeys.ctrlKey || MacKeys.altKey){
+					if(params.event.ctrlKey || params.event.altKey || MacKeys.ctrlKey || MacKeys.cmdKey || MacKeys.altKey){
 						return;
 					}
 					var nodeMap = this.diagram.getNodesUnderCursor(this.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY}));
 					if(Object.keys(nodeMap).length === 0){
-						this.select(this.diagram.nodes, false);	
+						this.select(this.diagram.nodes, false);
 						this.select(this.diagram.links, false);
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && params.event.which == 1) {
@@ -115,7 +115,7 @@
 						if(sender.isSelected()){
 							sender.select(false);
 						}
-					} else if(params.event.ctrlKey || MacKeys.ctrlKey){
+					} else if(params.event.ctrlKey || MacKeys.ctrlKey || MacKeys.cmdKey){
 						// toggle
 						sender.select(!sender.isSelected());
 					} else {
@@ -141,7 +141,7 @@
 							sender.select(false);
 						}
 						
-					} else if(params.event.ctrlKey || MacKeys.ctrlKey){
+					} else if(params.event.ctrlKey || MacKeys.ctrlKey || MacKeys.cmdKey){
 						// toggle
 						sender.select(!sender.isSelected());
 					} else {
@@ -240,7 +240,7 @@
 							}
 							this.select(rItemMap, false);
 							
-						} else if(params.event.ctrlKey || MacKeys.ctrlKey){
+						} else if(params.event.ctrlKey || MacKeys.ctrlKey || MacKeys.cmdKey){
 							// append highlighted to current selection
 							this.select(itemMap, true);
 						} else {
