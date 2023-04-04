@@ -10,6 +10,7 @@
 
 {
 	$name: 'JSB.Widgets.Diagram.Controller',
+	$require: 'JSB.Widgets.MacKeys',
 	
 	$client: {
 		diagram: null,
@@ -97,7 +98,7 @@
 					return;
 				}
 				if(sender == this.diagram && params.event.which == 1){
-					if(params.event.ctrlKey || params.event.altKey){
+					if(params.event.ctrlKey || params.event.altKey || MacKeys.ctrlKey || MacKeys.altKey){
 						return;
 					}
 					var nodeMap = this.diagram.getNodesUnderCursor(this.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY}));
@@ -110,11 +111,11 @@
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') && params.event.which == 1){
 					params.event.stopPropagation();
 
-					if(params.event.altKey){
+					if(params.event.altKey || MacKeys.altKey){
 						if(sender.isSelected()){
 							sender.select(false);
 						}
-					} else if(params.event.ctrlKey){
+					} else if(params.event.ctrlKey || MacKeys.ctrlKey){
 						// toggle
 						sender.select(!sender.isSelected());
 					} else {
@@ -135,12 +136,12 @@
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Link') && params.event.which == 1){
 					params.event.stopPropagation();
-					if(params.event.altKey){
+					if(params.event.altKey || MacKeys.altKey){
 						if(sender.isSelected()){
 							sender.select(false);
 						}
 						
-					} else if(params.event.ctrlKey){
+					} else if(params.event.ctrlKey || MacKeys.ctrlKey){
 						// toggle
 						sender.select(!sender.isSelected());
 					} else {
@@ -228,7 +229,7 @@
 							'display': 'none'
 						});
 						
-						if(params.event.altKey){
+						if(params.event.altKey || MacKeys.altKey){
 							// subtract highlighted from current selection
 							var rItemMap = {};
 							for(var itemId in this.lastSelectedStateMap){
@@ -239,7 +240,7 @@
 							}
 							this.select(rItemMap, false);
 							
-						} else if(params.event.ctrlKey){
+						} else if(params.event.ctrlKey || MacKeys.ctrlKey){
 							// append highlighted to current selection
 							this.select(itemMap, true);
 						} else {
