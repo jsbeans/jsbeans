@@ -41,7 +41,7 @@
 
             if(this.options.title && this.options.titleEditBtn){
                 this.elements.buttons.titleEditBtn = this.$('<i class="fas fa-pencil-alt"></i>');
-                this.elements.title.append(this.elements.buttons.titleEditBtn);
+                this.elements.header.append(this.elements.buttons.titleEditBtn);
 
                 this.elements.buttons.titleEditBtn.click(function(evt){
                     evt.stopPropagation();

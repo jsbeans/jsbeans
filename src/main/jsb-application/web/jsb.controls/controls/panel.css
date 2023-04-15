@@ -45,16 +45,22 @@
     cursor: pointer;
 }
 
-.jsb-panel > .header > h1 > i {
+.jsb-panel > .header > i {
     margin-left: 4px;
     opacity: 0.5;
     font-size: 13px;
     transition: 300ms;
 }
 
-.jsb-panel > .header > h1 > i:hover {
+.jsb-panel > .header > i.fa-pencil-alt {
+	cursor: pointer;
+}
+
+.jsb-panel > .header > i:hover {
 	opacity: 1;
 }
+
+
 
 .jsb-panel > .header > .jsb-editor {
     outline: none;
