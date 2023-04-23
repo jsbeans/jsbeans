@@ -4,18 +4,12 @@
 	z-index: 30000;
 	position: absolute;
 	border-radius: 3px;
-	
     background: #fbf7e2;
-	
-	/*padding: 2px 5px;*/
 	box-shadow: 2px 2px 8px #585858;
-	/*
-	width: auto !important;
-	height: auto !important;
-	*/
 	overflow: visible;
 	opacity: 0;
 	visibility: hidden;
+	pointer-events: none;
 	
 	transition: opacity 100ms, visibility 100ms;
 }
@@ -23,6 +17,7 @@
 ._dwp_toolWrapper.visible {
 	visibility: visible;
 	opacity: 1;
+	pointer-events: initial;
 	
 	transition: opacity 200ms, visibility 200ms;
 }
