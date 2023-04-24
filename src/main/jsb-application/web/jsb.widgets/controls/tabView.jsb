@@ -222,7 +222,7 @@
 
 		removeTab: function(tab) {
 			var entry = this.resolveTab(tab);
-			var activeTab = this.tabPane.find('.active');
+			var activeTab = this.tabPane.find('> ._jsb_tabScrollPane > .active');
 			var needSwitch = (entry.tab.attr('clientId') == activeTab.attr('clientId'));
 			if(!JSB().isNull(entry.opts.onRemoveCallback)){
 				entry.opts.onRemoveCallback(entry.ctrl, tab);
@@ -330,17 +330,15 @@
 		switchTab: function(tab){
 			var self = this;
 			var entry = this.resolveTab(tab);
-			var activeTab = self.tabPane.find('.active');
+			var activeTab = self.tabPane.find('> ._jsb_tabScrollPane > .active');
 			if(entry.tab.attr('clientId') == activeTab.attr('clientId')){
 				return;
 			}
 			activeTab.removeClass('active');
 			entry.tab.addClass('active');
-			var showArea = self.clientPane.find('._dwp_clientPaneWrapper[key="' + entry.tab.attr('clientId') + '"]');
-			//showArea.css('display','');
+			var showArea = self.clientPane.find('> ._dwp_clientPaneWrapper[key="' + entry.tab.attr('clientId') + '"]');
 			showArea.addClass('active');
-			//self.clientPane.find('._dwp_clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').css('display','none');
-			self.clientPane.find('._dwp_clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').removeClass('active');
+			self.clientPane.find('> ._dwp_clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').removeClass('active');
 			self.currentTab = entry;
 			if(!entry.ctrl){
 			    this.activateTab(entry.id);
@@ -456,7 +454,7 @@
 
 		    entry.tab.addClass('hidden');
 
-			if(entry.tab.attr('clientId') == this.tabPane.find('.active').attr('clientId')) {
+			if(entry.tab.attr('clientId') == this.tabPane.find('> ._jsb_tabScrollPane > .active').attr('clientId')) {
 				for(var t in this.tabs) {
 					this.switchTab(t);
 					break;
