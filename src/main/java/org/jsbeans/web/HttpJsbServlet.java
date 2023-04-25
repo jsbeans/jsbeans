@@ -46,6 +46,10 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
 
 	public static String getFullURL(HttpServletRequest request) throws UnsupportedEncodingException {
         StringBuffer requestURL = request.getRequestURL();
+		String scheme = request.getHeader("x-forwarded-proto");
+		if(scheme != null && scheme.length() > 0) {
+			requestURL = new StringBuffer(requestURL.toString().replaceAll("^https?", scheme));
+		}
         String queryString = request.getQueryString();
 
         if (queryString == null) {
