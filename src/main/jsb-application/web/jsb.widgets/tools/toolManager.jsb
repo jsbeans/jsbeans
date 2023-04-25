@@ -229,6 +229,13 @@
 				if(params.cssClass){
 					oddWrapperOpts.cssClass = params.cssClass;
 				}
+				if(JSB.isDefined(params.hideByOuterClick)){
+					oddWrapperOpts.hideByOuterClick = params.hideByOuterClick;
+				}
+				if(JSB.isDefined(params.hideByEsc)){
+					oddWrapperOpts.hideByEsc = params.hideByEsc;
+				}
+
 				var wrapperOpts = JSB.merge({}, toolEntry.wrapperOpts, oddWrapperOpts);
 				chosenInstance = new ToolWrapper(params.id, self, obj, wrapperOpts);
 				toolEntry.instances[toolEntry.instances.length] = chosenInstance;
