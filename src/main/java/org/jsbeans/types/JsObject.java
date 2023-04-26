@@ -33,9 +33,9 @@ public class JsObject implements Serializable {
         this.objType = type;
     }
 
-    public static String toJS(JsObject value, boolean urlEncode, boolean serializeFunctionAsString) {
+    public static String toJS(JsObject value, boolean urlEncode, boolean serializeFunctionAsString, boolean htmlSafe) {
         try (StringWriter swriter = new StringWriter();
-             JsObjectWriter writer = new JsObjectWriter(swriter, urlEncode, serializeFunctionAsString)) {
+             JsObjectWriter writer = new JsObjectWriter(swriter, urlEncode, serializeFunctionAsString, htmlSafe)) {
             writer.write(value);
             return swriter.toString();
         } catch (IOException e) {
@@ -168,7 +168,7 @@ public class JsObject implements Serializable {
         	bArr = this.bytes;
         	break;
         default:
-        	String str = this.toJS(false, true);
+        	String str = this.toJS(false, true, true);
         	bArr = str.getBytes();
         }
         
@@ -198,7 +198,7 @@ public class JsObject implements Serializable {
     }
 
     public String toJS(boolean urlEncode) throws UnsupportedEncodingException {
-        return this.toJS(urlEncode, false);
+        return this.toJS(urlEncode, false, true);
     }
 /*
     public String toJSOld(boolean urlEncode, boolean serializeFunctionAsString) throws UnsupportedEncodingException {
@@ -282,8 +282,8 @@ public class JsObject implements Serializable {
     }
 */
 
-    public String toJS(boolean urlEncode, boolean serializeFunctionAsString) throws UnsupportedEncodingException {
-        String newJson = toJS(this, urlEncode, serializeFunctionAsString);
+    public String toJS(boolean urlEncode, boolean serializeFunctionAsString, boolean htmlSafe) throws UnsupportedEncodingException {
+        String newJson = toJS(this, urlEncode, serializeFunctionAsString, htmlSafe);
 ////		String oldJson = toJSOld(urlEncode, serializeFunctionAsString);
 //		if (!oldJson.equals(newJson)) {
 //			"".toString();
@@ -365,12 +365,12 @@ public class JsObject implements Serializable {
         {
             stack.add(JsonScope.EMPTY_DOCUMENT);
         }
-        public JsObjectWriter(Writer writer, boolean urlEncode, boolean serializeFunctionAsString) {
+        public JsObjectWriter(Writer writer, boolean urlEncode, boolean serializeFunctionAsString, boolean htmlSafe) {
             this.writer = writer;
             this.urlEncode = urlEncode;
             this.serializeFunctionAsString = serializeFunctionAsString;
             setLenient(true);
-            setHtmlSafe(true);
+            setHtmlSafe(htmlSafe);
         }
 
         public void write(JsObject jsObject) throws IOException {

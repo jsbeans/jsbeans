@@ -155,7 +155,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
         jObj.addToObject("result", "");
         jObj.addToObject("error", error);
 
-        this.responseJson(jObj, req, resp);
+        this.responseJson(jObj, req, resp, null);
     }
 
     public void responseResult(UpdateStatusMessage respObj, ServletRequest req, ServletResponse resp) throws IOException {
@@ -197,7 +197,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
 
         if (mode.equalsIgnoreCase("json")) {
         	JsObject execObj = ((JsObject)respObj.result).getAttribute("exec");
-        	this.responseJson(execObj, req, resp);
+        	this.responseJson(execObj, req, resp, contentType);
         } else if (mode.equalsIgnoreCase("binary") || mode.equalsIgnoreCase("bytes") || mode.equalsIgnoreCase("text") || mode.equalsIgnoreCase("html")) {
             if (respObj.status == ExecutionStatus.SUCCESS) {
                 if (contentType != null) {
@@ -227,7 +227,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
         resp.getOutputStream().write(byteArr);
     }
 
-    private void responseJson(JsObject jObj, ServletRequest req, ServletResponse resp) throws UnsupportedEncodingException, IOException {
+    private void responseJson(JsObject jObj, ServletRequest req, ServletResponse resp, String contentType) throws UnsupportedEncodingException, IOException {
         String result = jObj.toJS(false);
 
         if (result != null && result.length() > 0) {
@@ -235,8 +235,13 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
                 result = String.format("%s(%s);", req.getParameter("callback"), result);
             }
             resp.setCharacterEncoding("UTF-8");
-            resp.setContentType("application/json; charset=UTF-8");
-            ((HttpServletResponse)resp).addHeader("Content-Type", "application/json; charset=UTF-8");
+            if (contentType != null) {
+                resp.setContentType(contentType);
+                ((HttpServletResponse)resp).addHeader("Content-Type", contentType);
+            } else {
+	            resp.setContentType("application/json; charset=UTF-8");
+	            ((HttpServletResponse)resp).addHeader("Content-Type", "application/json; charset=UTF-8");
+            }
             resp.getOutputStream().write(result.getBytes("UTF-8"));
         } else {
             // respond error (404)
