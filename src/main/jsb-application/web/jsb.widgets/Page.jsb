@@ -17,69 +17,6 @@
 		
 		get: function(params, url){
 			var htmlSection = this.getJsb()['$html'];
-			
-			function urlJoin(pObj, bRelative){
-				// expand url
-				let pIdx = url.indexOf('?'), leftPart, rightPart;
-				if(pIdx < 0){
-					leftPart = url;
-					rightPart = '';
-				} else {
-					leftPart = url.substr(0, pIdx);
-					rightPart = url.substr(pIdx + 1);
-				}
-				
-				if(bRelative){
-					let idx = leftPart.lastIndexOf('\/');
-					leftPart = leftPart.substr(idx);
-				}
-				
-				// parse right part
-				let rMap = {};
-				if(rightPart.length > 0){
-					var rx = /([^\=\&]+)(\=([^\&]+))?/g;
-					while(true){
-						let m = rx.exec(rightPart);
-						if(!m){
-							break;
-						}
-						rMap[m[1]] = m[3];
-					}
-				}
-				JSB.merge(rMap, pObj);
-				let oUrl = leftPart;
-				if(Object.keys(rMap).length > 0){
-					let bWas = false;
-					for(let p in rMap){
-						if(JSB.isNull(rMap[p])){
-							continue;
-						}
-						oUrl += (bWas ? '&' : '?');
-						oUrl += p + '=' + rMap[p];
-						bWas = true;
-					}
-				}
-				return oUrl;
-			}
-			
-			if(params.r){
-				switch(params.r){
-				case 'pwa':
-					let manObj = JSB.merge({
-						'start_url': urlJoin({'r':null}),
-						'name': htmlSection && htmlSection.title,
-						'background_color': '#fff',
-						'display': 'standalone',
-						'description': htmlSection && htmlSection.title,
-						
-					}, htmlSection.pwa);
-					return Web.respond(manObj, {
-						mode:'json',
-						contentType: 'application/manifest+json'
-					});
-					break;
-				}
-			} else {
 			$this.publish('JSB.Widgets.Page.get');
 			return Web.respond(`#dot <!DOCTYPE html>
 <!--
@@ -93,8 +30,8 @@
 	{{?}}
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=1024, user-scalable=no" />
-	{{?htmlSection.pwa}}
-	<link rel="manifest" href="{{=urlJoin({'r':'pwa'})}}">
+	{{?htmlSection.manifest}}
+	<link rel="manifest" href="/manifest.jsb?jsb={{=this.getJsb().getName()}}">
 	{{?}}
 	{{? htmlSection && htmlSection.title}}
 	<title>{{=htmlSection.title}}</title>
@@ -156,8 +93,6 @@
 	contentType: 'text/html; charset=utf-8'
 });
 		}
-		}
-
 
 	}
 }
