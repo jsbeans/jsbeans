@@ -20,11 +20,8 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 import org.eclipse.jetty.http.HttpCookie.SameSite;
-import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.NCSARequestLog;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.util.resource.ResourceCollection;
@@ -43,13 +40,10 @@ import org.jsbeans.services.ServiceManagerService;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.util.Map;
-import java.util.function.Consumer;
 
 //import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
@@ -75,7 +69,7 @@ public class HttpService extends Service {
     private static final String _RESPONSE_BUFFER_SIZE = "responseBufferSize";
     private static final String _CONFIGURATOR         = "configurator";
 
-    public static int defaultPort = 8888;
+    public static int DEFAULT_PORT = 8888;
 
     public static int findAvailablePort(int startPort, int endPort) throws IOException {
         for (int port = startPort; port <= endPort; startPort++) {
@@ -101,7 +95,7 @@ public class HttpService extends Service {
     }
 
     private void startJettyServer(String name, Config config) {
-        int port = config.hasPath(_PORT) ? config.getInt(_PORT) : defaultPort;
+        int port = config.hasPath(_PORT) ? config.getInt(_PORT) : DEFAULT_PORT;
 
         Server server = new Server(port);
 /*		
