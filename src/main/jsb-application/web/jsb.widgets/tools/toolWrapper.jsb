@@ -27,6 +27,8 @@
 			this.init();
 		},
 		
+		_zIndex: 0,
+		
 		options: {
 			hideByEsc: true,
 			draggable: false
@@ -249,9 +251,23 @@
 			this.modalBack.fadeIn();
 		},
 		
+		setZIndex: function(zi){
+			this._zIndex = zi;
+			this.getElement().css({'z-index': this._zIndex});
+		},
+		
 		show: function(params){
 			var self = this;
 			this.prepareShow = false;
+			let maxIdx = 0;
+			for(var i in this.toolManager.visibleInstances){
+				if(this.toolManager.visibleInstances[i]._zIndex > maxIdx){
+					maxIdx = this.toolManager.visibleInstances[i]._zIndex;
+				}
+			}
+			this.setZIndex(maxIdx+1);
+
+			
 			for(var i in this.toolManager.visibleInstances){
 				if(this.toolManager.visibleInstances[i] == this){
 					return;	// already showing
