@@ -6910,6 +6910,8 @@ JSB({
 	},
 
 	$server: {
+		$require: ['JSB.Repository'],
+		
 		rpcQueueFirst: null,
 		rpcQueueLast: null,
 		rpcMap: {},
@@ -6924,18 +6926,32 @@ JSB({
 			}
 			JSB().setProvider(this);
 			this.enableRpcCleanup(true);
+			
+			// avoid upload cache folder
+			Repository.ensureLoaded(()=>{
+				var fs = JSB().getInstance('JSB.IO.FileSystem');
+				var cfg = JSB().getInstance('JSB.System.Config');
+				if(fs && cfg){
+					var uploadFileDir = cfg.get('web.uploadFileCache.path');
+					let removeOnStart = cfg.get('web.uploadFileCache.removeOnStart');
+					if(fs.exists(uploadFileDir) && removeOnStart){
+						try {
+							fs.remove(uploadFileDir);
+						} catch(e){}
+					}
+				}
+			});
 		},
 
 		performUpload: function(streamId, javaStream){
 			JSB.getLogger().debug('performUpload: ' + streamId);
-			
 			// create proxy file stream
 			var StreamClass = JSB().get('JSB.IO.Stream').getClass();
 			var ProxyStreamClass = JSB().get('JSB.IO.ProxyStream').getClass();
 			var stream = new StreamClass(javaStream);
 			var fs = JSB().getInstance('JSB.IO.FileSystem');
 			var cfg = JSB().getInstance('JSB.System.Config');
-			var uploadFileDir = fs.join(fs.getUserDirectory(), cfg.get('web.uploadCacheFolder'));
+			var uploadFileDir = cfg.get('web.uploadFileCache.path');
 			// create directory if not existed
 			if(!fs.exists(uploadFileDir)){
 				fs.createDirectory(uploadFileDir, true);
