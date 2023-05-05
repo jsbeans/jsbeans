@@ -6461,6 +6461,10 @@ JSB({
 				}
 				if(xhrObj.headerProps && Object.keys(xhrObj.headerProps).length > 0){
 					for(var hp in xhrObj.headerProps){
+						if(hp.toLowerCase() == 'content-length' 
+							|| hp.toLowerCase() == 'connection'){
+							continue;
+						}
 						xhr.setRequestHeader(hp, xhrObj.headerProps[hp]);
 					}
 				}
