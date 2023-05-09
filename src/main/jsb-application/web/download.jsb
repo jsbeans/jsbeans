@@ -58,6 +58,9 @@
 			if(opts.contentType){
 				response.setContentType(opts.contentType);
 			}
+			if(opts.contentLength){
+				response.setContentLength(opts.contentLength);
+			}
 			response.addHeader("Content-disposition", opts.contentDisposition);
 			response.setCharacterEncoding(opts.encoding);
 			
