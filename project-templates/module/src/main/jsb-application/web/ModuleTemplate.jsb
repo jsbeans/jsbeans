@@ -12,7 +12,6 @@
 
 		$constructor: function(opts){
 			$base(opts);
-			this.addClass('dataMonitor');
 			$this.server().getVersion(function(v){
 				$this.dcVersion = v;
 				$this.init();
