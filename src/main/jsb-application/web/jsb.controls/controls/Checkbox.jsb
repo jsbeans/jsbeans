@@ -132,7 +132,9 @@
                 });
 		    }
 
-			this._label.text(str);
+		    this._label.empty();
+		    this._label.append(str);
+//			this._label.text(str);
 			this._label.attr('title', str);
 		},
 
