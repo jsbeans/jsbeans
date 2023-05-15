@@ -3,6 +3,8 @@ package org.jsbeans.web;
 import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.scripting.JsBridge;
 import org.jsbeans.types.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 import javax.servlet.ServletException;
@@ -26,6 +28,7 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
 
     public static final String LOGOUT_URI = "/logout";
     public static final String REDIRECT_URI_PARAM = "redirectURI";
+    public static final String FORCE_UPDATE_ROLES_URI_PARAM = "forceUpdateRoles";
 
     static Map<Object, Tuple<Set<? extends Principal>, Long>> _cachedUsers = new ConcurrentHashMap<>();
 
@@ -76,6 +79,13 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
 //                                JsBridge.getInstance().unlock("AuthenticatedHttpServlet-" + principal.getName());
 //                            }
 //                        }
+
+                        String forceUpdateRoles = req.getParameter(FORCE_UPDATE_ROLES_URI_PARAM);
+                        if(forceUpdateRoles != null || forceUpdateRoles.length() > 0) {
+                            final Logger la = LoggerFactory.getLogger(AuthenticatedHttpServlet.class.getName());
+                            la.info("Force reset user roles for " + principal.getName());
+                            _cachedUsers.remove(principal);
+                        }
                         Tuple<Set<? extends Principal>, Long> stored = _cachedUsers.get(principal);
                         if(stored == null || System.currentTimeMillis() >= stored.getSecond() + ConfigHelper.getConfigLong("web.userUpdateInterval")) {
                             JsBridge.getInstance().lock("AuthenticatedHttpServlet-" + principal.getName());
