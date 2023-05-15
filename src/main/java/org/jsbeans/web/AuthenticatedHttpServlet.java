@@ -81,7 +81,7 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
 //                        }
 
                         String forceUpdateRoles = req.getParameter(FORCE_UPDATE_ROLES_URI_PARAM);
-                        if(forceUpdateRoles != null || forceUpdateRoles.length() > 0) {
+                        if(forceUpdateRoles != null) {
                             final Logger la = LoggerFactory.getLogger(AuthenticatedHttpServlet.class.getName());
                             la.info("Force reset user roles for " + principal.getName());
                             _cachedUsers.remove(principal);
