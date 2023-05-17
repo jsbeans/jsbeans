@@ -30,7 +30,11 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
     public static final String REDIRECT_URI_PARAM = "redirectURI";
     public static final String FORCE_UPDATE_ROLES_URI_PARAM = "forceUpdateRoles";
 
-    static Map<Object, Tuple<Set<? extends Principal>, Long>> _cachedUsers = new ConcurrentHashMap<>();
+    static Map<String, Tuple<Set<? extends Principal>, Long>> _cachedUsers = new ConcurrentHashMap<>();
+    
+    public static void resetUserRoles(String principalName){
+    	_cachedUsers.remove(principalName);
+    }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -45,7 +49,7 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
 
         if(req.getRequestURI().equals(LOGOUT_URI)) {
             req.logout();
-            _cachedUsers.remove(principal);
+            _cachedUsers.remove(principal.getName());
             String uri = req.getParameter(REDIRECT_URI_PARAM);
             if(uri != null && uri.length() > 1) {
                 resp.sendRedirect(uri);
@@ -84,16 +88,16 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
                         if(forceUpdateRoles != null) {
                             final Logger la = LoggerFactory.getLogger(AuthenticatedHttpServlet.class.getName());
                             la.info("Force reset user roles for " + principal.getName());
-                            _cachedUsers.remove(principal);
+                            _cachedUsers.remove(principal.getName());
                         }
-                        Tuple<Set<? extends Principal>, Long> stored = _cachedUsers.get(principal);
+                        Tuple<Set<? extends Principal>, Long> stored = _cachedUsers.get(principal.getName());
                         if(stored == null || System.currentTimeMillis() >= stored.getSecond() + ConfigHelper.getConfigLong("web.userUpdateInterval")) {
                             JsBridge.getInstance().lock("AuthenticatedHttpServlet-" + principal.getName());
                             try {
-                                stored = _cachedUsers.get(principal);
+                                stored = _cachedUsers.get(principal.getName());
                                 if(stored == null) {
                                     Set<? extends Principal> roles = AuthenticatedHttpServlet.this.loginRoles(principal);
-                                    _cachedUsers.put(principal, stored = new Tuple<>(roles, System.currentTimeMillis()));
+                                    _cachedUsers.put(principal.getName(), stored = new Tuple<>(roles, System.currentTimeMillis()));
                                 }
                             }finally {
                                 JsBridge.getInstance().unlock("AuthenticatedHttpServlet-" + principal.getName());
