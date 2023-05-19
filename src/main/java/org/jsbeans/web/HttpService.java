@@ -24,6 +24,7 @@ import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jsbeans.Core;
@@ -68,6 +69,9 @@ public class HttpService extends Service {
     private static final String _REQUEST_HEADER_SIZE  = "requestHeaderSize";
     private static final String _RESPONSE_BUFFER_SIZE = "responseBufferSize";
     private static final String _CONFIGURATOR         = "configurator";
+    private static final String _HASCOMPRESSION		= "compression.enabled";
+    private static final String _COMPRESSIONMINSIZE	= "compression.minSize";
+    private static final String _COMPRESSIONLEVEL	= "compression.level";
 
     public static int DEFAULT_PORT = 8888;
 
@@ -152,8 +156,7 @@ public class HttpService extends Service {
         	server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", config.getInt(_REQUEST_HEADER_SIZE));
         }
         HandlerCollection handlers = new HandlerCollection();
-        handlers.addHandler(context);
-
+        
         if(config.hasPath(_REQUEST_LOG) && config.getBoolean(_REQUEST_LOG)){
 	        RequestLogHandler requestLogHandler = new RequestLogHandler();
 	        handlers.addHandler(requestLogHandler);
@@ -164,7 +167,25 @@ public class HttpService extends Service {
 	        requestLog.setLogTimeZone("GMT");
 	        requestLogHandler.setRequestLog(requestLog);
         }
-
+        
+        if(config.hasPath(_HASCOMPRESSION) && config.getBoolean(_HASCOMPRESSION)) {
+        	GzipHandler gzipHandler = new GzipHandler();
+            gzipHandler.setMinGzipSize(config.getInt(_COMPRESSIONMINSIZE));
+            gzipHandler.setInflateBufferSize(2048);
+            //gzipHandler.setCheckGzExists(false);
+            if(config.hasPath(_COMPRESSIONLEVEL)) {
+            	gzipHandler.setCompressionLevel(config.getInt(_COMPRESSIONLEVEL));
+            }
+            gzipHandler.setIncludedMimeTypes("text/html", "text/plain", "text/xml", "application/xhtml+xml", "application/json,", "text/css", "application/javascript", "application/x-javascript", "image/svg+xml", "image/x-icon", "image/gif", "image/jpg", "image/jpeg", "image/png");
+            //gzipHandler.setExcludedAgentPatterns(".*MSIE.6\\.0.*");
+            gzipHandler.setIncludedMethods("GET", "POST", "PUT", "DELETE");
+            gzipHandler.setIncludedPaths("/*");
+            gzipHandler.setHandler(context);
+            handlers.addHandler(gzipHandler);
+        } else {
+        	handlers.addHandler(context);	
+        }
+        
         if(config.hasPath(_CONFIGURATOR) && config.getString(_CONFIGURATOR).trim().length() > 0) {
             try {
                 Class<WebConfigurator> configuratorClass = (Class<WebConfigurator>) Class.forName(config.getString(_CONFIGURATOR));
@@ -176,7 +197,7 @@ public class HttpService extends Service {
                 throw new RuntimeException(e);
             }
         }
-
+        
         server.setHandler(handlers);
 //        server.setHandler(context);
         

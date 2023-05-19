@@ -38,6 +38,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.Principal;
+import java.util.zip.GZIPOutputStream;
 
 public class JsbServlet extends AuthenticatedHttpServlet {
     private static final long serialVersionUID = -4914554821670876067L;
@@ -45,6 +46,8 @@ public class JsbServlet extends AuthenticatedHttpServlet {
     private static Boolean isDebug = ConfigHelper.getConfigBoolean("web.debug");
     private static Boolean bES5Compatible = ConfigHelper.getConfigBoolean("web.es5Compatible");
     private static Boolean bMinifyScripts = ConfigHelper.getConfigBoolean("web.minifyScripts");
+    private static Boolean bCompressionEnabled = ConfigHelper.getConfigBoolean("web.http.compression.enabled");
+    private static Integer compressionMinSize = ConfigHelper.getConfigInt("web.http.compression.minSize");
 
     private static String prepareGetJsoResponse(LookupJsoMessage jsoResult, boolean onlyBody, boolean bEncode) {
         JsObject jObj = new JsObject(JsObjectType.JSONOBJECT);
@@ -150,7 +153,9 @@ public class JsbServlet extends AuthenticatedHttpServlet {
     	InputStream is = ac.getRequest().getInputStream();
     	HttpServletRequest req = ((HttpServletRequest) ac.getRequest());
     	
-    	((HttpServletResponse) ac.getResponse()).addHeader("Run-Tag", Core.RUN_TAG);
+    	HttpServletResponse r = (HttpServletResponse) ac.getResponse();
+    	r.addHeader("Run-Tag", Core.RUN_TAG);
+    	//r.addHeader("Content-Encoding", "gzip");
     	
     	InputStream iss = new UploadStream(ac, is);
 		
@@ -167,8 +172,19 @@ public class JsbServlet extends AuthenticatedHttpServlet {
                 result = String.format("%s(%s);", callbackStr, result);
             }
             try {
-            	((HttpServletResponse) ac.getResponse()).addHeader("Run-Tag", Core.RUN_TAG);
-            	ac.getResponse().getOutputStream().write(result.getBytes("UTF-8"));
+            	HttpServletResponse r = (HttpServletResponse) ac.getResponse();
+            	r.addHeader("Run-Tag", Core.RUN_TAG);
+            	byte[] outData = result.getBytes("UTF-8");
+            	
+            	if(bCompressionEnabled && outData.length > compressionMinSize) {
+            		r.addHeader("Content-Encoding", "gzip");
+                	GZIPOutputStream gzipOutputStream = new GZIPOutputStream(ac.getResponse().getOutputStream());
+                	gzipOutputStream.write(outData);
+                	gzipOutputStream.close();
+            	} else {
+            		ac.getResponse().getOutputStream().write(outData);
+            	}
+            	
             } catch(Exception e){}
         } else {
             // respond error (404)

@@ -16,6 +16,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.jetty.server.Request;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
+import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.scripting.*;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
@@ -39,10 +40,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.*;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 @SuppressWarnings("deprecation")
 public class HttpJsbServlet extends AuthenticatedHttpServlet {
 	private static final long serialVersionUID = 4803233014924737807L;
+	private static Boolean bCompressionEnabled = ConfigHelper.getConfigBoolean("web.http.compression.enabled");
+    private static Integer compressionMinSize = ConfigHelper.getConfigInt("web.http.compression.minSize");
 
 	public static String getFullURL(HttpServletRequest request) throws UnsupportedEncodingException {
         StringBuffer requestURL = request.getRequestURL();
@@ -212,7 +216,18 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
                 }
                 JsObject data = ((JsObject)respObj.result).getAttribute("exec");
                 if(data.getResultType() != JsObjectType.NULL){
-                	this.responseBytes(data.toByteArray(), req, resp);
+                	resp.setCharacterEncoding("UTF-8");
+                	byte[] outData = data.toByteArray();
+                	if(bCompressionEnabled && outData.length > compressionMinSize) {
+                		((HttpServletResponse)resp).addHeader("Content-Encoding", "gzip");
+                    	GZIPOutputStream gzipOutputStream = new GZIPOutputStream(resp.getOutputStream());
+                    	gzipOutputStream.write(outData);
+                    	gzipOutputStream.close();
+                	} else {
+                		resp.getOutputStream().write(outData);
+                	}
+                    
+//                	this.responseBytes(data.toByteArray(), req, resp);
                 }
             } else {
                 this.responseBytes(new byte[]{}, req, resp);
@@ -242,7 +257,16 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
 	            resp.setContentType("application/json; charset=UTF-8");
 	            ((HttpServletResponse)resp).addHeader("Content-Type", "application/json; charset=UTF-8");
             }
-            resp.getOutputStream().write(result.getBytes("UTF-8"));
+            byte[] outData = result.getBytes("UTF-8");
+            if(bCompressionEnabled && outData.length > compressionMinSize) {
+            	((HttpServletResponse)resp).addHeader("Content-Encoding", "gzip");
+                GZIPOutputStream gzipOutputStream = new GZIPOutputStream(resp.getOutputStream());
+                gzipOutputStream.write(outData);
+                gzipOutputStream.close();
+            } else {
+            	resp.getOutputStream().write(outData);
+            }
+            
         } else {
             // respond error (404)
         	((HttpServletResponse)resp).sendError(404);
