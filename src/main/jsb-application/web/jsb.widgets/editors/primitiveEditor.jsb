@@ -91,20 +91,21 @@
 						self.beginEdit();
 						evt.stopPropagation();
 					});
+				
+					this.plainElt.click(function(evt){
+						evt.stopPropagation();
+						if(!JSB().isNull(self.clickKey)){
+							JSB().Window.clearTimeout(self.clickKey);
+							self.clickKey = null;
+							return;
+						}
+						self.clickKey = JSB().Window.setTimeout(function(){
+							self.clickKey = null;
+							self.plainElt.parent().trigger(new JSB().$.Event('click'));
+							
+						}, 200);
+					});
 				}
-				this.plainElt.click(function(evt){
-					evt.stopPropagation();
-					if(!JSB().isNull(self.clickKey)){
-						JSB().Window.clearTimeout(self.clickKey);
-						self.clickKey = null;
-						return;
-					}
-					self.clickKey = JSB().Window.setTimeout(function(){
-						self.clickKey = null;
-						self.plainElt.parent().trigger(new JSB().$.Event('click'));
-						
-					}, 200);
-				});
 				this.editBoxElt.focusout(function(evt){
 					self.endEdit();
 				});
