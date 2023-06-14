@@ -2992,7 +2992,7 @@ if(!(function(){return this;}).call(null).JSB){
 		},
 
 		loadCss: function(url, callback){
-			if(this instanceof JSB){
+			if(this instanceof JSB && url[0] != '/'){
 				url = this.getBasePath() + url;
 			}
 			url = this.injectServerVersion(url);
