@@ -5181,9 +5181,11 @@ JSB({
 				params: JSB().unwindComplexObjects(params, plain),
 				sync: (sync ? true: false)
 			}, function(res){
+/*				
 				if(self.isDestroyed()){
 					return;
 				}
+*/				
 				var inst = this;
 				var args = arguments;
 				JSB().injectComplexObjects(res, function(r){
