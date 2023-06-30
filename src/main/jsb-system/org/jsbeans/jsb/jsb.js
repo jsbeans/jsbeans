@@ -5181,11 +5181,9 @@ JSB({
 				params: JSB().unwindComplexObjects(params, plain),
 				sync: (sync ? true: false)
 			}, function(res){
-/*				
 				if(self.isDestroyed()){
-					return;
+					JSB.getLogger().warn('Response returned to destroyed bean: ' + self.getId());
 				}
-*/				
 				var inst = this;
 				var args = arguments;
 				JSB().injectComplexObjects(res, function(r){
