@@ -5182,7 +5182,7 @@ JSB({
 				sync: (sync ? true: false)
 			}, function(res){
 				if(self.isDestroyed()){
-					JSB.getLogger().warn('Response returned to destroyed bean: ' + self.getId());
+					JSB.getLogger().warn('Response returned to destroyed bean: ' + tJsb.$name + '(' + self.getId() + ')');
 				}
 				var inst = this;
 				var args = arguments;
