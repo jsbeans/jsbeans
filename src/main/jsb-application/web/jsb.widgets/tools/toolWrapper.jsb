@@ -18,8 +18,15 @@
 		           'css:toolWrapper.css'],
 
 		$constructor: function(toolId, toolMgr, w, opts){
+			/* bind hack - to avoid system BIND option */
+			var bind = null;
+			if(opts && opts.bind){
+				bind = opts.bind;
+				delete opts.bind;
+			}
+			
 			$base(opts);
-
+			this.options.bind = bind;
 			this.toolId = toolId;
 			this.toolManager = toolMgr;
 			this.embeddedWidget = w;
@@ -32,6 +39,24 @@
 		options: {
 			hideByEsc: true,
 			draggable: false
+		},
+		
+		destroy: function(){
+			this.close();
+			// remove from tool manager
+			var toolEntry = this.toolManager.tools[this.toolId];
+			if(toolEntry && toolEntry.instances && toolEntry.instances.length > 0){
+				for(var i = 0; i < toolEntry.instances.length; i++){
+					var inst = toolEntry.instances[i];
+					if(inst == this){
+						toolEntry.instances.splice(i, 1);
+						break;
+					}
+				}
+			}
+			
+			this.embeddedWidget && this.embeddedWidget.destroy();
+			$base();
 		},
 
 		init: function(){

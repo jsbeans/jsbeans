@@ -238,7 +238,7 @@
 
 				var wrapperOpts = JSB.merge({}, toolEntry.wrapperOpts, oddWrapperOpts);
 				chosenInstance = new ToolWrapper(params.id, self, obj, wrapperOpts);
-				toolEntry.instances[toolEntry.instances.length] = chosenInstance;
+				toolEntry.instances.push(chosenInstance);
 			}
 			
 			// apply tool class
