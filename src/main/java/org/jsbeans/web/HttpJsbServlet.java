@@ -25,6 +25,7 @@ import org.jsbeans.types.JsObject.JsObjectType;
 import org.jsbeans.types.JsonElement;
 import org.jsbeans.types.JsonObject;
 import org.jsbeans.types.JsonPrimitive;
+import org.mozilla.javascript.NativeObject;
 
 import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
@@ -153,11 +154,15 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
         }
     }
 
-    public void responseError(String error, ServletRequest req, ServletResponse resp) throws UnsupportedEncodingException, IOException {
+    public void responseError(Object error, ServletRequest req, ServletResponse resp) throws UnsupportedEncodingException, IOException {
         JsObject jObj = new JsObject(JsObjectType.JSONOBJECT);
         jObj.addToObject("success", false);
         jObj.addToObject("result", "");
-        jObj.addToObject("error", error);
+        if(error instanceof JsObject) {
+        	jObj.addToObject("error", (JsObject)error);
+        } else {
+        	jObj.addToObject("error", error.toString());
+        } 
 
         this.responseJson(jObj, req, resp, null);
     }
@@ -278,7 +283,11 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
     	try {
 	    	if(fail != null){
 	    		// response error
-	    		this.responseError(fail.toString(), ac.getRequest(), ac.getResponse());
+	    		if(fail instanceof NativeObject) {
+	    			this.responseError(new JsObjectSerializerHelper().serializeNative(fail), ac.getRequest(), ac.getResponse());
+	    		} else {
+	    			this.responseError(fail, ac.getRequest(), ac.getResponse());
+	    		}
 	    	} else if(resultObj != null){
 	    		respObj.error = null;
     			respObj.result = new JsObjectSerializerHelper().serializeNative(resultObj);

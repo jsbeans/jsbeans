@@ -107,7 +107,8 @@
 					}
 				}
 			} catch(e){
-				servlet.processExecResultAsync(null, e, context);
+				var err = e;
+				servlet.processExecResultAsync(null, err, context);
 			}
 		},
 

@@ -13,6 +13,8 @@ package org.jsbeans.scripting;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.util.Timeout;
+
+import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.*;
 import org.jsbeans.serialization.GsonWrapper;
@@ -609,5 +611,9 @@ public class JsBridge {
 
     public JsObjectSerializerHelper getJsObjectSerializerHelper() {
         return JsObjectSerializerHelper.getInstance();
+    }
+    
+    public void publishEvent(Object event) {
+    	Core.getActorSystem().eventStream().publish(event);
     }
 }
