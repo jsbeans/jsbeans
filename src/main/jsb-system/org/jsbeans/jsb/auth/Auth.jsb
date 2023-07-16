@@ -137,13 +137,6 @@
             return {};
         },
 
-        getUserGroups: function(userId){
-			if(this._userManager){
-				return this._userManager.getUserGroups(userId);
-			}
-            return {};
-        },
-
 		getAccessControlContext: function() {
 		    return AccessController.getContext();
 		},

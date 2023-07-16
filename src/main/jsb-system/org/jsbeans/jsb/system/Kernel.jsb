@@ -304,6 +304,11 @@
 		
 		gc: function(){
 			System.gc();
+		},
+		
+		isDesktop: function(){
+			var desktopJsb = JSB.get('org.jsbeans.desktop.Desktop');
+			return !!desktopJsb;
 		}
 	}
 }
