@@ -285,6 +285,7 @@
             		stream.close();
             		return ab;
             	} else {
+/*            		
             		var stream = new TextStream(inputStream);
             		var ab = null;
             		if(bytes > 0){
@@ -300,7 +301,7 @@
                     }
             		
             		return ab;
-/*            		
+*/            		
                     var result = this.HttpHelper.streamRead(inputStream, this.options.responseType, bytes);
                     if (this.options.responseType === 'json') {
                     	return JSON.parse(result); // eval
@@ -308,7 +309,7 @@
                     	return '' + result;
                     }
                     return result;
-*/                    
+                    
             	}
 
             } catch(e) {
