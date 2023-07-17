@@ -164,11 +164,12 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
         	jObj.addToObject("error", error.toString());
         } 
 
-        this.responseJson(jObj, req, resp, null);
+        this.responseJson(jObj, req, resp, null, "");
     }
 
     public void responseResult(UpdateStatusMessage respObj, ServletRequest req, ServletResponse resp) throws IOException {
         String mode = req.getParameter("mode");
+        String compression = "";
         String contentType = null, encoding = null, contentDisposition = null;
         if (mode == null || mode.trim().length() == 0) {
             if (respObj != null && respObj.result != null) {
@@ -176,6 +177,10 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
                 JsObject modeObj = execOpts.getAttribute("mode");
                 if (modeObj != null && modeObj.getResultType() == JsObjectType.STRING) {
                     mode = modeObj.getString();
+                }
+                JsObject compressionObj = execOpts.getAttribute("compression");
+                if (compressionObj != null && compressionObj.getResultType() == JsObjectType.STRING) {
+                	compression = compressionObj.getString();
                 }
             }
         }
@@ -206,7 +211,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
 
         if (mode.equalsIgnoreCase("json")) {
         	JsObject execObj = ((JsObject)respObj.result).getAttribute("exec");
-        	this.responseJson(execObj, req, resp, contentType);
+        	this.responseJson(execObj, req, resp, contentType, compression);
         } else if (mode.equalsIgnoreCase("binary") || mode.equalsIgnoreCase("bytes") || mode.equalsIgnoreCase("text") || mode.equalsIgnoreCase("html")) {
             if (respObj.status == ExecutionStatus.SUCCESS) {
                 if (contentType != null) {
@@ -223,7 +228,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
                 if(data.getResultType() != JsObjectType.NULL){
                 	resp.setCharacterEncoding("UTF-8");
                 	byte[] outData = data.toByteArray();
-                	if(bCompressionEnabled && outData.length > compressionMinSize) {
+                	if(bCompressionEnabled && outData.length > compressionMinSize && compression != "none") {
                 		((HttpServletResponse)resp).addHeader("Content-Encoding", "gzip");
                     	GZIPOutputStream gzipOutputStream = new GZIPOutputStream(resp.getOutputStream());
                     	gzipOutputStream.write(outData);
@@ -247,7 +252,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
         resp.getOutputStream().write(byteArr);
     }
 
-    private void responseJson(JsObject jObj, ServletRequest req, ServletResponse resp, String contentType) throws UnsupportedEncodingException, IOException {
+    private void responseJson(JsObject jObj, ServletRequest req, ServletResponse resp, String contentType, String compression) throws UnsupportedEncodingException, IOException {
         String result = jObj.toJS(false);
 
         if (result != null && result.length() > 0) {
@@ -263,7 +268,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
 	            ((HttpServletResponse)resp).addHeader("Content-Type", "application/json; charset=UTF-8");
             }
             byte[] outData = result.getBytes("UTF-8");
-            if(bCompressionEnabled && outData.length > compressionMinSize) {
+            if(bCompressionEnabled && outData.length > compressionMinSize && compression != "none") {
             	((HttpServletResponse)resp).addHeader("Content-Encoding", "gzip");
                 GZIPOutputStream gzipOutputStream = new GZIPOutputStream(resp.getOutputStream());
                 gzipOutputStream.write(outData);

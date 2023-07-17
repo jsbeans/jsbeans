@@ -177,8 +177,8 @@ public class HttpHelper {
     private static byte[] readBytes(InputStream inputStream) {
         try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             int n;
-            byte[] buffer = new byte[1024];
-            while((n = inputStream.read(buffer)) > -1) {
+            byte[] buffer = new byte[2048];
+            while((n = inputStream.read(buffer)) > 0) {
                 outputStream.write(buffer, 0, n);
             }
             return outputStream.toByteArray();

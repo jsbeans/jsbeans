@@ -16,6 +16,7 @@
             'java:org.jsbeans.helpers.BufferHelper',
             'JSB.System.Log',
             'JSB.IO.Stream',
+            'JSB.IO.TextStream',
             'java:org.jsbeans.helpers.AuthHelper',
         ],
     	
@@ -284,6 +285,22 @@
             		stream.close();
             		return ab;
             	} else {
+            		var stream = new TextStream(inputStream);
+            		var ab = null;
+            		if(bytes > 0){
+            			ab = stream.read(bytes);
+            		} else {
+            			ab = stream.read();
+            		}
+            		stream.close();
+            		if(this.options.responseType === 'json') {
+                    	return JSON.parse(ab); // eval
+                    } else if(this.options.responseType === 'string'){
+                    	return '' + ab;
+                    }
+            		
+            		return ab;
+/*            		
                     var result = this.HttpHelper.streamRead(inputStream, this.options.responseType, bytes);
                     if (this.options.responseType === 'json') {
                     	return JSON.parse(result); // eval
@@ -291,6 +308,7 @@
                     	return '' + result;
                     }
                     return result;
+*/                    
             	}
 
             } catch(e) {
