@@ -69,6 +69,11 @@ public class AuthHelper {
         String auth = clientAuthLogin.getType() + " " + clientAuthLogin.getToken();
         http.setRequestProperty("Authorization", auth);
     }
+    
+    public static String getHttpClientAuthorizationString() {
+    	loginClient();
+    	return clientAuthLogin.getType() + " " + clientAuthLogin.getToken();
+    }
 
     public static Principal getClientPrincipal() {
         return () -> clientAuthLogin.getUser();
