@@ -228,7 +228,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
                 if(data.getResultType() != JsObjectType.NULL){
                 	resp.setCharacterEncoding("UTF-8");
                 	byte[] outData = data.toByteArray();
-                	if(bCompressionEnabled && outData.length > compressionMinSize && compression != "none") {
+                	if(bCompressionEnabled && outData.length > compressionMinSize && !compression.equalsIgnoreCase("none") ) {
                 		((HttpServletResponse)resp).addHeader("Content-Encoding", "gzip");
                     	GZIPOutputStream gzipOutputStream = new GZIPOutputStream(resp.getOutputStream());
                     	gzipOutputStream.write(outData);
@@ -254,7 +254,6 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
 
     private void responseJson(JsObject jObj, ServletRequest req, ServletResponse resp, String contentType, String compression) throws UnsupportedEncodingException, IOException {
         String result = jObj.toJS(false);
-
         if (result != null && result.length() > 0) {
             if (req.getParameterMap().containsKey("callback")) {
                 result = String.format("%s(%s);", req.getParameter("callback"), result);
@@ -268,7 +267,7 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
 	            ((HttpServletResponse)resp).addHeader("Content-Type", "application/json; charset=UTF-8");
             }
             byte[] outData = result.getBytes("UTF-8");
-            if(bCompressionEnabled && outData.length > compressionMinSize && compression != "none") {
+            if(bCompressionEnabled && outData.length > compressionMinSize && !compression.equalsIgnoreCase("none")) {
             	((HttpServletResponse)resp).addHeader("Content-Encoding", "gzip");
                 GZIPOutputStream gzipOutputStream = new GZIPOutputStream(resp.getOutputStream());
                 gzipOutputStream.write(outData);
