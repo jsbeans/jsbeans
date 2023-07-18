@@ -92,8 +92,8 @@ public class Core {
             }
         });
     }
-
-    private static void configureLogger() {
+    
+    public static void configureLogger() {
         // set platform log level to debug
         if (DEBUG) {
 //            Logger logger = LoggerFactory.getLogger(Core.PLATFORM_PACKAGE);
@@ -128,7 +128,7 @@ public class Core {
         return actorSystem;
     }
     
-    private static void resolvePluginDependencies() {
+    public static void resolvePluginDependencies() {
     	Set<Class<? extends PluginActivator>> pluginTypesSet = new HashSet<Class<? extends PluginActivator>>();
     	Set<Class<? extends PluginActivator>> usedPluginTypesSet = new HashSet<Class<? extends PluginActivator>>();
     	pluginTypesSet.addAll(pluginTypes);
@@ -155,7 +155,7 @@ public class Core {
     	}
     }
 
-    private static void loadBaseConfiguration() {
+    public static void loadBaseConfiguration() {
         String path = getConfigPath(configPath, "application.conf");
         config = ConfigFactory.load(path);
         log.info("Configuration loaded from '{}'", path);
@@ -167,7 +167,7 @@ public class Core {
                 : configPath + "/" + name;
     }
 
-    private static void startActorSystem() {
+    public static void startActorSystem() {
         String clusterId = null;
         if (config.hasPath("kernel.cluster.id")) {
             clusterId = config.getString("kernel.cluster.id");
@@ -200,7 +200,7 @@ public class Core {
     }
 
 
-    private static void collectAndConfigurePlugins() {
+    public static void collectAndConfigurePlugins() {
         for (Class<? extends PluginActivator> type : orderedPluginTypes) {
             try {
                 // create plugin instance
@@ -235,7 +235,7 @@ public class Core {
         }
     }
 
-    private static void applyServerConfiguration(){
+    public static void applyServerConfiguration(){
         String path = getConfigPath(configPath, serverConfName);
         Config conf = ConfigFactory.parseResources(path);
         // merge main and plugin config
@@ -251,7 +251,7 @@ public class Core {
         return ConfigFactory.parseResources(getConfigPath(configPath, name + ".conf"));
     }
 
-    private static void finalizeConfiguration() {
+    public static void finalizeConfiguration() {
         Config systemPropertiesConfig  = ConfigFactory.empty();
         for(Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
             if ("false".equalsIgnoreCase(e.getValue().toString())) {
@@ -274,14 +274,14 @@ public class Core {
         log.info("Configuration system property loaded");
     }
 
-    private static void initPlugins() {
+    public static void initPlugins() {
         for (PluginActivator plugin : plugins) {
             plugin.init();
             log.info("Plugin '{}' ({}) initialized", plugin.getName(), plugin.getClass().getName());
         }
     }
 
-    private static void startServiceManager() {
+    public static void startServiceManager() {
         ActorHelper.actorOf(ServiceManagerService.class, ActorHelper.generateName(ServiceManagerService.class))
                 .tell(Message.SVC_INIT, ActorRef.noSender());
     }
