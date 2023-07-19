@@ -89,7 +89,8 @@ public interface Beans {
         Stream<Bean> enumerate(Predicate<String> filter) {
             return paths.stream()
                     .flatMap(path ->
-                            FileHelper.searchFiles(path, "**/*.jsb").stream()
+                                    Stream.concat(FileHelper.searchFiles(path, "**/*.jsb").stream(),
+                                                    FileHelper.searchFiles(path, "**/jsb.js").stream())
                                     .map(file -> file.replaceAll("\\\\", "/").substring(path.length()))
                                     .filter(filter)
                                     .map(uri -> (Bean) new Bean() {
