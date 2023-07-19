@@ -21,6 +21,7 @@
 		           'java:java.io.File',
 		           'java:java.io.PrintWriter',
 		           'java:java.io.FileInputStream',
+		           'java:java.util.Arrays',
 		           'JSB.System.Config',
 		           'JSB.System.Kernel',
 		           'JSB.Auth',
@@ -29,7 +30,9 @@
 		           'java:org.jsbeans.web.JsMinifier',
 		           'java:org.jsbeans.scripting.jsb.JsbRegistryService',
 		           'java:org.jsbeans.scripting.jsb.Beans.ZippedProvider',
-		           'java:org.jsbeans.scripting.jsb.Beans.EncoderDecoder'],
+		           'java:org.jsbeans.scripting.jsb.Beans.EncoderDecoder',
+		           'java:org.jsbeans.scripting.jsb.Beans.FileProvider'
+               ],
 		
 		cachedContent: {},
 		
@@ -43,11 +46,23 @@
             response.setContentType('application/zip');
 
             if(params.hasOwnProperty('system')) {
-                var pkg = JsbRegistryService.system;
+                if(Config.has('kernel.jsb.repo.beans.system.path')) {
+                    var fileBeans = new FileProvider(Config.get('kernel.jsb.repo.beans.system.path'));
+                } else {
+                    var internalBeans = JsbRegistryService.system;
+                }
             } else if(params.hasOwnProperty('server')) {
-                var pkg = JsbRegistryService.server;
+                if(Config.has('kernel.jsb.repo.beans.server.path')) {
+                    var fileBeans = new FileProvider(Config.get('kernel.jsb.repo.beans.server.path'));
+                } else {
+                    var internalBeans = JsbRegistryService.server;
+                }
             } else if(params.hasOwnProperty('application')) {
-                var pkg = JsbRegistryService.application;
+                if(Config.has('kernel.jsb.repo.beans.application.path')) {
+                    var fileBeans = new FileProvider(Config.get('kernel.jsb.repo.beans.application.path'));
+                } else {
+                    var internalBeans = JsbRegistryService.application;
+                }
             } else if(params.hasOwnProperty('redirect_uri')) {
                 var url = params.redirect_uri;
                 response.sendRedirect(url);
@@ -58,11 +73,17 @@
                 throw new JSB.Error('Invalid user key');
             }
             Log.debug('jsbrepo user = ' + Kernel.user());
-            // TODO check permission
-            // TODO store launch user stats (user,ip,time...)
-            var key = Base64.getDecoder().decode(params.key);
-            var out = EncoderDecoder.encoder(key).apply(response.getOutputStream());
-            ZippedProvider.writeAsZip(pkg, out);
+            try {
+                // TODO check permission
+                // TODO store launch user stats (user,ip,time...)
+                var key = Base64.getDecoder().decode(params.key);
+                var out = EncoderDecoder.encoder(key).apply(response.getOutputStream());
+                ZippedProvider.writeAsZip(internalBeans||fileBeans, out);
+            }finally{
+                if(fileBeans) {
+                    fileBeans.close();
+                }
+            }
 		},
 
 	}

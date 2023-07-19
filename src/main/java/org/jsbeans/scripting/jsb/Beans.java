@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -62,6 +63,10 @@ public interface Beans {
 
     class FileProvider implements Provider {
         Collection<String> paths;
+
+        public FileProvider(String path) {
+            this.paths = Collections.singletonList(path);
+        }
 
         public FileProvider(Collection<String> paths) {
             this.paths = paths;
