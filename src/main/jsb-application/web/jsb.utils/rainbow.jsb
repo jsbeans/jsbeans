@@ -10,6 +10,7 @@
 
 {
 	$name: 'JSB.Utils.Rainbow',
+	$require: 'D3',
     // inner variables
     gradients: null,
     minNum: 0,
@@ -92,14 +93,23 @@
             }
 
             function isHexColour(string){
-                var regex = /^#?[0-9a-fA-F]{6}$/i;
+                var regex = /^#?[0-9a-fA-F]+$/i;
                 return regex.test(string);
+            }
+            
+            function isRgbColour(string){
+            	return /^rgb/i.test(string);
             }
 
             function getHexColour(string){
                 if (isHexColour(string)) {
-                    return string.substring(string.length - 6, string.length);
+                	return string.substr(1);
+                    /* return string.substring(string.length - 6, string.length);*/
+                } else if(isRgbColour(string)){ 
+                	var cl = d3.color(string);
+                	return cl.formatHex().substr(1);
                 } else {
+                	// dictionary
                     var name = string.toLowerCase();
                     if (colourNames.hasOwnProperty(name)) {
                         return colourNames[name];
