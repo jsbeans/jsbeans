@@ -190,16 +190,17 @@
 			}
 
 			if(params.cmd == 'show'){
+				var exclusive = JSB.isDefined(params.exclusive) ? params.exclusive : (toolEntry.wrapperOpts && toolEntry.wrapperOpts.exclusive)
 				// perform exclusive logic
-				if(toolEntry.wrapperOpts && toolEntry.wrapperOpts.exclusive){
+				if(exclusive){
 					// hide all subscopes
 					for(var i = self.visibleInstances.length - 1; i >= 0; i--){
 						var inst = self.visibleInstances[i];
-						if(JSB().isString(toolEntry.wrapperOpts.exclusive )){
-							if(JSB().isString(inst.options.exclusive) && inst.options.exclusive == toolEntry.wrapperOpts.exclusive){
+						if(JSB().isString(exclusive)){
+							if(JSB().isString(inst.options.exclusive) && inst.options.exclusive == exclusive){
 								inst.hide();
 							}
-						} else if(toolEntry.wrapperOpts.exclusive && (JSB().isNull(scope) || self.isSubScopeOf(this.resolveScope(inst.getScope()), scope))){
+						} else if(exclusive && (JSB().isNull(scope) || self.isSubScopeOf(this.resolveScope(inst.getScope()), scope))){
 							inst.hide();
 						}
 					}
@@ -234,6 +235,9 @@
 				}
 				if(JSB.isDefined(params.hideByEsc)){
 					oddWrapperOpts.hideByEsc = params.hideByEsc;
+				}
+				if(JSB.isDefined(params.exclusive)){
+					oddWrapperOpts.exclusive = params.exclusive;
 				}
 
 				var wrapperOpts = JSB.merge({}, toolEntry.wrapperOpts, oddWrapperOpts);
