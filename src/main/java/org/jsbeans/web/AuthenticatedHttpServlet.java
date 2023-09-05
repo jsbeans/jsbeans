@@ -26,7 +26,9 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
 //    private static final String SESSION_ATTR_USER_ROLES = "userRolePrincipals";
 //    private static final String SESSION_ATTR_USER_ROLES_UPDATED = "userRolePrincipalsUpdated";
 
-    public static final String LOGOUT_URI = "/logout";
+    public static final String LOGOUT_URI = "/logout.jsb";
+    public static final String LOGOUT_URI2 = "/logout";
+    public static final String LOGIN_URI = "/login.jsb";
     public static final String REDIRECT_URI_PARAM = "redirectURI";
     public static final String FORCE_UPDATE_ROLES_URI_PARAM = "forceUpdateRoles";
 
@@ -47,9 +49,18 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
                 : req.getUserPrincipal();
 
 
-        if(req.getRequestURI().equals(LOGOUT_URI)) {
+        if(req.getRequestURI().equals(LOGOUT_URI) || req.getRequestURI().equals(LOGOUT_URI2)) {
             req.logout();
             _cachedUsers.remove(principal.getName());
+            String uri = req.getParameter(REDIRECT_URI_PARAM);
+            if(uri != null && uri.length() > 1) {
+                resp.sendRedirect(uri);
+            } else {
+                resp.setStatus(200);
+            }
+            return;
+        }
+        if(req.getRequestURI().equals(LOGIN_URI)) {
             String uri = req.getParameter(REDIRECT_URI_PARAM);
             if(uri != null && uri.length() > 1) {
                 resp.sendRedirect(uri);

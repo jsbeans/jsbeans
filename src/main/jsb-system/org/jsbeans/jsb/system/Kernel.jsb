@@ -227,6 +227,10 @@
 			//return Kernel.user() === Config.get('kernel.security.admin.user');
 		},
 
+		isAnonymous: function(){
+		    return Bridge.hasAnonymousPrincipal();
+		},
+
 		isSystem:function(){
 		    return Bridge.hasSystemPrincipal();
             //return Kernel.user() === Config.get('kernel.security.system.user');

@@ -20,6 +20,7 @@ import org.jsbeans.helpers.*;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.jsbeans.web.AdminPrincipal;
+import org.jsbeans.web.AnonymousPrincipal;
 import org.jsbeans.web.SystemPrincipal;
 import org.mozilla.javascript.*;
 import org.slf4j.Logger;
@@ -295,6 +296,10 @@ public class JsBridge {
 
     public boolean hasSystemPrincipal() {
         return Subject.getSubject(AccessController.getContext()).getPrincipals(SystemPrincipal.class).size() > 0;
+    }
+
+    public boolean hasAnonymousPrincipal() {
+        return Subject.getSubject(AccessController.getContext()).getPrincipals(AnonymousPrincipal.class).size() > 0;
     }
 
     public Object executeRoot(ScriptableObject callback, boolean chRoot) throws Exception{
