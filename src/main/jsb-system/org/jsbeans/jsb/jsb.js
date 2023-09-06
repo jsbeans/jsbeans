@@ -1271,7 +1271,12 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 			opts = opts || {};
-			JSB.merge(opts, {node: node});
+			JSB.merge(opts, {
+				node: node 
+			});
+			if(this.getJsb().isSession()){
+				opts.session = JSB.getCurrentSession();
+			}
 			this.rpc(name, args, callback, opts);
 		},
 
@@ -3864,6 +3869,16 @@ if(!(function(){return this;}).call(null).JSB){
 				globe[c] = {};
 			}
 			return globe[c];
+		},
+		
+		ensureNegotiation: function(clientId, serverId){
+			var bindMapScope = JSB().getBindMap();
+			var reverseBindMapScope = JSB().getReverseBindMap();
+			bindMapScope[clientId] = serverId;
+			if(!reverseBindMapScope[serverId]){
+				reverseBindMapScope[serverId] = {};
+			}
+			reverseBindMapScope[serverId][clientId] = true;
 		},
 
 		constructServerInstanceFromClientId: function(jsoName, instanceId){
@@ -6839,6 +6854,34 @@ JSB({
 			}
 
 			this.serverClientCallTrackInterval = trackInterval;
+			
+			function _doCall(cInst, proc, params, respond, id, cId){
+				function doCall(p){
+					JSB.defer(function(){
+						var result = null;
+						var fail = null;
+						try {
+							if(JSB().isArray(p)){
+								result = cInst[proc].apply(cInst, p);
+							} else {
+								result = cInst[proc].call(cInst, p);
+							}
+						} catch(e){
+							result = null;
+							fail = e;
+						}
+						if(respond){
+							self.rpc('submitServerClientCallResult', {
+								id: id,
+								clientId: cId,
+								result: result,
+								fail: fail
+							}, null, {sync:true});
+						}
+					}, 0);
+				}
+				JSB().injectComplexObjects(params, doCall);
+			}
 
 			function _doTrack(){
 				if($this._tracking){
@@ -6852,37 +6895,31 @@ JSB({
 						// do something with slice
 						for(var i = 0; i < entries.length; i++){
 							var entry = entries[i];
-							for(var j = 0; j < entry.clientIds.length; j++){
-								var clientId = entry.clientIds[j];
-								var clientInstance = JSB().getInstance(clientId);
-								if(clientInstance && clientInstance[entry.proc]){
-									(function(cInst, proc, params, respond, id, cId){
-										function doCall(p){
-											JSB.defer(function(){
-												var result = null;
-												var fail = null;
-												try {
-													if(JSB().isArray(p)){
-														result = cInst[proc].apply(cInst, p);
-													} else {
-														result = cInst[proc].call(cInst, p);
-													}
-												} catch(e){
-													result = null;
-													fail = e;
-												}
-												if(respond){
-													self.rpc('submitServerClientCallResult', {
-														id: id,
-														clientId: cId,
-														result: result,
-														fail: fail
-													}, null, {sync:true});
-												}
-											}, 0);
-										}
-										JSB().injectComplexObjects(params, doCall);
-									})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
+/*							
+							if(entry.proc == 'executeShowDashboard'){
+								// TODO: реализовать создание канала связи, если на клиенте бина еще нет 
+								// TODO: переделать настройку запуска процесса под рутом в настройках самого процесса (и убрать из операции)
+								debugger;
+							}
+*/							
+							if(entry.clientIds){
+								for(var j = 0; j < entry.clientIds.length; j++){
+									var clientId = entry.clientIds[j];
+									var clientInstance = JSB().getInstance(clientId);
+									if(clientInstance && clientInstance[entry.proc]){
+										_doCall(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
+									}
+								}
+							} else {
+								// setup negotiation channel with server side for missing bean
+								if(entry.jsb && entry.serverId 
+									&& entry.proc != '_destroyLocal' /*avoid local destroy of unexisting bean */){
+									(function(_jsb, _serverId, _proc, _params, _respond, _id){
+										JSB().constructInstanceFromRemote(_jsb, _serverId, function(clientInstance){
+											_doCall(clientInstance, _proc, _params, _respond, _id, clientInstance.getId());
+										});
+									})(entry.jsb, entry.serverId, entry.proc, entry.params, entry.respond, entry.id);
+									
 								}
 							}
 						}
@@ -7226,17 +7263,22 @@ JSB({
 			while(fromEntry){
 				lastId = fromEntry.id;
 				var clientIdMap = reverseBindMap[fromEntry.instance.getId()];
-				if(clientIdMap && (JSB().isNull(fromEntry.session) || fromEntry.session == JSB().getCurrentSession())){
-					slice.push({
+				if((clientIdMap && !fromEntry.session /* call from root */ ) || (fromEntry.session == JSB().getCurrentSession() /* call directly */)){
+					var sObj = {
 						id: fromEntry.id,
-						clientIds: Object.keys(clientIdMap),
+						clientIds: clientIdMap && Object.keys(clientIdMap),
 						proc: fromEntry.proc,
 						params: fromEntry.params,
 						respond: (fromEntry.callback ? true: false)
-					});
-					if(slice.length >= this.maxBatchSize){
-						break;
+					};
+					if(!clientIdMap){
+						sObj.serverId = fromEntry.instance.getId();
+						sObj.jsb = fromEntry.instance.getJsb().getName();
 					}
+					slice.push(sObj);
+				}
+				if(slice.length >= this.maxBatchSize){
+					break;
 				}
 				fromEntry = fromEntry.next;
 			}
@@ -7252,6 +7294,9 @@ JSB({
 			var entry = this.rpcMap[obj.id];
 			if(!entry){
 				return;
+			}
+			if(obj.clientId && entry.instance){
+				JSB().ensureNegotiation(obj.clientId, entry.instance.getId());
 			}
 			if(entry.callback){
 				JSB().defer(function(){
