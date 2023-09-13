@@ -1274,7 +1274,7 @@ if(!(function(){return this;}).call(null).JSB){
 			JSB.merge(opts, {
 				node: node 
 			});
-			if(this.getJsb().isSession()){
+			if(this.getJsb().isSession() && !opts.session){
 				opts.session = JSB.getCurrentSession();
 			}
 			this.rpc(name, args, callback, opts);
@@ -6871,12 +6871,23 @@ JSB({
 							fail = e;
 						}
 						if(respond){
-							self.rpc('submitServerClientCallResult', {
-								id: id,
-								clientId: cId,
-								result: result,
-								fail: fail
-							}, null, {sync:true});
+							if(JSB().isFuture(result)){
+								result.await(function(r, f){
+									self.rpc('submitServerClientCallResult', {
+										id: id,
+										clientId: cId,
+										result: r,
+										fail: f
+									}, null, {sync:true});
+								});
+							} else {
+								self.rpc('submitServerClientCallResult', {
+									id: id,
+									clientId: cId,
+									result: result,
+									fail: fail
+								}, null, {sync:true});
+							}
 						}
 					}, 0);
 				}
