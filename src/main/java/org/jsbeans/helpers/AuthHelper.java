@@ -52,22 +52,30 @@ public class AuthHelper {
         AuthHelper.clientAuthLogin = clientAuthLogin;
     }
 
-    public static void loginClient() {
+    public static boolean loginClient() {
         if (clientAuthLogin != null) {
             clientAuthLogin.login();
+            return true;
         }
+        return false;
     }
 
-    public static void logoutClient() {
+    public static boolean logoutClient() {
         if (clientAuthLogin != null) {
             clientAuthLogin.logout();
+            return true;
         }
+        return false;
     }
 
-    public static void authenticateHttpClient(HttpURLConnection http) {
+    public static boolean authenticateHttpClient(HttpURLConnection http) {
         loginClient();
-        String auth = clientAuthLogin.getType() + " " + clientAuthLogin.getToken();
-        http.setRequestProperty("Authorization", auth);
+        if(clientAuthLogin != null) {
+            String auth = clientAuthLogin.getType() + " " + clientAuthLogin.getToken();
+            http.setRequestProperty("Authorization", auth);
+            return true;
+        }
+        return false;
     }
     
     public static String getHttpClientAuthorizationString() {

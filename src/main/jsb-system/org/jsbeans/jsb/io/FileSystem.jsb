@@ -176,6 +176,9 @@
 			options.binary = $jsb.isArrayBuffer(data);
 			if(options.append){
 				options.write = false;
+				if(!this.exists(path)) {
+				    this.write(path, '');
+				}
 			}
 			var stream = this.open(path, options);
 			try {

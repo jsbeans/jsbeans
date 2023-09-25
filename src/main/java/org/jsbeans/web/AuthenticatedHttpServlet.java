@@ -10,6 +10,7 @@ import javax.security.auth.Subject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Principal;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 public abstract class AuthenticatedHttpServlet extends HttpServlet {
 
@@ -32,10 +34,59 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
     public static final String REDIRECT_URI_PARAM = "redirectURI";
     public static final String FORCE_UPDATE_ROLES_URI_PARAM = "forceUpdateRoles";
 
-    static Map<String, Tuple<Set<? extends Principal>, Long>> _cachedUsers = new ConcurrentHashMap<>();
+    private static BiFunction<HttpServletRequest, HttpServletResponse, Boolean> requestHandler;
+
+    private static final Map<String, Tuple<Set<? extends Principal>, Long>> _cachedUsers = new ConcurrentHashMap<>();
     
     public static void resetUserRoles(String principalName){
     	_cachedUsers.remove(principalName);
+    }
+
+    public static void applyRequestInterceptor(BiFunction<HttpServletRequest, HttpServletResponse, Boolean> requestInerceptor) {
+        if(AuthenticatedHttpServlet.requestHandler != null) {
+            final BiFunction<HttpServletRequest, HttpServletResponse, Boolean> prev = AuthenticatedHttpServlet.requestHandler;
+            AuthenticatedHttpServlet.requestHandler = new BiFunction<HttpServletRequest, HttpServletResponse, Boolean>() {
+                @Override
+                public Boolean apply(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+                    if(prev.apply(httpServletRequest, httpServletResponse)) {
+                        return true;
+                    }
+                    return requestInerceptor.apply(httpServletRequest, httpServletResponse);
+                }
+            };
+        } else {
+            AuthenticatedHttpServlet.requestHandler = requestInerceptor;
+        }
+    }
+
+    static {
+        applyRequestInterceptor((req, resp) -> {
+            try {
+                if (req.getRequestURI().equals(LOGOUT_URI) || req.getRequestURI().equals(LOGOUT_URI2)) {
+                    req.logout();
+                    _cachedUsers.remove(req.getUserPrincipal().getName());
+                    String uri = req.getParameter(REDIRECT_URI_PARAM);
+                    if (uri != null && uri.length() > 1) {
+                        resp.sendRedirect(uri);
+                    } else {
+                        resp.setStatus(200);
+                    }
+                    return true;
+                }
+                if (req.getRequestURI().equals(LOGIN_URI)) {
+                    String uri = req.getParameter(REDIRECT_URI_PARAM);
+                    if (uri != null && uri.length() > 1) {
+                        resp.sendRedirect(uri);
+                    } else {
+                        resp.setStatus(200);
+                    }
+                    return true;
+                }
+            }catch (IOException | ServletException e) {
+                throw new RuntimeException(e);
+            }
+            return false;
+        });
     }
 
     @Override
@@ -48,33 +99,33 @@ public abstract class AuthenticatedHttpServlet extends HttpServlet {
                     )
                 : req.getUserPrincipal();
 
-
-        if(req.getRequestURI().equals(LOGOUT_URI) || req.getRequestURI().equals(LOGOUT_URI2)) {
-            req.logout();
-            _cachedUsers.remove(principal.getName());
-            String uri = req.getParameter(REDIRECT_URI_PARAM);
-            if(uri != null && uri.length() > 1) {
-                resp.sendRedirect(uri);
-            } else {
-                resp.setStatus(200);
+        if (requestHandler != null) {
+            try {
+                if (requestHandler.apply(
+                        new HttpServletRequestWrapper(req) {
+                            @Override
+                            public Principal getUserPrincipal() {
+                                return principal;
+                            }
+                        },
+                        resp)) {
+                    return;
+                }
+            } catch (RuntimeException e) {
+                if(e.getCause() instanceof IOException) {
+                    throw (IOException)e.getCause();
+                }
+                if(e.getCause() instanceof ServletException) {
+                    throw (ServletException)e.getCause();
+                }
+                throw e;
             }
-            return;
-        }
-        if(req.getRequestURI().equals(LOGIN_URI)) {
-            String uri = req.getParameter(REDIRECT_URI_PARAM);
-            if(uri != null && uri.length() > 1) {
-                resp.sendRedirect(uri);
-            } else {
-                resp.setStatus(200);
-            }
-            return;
         }
 
         final Subject subject = new Subject(false, new HashSet<>(1), Collections.emptySet(), Collections.emptySet());
         subject.getPrincipals().add(principal);
 
         try {
-
             if(ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                 Subject.doAs(new Subject(false, Collections.singleton(new SystemPrincipal()), Collections.emptySet(), Collections.emptySet()), new PrivilegedExceptionAction<String>() {
                     @Override

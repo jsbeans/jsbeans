@@ -42,19 +42,24 @@ public class StringHelper {
 	    	}
     	}
     };
-    
-    public static String MD5(String st) throws UnsupportedEncodingException {
-    	MessageDigest md = digesters.get();
-    	md.reset();
-    	byte[] digest = md.digest(st.getBytes("UTF-8"));
-    	BigInteger bigInt = new BigInteger(1, digest);
+
+    public static String MD5(byte[] st) throws UnsupportedEncodingException {
+        MessageDigest md = digesters.get();
+        md.reset();
+        byte[] digest = md.digest(st);
+        BigInteger bigInt = new BigInteger(1, digest);
         String md5Hex = bigInt.toString(16);
 
         while( md5Hex.length() < 32 ){
             md5Hex = "0" + md5Hex;
         }
-        
+
         return md5Hex;
+
+    }
+    
+    public static String MD5(String st) throws UnsupportedEncodingException {
+    	return MD5(st.getBytes("UTF-8"));
     }
     
     public static String SHA1(String st) throws UnsupportedEncodingException, NoSuchAlgorithmException {
