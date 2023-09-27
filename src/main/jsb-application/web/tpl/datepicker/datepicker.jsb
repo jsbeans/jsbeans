@@ -57,11 +57,7 @@
 			pickerElt.datepicker(pickerOpts);
 			
 			if(this.options.date || this.options.value){
-				var val = this.options.date || this.options.value;
-				if(JSB.isNumber(val)){
-					val = new Date(val);
-				}
-				this.setDate(val);
+				this.setDate(this.options.date || this.options.value);
 			}
 		},
 		
@@ -70,7 +66,13 @@
 		},
 		
 		setDate: function(date){
-			if(JSB.isNumber(date)){
+			if(JSB.isString(date)){
+				if(/^[0-9]+$/.test(date)){
+					date = new Date(parseInt(date));
+				} else {
+					date = new Date(date);
+				}
+			} else if(JSB.isNumber(date)){
 				date = new Date(date);
 			}
 			this.find('> .picker').datepicker('setDate', date);

@@ -7326,6 +7326,7 @@ JSB({
 	value: null,
 	fail: null,
 	fired: false,
+	onTimeout: null,
 	
 	$constructor: function(opts){
 		$base();
@@ -7333,6 +7334,9 @@ JSB({
 		this.timeout = 300000;	// 5 min by default
 		if(opts && JSB.isNumber(opts.timeout)){
 			this.timeout = opts.timeout;
+		}
+		if(opts && JSB.isFunction(opts.onTimeout)){
+			this.onTimeout = opts.onTimeout;
 		}
 	},
 
@@ -7357,6 +7361,9 @@ JSB({
 			}
 			var wDesc = $this.waiters[wId];
 			delete $this.waiters[wId];
+			if($this.onTimeout){
+				$this.onTimeout.call($this);
+			}
 			wDesc.callback(undefined, new Error('Future timeout expire (' + (timeout / 1000).toFixed(2) + ' sec.)'));
 			if(Object.keys($this.waiters).length == 0){
 				$this.destroy();
