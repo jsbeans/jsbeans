@@ -12,7 +12,7 @@
         <param name="append" value="false" />
         <param name="maxFileSize" value="1MB" />
         <param name="maxBackupIndex" value="10" />
-        <param name="file" value="./logs/jsbeans.log" />
+        <param name="file" value="${user.home}/.cubisio/logs/jsbeans.log" />
 
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} [%-5p] (%c{1}:%L) - %m%n" />
@@ -23,7 +23,7 @@
         <param name="append" value="false" />
         <param name="maxFileSize" value="1MB" />
         <param name="maxBackupIndex" value="10" />
-        <param name="file" value="./logs/scripting.log" />
+        <param name="file" value="${user.home}/.cubisio/logs/scripting.log" />
 
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} [%-5p] (%c{1}:%L) - %m%n" />
@@ -34,7 +34,7 @@
         <param name="append" value="false" />
         <param name="maxFileSize" value="1MB" />
         <param name="maxBackupIndex" value="10" />
-        <param name="file" value="./logs/auth.log" />
+        <param name="file" value="${user.home}/.cubisio/logs/auth.log" />
 
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} [%-5p] (%c{1}:%L) - %m%n" />
