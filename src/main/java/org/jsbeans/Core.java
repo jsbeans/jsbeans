@@ -70,6 +70,7 @@ public class Core {
 
     public static synchronized void start() {
         log.info("System core started at " + new Date());
+        log.info("Root folder:" + ConfigHelper.getRootFolder());
 
         Subject sysSubj = Subject.getSubject(AccessController.getContext());
         if (sysSubj == null /*&& ConfigHelper.getConfigBoolean("kernel.security.enabled")*/) {

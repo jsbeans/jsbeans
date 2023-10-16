@@ -24,7 +24,9 @@ import scala.concurrent.duration.Duration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,10 +47,12 @@ public class ConfigHelper {
 //		String path = Starter.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 //		return path.substring(0, path.lastIndexOf("/")) + "/";
 
-        String path;
+        String path = "";
         File f = new File(Starter.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-        path = f.toString();
-        if (f.isFile()) {
+        try {
+			path = URLDecoder.decode(f.toString(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {}
+        if (!f.isDirectory()) {
             path = path.substring(0, path.lastIndexOf(File.separatorChar));
         }
         return path + File.separatorChar;//path.substring(0, path.lastIndexOf(File.separatorChar)) + File.separatorChar;
@@ -144,7 +148,7 @@ public class ConfigHelper {
     public static void addWebFolder(String str) {
         try {
             File f = new File(str);
-            webFolders.add(f.getCanonicalPath());
+            webFolders.add(URLDecoder.decode(f.getCanonicalPath(), "UTF-8"));
         } catch (IOException e) {
             ExceptionHelper.throwRuntime(e);
         }
@@ -157,7 +161,7 @@ public class ConfigHelper {
     public static void addJssFolder(String path) {
         initJssFolders();
         try {
-            String canonicalPath = new File(path).getCanonicalPath();
+            String canonicalPath = URLDecoder.decode(new File(path).getCanonicalPath(), "UTF-8");
             if (!jssFolders.contains(canonicalPath)) {
                 jssFolders.add(canonicalPath);
             }
@@ -187,12 +191,14 @@ public class ConfigHelper {
 
 
     public static String getPluginHomeFolder(Object obj) {
+    	return getPluginHomeFolder(obj.getClass());
+/*    	
         if (obj.getClass().getProtectionDomain() == null) {
             return null;
         } else {
             try {
                 File file = new File(obj.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-                String path = file.getCanonicalPath();
+                String path = URLDecoder.decode(file.getCanonicalPath(), "UTF-8");
                 if (file.isFile()) {
                     return getRootFolder();
                 }
@@ -201,6 +207,7 @@ public class ConfigHelper {
                 throw ExceptionHelper.runtime(e);
             }
         }
+*/        
     }
     
     public static String getPluginHomeFolder(Class<?> cls) {
@@ -209,8 +216,8 @@ public class ConfigHelper {
         } else {
             try {
                 File file = new File(cls.getProtectionDomain().getCodeSource().getLocation().toURI());
-                String path = file.getCanonicalPath();
-                if (file.isFile()) {
+                String path = URLDecoder.decode(file.getCanonicalPath(), "UTF-8");
+                if (!file.isDirectory()) {
                     return getRootFolder();
                 }
                 return path;
