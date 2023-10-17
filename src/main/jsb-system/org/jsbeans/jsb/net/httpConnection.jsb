@@ -218,13 +218,30 @@
             var statusCode = this.getResponseCode();
             return statusCode >= 200 && statusCode < 400;
         },
+        
+        getHeaderFields: function(){
+        	this.sendCompleted();
+        	var headerObj = {};
+        	var hMap = this.httpConnection.getHeaderFields();
+        	var keys = hMap.keySet().toArray();
+        	for(var i = 0; i < keys.length; i++){
+        		if(!keys[i]){
+        			continue;
+        		}
+        		var obj = '' + hMap.get(keys[i]);
+        		headerObj['' + keys[i]] = obj;
+        	}
+        	
+        	return headerObj;
+        },
 
         getResult: function(){
             var result = {
                 responseCode:    this.getResponseCode(),
                 responseMessage: this.getResponseMessage(),
                 error:           this.getError(),
-                body:            this.getBody()
+                body:            this.getBody(),
+                headers: 		 this.getHeaderFields()
             };
             this.disconnect();
             return result;
