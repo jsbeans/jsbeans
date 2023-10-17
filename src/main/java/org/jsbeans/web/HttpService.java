@@ -157,10 +157,11 @@ public class HttpService extends Service {
         }
         HandlerCollection handlers = new HandlerCollection();
         
-        if(config.hasPath(_REQUEST_LOG) && config.getBoolean(_REQUEST_LOG)){
+        if(config.hasPath(_REQUEST_LOG+".enabled") && config.getBoolean(_REQUEST_LOG+".enabled")){
 	        RequestLogHandler requestLogHandler = new RequestLogHandler();
 	        handlers.addHandler(requestLogHandler);
-	        NCSARequestLog requestLog = new NCSARequestLog("./logs/request" + (name!=null?"-"+name:"") +".log");
+	        String requestLogPath = config.getString(_REQUEST_LOG+".path");
+	        NCSARequestLog requestLog = new NCSARequestLog(requestLogPath+"/request" + (name!=null?"-"+name:"") +".log");
 	        requestLog.setRetainDays(10);
 	        requestLog.setAppend(true);
 	        requestLog.setExtended(true);
