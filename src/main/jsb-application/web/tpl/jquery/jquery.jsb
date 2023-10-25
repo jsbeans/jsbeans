@@ -47,6 +47,7 @@
 				`#include 'jquery.visible.js'`;
 				`#include 'jquery.mousewheel.js'`;
 				`#include 'jquery.cookie.js'`;
+				`#include 'jquery.printthis.js'`;
 			}).call(null, JSB().$);
 		}
 	}
