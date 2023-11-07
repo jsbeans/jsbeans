@@ -73,7 +73,7 @@
             <directory>${basedir}</directory>
             <outputDirectory>${org.jsbeans.application.path}</outputDirectory>
             <includes>
-                <include>.classpath_jars</include>
+                <include>classpath_jars</include>
             </includes>
         </fileSet>
     </fileSets>
