@@ -426,6 +426,7 @@
 		},
 		
 		setFocus: function(){
+			this.editBoxElt.select();
 			this.editBoxElt.focus();
 		},
 		
