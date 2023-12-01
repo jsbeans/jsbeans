@@ -80,7 +80,8 @@
     display: none;
     position: absolute;
     right: 16px;
-    top: 8px;
+	top: 50%;
+    margin-top: -2px;
     padding: 0;
     background: none;
     color: darkred;

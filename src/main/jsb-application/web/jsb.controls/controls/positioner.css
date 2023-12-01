@@ -31,7 +31,7 @@
 .jsb-positioner > .curVal {
     width: 100%;
     cursor: pointer;
-    padding: 0 4px;
+    padding: 2px 4px;
     line-height: 1.42857143;
     color: #555;
     text-overflow: ellipsis;
