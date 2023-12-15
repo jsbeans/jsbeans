@@ -81,7 +81,7 @@
 			this.update();
 		},
 		
-		update: function(){
+		update: function(onUpdateCallback){
 			MenuRegistry.lookupActions(this.options.category, function(actMap){
 				$this._actions = actMap;
 				
@@ -96,8 +96,30 @@
 						$this.addClass('noItems');
 					}
 					$this.setTrigger('ready');
+					if(onUpdateCallback){
+						onUpdateCallback.call($this);
+					}
 				});
 			});
+		},
+		
+		clearOptions: function(){
+			for(var optId in $this._options){
+				$this._options[optId].destroy();
+				$this._renderers[optId].destroy();
+				delete $this._renderers[optId];
+				for(var i = $this._buttonItems.length - 1; i >= 0; i--){
+					if($this._buttonItems[i].key == optId){
+						$this._buttonItems.splice(i, 1);
+					}
+				}
+				for(var i = $this._fixedItems.length - 1; i >= 0; i--){
+					if($this._fixedItems[i].key == optId){
+						$this._fixedItems.splice(i, 1);
+					}
+				}
+			}
+			$this._options = {};
 		},
 		
 		appendOption: function(opt){
