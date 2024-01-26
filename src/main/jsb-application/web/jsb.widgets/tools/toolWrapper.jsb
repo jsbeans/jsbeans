@@ -844,6 +844,23 @@
 				}
 			}
 		},
+		
+		getContainmentRect: function(){
+			if(this.containmentBox){
+				return {
+					x: this.containmentBox.left,
+					y: this.containmentBox.top,
+					w: this.containmentBox.right - this.containmentBox.left,
+					h: this.containmentBox.bottom - this.containmentBox.top
+				};
+			}
+			return {
+				x: 0,
+				y: 0,
+				w: this.$( window ).width(),
+				h: this.$( window ).height()
+			};
+		},
 
 		
 		test: function(x, y, w, h, cArr){
