@@ -38,6 +38,14 @@
 			if(!this.options.tabPosition || this.options.tabPosition == 'top'){
 				this.addClass('_dwp_tabTop');
 			}
+			
+			if(this.options.tabAlign == 'start') {
+				this.addClass('_dwp_tabAlignStart');
+			} else if(this.options.tabAlign == 'center') {
+				this.addClass('_dwp_tabAlignCenter');
+			} else if(this.options.tabAlign == 'end') {
+				this.addClass('_dwp_tabAlignEnd');
+			}
 
 			// create tab pane
 			this.tabPane = this.$('<div class="_dwp_tabPane"></div>');
@@ -79,22 +87,91 @@
 			this.clientPane = this.$('<div class="_dwp_clientPane"></div>');
 			this.append(this.clientPane);
 
-			if(this.options.showTabs){
-				this.tabPane.resize(function(){
-					if(!$this.tabPane.is(':visible')){
-						return;
-					}
-
-					$this.updateSizes();
-				});
-			}
+			this.tabPane.resize(()=>{
+				if(!$this.options.showTabs || !$this.tabPane.is(':visible')){
+					return;
+				}
+				$this.updateSizes();
+			});
 		},
 		
 		options: {
 			allowCloseTab: true,
 			allowNewTab: true,
 			tabPosition: 'top',
+			tabAlign: 'start',
 			showTabs: true
+		},
+		
+		showTabs: function(bShow){
+			if(this.options.showTabs == bShow){
+				return;
+			}
+			this.options.showTabs = bShow;
+			if(!this.options.showTabs){
+				this.addClass('_dwp_hiddenTabs');
+			} else {
+				this.removeClass('_dwp_hiddenTabs');
+			}
+			this.updateSizes();
+		},
+		
+		changePosition: function(newPos){
+			if(this.options.tabPosition == newPos){
+				return;
+			}
+			this.options.tabPosition = newPos;
+			if(this.options.tabPosition == 'bottom'){
+				this.addClass('_dwp_tabBottom');
+				this.removeClass('_dwp_tabLeft');
+				this.removeClass('_dwp_tabRight');
+				this.removeClass('_dwp_tabTop');
+			}
+
+			if(this.options.tabPosition == 'left'){
+				this.addClass('_dwp_tabLeft');
+				this.removeClass('_dwp_tabBottom');
+				this.removeClass('_dwp_tabRight');
+				this.removeClass('_dwp_tabTop');
+			}
+
+			if(this.options.tabPosition == 'right'){
+				this.addClass('_dwp_tabRight');
+				this.removeClass('_dwp_tabBottom');
+				this.removeClass('_dwp_tabLeft');
+				this.removeClass('_dwp_tabTop');
+			}
+
+			if(this.options.tabPosition == 'top'){
+				this.addClass('_dwp_tabTop');
+				this.removeClass('_dwp_tabBottom');
+				this.removeClass('_dwp_tabLeft');
+				this.removeClass('_dwp_tabRight');
+			}
+			
+			this.updateSizes();
+		},
+		
+		changeAlign: function(newAlign){
+			if(this.options.tabAlign == newAlign){
+				return;
+			}
+			this.options.tabAlign = newAlign;
+			if(this.options.tabAlign == 'start'){
+				this.addClass('_dwp_tabAlignStart');
+				this.removeClass('_dwp_tabAlignCenter');
+				this.removeClass('_dwp_tabAlignEnd');
+			} else if(this.options.tabAlign == 'center'){
+				this.addClass('_dwp_tabAlignCenter');
+				this.removeClass('_dwp_tabAlignStart');
+				this.removeClass('_dwp_tabAlignEnd');
+			} else if(this.options.tabAlign == 'end'){
+				this.addClass('_dwp_tabAlignEnd');
+				this.removeClass('_dwp_tabAlignStart');
+				this.removeClass('_dwp_tabAlignCenter');
+			}
+
+			this.updateSizes();
 		},
 
 		activateTab: function(uid){
@@ -330,6 +407,9 @@
 		switchTab: function(tab){
 			var self = this;
 			var entry = this.resolveTab(tab);
+			if(this.currentTab && entry && this.currentTab.id == entry.id){
+				return;
+			}
 			var activeTab = self.tabPane.find('> ._jsb_tabScrollPane > .active');
 			if(entry.tab.attr('clientId') == activeTab.attr('clientId')){
 				return;

@@ -49,6 +49,15 @@
 	padding: 6px 0 6px 3px;
 }
 
+._dwp_tabview._dwp_tabRight > ._dwp_tabPane {
+	right: 0;
+	top: 0;
+	bottom: 0;
+    border-left: 1px solid #BEBEBE;
+	background: #E6E1E1;
+	padding: 6px 3px 6px 0;
+}
+
 ._dwp_tabview._dwp_hiddenTabs > ._dwp_tabPane {
 	display: none;
 }
@@ -162,6 +171,7 @@
 	list-style: none;
 	margin: 0;
 	padding: 0;
+	display: flex;
 }
 
 
@@ -169,18 +179,38 @@
 
 ._dwp_tabview._dwp_tabTop > ._dwp_tabPane > ._jsb_tabScrollPane {
 	margin-bottom: -1px;
+	min-width: 100%;
+	flex-direction: row;
 }
 
 ._dwp_tabview._dwp_tabBottom > ._dwp_tabPane > ._jsb_tabScrollPane {
 	margin-top: -1px;
+	min-width: 100%;
+	flex-direction: row;
 }
 
 ._dwp_tabview._dwp_tabLeft > ._dwp_tabPane > ._jsb_tabScrollPane {
 	margin-right: -1px;
+	min-height: 100%;
+	flex-direction: column;
 }
 
 ._dwp_tabview._dwp_tabRight > ._dwp_tabPane > ._jsb_tabScrollPane {
 	margin-left: -1px;
+	min-height: 100%;
+	flex-direction: column;
+}
+
+._dwp_tabview._dwp_tabAlignStart > ._dwp_tabPane > ._jsb_tabScrollPane {
+	justify-content: flex-start;
+}
+
+._dwp_tabview._dwp_tabAlignCenter > ._dwp_tabPane > ._jsb_tabScrollPane {
+	justify-content: center;
+}
+
+._dwp_tabview._dwp_tabAlignEnd > ._dwp_tabPane > ._jsb_tabScrollPane {
+	justify-content: flex-end;
 }
 
 /* tabs */
@@ -240,7 +270,17 @@
 ._dwp_tabview._dwp_tabLeft > ._dwp_tabPane > ._jsb_tabScrollPane > li._dwp_tab {
 	border-radius: 4px 0 0 4px;
 	padding: 8px 3px 6px 3px;
+	display: block;
+    margin-top: -1px;
 }
+
+._dwp_tabview._dwp_tabRight > ._dwp_tabPane > ._jsb_tabScrollPane > li._dwp_tab {
+	border-radius: 0 4px 4px 0;
+	padding: 8px 3px 6px 3px;
+	display: block;
+    margin-top: -1px;
+}
+
 
 ._dwp_tabview > ._dwp_tabPane > ._jsb_tabScrollPane > li._dwp_tab.active {
     background: #fff;
