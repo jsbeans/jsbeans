@@ -16,6 +16,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.jetty.server.Request;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
+import org.jsbeans.helpers.BufferHelper;
 import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.scripting.*;
 import org.jsbeans.serialization.GsonWrapper;
@@ -26,6 +27,7 @@ import org.jsbeans.types.JsonElement;
 import org.jsbeans.types.JsonObject;
 import org.jsbeans.types.JsonPrimitive;
 import org.mozilla.javascript.NativeObject;
+import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
 
 import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
@@ -37,8 +39,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.Buffer;
 import java.security.*;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -93,29 +97,31 @@ public class HttpJsbServlet extends AuthenticatedHttpServlet {
             JsonElement postObj = null;
             
             if(proc.equals("post")){
-                
-	            try {
-		            StringBuffer jb = new StringBuffer();
-		            String line = null;
-		            BufferedReader reader = req.getReader();
-		            while ((line = reader.readLine()) != null){
-		            	jb.append(line);
-		            }
-		            
-		            JsonElement jElt = GsonWrapper.fromJson(jb.toString(), JsonElement.class);
-		            if(jElt instanceof JsonPrimitive){
-		            	String unescapedStr = StringEscapeUtils.unescapeJava(jb.toString());
-		            	while(unescapedStr.startsWith("\"")){
-		            		unescapedStr = unescapedStr.substring(1);
-		            	}
-		            	while(unescapedStr.endsWith("\"")){
-		            		unescapedStr = unescapedStr.substring(0, unescapedStr.length() - 1);
-		            	}
-		            	jElt = GsonWrapper.fromJson(unescapedStr, JsonElement.class);
-		            }
-		            postObj = jElt;
-		             
-	            } catch(Exception e){}
+                // note: don`t read binary data
+                if(req.getHeader("Content-Type") == null || !req.getHeader("Content-Type").contains("application/octet-stream")){
+                    try {
+                        StringBuffer jb = new StringBuffer();
+                        String line = null;
+                        BufferedReader reader = req.getReader();
+                        while ((line = reader.readLine()) != null){
+                            jb.append(line);
+                        }
+
+                        JsonElement jElt = GsonWrapper.fromJson(jb.toString(), JsonElement.class);
+                        if(jElt instanceof JsonPrimitive){
+                            String unescapedStr = StringEscapeUtils.unescapeJava(jb.toString());
+                            while(unescapedStr.startsWith("\"")){
+                                unescapedStr = unescapedStr.substring(1);
+                            }
+                            while(unescapedStr.endsWith("\"")){
+                                unescapedStr = unescapedStr.substring(0, unescapedStr.length() - 1);
+                            }
+                            jElt = GsonWrapper.fromJson(unescapedStr, JsonElement.class);
+                        }
+                        postObj = jElt;
+
+                    } catch(Exception e){}
+                }
             }
             
             JsonObject pObj = new JsonObject();
