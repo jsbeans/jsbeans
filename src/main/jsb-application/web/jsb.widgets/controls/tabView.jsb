@@ -407,9 +407,6 @@
 		switchTab: function(tab){
 			var self = this;
 			var entry = this.resolveTab(tab);
-			if(this.currentTab && entry && this.currentTab.id == entry.id){
-				return;
-			}
 			var activeTab = self.tabPane.find('> ._jsb_tabScrollPane > .active');
 			if(entry.tab.attr('clientId') == activeTab.attr('clientId')){
 				return;
