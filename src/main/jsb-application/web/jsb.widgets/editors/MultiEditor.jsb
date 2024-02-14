@@ -26,6 +26,7 @@
 			              'org.jsbeans.types.Xml',
 			              'org.jsbeans.types.Sql',
 			              'org.jsbeans.types.SparqlString',
+			              'org.jsbeans.types.Markdown',
 			              'org.jsbeans.types.Html',
 			              'org.jsbeans.types.Css'], this);
 		})
@@ -69,6 +70,8 @@
 				mode = 'text/css';
 			} else if(this.options.valueType == 'org.jsbeans.types.Python'){
 				mode = 'python';
+			} else if(this.options.valueType == 'org.jsbeans.types.Markdown'){
+				mode = 'markdown';
 			}
 			/*
 			if(this.options.valueType == 'org.jsbeans.types.JsonObject'){
@@ -198,6 +201,12 @@
 						$this.init(mode, theme, {});
 						$this.ready = true;
 					}, true);
+				} else if($this.options.valueType == 'org.jsbeans.types.Markdown') {
+					JSB.loadScript(['tpl/codemirror/mode/markdown/markdown.js'], function(){
+			
+						$this.init(mode, theme, {});
+						$this.ready = true;
+					}, true);
 				}
 			});
 		},
@@ -225,6 +234,16 @@
 		execCommand: function(command) {
 		    return this.editor.execCommand(command);
 		},
+		
+		setReadOnly: function(bReadOnly){
+			this.options.readOnly = bReadOnly;
+			if(bReadOnly){
+				this.addClass('readOnly');
+			} else {
+				this.removeClass('readOnly');
+			}
+			this.editor.setOption('readOnly', bReadOnly && 'nocursor');
+		},
 
 		init: function(mode, theme, opts){
 			var self = this;
@@ -239,6 +258,7 @@
 
 			var cmOpts = JSB.merge(true, {
 				lineNumbers: JSB.isNull(self.options.lineNumbers) ? true : self.options.lineNumbers,
+				lineWrapping: $this.options.lineWrapping || false,
 				mode: mode,
 				smartIndent: true,
 				autofocus: true,
@@ -248,7 +268,7 @@
 				matchBrackets: true,
 				tabSize: 4,
 				indentWithTabs: true,
-				readOnly: readonly,
+				readOnly: readonly && 'nocursor',
 				extraKeys: {
 					'Ctrl-Enter': function(){
 						self.publish('editComplete');
@@ -262,6 +282,8 @@
 
 			self.editor = window.CodeMirror(this.getElement().get(0), cmOpts);
 			
+			this.setReadOnly(readonly);
+			
 			if(this.data.getValue()){
 				if(this.options.valueType == 'org.jsbeans.types.JsonObject'
 					|| this.options.valueType == 'org.jsbeans.types.JsonArray'
@@ -271,7 +293,7 @@
 					this.editor.getDoc().setValue(this.data.getValue());
 				}
 			}
-			self.editor.on('change', function(cm, evt) {
+			$this.editor.on('change', function(cm, evt) {
 			    if(evt.origin === 'setValue' && $this.options.hideSetDataEvt) {
 			        return;
 			    }
@@ -282,6 +304,18 @@
 					}
 				}
 			});
+			
+			if($this.options.onFocus){
+				$this.editor.on('focus', function(cm, evt){
+					$this.options.onFocus(evt);
+				});
+			}
+			
+			if($this.options.onBlur){
+				$this.editor.on('blur', function(cm, evt){
+					$this.options.onBlur(evt);
+				});
+			}
 			
 			this.getElement().keydown(function(evt){
 				if(evt.which != 27){
@@ -405,15 +439,14 @@
 		},
 		
 		setFocus: function(){
-			var self = this;
 			if(JSB.isNull(this.editor)){
 				JSB.deferUntil(function(){
-					self.editor.focus();
+					$this.editor.focus();
 				},function(){
-					return !JSB.isNull(self.editor);
+					return !JSB.isNull($this.editor);
 				});
 			} else {
-				self.editor.focus();
+				$this.editor.focus();
 			}
 			
 		},

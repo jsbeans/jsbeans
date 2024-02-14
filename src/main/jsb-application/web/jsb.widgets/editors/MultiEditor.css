@@ -30,3 +30,8 @@
     background: -o-linear-gradient(top, #E4B0B0, #EECACA 30%, #FAE1E1 80%, #E9BDBD);
     background: -ms-linear-gradient(top, #E4B0B0, #EECACA 30%, #FAE1E1 80%, #E9BDBD);
 }
+
+
+.multiEditor .CodeMirror:not(.CodeMirror-focused) .CodeMirror-cursor {
+	display: none;
+}
