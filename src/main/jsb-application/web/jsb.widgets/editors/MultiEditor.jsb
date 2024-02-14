@@ -69,7 +69,7 @@
 			} else if(this.options.valueType == 'org.jsbeans.types.Css'){
 				mode = 'text/css';
 			} else if(this.options.valueType == 'org.jsbeans.types.Python'){
-				mode = 'python';
+				mode = 'text/x-python';
 			} else if(this.options.valueType == 'org.jsbeans.types.Markdown'){
 				mode = 'markdown';
 			}
@@ -196,7 +196,7 @@
 				} else if($this.options.valueType == 'org.jsbeans.types.Python') {
 					JSB.loadScript(['tpl/codemirror/mode/python/python.js',
 					                'tpl/codemirror/addon/hint/show-hint.js',
-					                'tpl/codemirror/addon/hint/python-hint.js'], function(){
+					                'tpl/codemirror/addon/edit/matchbrackets.js'], function(){
 						
 						$this.init(mode, theme, {});
 						$this.ready = true;
