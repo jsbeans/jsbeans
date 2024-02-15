@@ -300,7 +300,7 @@
 
 				if(JSB.isFunction($this.options.onChange)) {
 					if($this.isValid()) {
-						$this.options.onChange.call($this, $this.getData().getValue());
+						$this.options.onChange.call($this, $this.getData().getValue(), evt);
 					}
 				}
 			});
