@@ -340,6 +340,10 @@
 //			this.ready = true;
 		},
 		
+		ensureReady: function(callback){
+			this.ensureTrigger('ready', callback);
+		},
+		
 		isValid: function(){
 			var val = $this.editor.getDoc().getValue();
 			if(this.options.valueType == 'org.jsbeans.types.JsonObject'

@@ -3,7 +3,9 @@
 ._dwp_button {
 	cursor: pointer;
 	overflow: hidden;
-	display: inline-block;
+	display: inline-flex;
+	justify-content: center;
+    align-items: center;
 	border-radius: 4px;
 	vertical-align: middle;
 	white-space: nowrap;
