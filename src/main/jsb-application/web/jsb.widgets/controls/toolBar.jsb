@@ -105,6 +105,9 @@
 			if(itemObj.disabled){
 				this.enableItem(itemObj.key, false);
 			}
+			if(itemObj.hidden){
+				this.showItem(itemObj.key, false);
+			}
 			if(itemObj.checkbox || itemObj.group){
 				this.checkItem(itemObj.key, itemObj.checked);
 			}
@@ -195,8 +198,11 @@
 			}
 			
 			if(itemObj.key){
-				 this.itemMap[itemObj.key] = itemObj;
-				 this.itemList.push(itemObj);
+				this.itemMap[itemObj.key] = itemObj;
+				this.itemList.push(itemObj);
+				if(itemObj.hidden){
+					this.showItem(itemObj.key, false);
+				}
 			}
 			
 			return itemObj;
