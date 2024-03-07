@@ -74,6 +74,10 @@
 			this.listbox.attach();
 		},
 		
+		getListBox: function(){
+			return this.listbox;
+		},
+		
 		setFocus: function(){
 			this.listbox.setFocus();
 		}
