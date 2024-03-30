@@ -85,6 +85,7 @@
 						if(fail){
 							servlet.processExecResultAsync(null, fail, context);
 						} else {
+							var opts = {};
 							if(ret instanceof Web.Response){
 								opts = ret.opts; 
 								ret = ret.data; 

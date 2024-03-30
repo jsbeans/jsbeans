@@ -108,6 +108,10 @@ public class JsObjectSerializerHelper {
 
     public JsObject serializeNative(Object obj) throws PlatformException {
         JsObject retObj = null;
+        ScriptableObject so = null;
+        if(obj instanceof ScriptableObject) {
+        	so = (ScriptableObject)obj;
+        }
         if (obj == null) {
             retObj = new JsObject(JsObjectType.NULL);
         } else if (obj instanceof NativeArrayBuffer) {
@@ -124,6 +128,9 @@ public class JsObjectSerializerHelper {
             retObj = this.serializeNativeObject((NativeObject) obj);
         } else if (obj instanceof NativeArray) {
             retObj = this.serializeNativeArray((NativeArray) obj);
+        } else if (so != null && so.getClassName().equals("Error")) {
+        	retObj = new JsObject(JsObjectType.STRING);
+            retObj.setString(so.toString());
         } else if (obj instanceof String || obj instanceof ConsString) {
             retObj = new JsObject(JsObjectType.STRING);
             retObj.setString(obj.toString());
