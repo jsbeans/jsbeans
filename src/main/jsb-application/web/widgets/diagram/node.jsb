@@ -422,12 +422,13 @@
 			}
 		},
 		
-		select: function(bEnable){
+		select: function(bEnable, bAnalyze){
+		    bAnalyze = typeof bAnalyze === 'undefined' ? false : true;
 			if(bEnable){
 				if(!this.diagram.selected[this.getId()]){
 					this.diagram.selected[this.getId()] = this;
 					if(this.options.onSelect){
-						this.options.onSelect.call(this, bEnable);
+						this.options.onSelect.call(this, bEnable, bAnalyze);
 					}
 					this.notifyUpdateSelected();
 				}
