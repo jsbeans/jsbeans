@@ -21,7 +21,9 @@ import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext; 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
@@ -50,9 +52,23 @@ public class HttpHelper {
 
     	// Install the all-trusting trust manager
     	try {
-    	    SSLContext sc = SSLContext.getInstance("TLS");
-    	    sc.init(null, trustAllCerts, new SecureRandom());
-    	    HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+/*    	    SSLContext scTls = SSLContext.getInstance("TLS");
+    	    scTls.init(null, trustAllCerts, new SecureRandom());
+    	    HttpsURLConnection.setDefaultSSLSocketFactory(scTls.getSocketFactory());
+*/    	    
+    	    SSLContext scSsl = SSLContext.getInstance("SSL");
+    	    scSsl.init(null, trustAllCerts, new SecureRandom());
+    	    HttpsURLConnection.setDefaultSSLSocketFactory(scSsl.getSocketFactory());
+    	    
+    	    // Create all-trusting host name verifier
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+     
+            // Install the all-trusting host verifier
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
     	} catch (Exception e) {
     	    ;
     	}
