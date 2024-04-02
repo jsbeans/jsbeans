@@ -20,8 +20,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 import org.eclipse.jetty.http.HttpCookie.SameSite;
-import org.eclipse.jetty.server.NCSARequestLog;
-import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
@@ -72,6 +71,7 @@ public class HttpService extends Service {
     private static final String _HASCOMPRESSION		= "compression.enabled";
     private static final String _COMPRESSIONMINSIZE	= "compression.minSize";
     private static final String _COMPRESSIONLEVEL	= "compression.level";
+    private static final String _FORWARDEDCONNECTOR	= "forwardedConnector";
 
     public static int DEFAULT_PORT = 8888;
 
@@ -237,6 +237,20 @@ public class HttpService extends Service {
 //                writeErrorPageMessage(request, writer, code, message, uri);
 //            }
 //        });
+
+        if(config.hasPath(_FORWARDEDCONNECTOR) && config.getBoolean(_FORWARDEDCONNECTOR)) {
+            // Create HTTP Config
+            HttpConfiguration httpConfig = new HttpConfiguration();
+            // Add support for X-Forwarded headers
+            httpConfig.addCustomizer( new org.eclipse.jetty.server.ForwardedRequestCustomizer() );
+            // Create the http connector
+            HttpConnectionFactory connectionFactory = new HttpConnectionFactory( httpConfig );
+            ServerConnector connector = new ServerConnector(server, connectionFactory);
+            // Make sure you set the port on the connector, the port in the Server constructor is overridden by the new connector
+            connector.setPort( port );
+            // Add the connector to the server
+            server.setConnectors( new ServerConnector[] { connector } );
+        }
 
         try {
             this.getLog().debug(String.format("Starting Jetty web server at %d", port));
