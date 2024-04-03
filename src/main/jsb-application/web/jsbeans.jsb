@@ -43,7 +43,9 @@
 				path += '?ref=' + refType;
 			}
 			if(this.cachedContent[path]){
-				return this.cachedContent[path];
+				return Web.respond(this.cachedContent[path], {
+					contentType: 'application/javascript; charset=UTF-8'
+				});
 			}
 			
 			
