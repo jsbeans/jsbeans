@@ -32,6 +32,7 @@
 			value: '',
 			enabled: true,
 			tree: false,
+			readonly: false,
 			placeholder: 'Выберите из списка',
 			onChange: function(key, obj){},
 			onEditorChange: function(value, evt){}
@@ -54,6 +55,11 @@
 				this.addItem(items[i]);
 			}
 			
+			if(this.options.readonly) {
+				this.options.enabled = false;
+				this.addClass('readonly');
+			}
+			
 			if(this.options.dropDown){
 				// create dropdown list
 				this.addClass('_dwp_dropDown');
@@ -61,15 +67,17 @@
 				this.getElement().append('<div class="_dwp_dropBtn"></div>');
 
 				this.getElement().click(function(evt){
-					if(!self.options.enabled) return;
-					self.onDropDownClick();
+					if(!$this.options.enabled) return;
+					if($this.options.readonly) return;
+					$this.onDropDownClick();
 				});
 			} else {
 				// create editable
 				this.addClass('_dwp_editable');
 				this.editor = new Editor({
 					placeholder: this.options.placeholder,
-					onChange: this.options.onEditorChange
+					onChange: this.options.onEditorChange,
+					readonly: this.options.readonly
 				});
 				this.append(this.editor);
 				this.ddBtn = this.$('<div class="_dwp_dropBtn"><div class="_dwp_dropIcon"></div></div>');

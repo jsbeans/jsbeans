@@ -22,7 +22,11 @@
     outline: none;
 }
 
-.jsb-editor > input[type="text"]:focus {
+.jsb-editor > input[readonly] {
+	background-color: #ededed;
+}
+
+.jsb-editor > input[type="text"]:focus:not([readonly]) {
 	border-color: #8fa8cc;
 }
 
