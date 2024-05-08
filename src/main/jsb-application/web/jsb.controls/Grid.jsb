@@ -149,8 +149,10 @@
 		            JSB().defer(function(){
 		                $this.options.preloader.call($this);
 		            }, 300, 'jsb-grid.preload|' + $this.getId());
+		            return true;
 		        }
         	}
+        	return false;
         },
 
         addArray: function(data, rowIndex, opts){
