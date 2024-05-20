@@ -107,59 +107,62 @@
 						this.select(this.diagram.links, false);
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && params.event.which == 1) {
-					params.event.stopPropagation();
+					//params.event.stopPropagation();
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') && params.event.which == 1){
-					params.event.stopPropagation();
-
-					if(params.event.altKey || MacKeys.altKey){
-						if(sender.isSelected()){
-							sender.select(false);
-						}
-					} else if(params.event.shiftKey || params.event.ctrlKey || MacKeys.ctrlKey || MacKeys.cmdKey){
-						// toggle
-						sender.select(!sender.isSelected());
-					} else {
-						// remove old selected
-						var rMap = {};
-						for(var nodeId in this.diagram.nodes){
-							var node = this.diagram.nodes[nodeId];
-							if(node == sender){
-								continue;
+					//params.event.stopPropagation();
+					JSB.defer(()=>{
+						if(params.event.altKey || MacKeys.altKey){
+							if(sender.isSelected()){
+								sender.select(false);
 							}
-							rMap[nodeId] = node;
+						} else if(params.event.shiftKey || params.event.ctrlKey || MacKeys.ctrlKey || MacKeys.cmdKey){
+							// toggle
+							sender.select(!sender.isSelected());
+						} else {
+							// remove old selected
+							var rMap = {};
+							for(var nodeId in this.diagram.nodes){
+								var node = this.diagram.nodes[nodeId];
+								if(node == sender){
+									continue;
+								}
+								rMap[nodeId] = node;
+							}
+							this.select(rMap, false);
+							this.select(this.diagram.links, false);
+	
+							// select new
+							sender.select(true);
 						}
-						this.select(rMap, false);
-						this.select(this.diagram.links, false);
-
-						// select new
-						sender.select(true);
-					}
+					}, 0);
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Link') && params.event.which == 1){
-					params.event.stopPropagation();
-					if(params.event.altKey || MacKeys.altKey){
-						if(sender.isSelected()){
-							sender.select(false);
-						}
-						
-					} else if(params.event.shiftKey || params.event.ctrlKey || MacKeys.ctrlKey || MacKeys.cmdKey){
-						// toggle
-						sender.select(!sender.isSelected());
-					} else {
-						// select new
-						sender.select(true);
-						
-						// remove old selected
-						var rMap = {};
-						for(var linkId in this.diagram.links){
-							var link = this.diagram.links[linkId];
-							if(link == sender){
-								continue;
+					//params.event.stopPropagation();
+					JSB.defer(()=>{
+						if(params.event.altKey || MacKeys.altKey){
+							if(sender.isSelected()){
+								sender.select(false);
 							}
-							rMap[linkId] = link;
+							
+						} else if(params.event.shiftKey || params.event.ctrlKey || MacKeys.ctrlKey || MacKeys.cmdKey){
+							// toggle
+							sender.select(!sender.isSelected());
+						} else {
+							// select new
+							sender.select(true);
+							
+							// remove old selected
+							var rMap = {};
+							for(var linkId in this.diagram.links){
+								var link = this.diagram.links[linkId];
+								if(link == sender){
+									continue;
+								}
+								rMap[linkId] = link;
+							}
+							this.select(rMap, false);
+							this.select(this.diagram.nodes, false);
 						}
-						this.select(rMap, false);
-						this.select(this.diagram.nodes, false);
-					}
+					}, 0);
 				}
 				break;
 			case 'mouseover':

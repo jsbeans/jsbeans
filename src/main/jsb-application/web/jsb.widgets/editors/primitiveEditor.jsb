@@ -206,8 +206,11 @@
 			});
 			
 			this.editBoxElt.click(function(evt){
-				evt.stopPropagation();
-				$this.editBoxElt.focus();
+				//evt.stopPropagation();
+				JSB.defer(()=>{
+					$this.editBoxElt.focus();	
+				}, 0);
+				
 			});
 
 			this.editBoxElt.focusout(function(evt){

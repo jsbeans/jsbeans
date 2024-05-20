@@ -168,8 +168,10 @@
 					if(!self.options.allowSelect){
 						return;
 					}
-					self.selectItem(itemObj.key, evt);
-					evt.stopPropagation();
+					JSB.defer(()=>{
+						$this.selectItem(itemObj.key, evt);
+					}, 0);
+					//evt.stopPropagation();
 				});
 			}
 			
