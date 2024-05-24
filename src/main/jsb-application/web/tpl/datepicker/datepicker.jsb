@@ -25,7 +25,6 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			
 			this.addClass('_jsb_DatePicker');
 			
 			var pickerOpts = {
@@ -44,6 +43,9 @@
 					if($this.options.onChange){
 						$this.options.onChange.call($this, dt.getTime());
 					}
+				},
+				beforeShow: function(i) { 
+					if($this.$(i).attr('readonly')) { return false; } 
 				}
 			};
 			var pickerElt = null;
@@ -56,8 +58,14 @@
 			this.append(pickerElt);
 			pickerElt.datepicker(pickerOpts);
 			
+			this.append('<i class="fas fa-calendar-alt"></i>');
+			
 			if(this.options.date || this.options.value){
 				this.setDate(this.options.date || this.options.value);
+			}
+			
+			if(this.options.readonly){
+				pickerElt.attr('readonly', 'readonly');
 			}
 		},
 		

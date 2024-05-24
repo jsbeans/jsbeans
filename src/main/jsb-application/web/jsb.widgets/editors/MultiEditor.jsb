@@ -242,7 +242,7 @@
 			} else {
 				this.removeClass('readOnly');
 			}
-			this.editor.setOption('readOnly', bReadOnly && 'nocursor');
+			this.editor.setOption('readOnly', bReadOnly/* && 'nocursor'*/);
 		},
 
 		init: function(mode, theme, opts){
@@ -268,7 +268,7 @@
 				matchBrackets: true,
 				tabSize: 4,
 				indentWithTabs: true,
-				readOnly: readonly && 'nocursor',
+				readOnly: readonly/* && 'nocursor'*/,
 				extraKeys: {
 					'Ctrl-Enter': function(){
 						self.publish('editComplete');

@@ -31,6 +31,10 @@
     background: -ms-linear-gradient(top, #E4B0B0, #EECACA 30%, #FAE1E1 80%, #E9BDBD);
 }
 
+.multiEditor.readOnly .CodeMirror .CodeMirror-lines {
+	background: #f5f5f5;
+}
+
 
 .multiEditor .CodeMirror:not(.CodeMirror-focused) .CodeMirror-cursor {
 	display: none;
