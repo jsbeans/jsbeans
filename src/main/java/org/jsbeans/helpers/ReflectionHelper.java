@@ -49,7 +49,11 @@ public class ReflectionHelper {
 
     public static Collection<URL> getClassPath() {
         if(System.getProperty("java.version").startsWith("11.")) {
-            return ClasspathHelper.forJavaClassPath();
+            Collection<URL> cp = ClasspathHelper.forJavaClassPath();
+            if(cp.size() == 1) { // if starts jar with manifest
+                return ClasspathHelper.forManifest(cp.iterator().next());
+            }
+            return cp;
         }
         return ClasspathHelper.forClassLoader();
     }

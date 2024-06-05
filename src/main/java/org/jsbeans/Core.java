@@ -31,6 +31,7 @@ import scala.concurrent.Future;
 
 import javax.security.auth.Subject;
 import java.net.SocketException;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
@@ -55,8 +56,13 @@ public class Core {
     private static String serverConfName = "SERVER.conf";
 
     static {
-        DOMConfigurator.configure(
-                Core.class.getResource("/" + getConfigPath(configPath, "log4j.xml")));
+        String path = "/" + getConfigPath(configPath, "log4j.xml");
+        URL conf = Core.class.getResource(path);
+        if(conf != null) {
+            DOMConfigurator.configure(conf);
+        } else {
+            System.out.println("WARNING: Log4j configuration not found: " + path);
+        }
     }
 
     private static final Logger log = LoggerFactory.getLogger(Core.class);

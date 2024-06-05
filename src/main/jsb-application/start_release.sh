@@ -19,10 +19,16 @@ fi
 
 LANG="en_US.UTF-8"
 
-#  -XX:+UseConcMarkSweepGC \
-#  -XX:+CMSPermGenSweepingEnabled \
 java -DBUILD_VERSION="$(cat version.txt 2>/dev/null||echo)"\
   -XX:+CMSClassUnloadingEnabled \
   -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8 \
-  "$@" -classpath config:$JARS \
-  org.jsbeans.Starter
+  "${@}" -jar $(cat launcher_jar)
+
+#java -DBUILD_VERSION="$(cat version.txt 2>/dev/null||echo)"\
+#  -XX:+CMSClassUnloadingEnabled \
+#  -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8 \
+#  "$@" -classpath config:$JARS \
+#  org.jsbeans.Starter
+
+#  -XX:+UseConcMarkSweepGC \
+#  -XX:+CMSPermGenSweepingEnabled \
