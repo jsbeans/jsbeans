@@ -21,6 +21,10 @@
 		
 		getObject: function(){
 			return this.object;
+		},
+		
+		setObject: function(obj){
+			this.object = obj;
 		}
 	}
 }
