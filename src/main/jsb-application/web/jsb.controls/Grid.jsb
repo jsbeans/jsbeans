@@ -598,9 +598,9 @@
             } else if(valueType === 'string') {
             	var stringLimit = opts && JSB.isDefined(opts.stringLimit) ? opts.stringLimit : this.options.stringLimit;
                 if(stringLimit && value.length > stringLimit) {
-                    this.$(td).text(value.substr(0, stringLimit - 3) + '...');
+                    this.$(td).attr('title', value).text(value.substr(0, stringLimit - 3) + '...');
                 } else {
-                    this.$(td).text(value);
+                    this.$(td).attr('title', value).text(value);
                 }
             } else if(valueType === 'null'){
             	this.$(td).text('null');
