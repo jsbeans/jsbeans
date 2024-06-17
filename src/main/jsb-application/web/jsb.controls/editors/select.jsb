@@ -55,7 +55,7 @@
                     $this.dropDown.removeClass('hidden');
 
                     var top = $this.getElement().offset().top,
-                        elementHeight = $this.getElement().height(),
+                        elementHeight = $this.getElement().outerHeight(),
                         ddHeight = $this.dropDown.outerHeight(),
                         bodyHeight = $this.$(window).height();
 
