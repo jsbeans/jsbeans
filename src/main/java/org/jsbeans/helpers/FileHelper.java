@@ -15,12 +15,15 @@ import org.jsbeans.PlatformException;
 import org.jsbeans.Starter;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class FileHelper {
@@ -170,5 +173,12 @@ public class FileHelper {
             }
         }
         file.delete();
+    }
+    
+    public static String MD5(String filePath) throws IOException, NoSuchAlgorithmException {
+    	byte[] data = Files.readAllBytes(java.nio.file.Paths.get(filePath));
+    	byte[] hash = MessageDigest.getInstance("MD5").digest(data);
+    	String checksum = new BigInteger(1, hash).toString(16);
+    	return checksum;
     }
 }
