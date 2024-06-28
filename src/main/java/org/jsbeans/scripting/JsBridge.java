@@ -303,30 +303,38 @@ public class JsBridge {
     }
 
     public Object executeRoot(ScriptableObject callback, boolean chRoot) throws Exception{
-    	ActorSelection jsHubSvc = ActorHelper.getActorSelection(JsHub.class);
-        String token = Context.getCurrentContext().getThreadLocal("token").toString();
+        Context context = Context.getCurrentContext();
+        return executeWithContext(context, (Function) callback, chRoot);
+    }
+
+    public Object executeWithContext(Context context, Function callback) throws Exception {
+        return executeWithContext(context, callback, false);
+    }
+
+    private Object executeWithContext(Context context, Function callback, boolean chRoot) throws Exception {
+        String token = context.getThreadLocal("token").toString();
         //String sessionId = Context.getCurrentContext().getThreadLocal("session").toString();
-        Object user = Context.getCurrentContext().getThreadLocal("user");
-        Object userToken = Context.getCurrentContext().getThreadLocal("userToken");
-        Object clientAddr = Context.getCurrentContext().getThreadLocal("clientAddr");
-        Object clientRequestId = Context.getCurrentContext().getThreadLocal("clientRequestId");
+        Object user = context.getThreadLocal("user");
+        Object userToken = context.getThreadLocal("userToken");
+        Object clientAddr = context.getThreadLocal("clientAddr");
+        Object clientRequestId = context.getThreadLocal("clientRequestId");
         ExecuteScriptMessage execMsg = null;
-        
+
         if(chRoot){
 	        Subject sysSubj = new Subject(true, Collections.singleton(new SystemPrincipal()), Collections.emptySet(), Collections.emptySet());
 	        execMsg = Subject.doAs(sysSubj, new PrivilegedAction<ExecuteScriptMessage>() {
 	            @Override
 	            public ExecuteScriptMessage run() {
-	            	return new ExecuteScriptMessage(token, (Function) callback, new Object[]{});
+	            	return new ExecuteScriptMessage(token, callback, new Object[]{});
 	            }
 	        });
-/*	        
+/*
 	        if(ConfigHelper.getConfigBoolean("kernel.security.enabled")){
 	        	execMsg.setUser(ConfigHelper.getConfigString("kernel.security.system.user"));
 	        }
-*/	        
+*/
         } else {
-        	execMsg = new ExecuteScriptMessage(token, (Function) callback, new Object[]{});
+        	execMsg = new ExecuteScriptMessage(token, callback, new Object[]{});
         	if(user != null){
         		execMsg.setUser(user.toString());
         	}
@@ -335,12 +343,12 @@ public class JsBridge {
             }
         }
         //execMsg.setScopePath(msg.getScopePath());
-/*        
+/*
         if(!chRoot && user != null){
         	execMsg.setUser(user.toString());
         }
-*/        
-        
+*/
+
         if(clientRequestId != null){
         	execMsg.setClientRequestId(clientRequestId.toString());
         }
@@ -348,7 +356,8 @@ public class JsBridge {
         	execMsg.setClientAddr(clientAddr.toString());
         }
         execMsg.setRespondNative(true);
-        
+
+        ActorSelection jsHubSvc = ActorHelper.getActorSelection(JsHub.class);
         Timeout timeout = ActorHelper.getServiceCommTimeout();
         Future<Object> f = ActorHelper.futureAsk(jsHubSvc, execMsg, timeout);
         Object result = null;
