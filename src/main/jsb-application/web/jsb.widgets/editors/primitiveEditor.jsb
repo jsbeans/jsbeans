@@ -64,6 +64,10 @@
 				if(this.options.password){
 					this.editBoxElt.attr('type', 'password');
 				}
+				
+			}
+			if(JSB.isDefined(this.options.autocomplete)){
+				this.editBoxElt.attr('autocomplete', this.options.autocomplete);
 			}
 			if (JSB.isString(this.options.title)) {
 				this.getElement().attr('title', this.options.title);
