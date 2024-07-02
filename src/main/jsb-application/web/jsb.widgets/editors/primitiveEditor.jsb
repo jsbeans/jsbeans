@@ -60,14 +60,20 @@
 					this.editBoxElt.attr('cols', this.options.cols);
 				}
 			} else {
-				this.editBoxElt = this.$('<input type="text" name=""></input>');
+				this.editBoxElt = this.$('<input type="text"></input>');
 				if(this.options.password){
 					this.editBoxElt.attr('type', 'password');
 				}
 				
 			}
+			if(JSB.isDefined(this.options.name)){
+				this.editBoxElt.attr('name', this.options.name);
+			}
 			if(JSB.isDefined(this.options.autocomplete)){
 				this.editBoxElt.attr('autocomplete', this.options.autocomplete);
+			}
+			if(JSB.isDefined(this.options.role)){
+				this.editBoxElt.attr('role', this.options.role);
 			}
 			if (JSB.isString(this.options.title)) {
 				this.getElement().attr('title', this.options.title);
