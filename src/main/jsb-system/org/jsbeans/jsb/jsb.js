@@ -5214,7 +5214,11 @@ JSB({
 		ajax: function(url, params, callback, opts){
 			var pUrl = url;
 			if(pUrl.indexOf(':') == -1){
-				pUrl = JSB.getProvider().getServerBase() + this.getJsb().getBasePath() + pUrl;
+				pUrl = JSB.getProvider().getServerBase();
+				if(this.getJsb().getBasePath().length > 1){
+					pUrl += this.getJsb().getBasePath();
+				}
+				pUrl += url;
 			}
 			JSB().getProvider().ajax(pUrl, params, callback, opts);
 		},
@@ -6405,12 +6409,14 @@ JSB({
 
 			// combine url and params if GET
 			if(xhrObj.type == 'GET' || xhrObj.dataType == 'jsonp'){
-				if(url.indexOf('?') == -1){
-					url += '?';
-				} else {
-					url += '&';
+				if(params){
+					if(url.indexOf('?') == -1){
+						url += '?';
+					} else {
+						url += '&';
+					}
+					url += params;
 				}
-				url += params;
 				params = null;
 			}
 
