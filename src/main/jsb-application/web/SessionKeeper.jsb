@@ -20,8 +20,11 @@
 							JSB.defer(_doCheck, 60000);
 						},
 						error: function(xhr, status, err){
+							JSB.defer(_doCheck, 60000);
+							/*
 							var curUrl = window.location.href;
 							window.location.href = pUrl + '?redirectURI=' + encodeURIComponent(curUrl);
+							*/
 						}
 					});
 				}
