@@ -42,8 +42,7 @@
                 this._topContainer.append(this._topTable);
 
                 this._topTable.resize(function() {
-                    $this._masterContainer.get(0).style['margin-top'] = $this._topTable.height() + 'px';
-                    $this._masterContainer.get(0).style['height'] = 'calc(100% - ' + $this._topTable.height() + 'px)';
+                	$this._updateSizes();
                 });
 			//}
 
@@ -107,7 +106,6 @@
             this.getElement().resize(function() {
                 $this._colResizeHandleContainer.get(0).style['margin-top'] = -$this.getElement().height() + 'px';
                 $this._colResizeHandleContainer.children('.col-resize-handle').height($this.getElement().find('.grid-top').height());
-                //$this._updateSizes();
             });
         },
 
@@ -136,6 +134,11 @@
 
             // callbacks
             preloader: null
+        },
+        
+        _updateSizes: function(){
+            $this._masterContainer.get(0).style['margin-top'] = $this._topTable.height() + 'px';
+            $this._masterContainer.get(0).style['height'] = 'calc(100% - ' + $this._topTable.height() + 'px)';
         },
         
         checkPreload: function(){
