@@ -27,12 +27,13 @@
 								JSB.defer(_doCheck, $this._interval);
 							},
 							error: function(xhr, status, err){
-								if($this._paused){
+								JSB.defer(_doCheck, $this._interval);
+/*								if($this._paused){
 									JSB.defer(_doCheck, $this._interval);
 								} else {
 									var curUrl = window.location.href;
 									window.location.href = pUrl + '?redirectURI=' + encodeURIComponent(curUrl);
-								}
+								}*/
 							}
 						});
 					}
