@@ -6357,7 +6357,7 @@ JSB({
 				if(!runTag){
 					return;
 				}
-				if($this.runTag && runTag && $this.runTag != runTag){
+				if($this.runTag && runTag && $this.runTag != runTag && !xhrObj.silent){
 					$this.publish('JSB.AjaxProvider.serverReloaded', {oldTag: $this.runTag, newTag: runTag});
 				}
 				$this.runTag = runTag;
@@ -6492,7 +6492,9 @@ JSB({
 				xhr.onreadystatechange = function(){
 					if(xhr.readyState != 4) return;
 					window.clearTimeout(to);
-					$this.publish('JSB.AjaxProvider.xhrStatus', xhr.status);
+					if(!xhrObj.silent){
+						$this.publish('JSB.AjaxProvider.xhrStatus', xhr.status);
+					}
 					if (xhr.status == 200) {
 						setRunTag(xhr.getResponseHeader('Run-Tag'));
 						if(xhrObj.success){
