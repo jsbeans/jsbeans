@@ -3,6 +3,9 @@
 	$singleton: true,
 	
 	$client: {
+		_paused: false,
+		_interval: 60000,
+		
 		$constructor: function(opts){
 			$base(opts);
 			
@@ -12,20 +15,42 @@
 				}
 				// handle session
 				function _doCheck(){
-					var pUrl = JSB.getProvider().getServerBase() + 'login.jsb';
-					JSB.getProvider().xhr({
-						url: pUrl,
-						timeout: 100000,
-						silent: true,
-						success: function(data, status, xhr){
-							JSB.defer(_doCheck, 60000);
-						},
-						error: function(xhr, status, err){
-							var curUrl = window.location.href;
-							window.location.href = pUrl + '?redirectURI=' + encodeURIComponent(curUrl);
-						}
-					});
+					if($this._paused){
+						JSB.defer(_doCheck, $this._interval);
+					} else {
+						var pUrl = JSB.getProvider().getServerBase() + 'login.jsb';
+						JSB.getProvider().xhr({
+							url: pUrl,
+							timeout: 100000,
+							silent: true,
+							success: function(data, status, xhr){
+								JSB.defer(_doCheck, $this._interval);
+							},
+							error: function(xhr, status, err){
+								if($this._paused){
+									JSB.defer(_doCheck, $this._interval);
+								} else {
+									var curUrl = window.location.href;
+									window.location.href = pUrl + '?redirectURI=' + encodeURIComponent(curUrl);
+								}
+							}
+						});
+					}
 				}
+				
+				this.subscribe('JSB.AjaxProvider.xhrStatus', (sender, msg, status)=>{
+					if(status == 200){
+						if($this._paused){
+							$this._paused = false;
+						}
+					} else {
+						if($this._paused){
+							return;
+						}
+						$this._paused = true;
+					}
+				});
+				
 				_doCheck();
 			})
 		}
