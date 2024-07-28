@@ -284,7 +284,7 @@
 			self.editor = window.CodeMirror(this.getElement().get(0), cmOpts);
 			
 			this.setReadOnly(readonly);
-
+/*
 			if (!readonly) {
                 $this.getElement().droppable({
                     accept: function(d) {
@@ -335,7 +335,7 @@
                     },
                 });
 			}
-			
+*/			
 			if(this.data.getValue()){
 				if(this.options.valueType == 'org.jsbeans.types.JsonObject'
 					|| this.options.valueType == 'org.jsbeans.types.JsonArray'
