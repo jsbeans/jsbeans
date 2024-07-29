@@ -83,6 +83,9 @@
 			// insert dom controller
 			code += Web.getJsbCode('JSB.Widgets.DomController');
 			
+			// inject SessionKeeper if security is enabled
+			code += Web.getJsbCode('JSB.SessionKeeper');
+			
 			if(refType){
 				// inject referencer requires
 				var reqMap = {};

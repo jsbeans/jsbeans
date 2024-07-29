@@ -32,6 +32,5 @@
 .jsb-navigator.jsb-scrollPanel > .panel > div:last-child {
     background-color: #d37531;
     color: #fff;
-    text-shadow: 1px 1px #7E3C17;
     cursor: initial;
 }

@@ -5214,7 +5214,11 @@ JSB({
 		ajax: function(url, params, callback, opts){
 			var pUrl = url;
 			if(pUrl.indexOf(':') == -1){
-				pUrl = JSB.getProvider().getServerBase() + this.getJsb().getBasePath() + pUrl;
+				pUrl = JSB.getProvider().getServerBase();
+				if(this.getJsb().getBasePath().length > 1){
+					pUrl += this.getJsb().getBasePath();
+				}
+				pUrl += url;
 			}
 			JSB().getProvider().ajax(pUrl, params, callback, opts);
 		},
@@ -6353,7 +6357,7 @@ JSB({
 				if(!runTag){
 					return;
 				}
-				if($this.runTag && runTag && $this.runTag != runTag){
+				if($this.runTag && runTag && $this.runTag != runTag && !xhrObj.silent){
 					$this.publish('JSB.AjaxProvider.serverReloaded', {oldTag: $this.runTag, newTag: runTag});
 				}
 				$this.runTag = runTag;
@@ -6405,12 +6409,14 @@ JSB({
 
 			// combine url and params if GET
 			if(xhrObj.type == 'GET' || xhrObj.dataType == 'jsonp'){
-				if(url.indexOf('?') == -1){
-					url += '?';
-				} else {
-					url += '&';
+				if(params){
+					if(url.indexOf('?') == -1){
+						url += '?';
+					} else {
+						url += '&';
+					}
+					url += params;
 				}
-				url += params;
 				params = null;
 			}
 
@@ -6486,7 +6492,9 @@ JSB({
 				xhr.onreadystatechange = function(){
 					if(xhr.readyState != 4) return;
 					window.clearTimeout(to);
-					$this.publish('JSB.AjaxProvider.xhrStatus', xhr.status);
+					if(!xhrObj.silent){
+						$this.publish('JSB.AjaxProvider.xhrStatus', xhr.status);
+					}
 					if (xhr.status == 200) {
 						setRunTag(xhr.getResponseHeader('Run-Tag'));
 						if(xhrObj.success){

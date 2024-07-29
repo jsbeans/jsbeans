@@ -218,6 +218,13 @@
 			this.append(prevScroll);
 			this.append(this._panel);
 			this.append(nextScroll);
+			
+			if(isHorizontal){
+				this._panel.resize(()=>{
+					var pad = this.getElement().css('padding');
+					this.getElement().css('height', this._panel.height()+parseInt(pad)*2);
+				});
+			}
         },
 
         options: {

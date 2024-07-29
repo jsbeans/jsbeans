@@ -23,13 +23,14 @@
 		           'JSB.Auth.AccessPermissions',
 
 		           'java:org.jsbeans.web.SystemPrincipal',
+		           'java:org.jsbeans.web.AnonymousPrincipal',
 
                    'java:java.util.Collections',
 		           'java:java.security.AccessControlContext',
 		           'java:java.security.AccessController',
 		           'java:java.security.Principal',
 		           'java:javax.security.auth.Subject',
-		           'java:java.security.PrivilegedExceptionAction',
+		           'java:java.security.PrivilegedExceptionAction'
                ],
                
         _userManager: null,
@@ -155,7 +156,16 @@
 
 		isAuthenticated: function(){
             var principals = $this.getPrincipals();
-            return principals && principals.length > 0;
+            let pCnt = 0;
+            if(principals){
+	            for(let i = 0; i < principals.length; i++){
+	            	if(principals[i] instanceof AnonymousPrincipal){
+	            		continue;
+	            	}
+	            	pCnt++;
+	            }
+            }
+            return pCnt > 0;
 		},
 
 		getPrincipal: function(){
