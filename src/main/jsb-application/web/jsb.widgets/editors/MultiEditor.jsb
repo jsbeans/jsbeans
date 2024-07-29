@@ -12,7 +12,6 @@
 	$name:'JSB.Widgets.MultiEditor',
 	$parent: 'JSB.Widgets.Editor',
 	$require: ['JSB.Widgets.Value',
-	           'jQuery.UI.Droppable',
 	           'css:MultiEditor.css'],
 	
 	$bootstrap: function(){
@@ -284,58 +283,7 @@
 			self.editor = window.CodeMirror(this.getElement().get(0), cmOpts);
 			
 			this.setReadOnly(readonly);
-/*
-			if (!readonly) {
-                $this.getElement().droppable({
-                    accept: function(d) {
-                        if(d && d.length && d.get(0).draggingItems){
-                            for(let i in d.get(0).draggingItems){
-                                let obj = d.get(0).draggingItems[i].obj;
-                                if(JSB.isInstanceOf(obj, 'DataCube.DatabaseTableNode')){
-                                    let entry = obj.getTargetEntry();
-                                    if($this.getOption('unimapRender').getScheme().accept){
-                                        let acceptArr = $this.getOption('unimapRender').getScheme().accept;
-                                        if(!JSB.isArray(acceptArr)){
-                                            acceptArr = [acceptArr];
-                                        }
-                                        for(let i = 0; i < acceptArr.length; i++){
-                                            if(JSB.isInstanceOf(entry, acceptArr[i])){
-                                                return true;
-                                            }
-                                        }
-                                        return false;
-                                    }else{
-                                        return true;
-                                    }
-
-                                }
-                            }
-                        }else{
-                            return false;
-                        }
-                    },
-                    tolerance: 'pointer',
-                    greedy: true,
-                    activeClass : 'acceptDraggable',
-                    hoverClass: 'hoverDraggable',
-                    drop: function(evt, ui) {
-                        const d = ui.draggable,
-                            buf = [];
-                        for(let i in d.get(0).draggingItems){
-                            const obj = d.get(0).draggingItems[i].obj;
-                            if(JSB().isInstanceOf(obj, 'DataCube.DatabaseTableNode')){
-                                const tableNameSplit = obj.getName().split('.');
-                                for (let i = 0; i < tableNameSplit.length; i++){
-                                    tableNameSplit[i] = '"' + tableNameSplit[i] + '"';
-                                }
-                                buf.push(tableNameSplit.join('.'));
-                            }
-                        }
-                        buf && $this.getDoc().setValue($this.getData().getValue() + buf.join(' '));
-                    },
-                });
-			}
-*/			
+			
 			if(this.data.getValue()){
 				if(this.options.valueType == 'org.jsbeans.types.JsonObject'
 					|| this.options.valueType == 'org.jsbeans.types.JsonArray'
