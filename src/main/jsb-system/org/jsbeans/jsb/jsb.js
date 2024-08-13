@@ -3444,7 +3444,9 @@ if(!(function(){return this;}).call(null).JSB){
 		join: function(forkHandle, callback, opts){
 			if(callback){
 				this.forkJoinHandles[forkHandle].callback = callback;
-				this._checkJoinCallback(forkHandle);
+				if(!opts || !opts.consistently){
+					this._checkJoinCallback(forkHandle);
+				}
 			} else {
 				throw new Error('JSB.join: missing callback argument');
 			}

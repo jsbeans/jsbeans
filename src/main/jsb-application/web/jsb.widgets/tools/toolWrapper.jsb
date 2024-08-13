@@ -548,48 +548,54 @@
 				var xOffs = this.targets[0].offsetHorz || 0;
 				var yOffs = this.targets[0].offsetVert || 0;
 				var selRect = tgt.get(0).getBoundingClientRect();
+				selRect.left = Math.round(selRect.left);
+				selRect.top = Math.round(selRect.top);
+				selRect.height = Math.round(selRect.height);
+				selRect.width = Math.round(selRect.width);
+				selRect.right = Math.round(selRect.right);
+				selRect.bottom = Math.round(selRect.bottom);
 				var posObj = {
 					top: {
 						x: selRect.left + xOffs, 
-						y: selRect.top - this.getElement().outerHeight() + yOffs, 
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						y: selRect.top - Math.round(this.getElement().outerHeight()) + yOffs, 
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					},
 					topRight: {
-						x: selRect.left + selRect.width - this.getElement().outerWidth() + xOffs, 
-						y: selRect.top - this.getElement().outerHeight() + yOffs, 
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						x: selRect.left + selRect.width - Math.round(this.getElement().outerWidth()) + xOffs, 
+						y: selRect.top - Math.round(this.getElement().outerHeight()) + yOffs, 
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					},
 					bottom: {
 						x: selRect.left + xOffs, 
 						y: selRect.top + selRect.height + yOffs, 
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					},
 					bottomRight: {
-						x: selRect.left + selRect.width - this.getElement().outerWidth() + xOffs, 
+						x: selRect.left + selRect.width - Math.round(this.getElement().outerWidth()) + xOffs, 
 						y: selRect.top + selRect.height + yOffs, 
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					},
 					left: {
-						x: selRect.left - this.getElement().outerWidth() + xOffs,
+						x: selRect.left - Math.round(this.getElement().outerWidth()) + xOffs,
 						y: selRect.top + yOffs,
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					},
 					leftCenter: {
-						x: selRect.left - this.getElement().outerWidth() + xOffs,
-						y: selRect.top + selRect.height / 2 - this.getElement().outerHeight() / 2 + yOffs,
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						x: selRect.left - Math.round(this.getElement().outerWidth()) + xOffs,
+						y: selRect.top + Math.round(selRect.height / 2 - this.getElement().outerHeight() / 2) + yOffs,
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					},
 					leftBottom: {
-						x: selRect.left - this.getElement().outerWidth() + xOffs,
-						y: selRect.top + selRect.height - this.getElement().outerHeight() + yOffs,
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						x: selRect.left - Math.round(this.getElement().outerWidth()) + xOffs,
+						y: selRect.top + selRect.height - Math.round(this.getElement().outerHeight()) + yOffs,
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					},
 					right: {
 						x: selRect.left + selRect.width + xOffs,
@@ -599,15 +605,15 @@
 					},
 					rightCenter: {
 						x: selRect.left + selRect.width + xOffs,
-						y: selRect.top + selRect.height / 2 - this.getElement().outerHeight() / 2 + yOffs,
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						y: selRect.top + Math.round(selRect.height / 2 - this.getElement().outerHeight() / 2) + yOffs,
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					},
 					rightBottom: {
 						x: selRect.left + selRect.width + xOffs,
-						y: selRect.top + selRect.height - this.getElement().outerHeight() + yOffs,
-						w: this.getElement().outerWidth(), 
-						h: this.getElement().outerHeight()
+						y: selRect.top + selRect.height - Math.round(this.getElement().outerHeight()) + yOffs,
+						w: Math.round(this.getElement().outerWidth()), 
+						h: Math.round(this.getElement().outerHeight())
 					}
 
 
@@ -619,8 +625,8 @@
 					case 'right':
 						break;
 					case 'center':
-						posObj.top.x = selRect.left - (this.getElement().outerWidth() - selRect.width) / 2;
-						posObj.bottom.x = selRect.left - (this.getElement().outerWidth() - selRect.width) / 2;
+						posObj.top.x = selRect.left - Math.round((this.getElement().outerWidth() - selRect.width) / 2);
+						posObj.bottom.x = selRect.left - Math.round((this.getElement().outerWidth() - selRect.width) / 2);
 						break;
 					case 'top':
 						break;
@@ -669,7 +675,7 @@
 					'left': this.rect.x,
 					'top': this.rect.y,
 				});
-				this.affinityPoint = {x:selRect.left + selRect.width / 2, y:selRect.top + selRect.height / 2};
+				this.affinityPoint = {x:selRect.left + Math.round(selRect.width / 2), y:selRect.top + Math.round(selRect.height / 2)};
 			} else {
 				// find out affinity point
 				var ap = this.resolveAffinityPoint();
