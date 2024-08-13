@@ -41,39 +41,30 @@
 			    let isNextHide;
 
 			    if(isHorizontal) {
-			        isNextHide = $this.getElement().outerWidth() - $this._panel.width() >= position;
+			        isNextHide = $this._panel.outerWidth() - $this._panelList.width() >= position;
 			    } else {
-			        isNextHide = $this.getElement().outerHeight() - $this._panel.height() >= position;
+			        isNextHide = $this._panel.outerHeight() - $this._panelList.height() >= position;
 			    }
 
-                if(isNextHide) {
-                    nextScroll.addClass('hidden');
-                } else {
-                    nextScroll.removeClass('hidden');
-                }
-
-                if(position === 0){
-                    prevScroll.addClass('hidden');
-                } else {
-                    prevScroll.removeClass('hidden');
-                }
+                isNextHide ? nextScroll.addClass('hidden') : nextScroll.removeClass('hidden');
+                position === parseFloat($this._panel.css('padding-left')) ? prevScroll.addClass('hidden') : prevScroll.removeClass('hidden');
 			}
 
 			function scrollPrev() {
 			    let pos;
 
 			    if(isHorizontal) {
-			        pos = $this._panel.position().left + 120;
+			        pos = $this._panelList.position().left + 120;
 			    } else {
-			        pos = $this._panel.position().top + 30;
+			        pos = $this._panelList.position().top + 30;
 			    }
 
 			    pos = pos > 0 ? 0 : pos;
 
 			    if(isHorizontal) {
-			        $this._panel.css({left: pos});
+			        $this._panelList.css({left: pos});
 			    } else {
-			        $this._panel.css({top: pos});
+			        $this._panelList.css({top: pos});
 			    }
 
 			    changeButtonVisibility(pos);
@@ -83,21 +74,21 @@
 			    let pos;
 
 			    if(isHorizontal) {
-			        pos = $this._panel.position().left - 120;
+			        pos = $this._panelList.position().left - 120;
 
-                    if(pos < $this.getElement().width() - $this._panel.outerWidth()) {
-                        pos = $this.getElement().width() - $this._panel.outerWidth();
+                    if(pos < $this._panel.width() - $this._panelList.outerWidth()) {
+                        pos = $this._panel.width() - $this._panelList.outerWidth();
                     }
 
-			        $this._panel.css({left: pos});
+			        $this._panelList.css({left: pos});
 			    } else {
-			        pos = $this._panel.position().top - 30;
+			        pos = $this._panelList.position().top - 30;
 
-			        if(pos < $this.getElement().outerHeight() - $this._panel.height()) {
-			            pos = $this.getElement().outerHeight() - $this._panel.height();
+			        if(pos < $this._panel.outerHeight() - $this._panelList.height()) {
+			            pos = $this._panel.outerHeight() - $this._panelList.height();
 			        }
 
-			        $this._panel.css({top: pos});
+			        $this._panelList.css({top: pos});
 			    }
 
 			    changeButtonVisibility(pos);
@@ -105,11 +96,20 @@
 
 			this.addClass(this.options.position);
 
+            if(opts.goback){
+                this._goback = this.$('<i key="goback" class="fas fa-chevron-left"></i>');
+                this._goback.on('click', function(){
+                    opts.onClick && opts.onClick({key: $this._goback.attr('key')});
+                });
+            }
+
 			let prevScroll = this.$('<div class="prevScroll scroll hidden"></div>');
 
 			prevScroll.click(scrollPrev);
 
 			this._panel = this.$('<div class="panel"></div>');
+			this._panelList = this.$('<div class="list"></div>');
+			this._panel.append(this._panelList);
 
 			this._panel.addClass(this.options.position);
 
@@ -118,7 +118,7 @@
 			nextScroll.click(scrollNext);
 
             if(this.options.mousemove) {
-                this._panel.mousedown((e) => {
+                this._panelList.mousedown((e) => {
                     this._isMouseDown = true;
                     this._isMoved = false;
 
@@ -131,18 +131,18 @@
 
                 this.$(document).mousemove((e) => {
                     if(this._isMouseDown) {
-                        this._panel.addClass('moving');
+                        this._panelList.addClass('moving');
 
                         if(isHorizontal) {
-                            let outerWidth = this.getElement().outerWidth(),
-                                width = this._panel.width();
+                            let outerWidth = this._panel.outerWidth(),
+                                width = this._panelList.width();
 
                             if(width > outerWidth) {
                                 if(Math.abs(this._clickPosition - e.pageX) > 5) {
                                     this._isMoved = true;
                                 }
 
-                                let pos = $this._panel.position().left - $this._clickPosition + e.pageX;
+                                let pos = $this._panelList.position().left - $this._clickPosition + e.pageX;
 
                                 if(pos <= 0) {
                                     if(pos < outerWidth - width) {
@@ -150,20 +150,20 @@
                                     }
                                 }
 
-                                this._panel.css({left: pos});
+                                this._panelList.css({left: pos});
 
                                 changeButtonVisibility(pos);
                             }
                         } else {
-                            let outerHeight = this.getElement().outerHeight(),
-                                height = this._panel.height();
+                            let outerHeight = this._panel.outerHeight(),
+                                height = this._panelList.height();
 
                             if(height > outerHeight) {
                                 if(Math.abs(this._clickPosition - e.pageY) > 5) {
                                     this._isMoved = true;
                                 }
 
-                                let pos = this._panel.position().top - this._clickPosition + e.pageY;
+                                let pos = this._panelList.position().top - this._clickPosition + e.pageY;
 
                                 if(pos > 0) {
                                     pos = 0;
@@ -173,7 +173,7 @@
                                     pos = outerHeight - height;
                                 }
 
-                                this._panel.css({top: pos});
+                                this._panelList.css({top: pos});
 
                                 changeButtonVisibility(pos);
                             }
@@ -184,18 +184,18 @@
                 this.$(document).mouseup(() => {
                     if(this._isMouseDown) {
                         this._isMouseDown = false;
-                        this._panel.removeClass('moving');
+                        this._panelList.removeClass('moving');
                     }
                 });
 			}
 
-            this._panel.bind('mousewheel', (e) => {
+            this._panelList.bind('mousewheel', (e) => {
                 if(isHorizontal) {
-                    if(this.getElement().outerWidth() > this._panel.width()) {
+                    if(this._panel.outerWidth() > this._panelList.width()) {
                         return;
                     }
                 } else {
-                    if(this.getElement().outerHeight() > this._panel.height()) {
+                    if(this._panel.outerHeight() > this._panelList.height()) {
                         return;
                     }
                 }
@@ -209,22 +209,15 @@
 
 			this.getElement().resize(() => {
 			    if(isHorizontal) {
-			        changeButtonVisibility(this._panel.position().left);
+			        changeButtonVisibility(this._panelList.position().left);
 			    } else {
-			        changeButtonVisibility(this._panel.position().top);
+			        changeButtonVisibility(this._panelList.position().top);
 			    }
 			});
-
+            this.append(this._goback);
 			this.append(prevScroll);
 			this.append(this._panel);
 			this.append(nextScroll);
-			
-			if(isHorizontal){
-				this._panel.resize(()=>{
-					var pad = this.getElement().css('padding');
-					this.getElement().css('height', this._panel.height()+parseInt(pad)*2);
-				});
-			}
         },
 
         options: {
@@ -260,11 +253,11 @@
                 });
             }
 
-            this._panel.append(element);
+            this._panelList.append(element);
         },
 
         clear: function() {
-            this._panel.empty();
+            this._panelList.empty();
             this._elements = [];
         },
 
@@ -274,6 +267,14 @@
 
         getPanel: function() {
             return this._panel;
+        },
+
+        getPanelList: function() {
+            return this._panelList;
+        },
+
+        getGoback: function() {
+            return this._goback;
         },
 
         insertElement: function(el) {
@@ -289,10 +290,10 @@
                 return sortCallback.call(this, a, b);
             });
 
-            this._panel.children().detach();
+            this._panelList.children().detach();
 
             this._elements.forEach(item => {
-                this._panel.append(item.element);
+                this._panelList.append(item.element);
             });
         }
     }

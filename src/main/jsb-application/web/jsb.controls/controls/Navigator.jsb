@@ -45,30 +45,28 @@
         },
 
         addElement: function(el) {
-            var panel = this.getPanel();
+            var panelList = this.getPanelList();
 
-            if(panel.children().length > 0) {
-                $base({
-                    key: 'splitter',
-                    element: '<div></div>'
-                });
-            }
+            panelList.children().length > 0 && panelList.append(this.$('<i key="splitter" class="fas fa-angle-right"></i>'));
 
             $base(el);
         },
 
         gotoElement: function(key) {
             let elements = this.getElements(),
-                htmlElements = this.getPanel().find('div:nth-child(odd)'),
+                htmlElements = this.getPanelList().children('div'),
                 index;
-
-            for(index = 0; index < elements.length; index++) {
-                if(elements[index].key === key){
-                    break;
+            if (key === 'goback') {
+                index = elements.length - 2;
+            }else{
+                for(index = 0; index < elements.length; index++){
+                    if(elements[index].key === key){
+                        break;
+                    }
                 }
             }
 
-            elements.splice(index + 1, elements.length);
+            elements.splice(index + 1);
 
             this.$(htmlElements[index]).nextAll().remove();
         }

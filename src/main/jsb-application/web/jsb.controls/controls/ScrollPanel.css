@@ -1,12 +1,10 @@
 .jsb-scrollPanel {
+    display: flex;
+    align-items: center;
     border-radius: 3px;
     padding: 2px;
 	background: #e8e8e8;
 	overflow: hidden;
-}
-
-.jsb-scrollPanel.horizontal {
-    height: 21px;
 }
 
 .jsb-scrollPanel.vertical {
@@ -39,8 +37,18 @@
     text-align: center;
 }
 
+.jsb-scrollPanel>[key='goback'] {
+    margin: 0 3px;
+    background-color: #2286CF;
+    color: white;
+    border-radius: 4px;
+    padding: 2px 8px;
+    flex-shrink: 0;
+    transition: 0.2s;
+}
+
 .jsb-scrollPanel.horizontal > .prevScroll {
-    left: 0;
+    left: 16px;
 }
 
 .jsb-scrollPanel.horizontal > .nextScroll {
@@ -57,6 +65,9 @@
 
 .jsb-scrollPanel > .scroll:after {
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     content: "";
 	width: 0;
 	height: 0;
@@ -67,14 +78,12 @@
 	border-top: 5px solid transparent;
 	border-right: 8px solid #555;
 	border-bottom: 5px solid transparent;
-	margin-top: calc(50% - 6px);
 }
 
 .jsb-scrollPanel.horizontal > .nextScroll:after {
     border-top: 5px solid transparent;
     border-left: 8px solid #555;
     border-bottom: 5px solid transparent;
-    margin-top: calc(50% - 6px);
 }
 
 .jsb-scrollPanel.vertical > .prevScroll:after {
@@ -91,17 +100,28 @@
 
 .jsb-scrollPanel > .panel {
     white-space: nowrap;
-    position: absolute;
     transition: left 0.8s;
+    position: relative;
     display: flex;
     flex-wrap: nowrap;
     justify-content: flex-start;
+    align-items: stretch;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.jsb-scrollPanel > .list {
+    position: relative;
 }
 
 .jsb-scrollPanel > .panel.horizontal {
     flex-direction: row;
-    left: 0;
-    min-width: 100%;
+}
+
+.jsb-scrollPanel > .panel.horizontal > .list {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
 }
 
 .jsb-scrollPanel > .panel.vertical {
