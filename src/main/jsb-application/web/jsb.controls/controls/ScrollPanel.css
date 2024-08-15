@@ -45,6 +45,17 @@
     padding: 2px 8px;
     flex-shrink: 0;
     transition: 0.2s;
+    cursor: pointer;
+}
+
+.jsb-scrollPanel>[key='goback']:hover {
+    background-color: #ED8011;
+    color: #35515D;
+}
+
+.jsb-scrollPanel>[key='goback']:active {
+    background-color: #0A58CA;
+    color: white;
 }
 
 .jsb-scrollPanel.horizontal > .prevScroll {
