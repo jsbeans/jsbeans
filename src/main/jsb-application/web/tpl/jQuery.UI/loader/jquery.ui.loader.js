@@ -24,6 +24,7 @@
     		}
     		this.loader.attr('key', this.options.style);
     		this.message(this.options.message);
+    		this.icon(this.options.icon);
     		this.show();
     	},
     	_create: function(){},
@@ -34,6 +35,15 @@
     		c.empty();
     		if(data){
     			c.append(data);
+    		}
+    	},
+    	
+    	icon: function(data){
+    		var c = this.loader.find('.icon');
+    		if(data){
+    			c.css('background-image', 'url('+data+')');
+    		} else {
+    			c.css('background-image', '');
     		}
     	},
     	
