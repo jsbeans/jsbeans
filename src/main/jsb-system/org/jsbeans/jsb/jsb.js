@@ -1554,6 +1554,17 @@ if(!(function(){return this;}).call(null).JSB){
 			var parentJso = this.get(this.$parent);
 			return parentJso.isSubclassOf(str);
 		},
+		
+		isSubclassOfCached: function(jsb1Str, jsb2Str){
+			this.$_cubclassTbl = this.$_cubclassTbl || {};
+			if(this.$_cubclassTbl[jsb1Str] && this.isDefined(this.$_cubclassTbl[jsb1Str][jsb2Str])){
+				return this.$_cubclassTbl[jsb1Str][jsb2Str];
+			}
+			var res = this.get(jsb1Str).isSubclassOf(jsb2Str);
+			this.$_cubclassTbl[jsb1Str] = this.$_cubclassTbl[jsb1Str] || {};
+			this.$_cubclassTbl[jsb1Str][jsb2Str] = res;
+			return res;
+		},
 
 		getSubclassOfDistance: function(str, deep){
 			if(!deep){
