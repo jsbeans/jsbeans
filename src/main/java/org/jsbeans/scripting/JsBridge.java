@@ -304,14 +304,18 @@ public class JsBridge {
 
     public Object executeRoot(ScriptableObject callback, boolean chRoot) throws Exception{
         Context context = Context.getCurrentContext();
-        return executeWithContext(context, (Function) callback, chRoot);
+        return executeWithContext(context, (Function) callback, chRoot, new Object[]{});
     }
 
     public Object executeWithContext(Context context, Function callback) throws Exception {
-        return executeWithContext(context, callback, false);
+        return executeWithContext(context, callback, false, new Object[]{});
+    }
+    
+    public Object executeWithContext(Context context, Function callback, Object[] args) throws Exception {
+        return executeWithContext(context, callback, false, args);
     }
 
-    private Object executeWithContext(Context context, Function callback, boolean chRoot) throws Exception {
+    private Object executeWithContext(Context context, Function callback, boolean chRoot, Object[] args) throws Exception {
         String token = context.getThreadLocal("token").toString();
         //String sessionId = Context.getCurrentContext().getThreadLocal("session").toString();
         Object user = context.getThreadLocal("user");
@@ -325,7 +329,7 @@ public class JsBridge {
 	        execMsg = Subject.doAs(sysSubj, new PrivilegedAction<ExecuteScriptMessage>() {
 	            @Override
 	            public ExecuteScriptMessage run() {
-	            	return new ExecuteScriptMessage(token, callback, new Object[]{});
+	            	return new ExecuteScriptMessage(token, callback, args);
 	            }
 	        });
 /*
@@ -334,7 +338,7 @@ public class JsBridge {
 	        }
 */
         } else {
-        	execMsg = new ExecuteScriptMessage(token, callback, new Object[]{});
+        	execMsg = new ExecuteScriptMessage(token, callback, args);
         	if(user != null){
         		execMsg.setUser(user.toString());
         	}

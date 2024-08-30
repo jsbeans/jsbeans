@@ -1,4 +1,31 @@
 (function($){
+	$.widget('ui.blocker', {
+		_init: function(){
+    		if(this.blocker == null || this.blocker == undefined){
+        		this.blocker = $('<div class="jsb_blocker"></div>');
+        		this.blocker.css({
+        			display: 'none'
+        		});
+        		this.element.append(this.blocker);
+    		}
+    		this.show();
+    	},
+    	_create: function(){},
+    	_destroy: function(){},
+    	
+    	show: function(){
+    		this.blocker.css({
+    			display: ''
+    		});
+    	},
+    	
+    	hide: function(){
+    		this.blocker.css({
+    			display: 'none'
+    		});
+    	}
+	});
+	
     $.widget("ui.loader", {
     	
     	options:{

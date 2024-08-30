@@ -55,7 +55,6 @@ public class StringHelper {
         }
 
         return md5Hex;
-
     }
     
     public static String MD5(String st) throws UnsupportedEncodingException {
@@ -74,6 +73,10 @@ public class StringHelper {
         }
         
         return sha1Hex;
+    }
+    
+    public static char[] toCharArray(String st) {
+    	return st.toCharArray();
     }
 
 }

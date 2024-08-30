@@ -1,4 +1,16 @@
 @CHARSET "UTF-8";
+
+div.jsb_blocker {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+    z-index: 1;
+	background: #fff;
+	opacity: 0.5;
+}
+
 div.ajaxloader {
 	position: absolute;
 	display: flex;

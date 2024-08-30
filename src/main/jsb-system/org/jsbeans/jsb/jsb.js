@@ -6279,7 +6279,7 @@ JSB({
 			minDeferTimeout: 5000,	// 5 sec
 			maxDeferTimeout: 60000,	// 60 sec
 
-			minScInterval: 1,
+			minScInterval: 32,
 			maxScInterval: 4096,
 			defScInterval: 256
 		},
@@ -6293,8 +6293,8 @@ JSB({
 
 		// vars
 		cmdTimeoutVal: 0,
-		bulkTimeoutVal: 300,
-		updateRpcTimeout: 300,
+		bulkTimeoutVal: 100,
+		updateRpcTimeout: 100,
 		maxBatchSize: 30,
 		crossDomainBatchSize: 1,
 		runTag: null,
@@ -6817,7 +6817,7 @@ JSB({
 			if(newInterval > this.options.defScInterval){
 				newInterval = this.options.defScInterval;
 			} else {
-				newInterval *= 0.5;
+				newInterval = newInterval / 2;
 				if(newInterval < this.options.minScInterval){
 					newInterval = this.options.minScInterval;
 				}
@@ -6835,7 +6835,7 @@ JSB({
 			if(!this.serverClientCallTrackInterval){
 				return;
 			}
-			var newInterval = this.serverClientCallTrackInterval * 1.5;
+			var newInterval = this.serverClientCallTrackInterval * 2;
 			if(newInterval > this.options.maxScInterval){
 				newInterval = this.options.maxScInterval;
 			}
