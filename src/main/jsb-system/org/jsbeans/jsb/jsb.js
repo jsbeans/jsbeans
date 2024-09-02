@@ -3433,7 +3433,7 @@ if(!(function(){return this;}).call(null).JSB){
 			
 			if(opts && opts.consistently){
 				if(count > 0){
-					forkFunc(0);	
+					forkFunc(0);
 				}
 			} else {
 				for(var i = 0; i < count; i++ ){
@@ -3455,9 +3455,7 @@ if(!(function(){return this;}).call(null).JSB){
 		join: function(forkHandle, callback, opts){
 			if(callback){
 				this.forkJoinHandles[forkHandle].callback = callback;
-				if(!opts || !opts.consistently){
-					this._checkJoinCallback(forkHandle);
-				}
+				this._checkJoinCallback(forkHandle);
 			} else {
 				throw new Error('JSB.join: missing callback argument');
 			}
@@ -3465,14 +3463,17 @@ if(!(function(){return this;}).call(null).JSB){
 
 		_checkJoinCallback: function(forkHandle){
 			var locker = this.getLocker();
-			if(this.forkJoinHandles[forkHandle] && this.forkJoinHandles[forkHandle].callback){
-				if(this.forkJoinHandles[forkHandle].ready == this.forkJoinHandles[forkHandle].count){
-					this.forkJoinHandles[forkHandle].callback.call(this, this.forkJoinHandles[forkHandle].items);
+			var fh = this.forkJoinHandles[forkHandle];
+			if(fh && fh.callback){
+				if(fh.ready == fh.count){
+					fh.callback.call(this, fh.items);
 					// remove handle
 					locker.clearLock('_jsb_fork_' + forkHandle);
 					delete this.forkJoinHandles[forkHandle];
-				} else if(this.forkJoinHandles[forkHandle].opts && this.forkJoinHandles[forkHandle].opts.consistently){
-					this.forkJoinHandles[forkHandle].forkFunc(this.forkJoinHandles[forkHandle].lastForkIdx+1);
+				} else if(fh.opts && fh.opts.consistently){
+					if(!JSB.isNull(fh.lastForkIdx) && fh.ready > fh.lastForkIdx){
+						fh.forkFunc(fh.lastForkIdx+1);
+					}
 				}
 			}
 		},
@@ -3505,6 +3506,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				var forkProc = procArr[scope.curIdx++];
 				if((scope.curIdx & 1) === 0){
+					// call fork
 					var nObj = forkProc.call(self, pObj, function(nObj){
 						generateForkJoinTask(nObj);
 					});
@@ -3512,6 +3514,7 @@ if(!(function(){return this;}).call(null).JSB){
 						generateForkJoinTask(nObj);
 					}
 				} else {
+					// setup join
 					self.join(self.fork(pObj, forkProc, opts), generateForkJoinTask, opts);
 				}
 			}
