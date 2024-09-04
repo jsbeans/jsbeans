@@ -19,7 +19,9 @@
 			if(this.options !== this.$constructor.$superclass.options){
 				this.options = JSB.merge(true, {}, this.$constructor.$superclass.options, this.options);
 			} 
-			this.options = JSB.merge(true, {}, this.options, opts);
+			if(opts && Object.keys(opts).length > 0){
+				this.options = JSB.merge(true, {}, this.options, opts);
+			}
 			
 			if(this.options.element){
 				this.element = this.$(this.options.element);

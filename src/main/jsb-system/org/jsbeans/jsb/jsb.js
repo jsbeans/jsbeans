@@ -1901,11 +1901,25 @@ if(!(function(){return this;}).call(null).JSB){
 				if(bAssign){
 					return Object.assign([],obj);
 				}
+				
+				if(JSB.isClient()){
+					try {
+						return structuredClone(obj);
+					} catch(e){}
+				}
+
 				return this.merge(true, [], obj);
 			} else if(this.isPlainObject(obj)){
 				if(bAssign){
 					return Object.assign({},obj);	
 				}
+				
+				if(JSB.isClient()){
+					try {
+						return structuredClone(obj);
+					} catch(e){}
+				}
+
 				return this.merge(true, {}, obj);
 			}
 			return obj;
