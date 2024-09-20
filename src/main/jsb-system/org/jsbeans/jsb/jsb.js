@@ -4827,6 +4827,9 @@ JSB({
 		}
 	},
 
+	
+	/* triggers */
+	
 	existTrigger: function(key){
 		if($this.$_ecMap && $this.$_ecMap[key]){
 			return true;
