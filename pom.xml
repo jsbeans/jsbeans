@@ -100,9 +100,10 @@
         <dependency>
             <groupId>org.mozilla</groupId>
             <artifactId>rhino</artifactId>
-            <version>1.7.11</version>
+            <version>1.7.15</version>
             
             <!-- Версия 1.7.14 по косвенным показателям имеет утечки -->
+            <!-- Версия 1.7.15 даже не запустилось -->
             <!-- 
             <version>1.7.14</version>
             -->
