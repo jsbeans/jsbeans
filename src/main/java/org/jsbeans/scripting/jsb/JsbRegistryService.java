@@ -190,6 +190,7 @@ public class JsbRegistryService extends Service {
             String relPathWithFile = bean.getURI().startsWith("/") ? bean.getURI().substring(1) : bean.getURI();
             String relPath = FileHelper.getFolderByPath(bean.getURI().startsWith("/") ? bean.getURI().substring(1) : bean.getURI());
             String fullPathFile = bean.getBaseLocation().equals("WEB") ? Paths.get(basePath, bean.getURI()).toString() : bean.getFullLocation();
+            fullPathFile = fullPathFile.replace("\\", "/");
             String fullPath = FileHelper.getFolderByPath(fullPathFile);
 
             String source = JsbTemplateEngine.perform(body, fullPathFile, webFolder);
