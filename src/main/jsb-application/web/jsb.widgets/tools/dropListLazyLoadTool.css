@@ -1,0 +1,19 @@
+@CHARSET "UTF-8";
+
+._dwp_toolWrapper._dwp_droplistLazyLoadToolWrapper {
+	border-radius: 4px !important;
+	border: none !important;
+	padding: 0 !important;
+	box-shadow: 1px 1px 4px #636363 !important;
+	z-index: 500000;
+	background: #fff;
+}
+
+._dwp_droplistLazyLoadTool {
+	max-height: 300px;
+}
+
+._dwp_droplistLazyLoadTool ._dwp_listBox {
+	padding: 1px;
+}
+

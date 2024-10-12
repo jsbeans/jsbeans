@@ -32,6 +32,7 @@
 			value: '',
 			enabled: true,
 			tree: false,
+			listLazyLoad: false,
 			readonly: false,
 			placeholder: 'Выберите из списка',
 			onChange: function(key, obj){},
@@ -139,9 +140,11 @@
 			}
 			if(!JSB().isNull(list) && list.length > 0){
 				this.autoBox = toolMgr.activate({
-					id: this.options.tree ? '_dwp_dropTreeTool' : '_dwp_droplistTool',
+					id: this.options.tree ? '_dwp_dropTreeTool' :
+					    this.options.listLazyLoad ? '_dwp_droplistLazyLoadTool' : '_dwp_droplistTool',
 					key: this.options.key || 'cb_' + $this.getId(),
 					cmd: 'show',
+					toolOpts: this.options.toolOpts,
 					data: list,
 					scope: this,
 					target: {

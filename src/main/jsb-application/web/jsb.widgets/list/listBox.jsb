@@ -20,6 +20,7 @@
 			$base(opts);
 			var self = this;
 			var elt = this.getElement();
+			this.options.height && elt.css('height', this.options.height + 'px');
 			elt.addClass('_dwp_listBox');
 			if(this.options.emptyText){
 				this.noItemsElt = this.$('<div class="_dwp_noItems"></div>');
