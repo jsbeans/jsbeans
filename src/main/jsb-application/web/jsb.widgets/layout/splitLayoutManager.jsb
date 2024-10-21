@@ -409,7 +409,7 @@
 			if(ancestor.split == 'vertical'){
 				pane.ctrl.getElement().css('width', pane.ctrl.getElement().width()+'px');
 			} else {
-				pane.ctrl.getElement().css('height', pane.ctrl.getElement().width()+'px');
+				pane.ctrl.getElement().css('height', pane.ctrl.getElement().height()+'px');
 			}
 			
 			// collapse pane
