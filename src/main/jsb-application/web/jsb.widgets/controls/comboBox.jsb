@@ -33,6 +33,7 @@
 			enabled: true,
 			tree: false,
 			listLazyLoad: false,
+			size: null,
 			readonly: false,
 			placeholder: 'Выберите из списка',
 			onChange: function(key, obj){},
@@ -78,7 +79,8 @@
 				this.editor = new Editor({
 					placeholder: this.options.placeholder,
 					onChange: this.options.onEditorChange,
-					readonly: this.options.readonly
+					readonly: this.options.readonly,
+					size: this.options.size
 				});
 				this.append(this.editor);
 				this.ddBtn = this.$('<div class="_dwp_dropBtn"><div class="_dwp_dropIcon"></div></div>');

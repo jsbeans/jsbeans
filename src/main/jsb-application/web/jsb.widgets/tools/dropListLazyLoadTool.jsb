@@ -42,14 +42,14 @@
 		options: {
 		    height: 200,
 		    scrollPosMultiplierY: 1,
-		    lazyLoadAmount: 10,
+		    lazyLoadAmount: 20,
 		    lazyLoadOffsetPrev: null,
 		    lazyLoadOffsetPost: null,
 		    valuePivot: null,
 		    valueStep: 1
 		},
 		
-		construct: function(){
+		construct: function() {
 			var self = this;
 			this.addClass('_dwp_droplistLazyLoadTool');
 			this.listbox = new ListBox({
@@ -151,18 +151,18 @@
 			this.append(this.listbox);
 		},
 		
-		complete: function(){
+		complete: function() {
 			this.close();	// close tool
 		},
 		
-		onMessage: function(sender, msg, params ){
+		onMessage: function(sender, msg, params ) {
 		},
 
 		onShow: function() {
             this.getListBox().scrollBox.getOption('onScroll') && this.getListBox().scrollBox.getOption('onScroll')();
 		},
 		
-		update: function(){
+		update: function() {
 			var self = this;
 			var arr = this.data.data;
 			this.listbox.detach();
@@ -173,15 +173,15 @@
 			this.listbox.attach();
 		},
 
-		getToolId: function(){
+		getToolId: function() {
 		    return this.data.id;
 		},
 
-		getListBox: function(){
+		getListBox: function() {
 			return this.listbox;
 		},
 		
-		setFocus: function(){
+		setFocus: function() {
 			this.listbox.setFocus();
 		}
 	}

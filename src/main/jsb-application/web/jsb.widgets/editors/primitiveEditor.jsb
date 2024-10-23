@@ -64,7 +64,7 @@
 				if(this.options.password){
 					this.editBoxElt.attr('type', 'password');
 				}
-				
+				this.options.size && this.editBoxElt.attr('size', this.options.size);
 			}
 			if(JSB.isDefined(this.options.name)){
 				this.editBoxElt.attr('name', this.options.name);
