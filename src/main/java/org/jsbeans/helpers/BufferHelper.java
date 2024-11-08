@@ -10,6 +10,7 @@
 
 package org.jsbeans.helpers;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,6 +108,18 @@ public class BufferHelper {
 		NativeArrayBuffer nab = new NativeArrayBuffer(bArr.length);
 		copyToArrayBuffer(bArr, 0, nab, 0, bArr.length);
 		return nab;
+	}
+	
+	public static InputStream toStream(byte[] byteArr) {
+		return new ByteArrayInputStream(byteArr);
+	}
+	
+	public static InputStream toStream(NativeArrayBuffer arr) {
+		return toStream(toByteArray(arr));
+	}
+
+	public static InputStream toStream(String str) {
+		return toStream(str.getBytes());
 	}
 
 }
