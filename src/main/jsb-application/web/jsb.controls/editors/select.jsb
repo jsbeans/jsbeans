@@ -203,7 +203,7 @@
             this.currentVal.empty();
 	        this.dropDown.find('.selectValue').removeClass('selected');
 
-	        if(JSB.isDefined(key)){  // select
+	        if(JSB.isDefined(key) && this._optionsList[key] && this._optionsList[key].element){  // select
 	            this.currentVal.append(this._optionsList[key].element.html());
 
 	            if(this._optionsList[key].element.hasClass('selectValue')){
