@@ -6309,6 +6309,8 @@ JSB({
 
 		queueToSend: {},
 		queueToCheck: {},
+		queueInstanceMap: {},
+		pendingQueue: [],
 		rpcEntryMap: {},
 		rpcTimeout: null,
 		batchStartTime: null,
@@ -6703,13 +6705,23 @@ JSB({
 
 		// on client side
 		enqueueRpc: function(cmd, callback){
-			var id = JSB().generateUid();
-			this.queueToSend[id] = {
-				cmd: JSB().merge(cmd,{id:id}),
+			cmd.id = JSB().generateUid();
+/*			
+			if(this.queueInstanceMap['' + cmd.proc + cmd.instance]){
+				this.pendingQueue.push({
+					cmd: cmd,
+					callback: callback
+				});
+				return cmd.id;
+			}
+*/			
+			this.queueToSend[cmd.id] = {
+				cmd: cmd,
 				callback: callback
 			};
+/*			this.queueInstanceMap['' + cmd.proc + cmd.instance] = true;*/
 			this.updateRpc();
-			return id;
+			return cmd.id;
 		},
 
 		updateRpc: function(){
@@ -6756,6 +6768,7 @@ JSB({
 				this.rpcEntryMap[id] = entry;
 			}
 			this.queueToSend = {};
+			/*this.queueInstanceMap = {};*/
 
 			if( rpcBatch.length > 0 ){
 				// split batch into several batches
@@ -6787,6 +6800,30 @@ JSB({
 				}
 
 			}
+/*			
+			if(this.pendingQueue.length > 0){
+				let rIdxArr = [];
+				for(var i = 0; i < this.pendingQueue.length; i++){
+					let pendingEntry = this.pendingQueue[i];
+					if(this.queueInstanceMap['' + pendingEntry.cmd.proc + pendingEntry.cmd.instance]){
+						break;
+					}
+					this.queueToSend[pendingEntry.cmd.id] = {
+						cmd: pendingEntry.cmd,
+						callback: pendingEntry.callback
+					};
+					this.queueInstanceMap['' + pendingEntry.cmd.proc + pendingEntry.cmd.instance] = true;
+					rIdxArr.push(i);
+				}
+				for(var i = rIdxArr.length - 1; i >= 0; i--){
+					this.pendingQueue.splice(rIdxArr[i], 1);
+				}
+				
+				JSB().defer(()=>{
+					this.updateRpc();	
+				});
+			}
+*/			
 		},
 
 		handleRpcResponse: function(rpcResp){
