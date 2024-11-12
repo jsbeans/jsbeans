@@ -5222,6 +5222,7 @@ JSB({
 			if(!this.$_bindKey){
 				this.$_bindKey = this.id;
 			}
+			
 			JSB().getProvider().enqueueRpc({
 				jsb: tJsb.$name,
 				instance: this.$_bindKey,
@@ -5229,9 +5230,11 @@ JSB({
 				params: JSB().unwindComplexObjects(params, plain),
 				sync: (sync ? true: false)
 			}, function(res){
+/*				
 				if(self.isDestroyed()){
 					JSB.getLogger().warn('Response returned to destroyed bean: ' + tJsb.$name + '(' + self.getId() + ')');
 				}
+*/				
 				var inst = this;
 				var args = arguments;
 				JSB().injectComplexObjects(res, function(r){
@@ -6698,7 +6701,7 @@ JSB({
 		},
 */
 
-		// on clinet side
+		// on client side
 		enqueueRpc: function(cmd, callback){
 			var id = JSB().generateUid();
 			this.queueToSend[id] = {
