@@ -6309,8 +6309,6 @@ JSB({
 
 		queueToSend: {},
 		queueToCheck: {},
-		queueInstanceMap: {},
-		pendingQueue: [],
 		rpcEntryMap: {},
 		rpcTimeout: null,
 		batchStartTime: null,
@@ -6318,7 +6316,7 @@ JSB({
 
 		// vars
 		cmdTimeoutVal: 0,
-		bulkTimeoutVal: 100,
+		bulkTimeoutVal: 20,
 		updateRpcTimeout: 100,
 		maxBatchSize: 30,
 		crossDomainBatchSize: 1,
@@ -6706,20 +6704,34 @@ JSB({
 		// on client side
 		enqueueRpc: function(cmd, callback){
 			cmd.id = JSB().generateUid();
-/*			
-			if(this.queueInstanceMap['' + cmd.proc + cmd.instance]){
-				this.pendingQueue.push({
-					cmd: cmd,
-					callback: callback
-				});
-				return cmd.id;
+			
+			if(callback){
+				// find duplicate rpc-calls
+				for(var id in this.queueToSend){
+					var pEntry = this.queueToSend[id].cmd;
+					if(cmd.proc == pEntry.proc 
+						&& cmd.instance == pEntry.instance
+						&& cmd.sync == pEntry.sync
+						&& JSB.isEqual(cmd.params, pEntry.params)){
+						
+						if(!JSB.isArray(this.queueToSend[id].callback)){
+							if(this.queueToSend[id].callback){
+								this.queueToSend[id].callback = [this.queueToSend[id].callback];
+							} else {
+								this.queueToSend[id].callback = [];
+							}
+						}
+						this.queueToSend[id].callback.push(callback);
+						this.updateRpc();
+						
+						return id;
+					}
+				}
 			}
-*/			
 			this.queueToSend[cmd.id] = {
 				cmd: cmd,
 				callback: callback
 			};
-/*			this.queueInstanceMap['' + cmd.proc + cmd.instance] = true;*/
 			this.updateRpc();
 			return cmd.id;
 		},
@@ -6768,7 +6780,6 @@ JSB({
 				this.rpcEntryMap[id] = entry;
 			}
 			this.queueToSend = {};
-			/*this.queueInstanceMap = {};*/
 
 			if( rpcBatch.length > 0 ){
 				// split batch into several batches
@@ -6800,30 +6811,6 @@ JSB({
 				}
 
 			}
-/*			
-			if(this.pendingQueue.length > 0){
-				let rIdxArr = [];
-				for(var i = 0; i < this.pendingQueue.length; i++){
-					let pendingEntry = this.pendingQueue[i];
-					if(this.queueInstanceMap['' + pendingEntry.cmd.proc + pendingEntry.cmd.instance]){
-						break;
-					}
-					this.queueToSend[pendingEntry.cmd.id] = {
-						cmd: pendingEntry.cmd,
-						callback: pendingEntry.callback
-					};
-					this.queueInstanceMap['' + pendingEntry.cmd.proc + pendingEntry.cmd.instance] = true;
-					rIdxArr.push(i);
-				}
-				for(var i = rIdxArr.length - 1; i >= 0; i--){
-					this.pendingQueue.splice(rIdxArr[i], 1);
-				}
-				
-				JSB().defer(()=>{
-					this.updateRpc();	
-				});
-			}
-*/			
 		},
 
 		handleRpcResponse: function(rpcResp){
@@ -6839,9 +6826,21 @@ JSB({
 						(function(success, callback, result, error){
 							JSB().defer(function(){
 								if(success){
-									callback(result);
+									if(JSB.isArray(callback)){
+										for(var c = 0; c < callback.length; c++){
+											callback[c](c < callback.length - 1 ? JSB.clone(result) : result);
+										}
+									} else {
+										callback(result);
+									}
 								} else {
-									callback(undefined, error);
+									if(JSB.isArray(callback)){
+										for(var c = 0; c < callback.length; c++){
+											callback[c](undefined, c < callback.length - 1 ? JSB.clone(error) : error);
+										}
+									} else {
+										callback(undefined, error);
+									}
 								}
 							}, 0);
 						})(rpcEntry.success, this.rpcEntryMap[rpcEntry.id].callback, rpcEntry.result, rpcEntry.error);
