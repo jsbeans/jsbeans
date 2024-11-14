@@ -6713,7 +6713,6 @@ JSB({
 						&& cmd.instance == pEntry.instance
 						&& cmd.sync == pEntry.sync
 						&& JSB.isEqual(cmd.params, pEntry.params)){
-						
 						if(!JSB.isArray(this.queueToSend[id].callback)){
 							if(this.queueToSend[id].callback){
 								this.queueToSend[id].callback = [this.queueToSend[id].callback];
@@ -6728,6 +6727,7 @@ JSB({
 					}
 				}
 			}
+			
 			this.queueToSend[cmd.id] = {
 				cmd: cmd,
 				callback: callback
@@ -6812,6 +6812,16 @@ JSB({
 
 			}
 		},
+		
+		_translateRpcResult: function(success, callback, result, error, bCopy){
+			JSB().defer(()=>{
+				if(success){
+					callback(bCopy ? JSB.clone(result) : result);
+				} else {
+					callback(undefined, bCopy ? JSB.clone(error) : error);
+				}
+			}, 0);
+		},
 
 		handleRpcResponse: function(rpcResp){
 			var self = this;
@@ -6823,27 +6833,13 @@ JSB({
 				}
 				if(rpcEntry.completed){
 					if(this.rpcEntryMap[rpcEntry.id] && !JSB().isNull(this.rpcEntryMap[rpcEntry.id].callback)){
-						(function(success, callback, result, error){
-							JSB().defer(function(){
-								if(success){
-									if(JSB.isArray(callback)){
-										for(var c = 0; c < callback.length; c++){
-											callback[c](c < callback.length - 1 ? JSB.clone(result) : result);
-										}
-									} else {
-										callback(result);
-									}
-								} else {
-									if(JSB.isArray(callback)){
-										for(var c = 0; c < callback.length; c++){
-											callback[c](undefined, c < callback.length - 1 ? JSB.clone(error) : error);
-										}
-									} else {
-										callback(undefined, error);
-									}
-								}
-							}, 0);
-						})(rpcEntry.success, this.rpcEntryMap[rpcEntry.id].callback, rpcEntry.result, rpcEntry.error);
+						var callbackArr = this.rpcEntryMap[rpcEntry.id].callback;
+						if(!JSB.isArray(callbackArr)){
+							callbackArr = [callbackArr];
+						}
+						for(var j = 0; j < callbackArr.length; j++){
+							self._translateRpcResult(rpcEntry.success, callbackArr[j], rpcEntry.result, rpcEntry.error, false /*j < callbackArr.length - 1*/);
+						}
 					}
 					if(this.rpcEntryMap[rpcEntry.id]){
 						delete this.rpcEntryMap[rpcEntry.id];
