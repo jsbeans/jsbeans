@@ -211,11 +211,17 @@
 		},
 		
 		isHideByEsc: function(){
-			return this.params && this.params.hideByEsc || this.options.hideByEsc;
+			if(this.params && JSB.isDefined(this.params.hideByEsc)){
+				return this.params.hideByEsc;
+			}
+			return this.options.hideByEsc;
 		},
 		
 		isHideByOuterClick: function(){
-			return this.params && this.params.hideByOuterClick || this.options.hideByOuterClick;
+			if(this.params && JSB.isDefined(this.params.hideByOuterClick)){
+				return this.params.hideByOuterClick;
+			}
+			return this.options.hideByOuterClick;
 		},
 		
 		getScope: function(){
