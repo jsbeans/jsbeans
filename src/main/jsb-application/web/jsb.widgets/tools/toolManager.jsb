@@ -96,7 +96,7 @@
 			}
 			for(var i = self.visibleInstances.length - 1; i >= 0; i--){
 				var inst = self.visibleInstances[i];
-				if( inst.options.hideByOuterClick ){
+				if( inst.isHideByOuterClick() ){
 					if(!inst.isMouseInside){
 						inst.hide(false);
 					} else {
@@ -110,7 +110,7 @@
 		handleEsc: function(){
 			if(this.visibleInstances.length > 0){
 				var inst = this.visibleInstances[this.visibleInstances.length - 1];
-				if(inst.options.hideByEsc){
+				if(inst.isHideByEsc()){
 					this.visibleInstances.pop();
 					inst.hide(true);
 				}

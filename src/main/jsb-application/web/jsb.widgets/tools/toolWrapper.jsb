@@ -210,6 +210,14 @@
 */
 		},
 		
+		isHideByEsc: function(){
+			return this.params && this.params.hideByEsc || this.options.hideByEsc;
+		},
+		
+		isHideByOuterClick: function(){
+			return this.params && this.params.hideByOuterClick || this.options.hideByOuterClick;
+		},
+		
 		getScope: function(){
 			return this.scope;
 		},
