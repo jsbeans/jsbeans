@@ -78,5 +78,9 @@ public class StringHelper {
     public static char[] toCharArray(String st) {
     	return st.toCharArray();
     }
+    
+    public static String changeEncoding(String inputStr, String charset) throws UnsupportedEncodingException {
+    	return new String(inputStr.getBytes(), charset);
+    }
 
 }

@@ -121,5 +121,9 @@ public class BufferHelper {
 	public static InputStream toStream(String str) {
 		return toStream(str.getBytes());
 	}
+	
+	public static String toString(NativeArrayBuffer arr, String charset) throws UnsupportedEncodingException {
+		return new String(toByteArray(arr), charset);
+	}
 
 }
