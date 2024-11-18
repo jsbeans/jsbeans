@@ -80,7 +80,8 @@
 					placeholder: this.options.placeholder,
 					onChange: this.options.onEditorChange,
 					readonly: this.options.readonly,
-					size: this.options.size
+					size: this.options.size,
+					number: this.options.number
 				});
 				this.append(this.editor);
 				this.ddBtn = this.$('<div class="_dwp_dropBtn"><div class="_dwp_dropIcon"></div></div>');
