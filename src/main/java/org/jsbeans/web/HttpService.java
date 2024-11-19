@@ -122,7 +122,7 @@ public class HttpService extends Service {
 //        context.setResourceBase(ConfigHelper.getWebFolder());
         context.setBaseResource(resources);
         try {
-            String path = config.hasPath(_CONTEXT) ? config.getString(_CONTEXT) : ConfigHelper.getConfigString(WEB_CONTEXT_OLD);
+            String path = config.hasPath(_CONTEXT) ? config.getString(_CONTEXT) : (ConfigHelper.has(WEB_CONTEXT_OLD) ? ConfigHelper.getConfigString(WEB_CONTEXT_OLD) : "/WEB-INF/web.xml");
             String webXml = context.getBaseResource().addPath(path).getURI().toString();
             context.setDescriptor(webXml);
         } catch (IOException e) {
