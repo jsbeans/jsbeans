@@ -77,6 +77,10 @@
         	this._userManager = userManager;
         },
         
+        getUserManager: function(){
+        	return this._userManager;
+        },
+        
         _registerPermission: function(permissionJsb){
 			if(!permissionJsb.$expose || !permissionJsb.$expose.id || !JSB.isString(permissionJsb.$expose.id)){
 				JSB.getLogger().error('Invalid permission "' + permissionJsb.getName() + '" - missing "id" in $expose descriptor');
