@@ -25,7 +25,7 @@
 }
 
 ._dwp_splitbox ._dwp_splitter {
-	z-index: 100;
+	/* z-index: 100;*/
 }
 
 ._dwp_splitbox ._dwp_splitter.vertical,

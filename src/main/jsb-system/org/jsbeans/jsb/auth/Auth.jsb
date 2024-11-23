@@ -111,6 +111,13 @@
 			return this._userManager.getUserIdByName(Kernel.user());
 		},
 		
+		getUserIdByName: function(user) {
+			if(!$this._userManager){
+				throw new this.SecurityError('UserManager has not been installed');
+			}
+			return this._userManager.getUserIdByName(user);
+		},
+		
 		getUserInfo: function(opts){
 			var userInfo = {
 				userName: this.getUser()
