@@ -248,6 +248,11 @@
 			}
 		},
 		
+		destroy: function(){
+			this.data && this.data.destroy();
+			$base();
+		},
+		
 		keyPressedMap: {},
 		
 		options: {
@@ -276,6 +281,7 @@
 		setData: function(val){
 			var self = this;
 			this.setMark(false);
+			this.data && this.data.destroy();
 			if(JSB().isInstanceOf(val, 'JSB.Widgets.Value')){
 				this.data = val;
 			} else {

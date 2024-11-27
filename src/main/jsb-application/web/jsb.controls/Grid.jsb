@@ -20,6 +20,7 @@
 	    _dataScheme: null,
 	    _masterColGroup: null,
 	    _topColGroup: null,
+	    _ctrlMap: {},
 
 		$constructor: function(opts){
 			$base(opts);
@@ -107,6 +108,11 @@
                 $this._colResizeHandleContainer.get(0).style['margin-top'] = -$this.getElement().height() + 'px';
                 $this._colResizeHandleContainer.children('.col-resize-handle').height($this.getElement().find('.grid-top').height());
             });
+        },
+        
+        destroy: function(){
+        	this.clear();
+        	$base();
         },
 
         options: {
@@ -256,6 +262,10 @@
         },
 
         clear: function(bKeepHeader){
+        	for(var id in $this._ctrlMap){
+        		$this._ctrlMap[id] && $this._ctrlMap[id].destroy();
+        	}
+        	$this._ctrlMap = {};
             this.showNoDataMsg(false);
 
             if(bKeepHeader){
@@ -587,6 +597,7 @@
             // object or array
             if(valueType === 'object' || valueType === 'array') {
                 var jvInst = new JsonView({collapsed:true});
+                $this._ctrlMap[jvInst.getId()] = jvInst;
 
                 if(valueType === 'array' && value.length > $this.options.jsonArrayLimit){
                     jvInst.setData(value.slice(0, $this.options.jsonArrayLimit));
