@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 
 import javax.security.auth.Subject;
 import java.security.AccessController;
@@ -362,7 +363,7 @@ public class JsBridge {
         execMsg.setRespondNative(true);
 
         ActorSelection jsHubSvc = ActorHelper.getActorSelection(JsHub.class);
-        Timeout timeout = ActorHelper.getServiceCommTimeout();
+        Timeout timeout = ActorHelper.getInfiniteTimeout();
         Future<Object> f = ActorHelper.futureAsk(jsHubSvc, execMsg, timeout);
         Object result = null;
         result = Await.result(f, timeout.duration());
