@@ -102,6 +102,10 @@ public class BufferHelper {
 	public static String base64Encode(String str){
 		return DatatypeConverter.printBase64Binary(str.getBytes());
 	}
+	
+	public static String MD5(NativeArrayBuffer arr) throws UnsupportedEncodingException {
+		return StringHelper.MD5(arr.getBuffer());
+	}
 
 	public static NativeArrayBuffer base64Decode(String base64){
 		byte[] bArr = DatatypeConverter.parseBase64Binary(base64);
