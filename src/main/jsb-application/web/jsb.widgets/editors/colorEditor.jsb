@@ -65,6 +65,11 @@
 		    readonly: false,
 			onChange: null
 		},
+		
+		destroy: function(){
+			this.editBoxElt.spectrum('destroy');
+			$base();
+		},
 
 		setData: function(val) {
 			this._color = val;
