@@ -130,6 +130,7 @@
 }
 
 .jsb-scrollPanel > .panel.horizontal > .list {
+    position: relative;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;

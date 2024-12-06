@@ -59,7 +59,7 @@
 			        pos = $this._panelList.position().top + 30;
 			    }
 
-			    pos = pos > 0 ? 0 : pos;
+			    pos = pos > 0 ? parseFloat($this._panel.css("padding-left")) : pos;
 
 			    if(isHorizontal) {
 			        $this._panelList.css({left: pos});
