@@ -59,7 +59,7 @@
 }
 
 .jsb-scrollPanel.horizontal > .prevScroll {
-    left: 16px;
+    left: 0;
 }
 
 .jsb-scrollPanel.horizontal > .nextScroll {
@@ -110,6 +110,7 @@
 }
 
 .jsb-scrollPanel > .panel {
+	padding: 0 !important;
     white-space: nowrap;
     transition: left 0.8s;
     position: relative;
@@ -121,7 +122,7 @@
     overflow: hidden;
 }
 
-.jsb-scrollPanel > .list {
+.jsb-scrollPanel > .panel > .list {
     position: relative;
 }
 
@@ -130,7 +131,6 @@
 }
 
 .jsb-scrollPanel > .panel.horizontal > .list {
-    position: relative;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -140,6 +140,10 @@
     flex-direction: column;
     width: 100%;
     top: 0;
+}
+
+.jsb-scrollPanel > .panel.vertical > .list {
+	
 }
 
 .jsb-scrollPanel > .panel.moving {

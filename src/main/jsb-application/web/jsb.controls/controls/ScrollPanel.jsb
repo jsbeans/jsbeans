@@ -41,30 +41,40 @@
 			    let isNextHide;
 
 			    if(isHorizontal) {
-			        isNextHide = $this._panel.outerWidth() - $this._panelList.width() >= position;
+			        isNextHide = Math.floor($this.getElement().outerWidth() - $this._panelList.outerWidth()) >= Math.floor(position);
 			    } else {
-			        isNextHide = $this._panel.outerHeight() - $this._panelList.height() >= position;
+			        isNextHide = Math.floor($this.getElement().outerHeight() - $this._panelList.outerHeight()) >= Math.floor(position);
 			    }
 
                 isNextHide ? nextScroll.addClass('hidden') : nextScroll.removeClass('hidden');
-                position === parseFloat($this._panel.css('padding-left')) ? prevScroll.addClass('hidden') : prevScroll.removeClass('hidden');
+                if(isHorizontal) {
+                	position >= parseFloat($this._panel.css('padding-left')) ? prevScroll.addClass('hidden') : prevScroll.removeClass('hidden');
+                } else {
+                	position >= parseFloat($this._panel.css('padding-top')) ? prevScroll.addClass('hidden') : prevScroll.removeClass('hidden');
+                }
 			}
 
 			function scrollPrev() {
 			    let pos;
 
 			    if(isHorizontal) {
-			        pos = $this._panelList.position().left + 120;
+			        pos = Math.floor($this._panelList.position().left) + 120;
 			    } else {
-			        pos = $this._panelList.position().top + 30;
+			        pos = Math.floor($this._panelList.position().top) + 30;
 			    }
 
-			    pos = pos > 0 ? parseFloat($this._panel.css("padding-left")) : pos;
+			    if(isHorizontal) {
+			    	pos = pos > 0 ? parseFloat($this._panel.css("padding-left")) : pos;
+			    } else {
+			    	pos = pos > 0 ? parseFloat($this._panel.css("padding-top")) : pos;
+			    }
 
 			    if(isHorizontal) {
 			        $this._panelList.css({left: pos});
+			        pos = Math.floor($this._panelList.position().left);
 			    } else {
 			        $this._panelList.css({top: pos});
+			        pos = Math.floor($this._panelList.position().top);
 			    }
 
 			    changeButtonVisibility(pos);
@@ -74,21 +84,23 @@
 			    let pos;
 
 			    if(isHorizontal) {
-			        pos = $this._panelList.position().left - 120;
+			        pos = Math.floor($this._panelList.position().left) - 120;
 
-                    if(pos < $this._panel.width() - $this._panelList.outerWidth()) {
-                        pos = $this._panel.width() - $this._panelList.outerWidth();
+                    if(pos < Math.floor($this.getElement().width() - $this._panelList.outerWidth())) {
+                        pos = Math.floor($this.getElement().width() - $this._panelList.outerWidth());
                     }
 
 			        $this._panelList.css({left: pos});
+			        pos = Math.floor($this._panelList.position().left);
 			    } else {
-			        pos = $this._panelList.position().top - 30;
+			        pos = Math.floor($this._panelList.position().top) - 30;
 
-			        if(pos < $this._panel.outerHeight() - $this._panelList.height()) {
-			            pos = $this._panel.outerHeight() - $this._panelList.height();
+			        if(pos < Math.floor($this.getElement().height() - $this._panelList.outerHeight())) {
+			            pos = Math.floor($this.getElement().height() - $this._panelList.outerHeight());
 			        }
 
 			        $this._panelList.css({top: pos});
+			        pos = Math.floor($this._panelList.position().top);
 			    }
 
 			    changeButtonVisibility(pos);
@@ -142,11 +154,11 @@
                                     this._isMoved = true;
                                 }
 
-                                let pos = $this._panelList.position().left - $this._clickPosition + e.pageX;
+                                let pos = Math.floor($this._panelList.position().left - $this._clickPosition + e.pageX);
 
                                 if(pos <= 0) {
-                                    if(pos < outerWidth - width) {
-                                        pos = outerWidth - width;
+                                    if(pos < Math.floor(outerWidth - width)) {
+                                        pos = Math.floor(outerWidth - width);
                                     }
                                 }
 
@@ -163,14 +175,14 @@
                                     this._isMoved = true;
                                 }
 
-                                let pos = this._panelList.position().top - this._clickPosition + e.pageY;
+                                let pos = Math.floor(this._panelList.position().top - this._clickPosition + e.pageY);
 
                                 if(pos > 0) {
                                     pos = 0;
                                 }
 
-                                if(pos < outerHeight - height) {
-                                    pos = outerHeight - height;
+                                if(pos < Math.floor(outerHeight - height)) {
+                                    pos = Math.floor(outerHeight - height);
                                 }
 
                                 this._panelList.css({top: pos});
