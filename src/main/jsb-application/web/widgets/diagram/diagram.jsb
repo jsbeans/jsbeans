@@ -225,6 +225,8 @@
 			// add highlight filter
 			this.registerShape('highlightFilter', function(){
 				var filter = this.defs.append('filter');
+				filter.attr('filterUnits', 'userSpaceOnUse')
+
 				filter.append('feMorphology')
 					.attr('in', 'SourceGraphic')
 					.attr('operator', 'dilate')
@@ -485,7 +487,9 @@
 				w: Math.round(w / this.options.zoom),
 				h: Math.round(h / this.options.zoom)
 			}
-			
+
+			this.getElement().find('[id*="highlightFilter"]').attr('x', viewBox.x + '')
+			    .attr('y', viewBox.y + '');
 			this.svg.attr('viewBox', '' + viewBox.x + ' ' + viewBox.y + ' ' + viewBox.w + ' ' + viewBox.h);
 			this.sheet.css({
 				'transform': 'scale('+this.options.zoom+') translate('+panOffset.x+'px, '+panOffset.y+'px)'
