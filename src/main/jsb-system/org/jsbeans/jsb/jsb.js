@@ -4077,7 +4077,7 @@ if(!(function(){return this;}).call(null).JSB){
 					if(JSB().isBean(cls)){
 						obj = cls;
 						if(obj.$_bindKey != id && obj.getId() != id){
-							throw new Error('constructInstanceFromRemote: Wrong singleton ID retrieved');
+							JSB().getLogger().warn('constructInstanceFromRemote: Wrong singleton ID retrieved');
 						}
 					} else {
 						// check for fixedId
