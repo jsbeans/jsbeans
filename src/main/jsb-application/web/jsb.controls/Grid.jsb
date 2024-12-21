@@ -285,7 +285,7 @@
         },
 
         getRowCount: function() {
-            return this._masterTable.children().length;
+            return this._masterTable.children('tr').length;
         },
 
         search: function(colKey, searchWord, searchFunction) {
