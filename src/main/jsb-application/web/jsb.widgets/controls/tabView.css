@@ -19,13 +19,13 @@
 ._dwp_tabview._dwp_tabTop > ._dwp_tabPane {
 	top: 0;
 	border-bottom: 1px solid #BEBEBE;
-	padding: 2px 6px 0 6px;
+	padding: 0 6px 0 6px;
 }
 
 ._dwp_tabview._dwp_tabBottom > ._dwp_tabPane {
 	bottom: 0;
 	border-top: 1px solid #BEBEBE;
-	padding: 0 6px 3px 6px;
+	padding: 0 6px 0 6px;
 }
 
 ._dwp_tabview._dwp_tabTop > ._dwp_tabPane,

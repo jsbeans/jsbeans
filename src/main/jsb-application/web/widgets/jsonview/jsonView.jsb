@@ -111,6 +111,8 @@
 				this.renderDate(obj, elt);
 			} else if(JSB.isArray(obj)){
 				this.renderArray(obj, elt, deep);
+			} else if(JSB.isBean(obj)) {
+				this.renderBean(obj, elt, deep);
 			} else if(JSB.isPlainObject(obj)) {
 				this.renderObj(obj, elt, deep);
 			} else if(JSB.isBoolean(obj)){
@@ -124,6 +126,10 @@
 			} else {
 				// internal error: unknown type
 			}
+		},
+		
+		renderBean: function(obj, elt, deep){
+			elt.append('<span class="bean">{ bean "'+obj.getJsb().getName()+'" ('+obj.getId()+') }</span>');
 		},
 		
 		renderObj: function(obj, elt, deep){

@@ -73,11 +73,14 @@
 
 ._dwp_primitiveEditor > textarea.readonly {
 	border-color: rgba(187, 187, 187, 0.5);
-	background: -webkit-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-	background: -moz-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-	background: linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-	background: -o-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-	background: -ms-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
+	background: #f5f5f5;
+	color: #8d8d8d;
+}
+
+._dwp_primitiveEditor > input.readonly {
+	border-color: rgba(187, 187, 187, 0.5);
+	background: #f5f5f5;
+	color: #8d8d8d;
 }
 
 ._dwp_primitiveEditor > input.invalid {
@@ -89,15 +92,6 @@
 	border-color: rgba(255, 31, 0, 0.5);
 }
 
-._dwp_primitiveEditor > input.readonly {
-	border-color: rgba(187, 187, 187, 0.5);
-	background: -webkit-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-	background: -moz-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-    background: linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-	background: -o-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-	background: -ms-linear-gradient(top, #E9E9E9, #E9E9E9 50%, #E4E4E4);
-	color: #696969;
-}
 
 ._dwp_primitiveEditor.inplace > input, ._dwp_primitiveEditor.inplace > textarea {
 	display: none;

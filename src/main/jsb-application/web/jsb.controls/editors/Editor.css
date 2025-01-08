@@ -23,7 +23,8 @@
 }
 
 .jsb-editor > input[readonly] {
-	background-color: #ededed;
+	background-color: #f5f5f5;
+    color: #8d8d8d;
 }
 
 .jsb-editor > input[type="text"]:focus:not([readonly]) {
