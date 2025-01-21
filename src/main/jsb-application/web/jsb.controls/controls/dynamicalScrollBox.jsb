@@ -27,34 +27,13 @@
 			this._controlHeight = this.getElement().height();
 
             this.getElement().scroll((evt) => {
-                let scrollTop = evt.target.scrollTop,
-                    visibleHeight = evt.target.clientHeight;
+                this.updateList(evt);
+            });
 
-                // detach hidden
-                this._itemsContainer.children().each(function (index) {
-                    // скролл вниз - убираем невидимые элементы сверху
-                    if(scrollTop > this.offsetTop + $this.options.itemHeight) {
-                        $this._itemsContainer.get(0).removeChild(this);
-                    }
-
-                    // скролл вниз - убираем невидимые элементы снизу
-                    if(scrollTop + visibleHeight < this.offsetTop) {
-                        $this._itemsContainer.get(0).removeChild(this);
-                    }
-                });
-
-                this._items.forEach((item) => {
-                    if(item.hidden) {
-                        return this;
-                    }
-
-                    let cssTop = item.element.css('top'),
-                        offsetTop = Number(cssTop.substring(0, cssTop.length - 2));
-
-                    if(offsetTop >= scrollTop && offsetTop <= scrollTop + visibleHeight) {
-                        this._itemsContainer.append(item.element);
-                    }
-                });
+            this.getElement().visible((evt, isVisible) => {
+                if (isVisible) {
+                    this.updateList(evt);
+                }
             });
 
             this.getElement().resize(() => {
@@ -68,6 +47,37 @@
 
         options: {
             itemHeight: null
+        },
+
+        updateList: function (evt) {
+            let scrollTop = evt.target.scrollTop,
+                visibleHeight = evt.target.clientHeight;
+
+            // detach hidden
+            this._itemsContainer.children().each(function (index) {
+                // скролл вниз - убираем невидимые элементы сверху
+                if(scrollTop > this.offsetTop + $this.options.itemHeight) {
+                    $this._itemsContainer.get(0).removeChild(this);
+                }
+
+                // скролл вниз - убираем невидимые элементы снизу
+                if(scrollTop + visibleHeight < this.offsetTop) {
+                    $this._itemsContainer.get(0).removeChild(this);
+                }
+            });
+
+            this._items.forEach((item) => {
+                if(item.hidden) {
+                    return this;
+                }
+
+                let cssTop = item.element.css('top'),
+                    offsetTop = Number(cssTop.substring(0, cssTop.length - 2));
+
+                if(offsetTop >= scrollTop && offsetTop <= scrollTop + visibleHeight) {
+                    this._itemsContainer.append(item.element);
+                }
+            });
         },
 
         addItem: function(item) {
