@@ -1560,7 +1560,8 @@ if(!(function(){return this;}).call(null).JSB){
 			if(this.$_cubclassTbl[jsb1Str] && this.isDefined(this.$_cubclassTbl[jsb1Str][jsb2Str])){
 				return this.$_cubclassTbl[jsb1Str][jsb2Str];
 			}
-			var res = this.get(jsb1Str).isSubclassOf(jsb2Str);
+			var jsb1 = this.get(jsb1Str);
+			var res = jsb1 && jsb1.isSubclassOf(jsb2Str) || false;
 			this.$_cubclassTbl[jsb1Str] = this.$_cubclassTbl[jsb1Str] || {};
 			this.$_cubclassTbl[jsb1Str][jsb2Str] = res;
 			return res;
