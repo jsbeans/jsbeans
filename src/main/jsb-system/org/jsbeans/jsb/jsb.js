@@ -3223,7 +3223,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			
 			if(!this.isNumber(timeout)){
-				timeout = 0;
+				timeout = 100;
 			}
 			if(key){
 				var locker = self.getLocker();
