@@ -30,6 +30,7 @@ public class JsMinifier {
         	CompilationLevel.BUNDLE.setOptionsForCompilationLevel(options);
         }
         options.setEmitUseStrict(false);
+        options.setRewritePolyfills(false);
         if(bProduceES5){
         	options.setLanguageOut(LanguageMode.ECMASCRIPT5);
         }
