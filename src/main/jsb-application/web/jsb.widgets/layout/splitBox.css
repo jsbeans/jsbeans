@@ -25,7 +25,13 @@
 }
 
 ._dwp_splitbox ._dwp_splitter {
-	/* z-index: 100;*/
+	
+}
+
+._dwp_splitbox ._dwp_splitter.overlay {
+	border: none;
+	background: transparent;
+	z-index: 1;
 }
 
 ._dwp_splitbox ._dwp_splitter.vertical,

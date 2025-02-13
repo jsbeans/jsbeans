@@ -47,7 +47,7 @@
         addElement: function(el) {
             var panelList = this.getPanelList();
 
-            panelList.children().length > 0 && panelList.append(this.$('<i key="splitter" class="fas fa-angle-right"></i>'));
+            panelList.children().length > 0 && panelList.append(this.$('<i key="splitter" class="fas fa-chevron-right"></i>'));
 
             $base(el);
         },

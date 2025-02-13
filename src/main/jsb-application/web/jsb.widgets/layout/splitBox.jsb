@@ -27,6 +27,10 @@
 		splitterPositions: [],
 		hidden:[],
 		
+		options: {
+			overlay: false
+		},
+		
 		init: function(){
 			var self = this;
 			
@@ -48,6 +52,9 @@
 					if(i < posArr.length - 1){
 						var pos = Math.floor(splitPos * 100) + '%';
 						var splitter = $this.$('<div class="_dwp_splitter '+$this.options.type+'" idx="'+i+'"><div class="gripIcon"></div></div>');
+						if($this.options.overlay){
+							splitter.addClass('overlay');
+						}
 						$this.splitters[i] = splitter; 
 						if($this.options.type == 'vertical'){
 							splitter.css({
@@ -217,11 +224,11 @@
 					if( this.options.type == 'vertical' ){
 						var sLeftPos = vSplitters[i].position().left;
 						splitPos = sLeftPos;
-						nextPos = sLeftPos + vSplitters[i].outerWidth(); 
+						nextPos = sLeftPos + ($this.options.overlay ? Math.round(vSplitters[i].outerWidth() / 2) : vSplitters[i].outerWidth()); 
 					} else {
 						var sTopPos = vSplitters[i].position().top;
 						splitPos = sTopPos;
-						nextPos = sTopPos + vSplitters[i].outerHeight();
+						nextPos = sTopPos + ($this.options.overlay ? Math.round(vSplitters[i].outerHeight() / 2) : vSplitters[i].outerHeight());
 					}
 					splittersPos[i] = splitPos;
 				} else {
@@ -234,13 +241,18 @@
 				
 				var fromPos = curPos;
 				var toPos = splitPos;
+				if(this.options.overlay && i < vPanes.length - 1){
+					if(this.options.type == 'vertical'){
+						toPos += Math.round(vSplitters[i].outerWidth() / 2);
+					} else {
+						toPos += Math.round(vSplitters[i].outerHeight() / 2);
+					}
+				}
 				
-				
-
 				if(this.options.type == 'vertical'){
-					var nw = splitPos - curPos;
+					var nw = toPos - fromPos;
 					paneElt.css({
-						left: Math.round(curPos),
+						left: Math.round(fromPos),
 						width: Math.round(nw)
 					});
 					if(paneElt.width() && paneElt.width() != nw ){
@@ -255,7 +267,7 @@
 								$this.splitterPositions[i-1] = spos / elt.width();
 								splitter.css({left: ''+ ppos + '%'})
 								paneElt.css({
-									left: Math.round(splitter.position().left) + splitter.outerWidth()
+									left: Math.round(splitter.position().left) + ($this.options.overlay ? Math.round(splitter.outerWidth() / 2) : splitter.outerWidth())
 								});
 							}
 						} else {
@@ -269,13 +281,13 @@
 							}
 						}
 						if(splitter){
-							nextPos = splitter.position().left + splitter.outerWidth();
+							nextPos = splitter.position().left + ($this.options.overlay ? Math.round(splitter.outerWidth() / 2) : splitter.outerWidth());
 						}
 					}
 				} else {
-					var nh = splitPos - curPos;
+					var nh = toPos - fromPos;
 					paneElt.css({
-						top: Math.round(curPos),
+						top: Math.round(fromPos),
 						height: Math.round(nh)
 					});
 					if(paneElt.height() && paneElt.height() != nh ){
@@ -290,7 +302,7 @@
 								$this.splitterPositions[i-1] = spos / elt.height();
 								splitter.css({top: ''+ ppos + '%'})
 								paneElt.css({
-									top: Math.round(splitter.position().top) + splitter.outerHeight()
+									top: Math.round(splitter.position().top) + ($this.options.overlay ? Math.round(splitter.outerHeight() / 2) : splitter.outerHeight())
 								});
 							}
 						} else {
@@ -304,7 +316,7 @@
 							}
 						}
 						if(splitter){
-							nextPos = splitter.position().top + splitter.outerHeight();
+							nextPos = splitter.position().top + ($this.options.overlay ? Math.round(splitter.outerHeight() / 2) : splitter.outerHeight());
 						}
 					}
 				}

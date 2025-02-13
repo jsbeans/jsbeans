@@ -78,6 +78,7 @@
 
 				// setup SplitBox
 				var sb = new SplitBox({
+					overlay: $this.options.overlay,
 					type: desc.split,
 					position: position,
 					onChange: function(idx, pos){
