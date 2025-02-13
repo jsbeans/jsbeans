@@ -22,7 +22,11 @@
 		    	if(elt.is(':visible')){
 			    	var o = $.data(entry.target,"resize-special-event");
 			    	if(o.w !== entry.contentRect.width || o.h !== entry.contentRect.height){
-			    		elt.trigger('resize',[o.w=entry.contentRect.width,o.h=entry.contentRect.height]);	
+			    		(function(elt, o, entry){
+			    			setTimeout(()=>{
+			    				elt.trigger('resize',[o.w=entry.contentRect.width,o.h=entry.contentRect.height]);		
+				    		});	
+			    		})(elt, o, entry);
 			    	}
 		    	}
 		    }
