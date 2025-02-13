@@ -2667,7 +2667,7 @@ if(!(function(){return this;}).call(null).JSB){
 					} else {
 						JSB().defer(function(){
 							ebcall();
-						}, 100);
+						});
 					}
 
 				} else {
@@ -2687,7 +2687,7 @@ if(!(function(){return this;}).call(null).JSB){
 				} else {
 					JSB().defer(function(){
 						bcall();
-					}, 100);
+					});
 				}
 			} else {
 				afterBoostrap1();
@@ -3223,7 +3223,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			
 			if(!this.isNumber(timeout)){
-				timeout = 100;
+				timeout = 0;
 			}
 			if(key){
 				var locker = self.getLocker();
