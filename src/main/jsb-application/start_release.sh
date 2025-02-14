@@ -3,7 +3,13 @@
 export APP_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd $APP_DIR
 
-JARS="$(find . -name "*.classpath" -print0 | sort | xargs -0 cat | sed 's/$/:/' | tr -d '\n' | sed 's/\\/\//g')"
+JARS=""
+for file in *.classpath; do
+  if [[ -n "$JARS" ]]; then
+      JARS+=":"
+  fi
+  JARS+=$(cat $file)
+done
 
 if [[ -f version.txt ]]; then
   echo "build.version=\"$(cat version.txt)\"" > config/version.conf
