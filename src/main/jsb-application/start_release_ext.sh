@@ -18,7 +18,7 @@ else
 fi
 
 LANG="en_US.UTF-8"
-set -x
+
 java -DBUILD_VERSION="$(cat version.txt 2>/dev/null||echo)"\
   -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8 \
   "${@}" -classpath config:$JARS org.jsbeans.Starter
