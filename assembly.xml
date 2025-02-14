@@ -25,6 +25,7 @@
                 <exclude>*:*:jar:jsb-application</exclude>
             </excludes>
             <useProjectArtifact>false</useProjectArtifact>
+            <outputFileNameMapping>${artifact.artifactId}${dashClassifier}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
 
         <!--  extract kernel and plugins content to home-->
@@ -73,7 +74,7 @@
             <directory>${basedir}</directory>
             <outputDirectory>${org.jsbeans.application.path}</outputDirectory>
             <includes>
-                <include>classpath_jars</include>
+                <include>*.classpath</include>
             </includes>
         </fileSet>
     </fileSets>

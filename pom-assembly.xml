@@ -57,10 +57,12 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <outputFile>classpath_jars</outputFile>
+                    <stripVersion>true</stripVersion>
+                    <outputFile>00-cubisio.classpath</outputFile>
                     <prefix>lib</prefix>
                     <pathSeparator>:</pathSeparator>
                     <excludeClassifiers>jsb-application</excludeClassifiers>
+                    <regenerateFile>true</regenerateFile>
                 </configuration>
             </plugin>
             <plugin>

@@ -50,3 +50,4 @@ logs
 nohup.out
 ws-artifacts
 .classpath_jars
+**/*.classpath
