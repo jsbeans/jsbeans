@@ -11,8 +11,6 @@ for file in *.classpath; do
   JARS+=$(cat $file)
 done
 
-paste -sd ':' $(find . -name "*.classpath" -print0 | tr '\0' '\n' | sort | xargs cat)
-
 if [[ -f version.txt ]]; then
   echo "build.version=\"$(cat version.txt)\"" > config/version.conf
 fi
