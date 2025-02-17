@@ -13,11 +13,14 @@
 
 ._dwp_toolBar ._dwp_tbContainer ._dwp_toolBarItem {
 	display: inline-block;
-	cursor: pointer;
 	border: 1px solid rgba(0,0,0,0);
 	border-radius: 4px;
 	vertical-align: middle;
 	transition: 200ms;
+}
+
+._dwp_toolBar ._dwp_tbContainer ._dwp_toolBarItem.allowHover:not(.disabled):not(.checked) {
+	cursor: pointer;
 }
 
 ._dwp_toolBar ._dwp_tbContainer ._dwp_toolBarItem.disabled {
