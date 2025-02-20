@@ -17,7 +17,19 @@
 			if(!e.throttleWindow && this.setTimeout){ return false; }
 			var elt = $(this);
 			elemets = elemets.add(elt);
-			$.data(this, "visible-special-event", {visible:elt.is(':visible')});
+			function _isVisible(elt){
+				if(elt.is(':visible')){
+					var r = elt.get(0).getBoundingClientRect();
+					return r.bottom >= 0 
+						&& r.right >= 0 
+						&& r.top <= (window.innerHeight || document.documentElement.clientHeight)
+						&& r.left <= (window.innerWidth || document.documentElement.clientWidth);
+				}
+				return false;
+			}
+			$.data(this, "visible-special-event", {
+				visible: _isVisible(elt)
+			});
 			if(elemets.length === 1){
 				checkVisibility();
 			}
@@ -64,7 +76,15 @@
 				var elt = $(this);
 				
 				var d = $.data(this,"visible-special-event");
-				var vis = elt.is(':visible');
+				
+				var vis = false;
+				if(elt.is(':visible')){
+					var r = elt.get(0).getBoundingClientRect();
+					vis = r.bottom >= 0 
+						&& r.right >= 0 
+						&& r.top <= (window.innerHeight || document.documentElement.clientHeight)
+						&& r.left <= (window.innerWidth || document.documentElement.clientWidth);
+				}
 				
 				if(!d){
 					d = {visible: vis};

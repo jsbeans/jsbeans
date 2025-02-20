@@ -146,6 +146,17 @@
 		isEnabled: function(){
 			return this.options.enabled;
 		},
+		
+		isVisible: function(){
+			if(this.element.is(':visible')){
+				var r = this.element.get(0).getBoundingClientRect();
+				return r.bottom >= 0 
+					&& r.right >= 0 
+					&& r.top <= (window.innerHeight || document.documentElement.clientHeight)
+					&& r.left <= (window.innerWidth || document.documentElement.clientWidth);
+			}
+			return false;
+		},
 
 		on: function(eventName, func){
 		    if(!JSB().isFunction(func)){
