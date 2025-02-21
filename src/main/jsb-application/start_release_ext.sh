@@ -12,7 +12,7 @@ for file in *.classpath; do
 done
 
 if [[ -d logs ]]; then
-  bklog="./logs/$(date '+%Y-%m-%d %H:%M:%S')/"
+  bklog="./logs/$(date '+%Y-%m-%d_%H%M%S')/"
   mkdir -p "$bklog"
   find ./logs/ -maxdepth 1 -type f -exec cp {} "$bklog" \;
 else
