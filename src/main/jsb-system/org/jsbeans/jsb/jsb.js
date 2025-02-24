@@ -5373,6 +5373,7 @@ JSB({
 			var self = this;
 			var node = opts && opts.node;
 			var session = opts && opts.session;
+			var timeout = opts && opts.timeout;
 
 			if(JSB.isDefined(node) && (!node || node == JSB.getClusterProvider().getNodeAddress())){
 				// execute on locale node (self-call)
@@ -5396,6 +5397,7 @@ JSB({
 			var execCmd = {
 				instance: this,
 				proc: procName,
+				timeout: timeout,
 				params: JSB().unwindComplexObjects(params, opts.plain)
 			};
 
@@ -7245,7 +7247,8 @@ JSB({
 		enableRpcCleanup: function(b){
 			var self = this;
 			var cleanupInterval = 60000;	// 1 min
-			var invalidateInterval = 300000;	// 5 min
+			var invalidateInterval = 600000;	// 10 min
+			// TODO: implement "entry.timeout" logic
 
 			if(this.rpcCleanupEnabled == b){
 				return;
@@ -7263,6 +7266,14 @@ JSB({
 					while(curEntry){
 						if(timestamp - curEntry.timestamp < invalidateInterval){
 							break;
+						}
+						if(curEntry.callback && !curEntry.responded){
+							var callback = curEntry.callback;
+							var instance = curEntry.instance;
+							
+							JSB().defer(function(){
+								callback.call(instance, null, new Error('Timeout reached'));
+							}, 0);
 						}
 						var nextEntry = curEntry.next;
 						if(self.rpcQueueFirst == curEntry){
@@ -7301,7 +7312,9 @@ JSB({
 				params: cmd.params,
 				callback: cmd.callback,
 				session: cmd.session,
-				next: null
+				timeout: cmd.timeout,
+				next: null,
+				prev: null
 			};
 
 			var locker = JSB().getLocker();
@@ -7315,6 +7328,7 @@ JSB({
 			}
 			if(this.rpcQueueLast) {
 				this.rpcQueueLast.next = entry;
+				entry.prev = this.rpcQueueLast;
 				this.rpcQueueLast = entry;
 			} else {
 				this.rpcQueueLast = this.rpcQueueFirst;
@@ -7378,6 +7392,29 @@ JSB({
 			},{plain:true});
 		},
 		
+		_removeRpcEntry: function(id){
+			var entry = this.rpcMap[id];
+			if(!entry){
+				return;
+			}
+			var locker = JSB().getLocker();
+			locker.lock('_jsb_rpcQueue');
+			var prevEntry = entry.prev;
+			var nextEntry = entry.next;
+			delete this.rpcMap[id];
+			if(prevEntry){
+				prevEntry.next = nextEntry;
+			} else {
+				this.rpcQueueFirst = nextEntry;
+			}
+			if(nextEntry){
+				nextEntry.prev = prevEntry;
+			} else {
+				this.rpcQueueLast = prevEntry;
+			}
+			locker.unlock('_jsb_rpcQueue');
+		},
+		
 		submitServerClientCallResult: function(obj){
 			var entry = this.rpcMap[obj.id];
 			if(!entry){
@@ -7387,10 +7424,16 @@ JSB({
 				JSB().ensureNegotiation(obj.clientId, entry.instance.getId());
 			}
 			if(entry.callback){
+				entry.responded = true;
+				var callback = entry.callback;
+				var instance = entry.instance;
+				
 				JSB().defer(function(){
-					entry.callback.call(entry.instance, obj.result, obj.fail, obj.clientId);
+					callback.call(instance, obj.result, obj.fail, obj.clientId);
 				}, 0);
 			}
+			
+			/*$this._removeRpcEntry(obj.id);*/
 		}
 			
 	}
