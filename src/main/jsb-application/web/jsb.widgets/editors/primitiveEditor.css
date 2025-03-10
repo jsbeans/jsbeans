@@ -20,6 +20,8 @@
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	
+	font-family: inherit;
+	
 	padding: 1px 3px;
 	box-sizing: border-box;
 	outline: none;
