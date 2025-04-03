@@ -1657,9 +1657,10 @@ if(!(function(){return this;}).call(null).JSB){
 			} else if(this.isBean(b1) || this.isBean(b2)){
 				return b1 == b2;
 			} else if(this.isObject(b1)){
-				if((!options || options && !options.checkObjectProperties) && Object.keys(b1).length != Object.keys(b2).length){
+				if((!options || !options.checkObjectProperties) && Object.keys(b1).length != Object.keys(b2).length){
 					return false;
 				}
+				var keysChecked = {};
 				for(var key in b1){
 					if(b2[key] === undefined){
 						if(b1[key] === undefined){
@@ -1670,7 +1671,23 @@ if(!(function(){return this;}).call(null).JSB){
 					if(!this.isEqual(b1[key], b2[key], options)){
 						return false;
 					}
+					keysChecked[key] = true;
 				}
+				for(var key in b2){
+					if(keysChecked[key]){
+						continue;
+					}
+					if(b1[key] === undefined){
+						if(b2[key] === undefined){
+							continue;
+						}
+						return false;
+					}
+					if(!this.isEqual(b2[key], b1[key], options)){
+						return false;
+					}
+				}
+
 				return true;
 			} else {
 				return b1 == b2;
