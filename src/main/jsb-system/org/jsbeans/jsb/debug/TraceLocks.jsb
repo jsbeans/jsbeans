@@ -35,7 +35,7 @@
 			var curMap = {};
 			for(var i = 0; i < stats.length; i++){
 				var statEntry = stats[i];
-				curMap[statEntry.lock] = Date.now();
+				curMap[statEntry.lock] = {ts: Date.now(), stack: statEntry.stack};
 			}
 			
 			// compare maps
@@ -61,10 +61,11 @@
 			var now = Date.now();
 			var warnList = [];
 			for(var l in this._lockMap){
-				if(now - this._lockMap[l] > this._lockWarnTimeout){
+				if(now - this._lockMap[l].ts > this._lockWarnTimeout){
 					warnList.push({
 						lock: l,
-						duration: now - this._lockMap[l]
+						duration: now - this._lockMap[l].ts,
+						stack: this._lockMap[l].stack
 					});
 				}
 			}

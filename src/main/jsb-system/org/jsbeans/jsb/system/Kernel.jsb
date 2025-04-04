@@ -271,7 +271,7 @@
 			if(JSB().isNull(mtxName)){
 				throw 'ERROR: Kernel.lock should only be used with named mutex';
 			}
-			Bridge.lock(mtxName);
+			Bridge.lock(mtxName, JSB().stackTrace());
 		},
 		
 		unlock: function(mtxName){
@@ -296,7 +296,8 @@
 				stats.push({
 					lock: '' + lockStatsEntry.getLockName(),
 					locked: lockStatsEntry.isLocked(),
-					queueLength: lockStatsEntry.getQueueLength()
+					queueLength: lockStatsEntry.getQueueLength(),
+					stack: lockStatsEntry.getStack()
 				});
 			}
 			return stats;

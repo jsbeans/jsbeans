@@ -14,11 +14,13 @@ public class LockStatEntry {
 	private String _lockName;
 	private boolean _isLocked;
 	private int _queueLength;
+	private String _stack;
 	
-	public LockStatEntry(String lockName, boolean isLocked, int queueLength){
+	public LockStatEntry(String lockName, boolean isLocked, int queueLength, String stack){
 		this._lockName = lockName;
 		this. _isLocked = isLocked;
 		this._queueLength = queueLength;
+		this._stack = stack;
 	}
 	
 	public String getLockName(){
@@ -31,5 +33,9 @@ public class LockStatEntry {
 	
 	public int getQueueLength(){
 		return this._queueLength;
+	}
+	
+	public String getStack() {
+		return this._stack;
 	}
 }

@@ -71,13 +71,18 @@ public class JsBridge {
         this.loginCallbackMessage.setScopePath(loginContext.getThreadLocal("session").toString());
         this.loginCallbackMessage.setClientAddr(loginContext.getThreadLocal("clientAddr").toString());
     }
-
+    
     public void lock(String str) {
+    	this.lock(str, null);
+    }
+
+    public void lock(String str, String stack) {
     	LockEntry l = null;
     	synchronized (lockMap) {
 	    	if (!lockMap.containsKey(str)){
 	        	l = new LockEntry();
                 lockMap.put(str, l);
+                l.setStack(stack);
 	    	} else {
 	    		l = lockMap.get(str);
 	    	}
@@ -125,7 +130,7 @@ public class JsBridge {
     	List<LockStatEntry> stats = new ArrayList<LockStatEntry>();
     	synchronized (lockMap){
     		lockMap.forEach((name, lock) -> {
-    			stats.add(new LockStatEntry(name, lock.getLock().isLocked(), lock.getLocks()));
+    			stats.add(new LockStatEntry(name, lock.getLock().isLocked(), lock.getLocks(), lock.getStack()));
     		});
     	}
     	
