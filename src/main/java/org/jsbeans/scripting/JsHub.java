@@ -24,14 +24,12 @@ import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.messages.Message;
 import org.jsbeans.messages.Messages;
-import org.jsbeans.messages.SubjectMessage;
 import org.jsbeans.monads.Chain;
 import org.jsbeans.monads.CompleteMonad;
 import org.jsbeans.monads.FutureMonad;
 import org.jsbeans.scripting.JsTimeoutMessage.TimeoutType;
 import org.jsbeans.serialization.GsonWrapper;
 import org.jsbeans.serialization.JsObjectSerializerHelper;
-import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
 import org.jsbeans.types.JsonObject;
 import org.mozilla.javascript.*;
@@ -44,7 +42,6 @@ import javax.security.auth.Subject;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -57,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 public class JsHub extends Service {
     private static final boolean openDebugger = ConfigHelper.has("kernel.jshub.openDebugger") ? ConfigHelper.getConfigBoolean("kernel.jshub.openDebugger") : false;
     private static final boolean createDump = ConfigHelper.has("kernel.jshub.createDump") ? ConfigHelper.getConfigBoolean("kernel.jshub.createDump"):false;
+     private static final boolean printExceptionScript = ConfigHelper.has("kernel.jshub.printExceptionScript") ? ConfigHelper.getConfigBoolean("kernel.jshub.printExceptionScript"):false;
     
     private static final long completeDelta = ConfigHelper.getConfigInt("kernel.jshub.stateCompleteTimeout");
     private static final long execDelta = ConfigHelper.getConfigInt("kernel.jshub.stateExecutingTimeout");
@@ -860,19 +858,8 @@ public class JsHub extends Service {
                 } catch (Throwable e) {
                     StringBuilder sb = new StringBuilder("Execute script error: ");
                     sb.append(e.getMessage()).append("\n");
-                    if (msg.getBody() != null) {
-                        sb.append("--> Script executed: ");
-                        sb.append(msg.getBody());
-                    } else {
-/*                    	
-// commented out because of invalid function serialization
-                        sb.append("--> Serialized function: \n");
-                        try {
-                            sb.append(serializeFunction(msg.getFunction()));
-                        } catch (UnsupportedEncodingException e1) {
-                            sb.append("(serialize error: " + e1.getMessage() + ")");
-                        }
-*/                        
+                     if (msg.getBody() != null && (Core.DEBUG || printExceptionScript)) {
+                         printScriptError(msg, e, sb);
                     }
 
                     if (e instanceof RhinoException) {
@@ -908,6 +895,38 @@ public class JsHub extends Service {
                     Context.exit();
                 }
 			}
+ 
+             private void printScriptError(ExecuteScriptMessage msg, Throwable e, StringBuilder sb) {
+                 // Extract line number from error message if available
+                 String errorMsg = e.getMessage();
+                 int lineNumber = -1;
+                 if (errorMsg != null && errorMsg.contains("#")) {
+                     try {
+                         String lineStr = errorMsg.substring(errorMsg.lastIndexOf("#") + 1, errorMsg.lastIndexOf(")"));
+                         lineNumber = Integer.parseInt(lineStr);
+                     } catch (Exception ex) {
+                         // Failed to parse line number, continue with default error message
+                     }
+                 }
+ 
+                 if (lineNumber > 0) {
+                     String[] lines = msg.getBody().split("\n");
+                     int startLine = Math.max(1, lineNumber - 7);
+                     int endLine = Math.min(lines.length, lineNumber + 5);
+                     
+                     sb.append("--> Error context:\n");
+                     for (int i = startLine - 1; i < endLine; i++) {
+                         if (i == lineNumber - 1) {
+                             sb.append(String.format("%4d: %s   <=== ERROR LINE ===\n", i + 1, lines[i]));
+                         } else {
+                             sb.append(String.format("%4d: %s\n", i + 1, lines[i]));
+                         }
+                     }
+                 } else {
+                     sb.append("--> Script executed: ");
+                     sb.append(msg.getBody());
+                 }
+             }
 		};
         
 		try {
