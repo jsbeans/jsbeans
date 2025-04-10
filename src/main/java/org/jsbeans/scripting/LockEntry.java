@@ -15,6 +15,15 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LockEntry {
 	private ReentrantLock _lock = new ReentrantLock();
 	private int _count = 0;
+	private String _stack = null;
+	
+	public void setStack(String s) {
+		this._stack = s;
+	}
+	
+	public String getStack() {
+		return this._stack;
+	}
 	
 	public void lock() {
 		this._lock.lock();

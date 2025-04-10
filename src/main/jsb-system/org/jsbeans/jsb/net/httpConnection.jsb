@@ -17,7 +17,7 @@
             'JSB.System.Log',
             'JSB.IO.Stream',
             'JSB.IO.TextStream',
-            'java:org.jsbeans.helpers.AuthHelper',
+            'java:org.jsbeans.helpers.AuthHelper'
         ],
     	
         $constructor: function(options){
@@ -30,6 +30,7 @@
 
             this.options = JSB().merge(true, {}, this.defaultOptions, options);
             this.log = this.logger(this.options.id, this.options.debug, this.options.trace);
+            
         },
 
         defaultOptions: {
@@ -123,7 +124,14 @@
                 this.httpConnection.addRequestProperty("Authorization", "Basic " + encoding);
 //                    this.log.trace('connect(): HTTP Authorization Basic ' + encoding);
             }
-
+/*
+            if(options.method == 'PATCH'){
+            	this.httpConnection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+            	this.httpConnection.setRequestMethod("POST");
+            } else {
+            	this.httpConnection.setRequestMethod(options.method);
+            }
+*/            
             this.httpConnection.setRequestMethod(options.method);
         },
 

@@ -16,6 +16,7 @@
         
         $constructor: function(){
         	HttpHelper.ignoreSSLClient();
+        	HttpHelper.enablePatchRequest();
         },
 
         example: function(){
