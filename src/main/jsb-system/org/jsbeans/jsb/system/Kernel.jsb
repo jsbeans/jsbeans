@@ -18,8 +18,11 @@
 		    'java:org.jsbeans.helpers.NetworkHelper',
 		    'java:java.net.InetAddress',
 		    'java:org.jsbeans.web.HttpService',
-		    'java:java.lang.System'
+		    'java:java.lang.System',
+		    'JSB.System.Config'
 		],
+		
+		_traceLockStack: false,
 
 		$constructor: function(){
 			JSB().setLocker(this);
@@ -35,6 +38,10 @@
             JSB.getRepository().ensureSystemLoaded(function(){
             	Kernel.tell('JsbRegistryService', 'LoadAdditionalObjectsMessage', {});
             });
+            
+            if(Config.has('kernel.jsb.traceLockStack')){
+            	this._traceLockStack = Config.get('kernel.jsb.traceLockStack');
+            }
 		},
 		
 		scope: function(scope, callback){
@@ -271,7 +278,11 @@
 			if(JSB().isNull(mtxName)){
 				throw 'ERROR: Kernel.lock should only be used with named mutex';
 			}
-			Bridge.lock(mtxName, JSB().stackTrace());
+			if(this._traceLockStack){
+				Bridge.lock(mtxName, JSB().stackTrace());
+			} else {
+				Bridge.lock(mtxName);
+			}
 		},
 		
 		unlock: function(mtxName){
