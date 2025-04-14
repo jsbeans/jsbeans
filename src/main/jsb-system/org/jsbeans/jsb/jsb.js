@@ -7272,7 +7272,7 @@ JSB({
 			}
 
 			this.rpcCleanupEnabled = b;
-
+			
 			function _doCleanup(){
 				if(self.rpcQueueFirst){
 					// perform cleanup
@@ -7293,6 +7293,12 @@ JSB({
 							}, 0);
 						}
 						var nextEntry = curEntry.next;
+						nextEntry.prev = curEntry.prev;
+						if(curEntry.prev){
+							curEntry.prev.next = nextEntry;
+						}
+						curEntry.next = null;
+						curEntry.prev = null;
 						if(self.rpcQueueFirst == curEntry){
 							self.rpcQueueFirst = nextEntry;
 						}
@@ -7307,6 +7313,7 @@ JSB({
 				if(self.rpcCleanupEnabled){
 					JSB().defer(function(){
 						_doCleanup();
+						/*JSB.getLogger().info('Server-Client RPC queue length: ' + Object.keys(self.rpcMap).length);*/
 					}, cleanupInterval, '_jsb_rpcCleanup');
 				}
 			}
