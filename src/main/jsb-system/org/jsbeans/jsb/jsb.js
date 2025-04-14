@@ -7293,7 +7293,9 @@ JSB({
 							}, 0);
 						}
 						var nextEntry = curEntry.next;
-						nextEntry.prev = curEntry.prev;
+						if(nextEntry){
+							nextEntry.prev = curEntry.prev;
+						}
 						if(curEntry.prev){
 							curEntry.prev.next = nextEntry;
 						}
