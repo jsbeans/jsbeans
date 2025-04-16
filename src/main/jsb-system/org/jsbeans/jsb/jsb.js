@@ -7088,7 +7088,12 @@ JSB({
 						} catch(e){}
 					}
 				}
+				$this.Kernel = JSB().getInstance('JSB.System.Kernel');
 			});
+		},
+		
+		hasSession: function(session){
+			return $this.Kernel && $this.Kernel.hasSession(session);
 		},
 
 		performUpload: function(streamId, javaStream){
@@ -7281,7 +7286,8 @@ JSB({
 					locker.lock('_jsb_rpcQueue');
 					var curEntry = self.rpcQueueFirst;
 					while(curEntry){
-						if(timestamp - curEntry.timestamp < invalidateInterval){
+						if(timestamp - curEntry.timestamp < invalidateInterval 
+							&& (!curEntry.session || $this.hasSession(curEntry.session))){
 							break;
 						}
 						if(curEntry.callback && !curEntry.responded){
@@ -7292,22 +7298,24 @@ JSB({
 								callback.call(instance, null, new Error('Timeout reached'));
 							}, 0);
 						}
+						
+						// remove entry
+						var prevEntry = curEntry.prev;
 						var nextEntry = curEntry.next;
-						if(nextEntry){
-							nextEntry.prev = curEntry.prev;
+						if(prevEntry){
+							prevEntry.next = nextEntry;
+						} else {
+							$this.rpcQueueFirst = nextEntry;
 						}
-						if(curEntry.prev){
-							curEntry.prev.next = nextEntry;
+						if(nextEntry){
+							nextEntry.prev = prevEntry;
+						} else {
+							$this.rpcQueueLast = prevEntry;
 						}
 						curEntry.next = null;
 						curEntry.prev = null;
-						if(self.rpcQueueFirst == curEntry){
-							self.rpcQueueFirst = nextEntry;
-						}
-						if(self.rpcQueueLast == curEntry){
-							self.rpcQueueLast = nextEntry;
-						}
-						delete self.rpcMap[curEntry.id];
+						delete $this.rpcMap[curEntry.id];
+						
 						curEntry = nextEntry;
 					}
 					locker.unlock('_jsb_rpcQueue');
@@ -7327,9 +7335,17 @@ JSB({
 
 		// on server side
 		enqueueRpc: function(cmd){
-			// cmd.instance
-			// cmd.proc
-			// cmd.params
+			if(cmd.session && cmd.session.length > 0 && !$this.hasSession(cmd.session)){
+				if(cmd.callback){
+					var callback = cmd.callback;
+					var instance = cmd.instance;
+					
+					JSB().defer(function(){
+						callback.call(instance, null, new Error('Session is closed'));
+					}, 0);
+				}
+				return;
+			}
 			var entry = {
 				id: JSB.generateUid(),
 				timestamp: Date.now(),
@@ -7342,7 +7358,7 @@ JSB({
 				next: null,
 				prev: null
 			};
-
+			
 			var locker = JSB().getLocker();
 			locker.lock('_jsb_rpcQueue');
 			if(this.rpcQueueLast && this.rpcQueueLast.timestamp >= entry.timestamp){
@@ -7427,7 +7443,6 @@ JSB({
 			locker.lock('_jsb_rpcQueue');
 			var prevEntry = entry.prev;
 			var nextEntry = entry.next;
-			delete this.rpcMap[id];
 			if(prevEntry){
 				prevEntry.next = nextEntry;
 			} else {
@@ -7438,6 +7453,9 @@ JSB({
 			} else {
 				this.rpcQueueLast = prevEntry;
 			}
+			entry.prev = null;
+			entry.next = null;
+			delete this.rpcMap[id];
 			locker.unlock('_jsb_rpcQueue');
 		},
 		
@@ -7458,8 +7476,10 @@ JSB({
 					callback.call(instance, obj.result, obj.fail, obj.clientId);
 				}, 0);
 			}
+			if(entry.session && entry.session.length > 0){
+				$this._removeRpcEntry(obj.id);	
+			}
 			
-			/*$this._removeRpcEntry(obj.id);*/
 		}
 			
 	}

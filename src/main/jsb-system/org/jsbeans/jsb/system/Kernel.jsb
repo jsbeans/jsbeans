@@ -172,6 +172,10 @@
 			return JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().getChildrenIds().toArray();
 		},
 		
+		hasSession: function(session){
+			return JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().has(session);
+		},
+		
 		killSession: function(sessionId){
 			this.checkSystemOrAdmin();
 			return Kernel.ask('JsHub', 'RemoveScopeMessage', {scopePath: sessionId});

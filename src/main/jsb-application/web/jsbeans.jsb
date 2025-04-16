@@ -1,11 +1,11 @@
 /*
  * This file is the part of jsBeans, high-level JavaScript client-server framework.
  * The contents of this file are subject to the MIT Licence (MIT).
- * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2019
+ * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2025
  *
  * Настоящий файл является частью клиент-серверной JavaScript платформы.
  * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT Licence (MIT).
- * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2019гг.
+ * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2025гг.
  */
 
 {
@@ -43,7 +43,9 @@
 				path += '?ref=' + refType;
 			}
 			if(this.cachedContent[path]){
-				return Web.respond(this.cachedContent[path], {
+				var retCode = this.cachedContent[path] + 'JSB().setCurrentSession("' + JSB.getCurrentSession() + '");';
+				
+				return Web.respond(retCode, {
 					contentType: 'application/javascript; charset=UTF-8'
 				});
 			}
@@ -67,7 +69,6 @@
 			code += Web.getJsbCode();
 
 			// insert session & param name
-			code += 'JSB().setCurrentSession("' + JSB.getCurrentSession() + '");';
 			code += 'JSB().setSessionIdParameterName("' + Web.getSessionIdPathParameterName() + '");';
 
 			// insert server version to avoid browser cache
@@ -94,7 +95,9 @@
 			
 			this.cachedContent[path] = code;
 			
-			return Web.respond(code, {
+			var retCode = code + 'JSB().setCurrentSession("' + JSB.getCurrentSession() + '");';
+			
+			return Web.respond(retCode, {
 				contentType: 'application/javascript; charset=UTF-8'
 			});
 		},
