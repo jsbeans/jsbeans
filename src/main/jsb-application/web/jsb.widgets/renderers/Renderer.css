@@ -2,6 +2,7 @@
 
 .renderer {
 	display: inline-block;
+	vertical-align: middle;
 	font-size: inherit;
 	position: relative;
 	max-width: 100%;
