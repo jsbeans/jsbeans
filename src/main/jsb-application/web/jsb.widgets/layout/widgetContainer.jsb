@@ -25,9 +25,10 @@
 			this.getElement().addClass('_dwp_widgetContainer');
 			
 			var twOpts = {
-				showTabs: this.options.caption,
+				showTabs: !!this.options.caption,
 				allowNewTab: false,
-				allowCloseTab: this.options.allowClose
+				allowCloseTab: this.options.allowClose,
+				tabPosition: this.options.caption == 'bottom' ? 'bottom' : 'top'
 			};
 			
 			if(opts && opts.onActivateWidget){
