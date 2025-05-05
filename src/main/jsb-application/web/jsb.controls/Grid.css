@@ -127,12 +127,14 @@
 	color: #004c9c;
 	white-space: pre;
 	text-align: right;
+    font-family: monospace;
 }
 
 .grid-master > table td.grid-cell[type="integer"] {
 	color: #00801c;
 	white-space: pre;
 	text-align: right;
+    font-family: monospace;
 }
 
 .grid-master > table td.grid-cell[type="boolean"] {
